@@ -1,0 +1,32 @@
+appId: com.blacksmith.studio
+productName: Blacksmith Studio
+directories:
+  output: release
+  buildResources: resources
+
+files:
+  - dist/**/*
+  - node_modules/**/*
+  - "!node_modules/.cache"
+
+mac:
+  category: public.app-category.developer-tools
+  target:
+    - dmg
+    - zip
+  hardenedRuntime: true
+
+win:
+  target:
+    - nsis
+    - zip
+
+linux:
+  target:
+    - AppImage
+    - deb
+  category: Development
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true

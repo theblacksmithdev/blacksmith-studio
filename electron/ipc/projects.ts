@@ -1,0 +1,183 @@
+import { ipcMain } from 'electron'
+import fs from 'node:fs'
+import path from 'node:path'
+import os from 'node:os'
+import { spawn } from 'node:child_process'
+import type { ProjectManager } from '../../server/services/projects.js'
+import {
+  PROJECTS_LIST, PROJECTS_GET_ACTIVE, PROJECTS_REGISTER, PROJECTS_CREATE,
+  PROJECTS_ACTIVATE, PROJECTS_RENAME, PROJECTS_REMOVE, PROJECTS_VALIDATE,
+  BROWSE_LIST,
+} from './channels.js'
+
+export function setupProjectsIPC(projectManager: ProjectManager) {
+  ipcMain.handle(PROJECTS_LIST, () => {
+    return projectManager.list()
+  })
+
+  ipcMain.handle(PROJECTS_GET_ACTIVE, () => {
+    return projectManager.getActive() || null
+  })
+
+  ipcMain.handle(PROJECTS_REGISTER, (_e, data: { path: string; name?: string }) => {
+    if (!data.path) throw new Error('path is required')
+    return projectManager.register(data.path, data.name)
+  })
+
+  ipcMain.handle(PROJECTS_ACTIVATE, (_e, data: { id: string }) => {
+    const project = projectManager.setActive(data.id)
+    if (!project) throw new Error('Project not found')
+    return project
+  })
+
+  ipcMain.handle(PROJECTS_RENAME, (_e, data: { id: string; name: string }) => {
+    const project = projectManager.rename(data.id, data.name)
+    if (!project) throw new Error('Project not found')
+    return project
+  })
+
+  ipcMain.handle(PROJECTS_REMOVE, async (_e, data: { id: string; hard?: boolean }) => {
+    const project = projectManager.get(data.id)
+    if (!project) throw new Error('Project not found')
+
+    if (data.hard && project.path) {
+      const projectPath = path.resolve(project.path)
+      if (fs.existsSync(projectPath)) {
+        const { execSync } = await import('node:child_process')
+        execSync(`rm -rf ${JSON.stringify(projectPath)}`, { timeout: 30000 })
+      }
+    }
+
+    projectManager.remove(data.id)
+    return null
+  })
+
+  ipcMain.handle(PROJECTS_VALIDATE, (_e, data: { path: string }) => {
+    if (!data.path) throw new Error('path is required')
+
+    const absPath = path.resolve(data.path)
+    if (!fs.existsSync(absPath)) throw new Error('Directory does not exist')
+    if (!fs.statSync(absPath).isDirectory()) throw new Error('Path is not a directory')
+
+    const configPath = path.join(absPath, 'blacksmith.config.json')
+    let configName: string | null = null
+    let isBlacksmithProject = false
+
+    if (fs.existsSync(configPath)) {
+      try {
+        const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+        configName = config.name || null
+        isBlacksmithProject = true
+      } catch { /* ignore */ }
+    }
+
+    return {
+      valid: true,
+      path: absPath,
+      name: configName || path.basename(absPath),
+      isBlacksmithProject,
+      hasPackageJson: fs.existsSync(path.join(absPath, 'package.json')),
+      hasGit: fs.existsSync(path.join(absPath, '.git')),
+    }
+  })
+
+  ipcMain.handle(PROJECTS_CREATE, (_e, data: {
+    name: string; parentPath: string;
+    backendPort?: number; frontendPort?: number; theme?: string; ai?: boolean
+  }) => {
+    if (!data.name || !data.parentPath) throw new Error('name and parentPath are required')
+
+    const absParent = path.resolve(data.parentPath)
+    if (!fs.existsSync(absParent) || !fs.statSync(absParent).isDirectory()) {
+      throw new Error('parentPath is not a valid directory')
+    }
+
+    const projectDir = path.join(absParent, data.name)
+    if (fs.existsSync(projectDir)) {
+      throw new Error(`Directory "${data.name}" already exists in ${absParent}`)
+    }
+
+    const args = [
+      'init', data.name,
+      '-b', String(data.backendPort || 8000),
+      '-f', String(data.frontendPort || 5173),
+      '-t', data.theme || 'default',
+    ]
+    if (data.ai) args.push('--ai')
+
+    return new Promise((resolve, reject) => {
+      let binPath: string | null = null
+      try {
+        const { createRequire } = require('node:module')
+        const req = createRequire(import.meta.url)
+        binPath = req.resolve('blacksmith-cli/bin/blacksmith.js')
+      } catch { /* try PATH */ }
+
+      const cmd = binPath ? process.execPath : 'blacksmith'
+      const fullArgs = binPath ? [binPath, ...args] : args
+
+      const proc = spawn(cmd, fullArgs, {
+        cwd: absParent,
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: { ...process.env, FORCE_COLOR: '0' },
+      })
+
+      proc.stdin.end()
+
+      let stdout = ''
+      let stderr = ''
+      proc.stdout.on('data', (chunk: Buffer) => { stdout += chunk.toString() })
+      proc.stderr.on('data', (chunk: Buffer) => { stderr += chunk.toString() })
+
+      const timeout = setTimeout(() => {
+        proc.kill('SIGTERM')
+        reject(new Error('Project creation timed out after 5 minutes'))
+      }, 300000)
+
+      proc.on('close', (code: number) => {
+        clearTimeout(timeout)
+        if (code !== 0) {
+          return reject(new Error(`Project creation failed: ${stderr || stdout}`))
+        }
+        const project = projectManager.register(projectDir, data.name)
+        resolve({ project, output: stdout })
+      })
+
+      proc.on('error', (err: Error) => {
+        clearTimeout(timeout)
+        reject(new Error(`Failed to run blacksmith: ${err.message}`))
+      })
+    })
+  })
+
+  // Browse directories
+  ipcMain.handle(BROWSE_LIST, (_e, data?: { path?: string }) => {
+    const requestedPath = data?.path || os.homedir()
+    const absPath = path.resolve(requestedPath)
+
+    if (!fs.existsSync(absPath)) throw new Error('Path does not exist')
+    if (!fs.statSync(absPath).isDirectory()) throw new Error('Path is not a directory')
+
+    let entries: fs.Dirent[]
+    try {
+      entries = fs.readdirSync(absPath, { withFileTypes: true })
+    } catch {
+      throw new Error('Cannot read directory')
+    }
+
+    const dirs = entries
+      .filter((e) => e.isDirectory() && !e.name.startsWith('.'))
+      .map((e) => ({ name: e.name, path: path.join(absPath, e.name) }))
+      .sort((a, b) => a.name.localeCompare(b.name))
+
+    return {
+      current: absPath,
+      parent: path.dirname(absPath),
+      dirs,
+      isProject: fs.existsSync(path.join(absPath, 'blacksmith.config.json')) ||
+        fs.existsSync(path.join(absPath, 'package.json')) ||
+        fs.existsSync(path.join(absPath, '.git')),
+      isBlacksmithProject: fs.existsSync(path.join(absPath, 'blacksmith.config.json')),
+    }
+  })
+}

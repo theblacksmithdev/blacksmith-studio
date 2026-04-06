@@ -1,0 +1,6 @@
+node_modules/
+dist/
+release/
+.blacksmith-studio/
+*.db
+.DS_Store
