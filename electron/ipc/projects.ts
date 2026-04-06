@@ -26,7 +26,10 @@ export function setupProjectsIPC(projectManager: ProjectManager) {
 
   ipcMain.handle(PROJECTS_ACTIVATE, (_e, data: { id: string }) => {
     const project = projectManager.setActive(data.id)
-    if (!project) throw new Error('Project not found')
+    if (!project) {
+      console.warn(`[ipc] projects:activate — project not found: ${data.id}`)
+      throw new Error('Project not found')
+    }
     return project
   })
 
