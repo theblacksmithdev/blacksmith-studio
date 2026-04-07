@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { createHashRouter, Navigate } from 'react-router-dom'
 import { AppLayout } from '@/components/layout/app-layout'
 import { ProjectLayout } from '@/components/layout/project-layout'
 import { Path } from './paths'
@@ -11,7 +11,7 @@ import ChatPage from '@/pages/chat'
 import FilesPage from '@/pages/files'
 import RunPage from '@/pages/run'
 
-export const router = createBrowserRouter([
+export const router = createHashRouter([
   // Global routes — title bar only, no sidebar
   {
     element: <AppLayout />,

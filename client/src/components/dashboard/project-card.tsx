@@ -1,7 +1,71 @@
-import { Box, Text, HStack } from '@chakra-ui/react'
-import { FolderOpen, Check, ArrowRight } from 'lucide-react'
+import styled from '@emotion/styled'
+import { FolderOpen, ArrowRight } from 'lucide-react'
 import type { Project } from '@/stores/project-store'
-import { formatDate } from '@/lib/format'
+
+const Card = styled.button<{ active: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid ${({ active }) => (active ? 'var(--studio-border-hover)' : 'var(--studio-border)')};
+  background: ${({ active }) => (active ? 'var(--studio-bg-hover)' : 'var(--studio-bg-sidebar)')};
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  transition: all 0.12s ease;
+
+  &:hover {
+    border-color: var(--studio-border-hover);
+    background: var(--studio-bg-hover);
+
+    .card-arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+`
+
+const IconWrap = styled.div<{ active: boolean }>`
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: ${({ active }) => (active ? 'var(--studio-bg-hover-strong)' : 'var(--studio-bg-surface)')};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${({ active }) => (active ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)')};
+  flex-shrink: 0;
+`
+
+const Body = styled.div`
+  flex: 1;
+  min-width: 0;
+`
+
+const Name = styled.div`
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--studio-text-primary);
+`
+
+const PathText = styled.div`
+  font-size: 11px;
+  color: var(--studio-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 2px;
+`
+
+const Arrow = styled.div`
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all 0.12s ease;
+  color: var(--studio-text-muted);
+  flex-shrink: 0;
+`
 
 interface ProjectCardProps {
   project: Project
@@ -11,69 +75,17 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project, isActive, onSelect }: ProjectCardProps) {
   return (
-    <Box
-      as="button"
-      onClick={onSelect}
-      css={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '14px',
-        padding: '16px',
-        borderRadius: '10px',
-        border: '1px solid',
-        borderColor: isActive ? 'var(--studio-green)' : 'var(--studio-border)',
-        background: isActive ? 'var(--studio-bg-hover)' : 'var(--studio-bg-sidebar)',
-        cursor: 'pointer',
-        textAlign: 'left',
-        width: '100%',
-        transition: 'all 0.12s ease',
-        '&:hover': {
-          borderColor: 'var(--studio-border-hover)',
-          background: 'var(--studio-bg-hover)',
-          '& .card-arrow': { opacity: 1, transform: 'translateX(0)' },
-        },
-      }}
-    >
-      <Box
-        css={{
-          width: '40px',
-          height: '40px',
-          borderRadius: '10px',
-          background: isActive ? 'var(--studio-green-subtle, rgba(16,163,127,0.1))' : 'var(--studio-bg-surface)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: isActive ? 'var(--studio-green)' : 'var(--studio-text-tertiary)',
-          flexShrink: 0,
-        }}
-      >
-        <FolderOpen size={18} />
-      </Box>
-      <Box css={{ flex: 1, minWidth: 0 }}>
-        <HStack gap={2}>
-          <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>
-            {project.name}
-          </Text>
-          {isActive && <Check size={13} style={{ color: 'var(--studio-green)' }} />}
-        </HStack>
-        <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: '2px' }}>
-          {project.path}
-        </Text>
-        <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)', marginTop: '4px' }}>
-          Opened {formatDate(project.lastOpenedAt)}
-        </Text>
-      </Box>
-      <Box
-        className="card-arrow"
-        css={{
-          opacity: 0,
-          transform: 'translateX(-4px)',
-          transition: 'all 0.12s ease',
-          color: 'var(--studio-text-muted)',
-        }}
-      >
-        <ArrowRight size={16} />
-      </Box>
-    </Box>
+    <Card active={isActive} onClick={onSelect}>
+      <IconWrap active={isActive}>
+        <FolderOpen size={17} />
+      </IconWrap>
+      <Body>
+        <Name>{project.name}</Name>
+        <PathText>{project.path}</PathText>
+      </Body>
+      <Arrow className="card-arrow">
+        <ArrowRight size={15} />
+      </Arrow>
+    </Card>
   )
 }

@@ -1,6 +1,7 @@
 import { app, BrowserWindow, shell, Menu } from 'electron'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import fixPath from 'fix-path'
 import { setupAllIPC } from './ipc/index.js'
 import { WINDOW_ON_FULLSCREEN } from './ipc/channels.js'
 import { ProjectManager } from '../server/services/projects.js'
@@ -13,6 +14,9 @@ import { closeDatabase } from '../server/db/index.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+
+// Fix PATH for macOS/Linux GUI apps (nvm, Homebrew, etc.)
+fixPath()
 
 const isDev = !app.isPackaged
 

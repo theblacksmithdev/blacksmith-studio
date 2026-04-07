@@ -280,8 +280,21 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
                   <CheckMeta>
                     {status.node.installed
                       ? `${status.node.version} installed`
-                      : 'Not found — install from nodejs.org'}
+                      : status.node.version
+                        ? `${status.node.version} found — v18+ required`
+                        : 'Not found'}
                   </CheckMeta>
+                  {!status.node.installed && (
+                    <CheckMeta style={{ marginTop: 4 }}>
+                      <a
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); window.open('https://nodejs.org') }}
+                        style={{ color: 'var(--studio-link)', textDecoration: 'none' }}
+                      >
+                        Download from nodejs.org
+                      </a>
+                    </CheckMeta>
+                  )}
                 </CheckInfo>
               </CheckRow>
 
@@ -301,16 +314,29 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
                         ? 'Installing...'
                         : 'Required for AI features'}
                   </CheckMeta>
+                  {!status.claude.installed && !installing && (
+                    <CodeBlock style={{ marginTop: 6 }}>npm install -g @anthropic-ai/claude-code</CodeBlock>
+                  )}
                   {installError && <CheckError>{installError}</CheckError>}
                 </CheckInfo>
               </CheckRow>
 
               <ActionRow>
-                {!status.claude.installed && !installing && (
-                  <PrimaryBtn onClick={handleInstallClaude} disabled={!status.node.installed}>
+                {!status.node.installed && !status.claude.installed && (
+                  <SecondaryBtn onClick={() => runCheck()}>
+                    Re-check
+                  </SecondaryBtn>
+                )}
+                {!status.claude.installed && !installing && status.node.installed && (
+                  <PrimaryBtn onClick={handleInstallClaude}>
                     <Terminal size={14} />
                     Install Claude Code
                   </PrimaryBtn>
+                )}
+                {!status.claude.installed && !installing && (
+                  <SecondaryBtn onClick={() => runCheck()}>
+                    Re-check
+                  </SecondaryBtn>
                 )}
                 {status.claude.installed && status.node.installed && (
                   <PrimaryBtn onClick={() => runCheck()}>
