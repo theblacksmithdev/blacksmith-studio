@@ -3,6 +3,7 @@ import styled from '@emotion/styled'
 import { Plus, Pencil, Trash2, Zap, Blocks } from 'lucide-react'
 import { useMcp } from '@/hooks/use-mcp'
 import { McpServerModal } from '../mcp-server-modal'
+import { McpLibraryModal } from '../mcp-library'
 import { StatusDot } from '@/components/runner/runner-primitives'
 import { MONO_FONT } from '@/components/runner/runner-primitives'
 import type { McpServerConfig, McpServerEntry } from '@/api/modules/mcp'
@@ -12,7 +13,6 @@ import type { McpServerConfig, McpServerEntry } from '@/api/modules/mcp'
 const Wrap = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0;
 `
 
 const Header = styled.div`
@@ -72,10 +72,7 @@ const ServerRow = styled.div`
   border-bottom: 1px solid var(--studio-border);
   transition: background 0.1s ease;
 
-  &:last-child {
-    border-bottom: none;
-  }
-
+  &:last-child { border-bottom: none; }
   &:hover {
     background: var(--studio-bg-surface);
     .server-actions { opacity: 1; }
@@ -245,17 +242,25 @@ function getStatusForDot(entry: McpServerEntry): 'running' | 'starting' | 'stopp
 
 /* ── Component ── */
 
+type ModalState =
+  | null
+  | { type: 'library' }
+  | { type: 'edit'; server: McpServerEntry }
+
 export function McpSettings() {
-  const { servers, add, update, remove, toggle, testConnection, isTesting } = useMcp()
-  const [modal, setModal] = useState<{ mode: 'add' } | { mode: 'edit'; server: McpServerEntry } | null>(null)
+  const { servers, add, update, remove, toggle, testConnection } = useMcp()
+  const [modal, setModal] = useState<ModalState>(null)
   const [testing, setTesting] = useState<string | null>(null)
 
-  const handleSave = async (name: string, config: McpServerConfig) => {
-    if (modal?.mode === 'edit') {
-      await update({ name, config })
-    } else {
-      await add({ name, config })
-    }
+  const serverNames = new Set(servers.map((s) => s.name))
+
+  const handleAdd = async (name: string, config: McpServerConfig) => {
+    await add({ name, config })
+    setModal(null)
+  }
+
+  const handleUpdate = async (name: string, config: McpServerConfig) => {
+    await update({ name, config })
     setModal(null)
   }
 
@@ -265,38 +270,6 @@ export function McpSettings() {
     setTesting(null)
   }
 
-  const handleRemove = async (name: string) => {
-    await remove(name)
-  }
-
-  if (servers.length === 0) {
-    return (
-      <Wrap>
-        <Header>
-          <HeaderText>
-            <Title>MCP Servers</Title>
-            <Desc>Configure Model Context Protocol servers that extend Claude's capabilities.</Desc>
-          </HeaderText>
-        </Header>
-        <Empty>
-          <EmptyIcon><Blocks size={20} /></EmptyIcon>
-          <EmptyTitle>No MCP servers configured</EmptyTitle>
-          <EmptyDesc>MCP servers give Claude access to external tools and data sources.</EmptyDesc>
-          <EmptyBtn onClick={() => setModal({ mode: 'add' })}>
-            <Plus size={13} /> Add Server
-          </EmptyBtn>
-        </Empty>
-        {modal && (
-          <McpServerModal
-            server={modal.mode === 'edit' ? modal.server : undefined}
-            onSave={handleSave}
-            onClose={() => setModal(null)}
-          />
-        )}
-      </Wrap>
-    )
-  }
-
   return (
     <Wrap>
       <Header>
@@ -304,50 +277,69 @@ export function McpSettings() {
           <Title>MCP Servers</Title>
           <Desc>Configure Model Context Protocol servers that extend Claude's capabilities.</Desc>
         </HeaderText>
-        <AddBtn onClick={() => setModal({ mode: 'add' })}>
+        <AddBtn onClick={() => setModal({ type: 'library' })}>
           <Plus size={13} /> Add Server
         </AddBtn>
       </Header>
 
-      <List>
-        {servers.map((entry) => (
-          <ServerRow key={entry.name}>
-            <StatusDot status={getStatusForDot(entry)} size={6} />
+      {servers.length === 0 ? (
+        <Empty>
+          <EmptyIcon><Blocks size={20} /></EmptyIcon>
+          <EmptyTitle>No MCP servers configured</EmptyTitle>
+          <EmptyDesc>MCP servers give Claude access to external tools and data sources.</EmptyDesc>
+          <EmptyBtn onClick={() => setModal({ type: 'library' })}>
+            <Plus size={13} /> Browse Library
+          </EmptyBtn>
+        </Empty>
+      ) : (
+        <List>
+          {servers.map((entry) => (
+            <ServerRow key={entry.name}>
+              <StatusDot status={getStatusForDot(entry)} size={6} />
 
-            <ServerInfo>
-              <ServerName>
-                {entry.name}
-                <TransportBadge>{entry.transport}</TransportBadge>
-              </ServerName>
-              <ServerMeta>{getServerMeta(entry)}</ServerMeta>
-              {entry.error && <ServerError>{entry.error}</ServerError>}
-            </ServerInfo>
+              <ServerInfo>
+                <ServerName>
+                  {entry.name}
+                  <TransportBadge>{entry.transport}</TransportBadge>
+                </ServerName>
+                <ServerMeta>{getServerMeta(entry)}</ServerMeta>
+                {entry.error && <ServerError>{entry.error}</ServerError>}
+              </ServerInfo>
 
-            <Actions className="server-actions">
-              <IconBtn onClick={() => handleTest(entry.name)} title="Test connection">
-                <Zap size={13} />
-              </IconBtn>
-              <IconBtn onClick={() => setModal({ mode: 'edit', server: entry })} title="Edit">
-                <Pencil size={13} />
-              </IconBtn>
-              <IconBtn danger onClick={() => handleRemove(entry.name)} title="Remove">
-                <Trash2 size={13} />
-              </IconBtn>
-            </Actions>
+              <Actions className="server-actions">
+                <IconBtn onClick={() => handleTest(entry.name)} title="Test connection">
+                  <Zap size={13} />
+                </IconBtn>
+                <IconBtn onClick={() => setModal({ type: 'edit', server: entry })} title="Edit">
+                  <Pencil size={13} />
+                </IconBtn>
+                <IconBtn danger onClick={() => remove(entry.name)} title="Remove">
+                  <Trash2 size={13} />
+                </IconBtn>
+              </Actions>
 
-            <Toggle
-              active={entry.enabled}
-              onClick={() => toggle({ name: entry.name, enabled: !entry.enabled })}
-              title={entry.enabled ? 'Disable' : 'Enable'}
-            />
-          </ServerRow>
-        ))}
-      </List>
+              <Toggle
+                active={entry.enabled}
+                onClick={() => toggle({ name: entry.name, enabled: !entry.enabled })}
+                title={entry.enabled ? 'Disable' : 'Enable'}
+              />
+            </ServerRow>
+          ))}
+        </List>
+      )}
 
-      {modal && (
+      {modal?.type === 'library' && (
+        <McpLibraryModal
+          existingNames={serverNames}
+          onAdd={handleAdd}
+          onClose={() => setModal(null)}
+        />
+      )}
+
+      {modal?.type === 'edit' && (
         <McpServerModal
-          server={modal.mode === 'edit' ? modal.server : undefined}
-          onSave={handleSave}
+          server={modal.server}
+          onSave={handleUpdate}
           onClose={() => setModal(null)}
         />
       )}

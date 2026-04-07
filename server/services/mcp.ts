@@ -51,6 +51,11 @@ const DEFAULT_SERVERS: Record<string, McpServerConfig> = {
     command: 'npx',
     args: ['-y', '@modelcontextprotocol/server-filesystem', '.'],
   },
+  figma: {
+    command: 'npx',
+    args: ['-y', 'figma-developer-mcp', '--stdio'],
+    env: { FIGMA_API_KEY: '' },
+  },
 }
 
 /* ── Manager ── */
