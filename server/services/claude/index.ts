@@ -16,6 +16,7 @@ export interface SendPromptOptions {
   maxBudget?: number | null
   permissionMode?: string
   customInstructions?: string
+  mcpConfigPath?: string
 }
 
 export class ClaudeManager {

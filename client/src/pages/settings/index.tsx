@@ -1,16 +1,18 @@
 import { useState } from 'react'
 import { Box, Text, VStack, HStack } from '@chakra-ui/react'
-import { Palette, Sparkles, Code2, FolderCog, AlertTriangle } from 'lucide-react'
+import { Palette, Sparkles, Code2, FolderCog, Blocks, AlertTriangle } from 'lucide-react'
 import { AppearanceSettings } from '@/components/settings/sections/appearance-settings'
 import { AiSettings } from '@/components/settings/sections/ai-settings'
 import { EditorSettings } from '@/components/settings/sections/editor-settings'
 import { WorkspaceSettings } from '@/components/settings/sections/workspace-settings'
+import { McpSettings } from '@/components/settings/sections/mcp-settings'
 import { DangerZone } from '@/components/settings/sections/danger-zone'
 import { useProjectStore } from '@/stores/project-store'
 
 const sections = [
   { id: 'appearance', icon: Palette, label: 'Appearance', group: 'general' },
   { id: 'ai', icon: Sparkles, label: 'AI & Prompting', group: 'general' },
+  { id: 'mcp', icon: Blocks, label: 'MCP Servers', group: 'general' },
   { id: 'editor', icon: Code2, label: 'Editor', group: 'general' },
   { id: 'workspace', icon: FolderCog, label: 'Workspace', group: 'general' },
   { id: 'danger', icon: AlertTriangle, label: 'Danger Zone', group: 'danger' },
@@ -19,6 +21,7 @@ const sections = [
 const panels: Record<string, () => JSX.Element> = {
   appearance: AppearanceSettings,
   ai: AiSettings,
+  mcp: McpSettings,
   editor: EditorSettings,
   workspace: WorkspaceSettings,
   danger: DangerZone,

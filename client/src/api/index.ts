@@ -8,6 +8,7 @@ import { templates } from './modules/templates'
 import { health } from './modules/health'
 import { windowApi } from './modules/window'
 import { browse } from './modules/browse'
+import { mcp } from './modules/mcp'
 
 export const api = {
   projects,
@@ -20,4 +21,5 @@ export const api = {
   health,
   window: windowApi,
   browse,
+  mcp,
 } as const

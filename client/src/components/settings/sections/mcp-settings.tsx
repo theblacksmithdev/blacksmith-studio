@@ -1,0 +1,356 @@
+import { useState } from 'react'
+import styled from '@emotion/styled'
+import { Plus, Pencil, Trash2, Zap, Blocks } from 'lucide-react'
+import { useMcp } from '@/hooks/use-mcp'
+import { McpServerModal } from '../mcp-server-modal'
+import { StatusDot } from '@/components/runner/runner-primitives'
+import { MONO_FONT } from '@/components/runner/runner-primitives'
+import type { McpServerConfig, McpServerEntry } from '@/api/modules/mcp'
+
+/* ── Styled ── */
+
+const Wrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+`
+
+const Header = styled.div`
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 16px;
+`
+
+const HeaderText = styled.div`
+  flex: 1;
+`
+
+const Title = styled.div`
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--studio-text-primary);
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+`
+
+const Desc = styled.div`
+  font-size: 13px;
+  color: var(--studio-text-tertiary);
+`
+
+const AddBtn = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: none;
+  background: var(--studio-accent);
+  color: var(--studio-accent-fg);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+  margin-top: 2px;
+  transition: opacity 0.12s ease;
+  &:hover { opacity: 0.85; }
+`
+
+const List = styled.div`
+  border-radius: 10px;
+  border: 1px solid var(--studio-border);
+  overflow: hidden;
+  background: var(--studio-bg-sidebar);
+`
+
+const ServerRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--studio-border);
+  transition: background 0.1s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: var(--studio-bg-surface);
+    .server-actions { opacity: 1; }
+  }
+`
+
+const ServerInfo = styled.div`
+  flex: 1;
+  min-width: 0;
+`
+
+const ServerName = styled.div`
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--studio-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`
+
+const TransportBadge = styled.span`
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--studio-text-muted);
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--studio-bg-surface);
+  border: 1px solid var(--studio-border);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+`
+
+const ServerMeta = styled.div`
+  font-size: 11px;
+  color: var(--studio-text-tertiary);
+  font-family: ${MONO_FONT};
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`
+
+const ServerError = styled.div`
+  font-size: 11px;
+  color: var(--studio-error);
+  margin-top: 2px;
+`
+
+const Actions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.1s ease;
+  flex-shrink: 0;
+`
+
+const IconBtn = styled.button<{ danger?: boolean }>`
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--studio-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.1s ease;
+
+  &:hover {
+    background: ${({ danger }) => (danger ? 'rgba(239,68,68,0.08)' : 'var(--studio-bg-hover)')};
+    color: ${({ danger }) => (danger ? 'var(--studio-error)' : 'var(--studio-text-primary)')};
+  }
+`
+
+const Toggle = styled.button<{ active: boolean }>`
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  border: none;
+  background: ${({ active }) => (active ? 'var(--studio-accent)' : 'var(--studio-bg-hover)')};
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: ${({ active }) => (active ? '18px' : '2px')};
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: ${({ active }) => (active ? 'var(--studio-accent-fg)' : 'var(--studio-text-muted)')};
+    transition: left 0.2s ease;
+  }
+`
+
+const Empty = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  border-radius: 10px;
+  border: 1px solid var(--studio-border);
+  background: var(--studio-bg-sidebar);
+`
+
+const EmptyIcon = styled.div`
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--studio-bg-surface);
+  border: 1px solid var(--studio-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--studio-text-muted);
+`
+
+const EmptyTitle = styled.div`
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--studio-text-primary);
+`
+
+const EmptyDesc = styled.div`
+  font-size: 13px;
+  color: var(--studio-text-tertiary);
+  max-width: 300px;
+`
+
+const EmptyBtn = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--studio-border);
+  background: var(--studio-bg-main);
+  color: var(--studio-text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  margin-top: 4px;
+  &:hover { background: var(--studio-bg-surface); border-color: var(--studio-border-hover); color: var(--studio-text-primary); }
+`
+
+/* ── Helpers ── */
+
+function getServerMeta(entry: McpServerEntry): string {
+  if (entry.transport === 'http') return (entry.config as any).url || ''
+  const cfg = entry.config as any
+  return [cfg.command, ...(cfg.args || [])].join(' ')
+}
+
+function getStatusForDot(entry: McpServerEntry): 'running' | 'starting' | 'stopped' {
+  if (!entry.enabled) return 'stopped'
+  if (entry.status === 'error') return 'stopped'
+  return 'running'
+}
+
+/* ── Component ── */
+
+export function McpSettings() {
+  const { servers, add, update, remove, toggle, testConnection, isTesting } = useMcp()
+  const [modal, setModal] = useState<{ mode: 'add' } | { mode: 'edit'; server: McpServerEntry } | null>(null)
+  const [testing, setTesting] = useState<string | null>(null)
+
+  const handleSave = async (name: string, config: McpServerConfig) => {
+    if (modal?.mode === 'edit') {
+      await update({ name, config })
+    } else {
+      await add({ name, config })
+    }
+    setModal(null)
+  }
+
+  const handleTest = async (name: string) => {
+    setTesting(name)
+    await testConnection(name)
+    setTesting(null)
+  }
+
+  const handleRemove = async (name: string) => {
+    await remove(name)
+  }
+
+  if (servers.length === 0) {
+    return (
+      <Wrap>
+        <Header>
+          <HeaderText>
+            <Title>MCP Servers</Title>
+            <Desc>Configure Model Context Protocol servers that extend Claude's capabilities.</Desc>
+          </HeaderText>
+        </Header>
+        <Empty>
+          <EmptyIcon><Blocks size={20} /></EmptyIcon>
+          <EmptyTitle>No MCP servers configured</EmptyTitle>
+          <EmptyDesc>MCP servers give Claude access to external tools and data sources.</EmptyDesc>
+          <EmptyBtn onClick={() => setModal({ mode: 'add' })}>
+            <Plus size={13} /> Add Server
+          </EmptyBtn>
+        </Empty>
+        {modal && (
+          <McpServerModal
+            server={modal.mode === 'edit' ? modal.server : undefined}
+            onSave={handleSave}
+            onClose={() => setModal(null)}
+          />
+        )}
+      </Wrap>
+    )
+  }
+
+  return (
+    <Wrap>
+      <Header>
+        <HeaderText>
+          <Title>MCP Servers</Title>
+          <Desc>Configure Model Context Protocol servers that extend Claude's capabilities.</Desc>
+        </HeaderText>
+        <AddBtn onClick={() => setModal({ mode: 'add' })}>
+          <Plus size={13} /> Add Server
+        </AddBtn>
+      </Header>
+
+      <List>
+        {servers.map((entry) => (
+          <ServerRow key={entry.name}>
+            <StatusDot status={getStatusForDot(entry)} size={6} />
+
+            <ServerInfo>
+              <ServerName>
+                {entry.name}
+                <TransportBadge>{entry.transport}</TransportBadge>
+              </ServerName>
+              <ServerMeta>{getServerMeta(entry)}</ServerMeta>
+              {entry.error && <ServerError>{entry.error}</ServerError>}
+            </ServerInfo>
+
+            <Actions className="server-actions">
+              <IconBtn onClick={() => handleTest(entry.name)} title="Test connection">
+                <Zap size={13} />
+              </IconBtn>
+              <IconBtn onClick={() => setModal({ mode: 'edit', server: entry })} title="Edit">
+                <Pencil size={13} />
+              </IconBtn>
+              <IconBtn danger onClick={() => handleRemove(entry.name)} title="Remove">
+                <Trash2 size={13} />
+              </IconBtn>
+            </Actions>
+
+            <Toggle
+              active={entry.enabled}
+              onClick={() => toggle({ name: entry.name, enabled: !entry.enabled })}
+              title={entry.enabled ? 'Disable' : 'Enable'}
+            />
+          </ServerRow>
+        ))}
+      </List>
+
+      {modal && (
+        <McpServerModal
+          server={modal.mode === 'edit' ? modal.server : undefined}
+          onSave={handleSave}
+          onClose={() => setModal(null)}
+        />
+      )}
+    </Wrap>
+  )
+}

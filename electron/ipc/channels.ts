@@ -41,6 +41,14 @@ export const RUNNER_STOP = 'runner:stop'
 export const CLAUDE_SEND_PROMPT = 'claude:sendPrompt'
 export const CLAUDE_CANCEL = 'claude:cancel'
 
+// MCP
+export const MCP_LIST = 'mcp:list'
+export const MCP_ADD = 'mcp:add'
+export const MCP_UPDATE = 'mcp:update'
+export const MCP_REMOVE = 'mcp:remove'
+export const MCP_TOGGLE = 'mcp:toggle'
+export const MCP_TEST = 'mcp:test'
+
 // Health
 export const HEALTH_CHECK = 'health:check'
 
@@ -71,6 +79,7 @@ export const INVOKE_CHANNELS = [
   SETTINGS_GET_ALL, SETTINGS_UPDATE,
   RUNNER_GET_STATUS, RUNNER_START, RUNNER_STOP,
   CLAUDE_SEND_PROMPT, CLAUDE_CANCEL,
+  MCP_LIST, MCP_ADD, MCP_UPDATE, MCP_REMOVE, MCP_TOGGLE, MCP_TEST,
   HEALTH_CHECK,
 ] as const
 

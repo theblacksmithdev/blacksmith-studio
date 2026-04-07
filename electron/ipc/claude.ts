@@ -4,6 +4,7 @@ import type { ClaudeManager } from '../../server/services/claude/index.js'
 import type { SessionManager } from '../../server/services/sessions.js'
 import type { ProjectManager } from '../../server/services/projects.js'
 import type { SettingsManager } from '../../server/services/settings.js'
+import type { McpManager } from '../../server/services/mcp.js'
 import {
   CLAUDE_SEND_PROMPT, CLAUDE_CANCEL,
   CLAUDE_ON_MESSAGE, CLAUDE_ON_TOOL_USE, CLAUDE_ON_DONE, CLAUDE_ON_ERROR,
@@ -17,6 +18,7 @@ export function setupClaudeIPC(
   sessionManager: SessionManager,
   projectManager: ProjectManager,
   settingsManager: SettingsManager,
+  mcpManager: McpManager,
 ) {
   ipcMain.handle(CLAUDE_SEND_PROMPT, async (_e, data: { sessionId: string; prompt: string }) => {
     const { sessionId, prompt } = data
@@ -59,6 +61,10 @@ export function setupClaudeIPC(
         maxBudget: allSettings['ai.maxBudget'] || undefined,
         permissionMode: allSettings['ai.permissionMode'] || 'bypassPermissions',
         customInstructions: allSettings['ai.customInstructions'] || undefined,
+        mcpConfigPath: mcpManager.getEnabledConfigPath(
+          projectPath,
+          Array.isArray(allSettings['mcp.disabledServers']) ? allSettings['mcp.disabledServers'] : [],
+        ),
       }, (chunk) => {
         if (chunk.type === 'assistant') {
           const textBlocks = (chunk.message?.content || []).filter((b: any) => b.type === 'text')

@@ -8,6 +8,7 @@ import { SessionManager } from '../server/services/sessions.js'
 import { ClaudeManager } from '../server/services/claude/index.js'
 import { SettingsManager } from '../server/services/settings.js'
 import { RunnerManager } from '../server/services/runner/index.js'
+import { McpManager } from '../server/services/mcp.js'
 import { closeDatabase } from '../server/db/index.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -119,6 +120,7 @@ app.whenReady().then(async () => {
   const sessionManager = new SessionManager()
   const settingsManager = new SettingsManager()
   const runnerManager = new RunnerManager()
+  const mcpManager = new McpManager()
 
   // Check Claude availability
   const claudeStatus = await claudeManager.checkInstalled()
@@ -140,6 +142,7 @@ app.whenReady().then(async () => {
     claudeManager,
     settingsManager,
     runnerManager,
+    mcpManager,
   )
 
   app.on('activate', () => {

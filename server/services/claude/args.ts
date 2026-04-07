@@ -9,6 +9,7 @@ export interface ClaudeArgsOptions {
   maxBudget?: number | null
   permissionMode?: string
   customInstructions?: string
+  mcpConfigPath?: string
 }
 
 /**
@@ -25,6 +26,7 @@ export function buildClaudeArgs(options: ClaudeArgsOptions): string[] {
     maxBudget,
     permissionMode = 'bypassPermissions',
     customInstructions,
+    mcpConfigPath,
   } = options
 
   // For first message, prepend project context so Claude doesn't need to scan
@@ -59,6 +61,10 @@ export function buildClaudeArgs(options: ClaudeArgsOptions): string[] {
 
   if (maxBudget != null && maxBudget > 0) {
     args.push('--max-budget-usd', String(maxBudget))
+  }
+
+  if (mcpConfigPath) {
+    args.push('--mcp-config', mcpConfigPath)
   }
 
   return args
