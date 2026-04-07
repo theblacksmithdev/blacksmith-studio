@@ -31,11 +31,18 @@ const Stack = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 32px;
+  gap: 24px;
   width: 100%;
-  max-width: 720px;
+  max-width: 620px;
   padding: 40px 24px;
   margin: 0 auto;
+`
+
+const Divider = styled.div`
+  width: 40px;
+  height: 1px;
+  background: var(--studio-border);
+  margin: 4px 0;
 `
 
 export function HomeView() {
@@ -62,11 +69,16 @@ export function HomeView() {
         <Stack>
           <HomeHero />
           <ChatInput onSend={handleSend} onCancel={() => {}} isStreaming={isStreaming} />
-          <RecentConversations
-            sessions={sessions}
-            onSelect={handleSelectSession}
-          />
-          <QuickActions onSend={handleSend} onNavigate={navigate} />
+          <QuickActions onSend={handleSend} />
+          {sessions.length > 0 && (
+            <>
+              <Divider />
+              <RecentConversations
+                sessions={sessions}
+                onSelect={handleSelectSession}
+              />
+            </>
+          )}
         </Stack>
       </Content>
     </Page>

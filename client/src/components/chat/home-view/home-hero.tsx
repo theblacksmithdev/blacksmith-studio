@@ -1,42 +1,47 @@
 import styled from '@emotion/styled'
-import { Anvil } from 'lucide-react'
+import { useProjectStore } from '@/stores/project-store'
 
-const IconWrapper = styled.div`
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  background: var(--studio-accent);
+const Wrapper = styled.div`
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  margin-bottom: 28px;
+  gap: 6px;
 `
 
-const Title = styled.h1`
-  font-size: 28px;
+const Greeting = styled.h1`
+  font-size: 26px;
   font-weight: 600;
   letter-spacing: -0.03em;
   color: var(--studio-text-primary);
   text-align: center;
-  line-height: 1.3;
-  margin-bottom: 8px;
+  line-height: 1.2;
 `
 
-const Subtitle = styled.p`
-  font-size: 15px;
+const ProjectName = styled.span`
   color: var(--studio-text-tertiary);
-  text-align: center;
-  line-height: 1.6;
 `
+
+function getGreeting(): string {
+  const hour = new Date().getHours()
+  if (hour < 12) return 'Good morning'
+  if (hour < 18) return 'Good afternoon'
+  return 'Good evening'
+}
 
 export function HomeHero() {
+  const project = useProjectStore((s) => s.activeProject)
+
   return (
-    <>
-      <IconWrapper>
-        <Anvil size={26} color="var(--studio-accent-fg)" />
-      </IconWrapper>
-      <Title>What are we building today?</Title>
-      <Subtitle>Describe your idea or pick a starting point below.</Subtitle>
-    </>
+    <Wrapper>
+      <Greeting>
+        {getGreeting()}
+        {project && (
+          <>
+            ,{' '}
+            <ProjectName>{project.name}</ProjectName>
+          </>
+        )}
+      </Greeting>
+    </Wrapper>
   )
 }
