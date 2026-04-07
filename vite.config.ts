@@ -11,6 +11,7 @@ export default defineConfig({
     },
     dedupe: ['react', 'react-dom'],
   },
+  base: './',
   build: {
     outDir: '../dist/client',
     emptyOutDir: true,
