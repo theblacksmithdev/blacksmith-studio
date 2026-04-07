@@ -5,20 +5,11 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { FolderOpen, Anvil, Package, GitBranch, Folder } from 'lucide-react'
-import { api } from '@/api/client'
 import { useProjects } from '@/hooks/use-projects'
+import { useProjectValidation } from '@/hooks/use-project-validation'
 import { FormField, inputCss } from '@/components/forms/form-field'
 import { FolderPicker } from './folder-picker'
 import { isElectron, selectFolderNative } from '@/lib/electron'
-
-interface ValidationResult {
-  valid: boolean
-  path: string
-  name: string
-  isBlacksmithProject: boolean
-  hasPackageJson: boolean
-  hasGit: boolean
-}
 
 const schema = z.object({
   projectPath: z.string().min(1, 'Select a project folder'),
@@ -41,7 +32,7 @@ export function ImportExisting() {
       setPickerOpen(true)
     }
   }
-  const [validation, setValidation] = useState<ValidationResult | null>(null)
+  const { validate, validation, isValidating } = useProjectValidation()
   const [registering, setRegistering] = useState(false)
 
   const {
@@ -60,14 +51,11 @@ export function ImportExisting() {
   const handleFolderSelected = async (path: string) => {
     setValue('projectPath', path, { shouldValidate: true })
     try {
-      const result = await api.invoke<ValidationResult>('projects:validate', { path })
-      setValidation(result)
+      const result = await validate(path)
       if (result.name) {
         setValue('projectName', result.name, { shouldValidate: true })
       }
-    } catch {
-      setValidation(null)
-    }
+    } catch { /* validation failed */ }
   }
 
   const onSubmit = async (data: FormData) => {

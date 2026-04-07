@@ -8,7 +8,7 @@ import {
   X, FolderOpen, Plus, ArrowLeft, Anvil, Loader2, Check,
   AlertCircle, Package, GitBranch, Folder,
 } from 'lucide-react'
-import { api } from '@/api/client'
+import { api } from '@/api'
 import { useProjects } from '@/hooks/use-projects'
 import { FormField, inputCss, selectCss } from '@/components/forms/form-field'
 import { FolderPicker } from '@/pages/projects/add/folder-picker'
@@ -248,7 +248,7 @@ function ImportStep({ onClose }: { onClose: () => void }) {
   const handleFolderSelected = async (path: string) => {
     setValue('projectPath', path, { shouldValidate: true })
     try {
-      const result = await api.invoke<ValidationResult>('projects:validate', { path })
+      const result = await api.projects.validate({ path })
       setValidation(result)
       if (result.name) setValue('projectName', result.name, { shouldValidate: true })
     } catch {
@@ -400,17 +400,17 @@ function CreateStep({ onClose }: { onClose: () => void }) {
     if (state !== 'creating') return
 
     const unsubs = [
-      api.subscribe('projects:onCreateOutput', (data: { line: string }) => {
+      api.projects.onCreateOutput((data) => {
         setOutputLines((prev) => [...prev, data.line])
       }),
-      api.subscribe('projects:onCreateDone', (data: { project: { id: string } }) => {
+      api.projects.onCreateDone((data) => {
         setState('success')
         setTimeout(() => {
           onClose()
           navigate(projectHome(data.project.id))
         }, 1000)
       }),
-      api.subscribe('projects:onCreateError', (data: { error: string }) => {
+      api.projects.onCreateError((data) => {
         setState('error')
         setServerError(data.error)
       }),
@@ -429,7 +429,7 @@ function CreateStep({ onClose }: { onClose: () => void }) {
     setServerError('')
     setOutputLines([])
     try {
-      await api.invoke('projects:create', { ...data, ai: true })
+      await api.projects.create({ ...data, ai: true })
     } catch (err: any) {
       setState('error')
       setServerError(err.message || 'Failed to start project creation')

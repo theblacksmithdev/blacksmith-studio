@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { Sun, Moon, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useUiStore } from '@/stores/ui-store'
 import { useThemeMode } from '@/hooks/use-theme-mode'
-import { useWindowState } from '@/api/hooks'
+import { useWindowState } from '@/hooks/use-window'
 import { Tooltip } from '@/components/shared/tooltip'
 
 const Bar = styled.div<{ fullscreen: boolean }>`

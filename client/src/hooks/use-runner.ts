@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react'
-import { api } from '@/api/client'
+import { api } from '@/api'
 import { useRunnerStore } from '@/stores/runner-store'
 
 /**
@@ -11,16 +11,15 @@ export function useRunnerListener() {
   const store = useRunnerStore
 
   useEffect(() => {
-    // Sync current status from the main process on mount
-    api.invoke('runner:getStatus').then((status: any) => {
-      store.getState().setStatus(status)
+    api.runner.getStatus().then((status) => {
+      store.getState().setStatus(status as any)
     })
 
     const unsubs = [
-      api.subscribe('runner:onStatus', (data: any) => {
-        store.getState().setStatus(data)
+      api.runner.onStatus((data) => {
+        store.getState().setStatus(data as any)
       }),
-      api.subscribe('runner:onOutput', (data: { source: 'backend' | 'frontend'; line: string }) => {
+      api.runner.onOutput((data) => {
         store.getState().addLog({
           source: data.source,
           line: data.line,
@@ -39,11 +38,11 @@ export function useRunnerListener() {
  */
 export function useRunner() {
   const start = useCallback((target: 'backend' | 'frontend' | 'all') => {
-    api.invoke('runner:start', { target })
+    api.runner.start({ target })
   }, [])
 
   const stop = useCallback((target: 'backend' | 'frontend' | 'all') => {
-    api.invoke('runner:stop', { target })
+    api.runner.stop({ target })
   }, [])
 
   return { start, stop }

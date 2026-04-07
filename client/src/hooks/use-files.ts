@@ -1,40 +1,31 @@
-import { useQuery } from '@tanstack/react-query'
-import { api } from '@/api/client'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { api } from '@/api'
 import { queryKeys } from '@/api/query-keys'
+import { queryClient as globalQueryClient } from '@/api/query-client'
 import { useFileStore } from '@/stores/file-store'
-import type { FileNode } from '@/types'
-
-// In-memory content cache to avoid re-fetching files
-const contentCache = new Map<string, { content: string; language: string }>()
 
 /** Clear the file content cache. Call when switching projects. */
 export function clearFileContentCache() {
-  contentCache.clear()
+  globalQueryClient.removeQueries({ queryKey: ['files', 'content'] })
 }
 
 export function useFiles() {
+  const queryClient = useQueryClient()
   const { openFile, setTabContent } = useFileStore()
 
   const treeQuery = useQuery({
     queryKey: queryKeys.files,
-    queryFn: () => api.invoke<FileNode>('files:tree'),
+    queryFn: () => api.files.tree(),
   })
 
   const fetchFileContent = async (filePath: string) => {
     openFile(filePath)
-
-    // Serve from cache instantly
-    const cached = contentCache.get(filePath)
-    if (cached) {
-      setTabContent(filePath, cached.content, cached.language)
-      return
-    }
-
     try {
-      const data = await api.invoke<{ content: string; language: string; size: number }>(
-        'files:content', { path: filePath },
-      )
-      contentCache.set(filePath, { content: data.content, language: data.language })
+      const data = await queryClient.fetchQuery({
+        queryKey: queryKeys.fileContent(filePath),
+        queryFn: () => api.files.content({ path: filePath }),
+        staleTime: Infinity,
+      })
       setTabContent(filePath, data.content, data.language)
     } catch {
       setTabContent(filePath, '// Failed to load file', 'text')

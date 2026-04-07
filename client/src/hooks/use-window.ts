@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import { api } from '../client'
+import { api } from '@/api'
 
 export function useWindowState() {
   const [isFullscreen, setIsFullscreen] = useState(false)
 
   useEffect(() => {
-    const unsub = api.subscribe('window:onFullscreen', (fullscreen: boolean) => {
+    const unsub = api.window.onFullscreen((fullscreen) => {
       setIsFullscreen(fullscreen)
     })
     return unsub

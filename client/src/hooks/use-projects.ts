@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '@/api/client'
+import { api } from '@/api'
 import { queryKeys } from '@/api/query-keys'
 import { useProjectStore, type Project } from '@/stores/project-store'
 import { resetProjectStores } from '@/stores/reset'
@@ -10,13 +10,13 @@ export function useProjects() {
 
   const projectsQuery = useQuery({
     queryKey: queryKeys.projects,
-    queryFn: () => api.invoke<Project[]>('projects:list'),
+    queryFn: () => api.projects.list(),
   })
 
   const activeQuery = useQuery({
     queryKey: queryKeys.activeProject,
     queryFn: async () => {
-      const project = await api.invoke<Project | null>('projects:getActive')
+      const project = await api.projects.getActive()
       setActiveProject(project)
       return project
     },
@@ -24,7 +24,7 @@ export function useProjects() {
 
   const registerMutation = useMutation({
     mutationFn: (data: { path: string; name?: string }) =>
-      api.invoke<Project>('projects:register', data),
+      api.projects.register(data),
     onSuccess: (project) => {
       resetProjectStores()
       queryClient.invalidateQueries({ queryKey: queryKeys.projects })
@@ -36,7 +36,7 @@ export function useProjects() {
 
   const activateMutation = useMutation({
     mutationFn: (id: string) =>
-      api.invoke<Project>('projects:activate', { id }),
+      api.projects.activate({ id }),
     onSuccess: (project) => {
       resetProjectStores()
       queryClient.invalidateQueries({ queryKey: queryKeys.activeProject })
@@ -47,7 +47,7 @@ export function useProjects() {
 
   const removeMutation = useMutation({
     mutationFn: ({ id, hard }: { id: string; hard?: boolean }) =>
-      api.invoke('projects:remove', { id, hard }),
+      api.projects.remove({ id, hard }),
     onSuccess: () => {
       resetProjectStores()
       setActiveProject(null)

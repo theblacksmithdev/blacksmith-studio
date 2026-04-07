@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { FolderOpen, Anvil, Loader2, Check, AlertCircle } from 'lucide-react'
-import { api } from '@/api/client'
+import { api } from '@/api'
 import { FormField, inputCss, selectCss } from '@/components/forms/form-field'
 import { FolderPicker } from './folder-picker'
 import { isElectron, selectFolderNative } from '@/lib/electron'
@@ -62,7 +62,7 @@ export function CreateNew() {
     setState('creating')
     setServerError('')
     try {
-      const result = await api.invoke<CreateResult>('projects:create', { ...data, ai: true })
+      const result = await api.projects.create({ ...data, ai: true })
       setState('success')
       setTimeout(() => navigate(`/${result.project.id}`), 1000)
     } catch (err: any) {

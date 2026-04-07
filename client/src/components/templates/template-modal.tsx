@@ -2,7 +2,8 @@ import { useState } from 'react'
 import {
   Dialog, Field, Input, Textarea, NativeSelect, Button, VStack, Box, Text,
 } from '@chakra-ui/react'
-import { api } from '@/api/client'
+import { useMutation } from '@tanstack/react-query'
+import { api } from '@/api'
 import type { PromptTemplate } from '@/types'
 
 interface TemplateModalProps {
@@ -15,15 +16,17 @@ interface TemplateModalProps {
 export function TemplateModal({ template, isOpen, onClose, onSubmit }: TemplateModalProps) {
   const [values, setValues] = useState<Record<string, string>>({})
 
-  const handleSubmit = async () => {
-    const data = await api.post<{ prompt: string }>('/templates/interpolate', {
-      templateId: template.id,
-      values,
-    })
-    onSubmit(data.prompt)
-    onClose()
-    setValues({})
-  }
+  const interpolateMutation = useMutation({
+    mutationFn: (vals: Record<string, string>) =>
+      api.templates.interpolate({ templateId: template.id, values: vals }),
+    onSuccess: (data) => {
+      onSubmit(data.prompt)
+      onClose()
+      setValues({})
+    },
+  })
+
+  const handleSubmit = () => interpolateMutation.mutate(values)
 
   const allRequiredFilled = template.fields
     .filter((f) => f.required)

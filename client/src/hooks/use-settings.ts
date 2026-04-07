@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '@/api/client'
+import { api } from '@/api'
 import { queryKeys } from '@/api/query-keys'
 import { useProjectStore } from '@/stores/project-store'
 import { useCallback } from 'react'
@@ -10,13 +10,13 @@ export function useSettings() {
 
   const { data: settings = {} } = useQuery({
     queryKey: queryKeys.settings,
-    queryFn: () => api.invoke<Record<string, any>>('settings:getAll'),
+    queryFn: () => api.settings.getAll(),
     enabled: !!activeProject,
   })
 
   const mutation = useMutation({
     mutationFn: (pair: { key: string; value: any }) =>
-      api.invoke<Record<string, any>>('settings:update', { [pair.key]: pair.value }),
+      api.settings.update({ [pair.key]: pair.value }),
     onMutate: async ({ key, value }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.settings })
       const previous = queryClient.getQueryData<Record<string, any>>(queryKeys.settings)

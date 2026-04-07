@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { TemplateCard } from './template-card'
 import { TemplateModal } from './template-modal'
 import { PageContainer } from '@/components/shared/page-container'
-import { api } from '@/api/client'
+import { api } from '@/api'
 import { queryKeys } from '@/api/query-keys'
 import { useClaude } from '@/hooks/use-claude'
 import { useSessions } from '@/hooks/use-sessions'
@@ -17,7 +17,7 @@ import type { PromptTemplate } from '@/types'
 export function TemplateGrid() {
   const { data: templates = [] } = useQuery({
     queryKey: queryKeys.templates,
-    queryFn: () => api.get<PromptTemplate[]>('/templates'),
+    queryFn: () => api.templates.list(),
   })
   const [selected, setSelected] = useState<PromptTemplate | null>(null)
   const { open, onOpen, onClose } = useDisclosure()

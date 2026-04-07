@@ -1,15 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '@/api/client'
+import { api } from '@/api'
 import { queryKeys } from '@/api/query-keys'
 import { useSessionStore } from '@/stores/session-store'
 import { useProjectStore } from '@/stores/project-store'
 import { useChatStore } from '@/stores/chat-store'
 import type { Session, SessionSummary } from '@/types'
-
-interface PaginatedSessions {
-  items: SessionSummary[]
-  total: number
-}
 
 interface UseSessionsOptions {
   limit?: number
@@ -25,12 +20,12 @@ export function useSessions(options?: UseSessionsOptions) {
 
   const sessionsQuery = useQuery({
     queryKey: [...queryKeys.sessions, { limit, offset }],
-    queryFn: () => api.invoke<PaginatedSessions>('sessions:list', { limit, offset }),
+    queryFn: () => api.sessions.list({ limit, offset }),
     enabled: !!activeProject,
   })
 
   const createMutation = useMutation({
-    mutationFn: (name?: string) => api.invoke<Session>('sessions:create', { name }),
+    mutationFn: (name?: string) => api.sessions.create({ name }),
     onSuccess: (session) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.sessions })
       setActiveSession(session.id)
@@ -39,14 +34,14 @@ export function useSessions(options?: UseSessionsOptions) {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => api.invoke('sessions:delete', { id }),
+    mutationFn: (id: string) => api.sessions.delete({ id }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.sessions })
     },
   })
 
   const loadSession = async (id: string) => {
-    const session = await api.invoke<Session>('sessions:get', { id })
+    const session = await api.sessions.get({ id })
     setActiveSession(session.id)
     loadMessages(session.messages)
   }
