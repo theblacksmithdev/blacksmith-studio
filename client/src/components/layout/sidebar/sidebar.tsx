@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useProjectStore } from '@/stores/project-store'
 import { useUiStore } from '@/stores/ui-store'
 import { useProjects } from '@/hooks/use-projects'
+import { SidebarTooltip } from './sidebar-tooltip'
 import { NavButton, NavLabel } from './nav-item'
 import { projectNav, bottomNav } from './nav-config'
 import { RunnerBadge } from './runner-badge'
@@ -61,20 +62,23 @@ export function Sidebar() {
     <Nav expanded={expanded}>
       {isInsideProject && pid ? (
         <>
-          <NewChatButton expanded={expanded} />
+          <SidebarTooltip label="New Chat" visible={!expanded}>
+            <NewChatButton expanded={expanded} />
+          </SidebarTooltip>
 
           <Section>
             {projectNav.map(({ id, icon: Icon, label, path, match }) => (
-              <NavButton
-                key={id}
-                active={isActive(match)}
-                expanded={expanded}
-                onClick={() => navigate(path(pid))}
-              >
-                <Icon size={18} style={{ flexShrink: 0 }} />
-                <NavLabel visible={expanded}>{label}</NavLabel>
-                {id === 'run' && <RunnerBadge />}
-              </NavButton>
+              <SidebarTooltip key={id} label={label} visible={!expanded}>
+                <NavButton
+                  active={isActive(match)}
+                  expanded={expanded}
+                  onClick={() => navigate(path(pid))}
+                >
+                  <Icon size={18} style={{ flexShrink: 0 }} />
+                  <NavLabel visible={expanded}>{label}</NavLabel>
+                  {id === 'run' && <RunnerBadge />}
+                </NavButton>
+              </SidebarTooltip>
             ))}
           </Section>
 
@@ -82,15 +86,17 @@ export function Sidebar() {
 
           <Section>
             {bottomNav.map(({ id, icon: Icon, label, path, match }) => (
-              <NavButton
-                key={id}
-                active={isActive(match)}
-                expanded={expanded}
-                onClick={() => navigate(path(pid))}
-              >
-                <Icon size={18} style={{ flexShrink: 0 }} />
-                <NavLabel visible={expanded}>{label}</NavLabel>
-              </NavButton>
+              <SidebarTooltip key={id} label={label} visible={!expanded}>
+                <NavButton
+                  active={isActive(match)}
+                  expanded={expanded}
+                  onClick={() => navigate(path(pid))}
+                >
+                  <Icon size={18} style={{ flexShrink: 0 }} />
+                  <NavLabel visible={expanded}>{label}</NavLabel>
+                  {id === 'run' && <RunnerBadge />}
+                </NavButton>
+              </SidebarTooltip>
             ))}
           </Section>
         </>
@@ -100,7 +106,9 @@ export function Sidebar() {
 
       <Divider />
 
-      <UserMenu expanded={expanded} />
+      <SidebarTooltip label="Menu" visible={!expanded}>
+        <UserMenu expanded={expanded} />
+      </SidebarTooltip>
     </Nav>
   )
 }

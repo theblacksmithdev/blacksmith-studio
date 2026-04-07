@@ -2,9 +2,9 @@ import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import styled from '@emotion/styled'
 import { useNavigate } from 'react-router-dom'
-import { LogOut, User, HelpCircle, Keyboard } from 'lucide-react'
+import { LogOut, User, HelpCircle, Keyboard, Settings } from 'lucide-react'
 import { useProjectStore } from '@/stores/project-store'
-import { Path } from '@/router/paths'
+import { Path, settingsPath } from '@/router/paths'
 
 const Wrap = styled.div`
   position: relative;
@@ -152,6 +152,16 @@ export function UserMenu({ expanded }: UserMenuProps) {
         <>
           <Backdrop onClick={() => setOpen(false)} />
           <Popover style={{ left: pos.left, bottom: pos.bottom }}>
+            {pid && (
+              <>
+                <MenuItem onClick={() => handleAction(() => navigate(settingsPath(pid)))}>
+                  <Settings size={14} />
+                  Settings
+                </MenuItem>
+                <MenuDivider />
+              </>
+            )}
+
             <MenuItem onClick={() => handleAction(() => window.open('https://github.com/anthropics/claude-code/issues', '_blank'))}>
               <HelpCircle size={14} />
               Help & Feedback
