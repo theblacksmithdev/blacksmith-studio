@@ -102,7 +102,7 @@ export default function SettingsPage() {
         <Box css={{ flex: 1 }} />
 
         {/* Danger zone — at the bottom */}
-        <VStack gap={0} align="stretch" css={{ padding: '0 8px', borderTop: '1px solid var(--studio-border)', paddingTop: '8px', marginTop: '8px' }}>
+        <VStack gap={0} align="stretch" css={{ padding: '0 8px', marginTop: '8px' }}>
           {dangerSections.map(({ id, icon: Icon, label }) => {
             const isActive = active === id
             return (
