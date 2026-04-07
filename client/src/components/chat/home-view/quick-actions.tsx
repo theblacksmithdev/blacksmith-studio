@@ -1,4 +1,4 @@
-import { Box, Text, HStack } from '@chakra-ui/react'
+import styled from '@emotion/styled'
 import {
   ArrowRight,
   Code,
@@ -51,6 +51,117 @@ const quickActions = [
   },
 ]
 
+const Container = styled.div`
+  width: 100%;
+`
+
+const SectionLabel = styled.div`
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--studio-text-tertiary);
+  margin-bottom: 14px;
+`
+
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--studio-border);
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--studio-border);
+`
+
+const ActionButton = styled.button`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 18px;
+  background: var(--studio-bg-sidebar);
+  color: var(--studio-text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  border: none;
+
+  &:hover {
+    background: var(--studio-bg-surface);
+    color: var(--studio-text-primary);
+
+    .action-icon {
+      color: var(--studio-text-primary);
+      border-color: var(--studio-border-hover);
+    }
+
+    .action-arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+`
+
+const ActionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+`
+
+const IconBox = styled.div`
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--studio-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--studio-text-tertiary);
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+`
+
+const ActionArrow = styled.div`
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all 0.15s ease;
+  color: var(--studio-text-tertiary);
+`
+
+const ActionLabel = styled.div`
+  font-size: 13px;
+  font-weight: 500;
+  color: inherit;
+  margin-bottom: 2px;
+`
+
+const ActionDesc = styled.div`
+  font-size: 12px;
+  color: var(--studio-text-tertiary);
+`
+
+const TemplatesLink = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 20px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: var(--studio-text-tertiary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: var(--studio-text-primary);
+    background: var(--studio-border);
+  }
+`
+
 interface QuickActionsProps {
   onSend: (prompt: string) => void
   onNavigate: (path: string) => void
@@ -58,131 +169,35 @@ interface QuickActionsProps {
 
 export function QuickActions({ onSend, onNavigate }: QuickActionsProps) {
   const activeProject = useProjectStore((s) => s.activeProject)
+
   return (
-    <Box css={{ width: '100%' }}>
-      <Text
-        css={{
-          fontSize: '11px',
-          fontWeight: 600,
-          textTransform: 'uppercase',
-          letterSpacing: '0.08em',
-          color: 'var(--studio-text-tertiary)',
-          marginBottom: '14px',
-        }}
-      >
-        Quick start
-      </Text>
+    <Container>
+      <SectionLabel>Quick start</SectionLabel>
 
-      <Box
-        css={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '1px',
-          background: 'var(--studio-border)',
-          borderRadius: '14px',
-          overflow: 'hidden',
-          border: '1px solid var(--studio-border)',
-        }}
-      >
+      <Grid>
         {quickActions.map(({ icon: Icon, label, desc, prompt }) => (
-          <Box
-            key={label}
-            as="button"
-            onClick={() => onSend(prompt)}
-            css={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              padding: '20px 18px',
-              background: 'var(--studio-bg-sidebar)',
-              color: 'var(--studio-text-secondary)',
-              fontSize: '13px',
-              cursor: 'pointer',
-              transition: 'all 0.15s ease',
-              textAlign: 'left',
-              border: 'none',
-              '&:hover': {
-                background: 'var(--studio-bg-surface)',
-                color: 'var(--studio-text-primary)',
-                '& .action-icon': {
-                  color: 'var(--studio-text-primary)',
-                  borderColor: 'var(--studio-border-hover)',
-                },
-                '& .action-arrow': {
-                  opacity: 1,
-                  transform: 'translateX(0)',
-                },
-              },
-            }}
-          >
-            <HStack gap={2} justify="space-between" w="full">
-              <Box
-                className="action-icon"
-                css={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--studio-border)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'var(--studio-text-tertiary)',
-                  transition: 'all 0.15s ease',
-                  flexShrink: 0,
-                }}
-              >
+          <ActionButton key={label} onClick={() => onSend(prompt)}>
+            <ActionHeader>
+              <IconBox className="action-icon">
                 <Icon size={15} />
-              </Box>
-              <Box
-                className="action-arrow"
-                css={{
-                  opacity: 0,
-                  transform: 'translateX(-4px)',
-                  transition: 'all 0.15s ease',
-                  color: 'var(--studio-text-tertiary)',
-                }}
-              >
+              </IconBox>
+              <ActionArrow className="action-arrow">
                 <ArrowRight size={13} />
-              </Box>
-            </HStack>
-            <Box>
-              <Text css={{ fontSize: '13px', fontWeight: 500, color: 'inherit', marginBottom: '2px' }}>
-                {label}
-              </Text>
-              <Text css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)' }}>
-                {desc}
-              </Text>
-            </Box>
-          </Box>
+              </ActionArrow>
+            </ActionHeader>
+            <div>
+              <ActionLabel>{label}</ActionLabel>
+              <ActionDesc>{desc}</ActionDesc>
+            </div>
+          </ActionButton>
         ))}
-      </Box>
+      </Grid>
 
-      <Box
-        as="button"
-        onClick={() => activeProject && onNavigate(templatesPath(activeProject.id))}
-        css={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-          marginTop: '20px',
-          padding: '8px 14px',
-          borderRadius: '8px',
-          background: 'transparent',
-          border: 'none',
-          color: 'var(--studio-text-tertiary)',
-          fontSize: '13px',
-          cursor: 'pointer',
-          transition: 'all 0.15s ease',
-          '&:hover': {
-            color: 'var(--studio-text-primary)',
-            background: 'var(--studio-border)',
-          },
-        }}
-      >
+      <TemplatesLink onClick={() => activeProject && onNavigate(templatesPath(activeProject.id))}>
         <Sparkles size={14} />
         Browse all templates
         <ArrowRight size={12} />
-      </Box>
-    </Box>
+      </TemplatesLink>
+    </Container>
   )
 }

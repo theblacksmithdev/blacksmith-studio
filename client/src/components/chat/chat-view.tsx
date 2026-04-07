@@ -40,7 +40,9 @@ export function ChatView() {
         isStreaming={isStreaming}
         partialMessage={partialMessage}
       />
-      <ChatInput onSend={handleSend} onCancel={handleCancel} isStreaming={isStreaming} />
+      <Box css={{ padding: '0 24px 20px', maxWidth: '760px', margin: '0 auto', width: '100%' }}>
+        <ChatInput onSend={handleSend} onCancel={handleCancel} isStreaming={isStreaming} />
+      </Box>
     </Box>
   )
 }

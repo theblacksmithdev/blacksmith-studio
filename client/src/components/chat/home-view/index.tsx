@@ -1,21 +1,45 @@
-import { Box, VStack } from '@chakra-ui/react'
+import styled from '@emotion/styled'
 import { useNavigate } from 'react-router-dom'
 import { ChatInput } from '../chat-input'
-import { PageContainer } from '@/components/shared/page-container'
 import { useClaude } from '@/hooks/use-claude'
 import { useSessions } from '@/hooks/use-sessions'
 import { useChatStore } from '@/stores/chat-store'
 import { useProjectStore } from '@/stores/project-store'
 import { chatPath } from '@/router/paths'
 import { HomeHero } from './home-hero'
+import { RecentConversations } from './recent-conversations'
 import { QuickActions } from './quick-actions'
+
+const Page = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+`
+
+const Content = styled.div`
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+`
+
+const Stack = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  width: 100%;
+  max-width: 720px;
+  padding: 40px 24px;
+  margin: 0 auto;
+`
 
 export function HomeView() {
   const { sendPrompt } = useClaude()
-  const { createSession } = useSessions()
+  const { sessions, createSession } = useSessions()
   const { isStreaming } = useChatStore()
   const navigate = useNavigate()
-
   const activeProject = useProjectStore((s) => s.activeProject)
 
   const handleSend = async (text: string) => {
@@ -25,21 +49,23 @@ export function HomeView() {
     navigate(chatPath(activeProject.id, session.id))
   }
 
+  const handleSelectSession = (sessionId: string) => {
+    if (activeProject) navigate(chatPath(activeProject.id, sessionId))
+  }
+
   return (
-    <Box display="flex" flexDir="column" h="full">
-      <Box flex={1} display="flex" alignItems="center" justifyContent="center" overflow="auto">
-        <PageContainer size="md" padded={false}>
-          <VStack gap={0} css={{ paddingTop: '40px', paddingBottom: '40px' }}>
-            <HomeHero />
-
-            <Box css={{ width: '100%', marginBottom: '48px' }}>
-              <ChatInput onSend={handleSend} onCancel={() => {}} isStreaming={isStreaming} />
-            </Box>
-
-            <QuickActions onSend={handleSend} onNavigate={navigate} />
-          </VStack>
-        </PageContainer>
-      </Box>
-    </Box>
+    <Page>
+      <Content>
+        <Stack>
+          <HomeHero />
+          <ChatInput onSend={handleSend} onCancel={() => {}} isStreaming={isStreaming} />
+          <RecentConversations
+            sessions={sessions.slice(0, 4)}
+            onSelect={handleSelectSession}
+          />
+          <QuickActions onSend={handleSend} onNavigate={navigate} />
+        </Stack>
+      </Content>
+    </Page>
   )
 }
