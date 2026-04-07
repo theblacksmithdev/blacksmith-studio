@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron'
+import { ipcMain, app, type BrowserWindow } from 'electron'
 import fs from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
@@ -8,9 +8,10 @@ import {
   PROJECTS_LIST, PROJECTS_GET_ACTIVE, PROJECTS_REGISTER, PROJECTS_CREATE,
   PROJECTS_ACTIVATE, PROJECTS_RENAME, PROJECTS_REMOVE, PROJECTS_VALIDATE,
   BROWSE_LIST,
+  PROJECTS_ON_CREATE_OUTPUT, PROJECTS_ON_CREATE_DONE, PROJECTS_ON_CREATE_ERROR,
 } from './channels.js'
 
-export function setupProjectsIPC(projectManager: ProjectManager) {
+export function setupProjectsIPC(getWindow: () => BrowserWindow | null, projectManager: ProjectManager) {
   ipcMain.handle(PROJECTS_LIST, () => {
     return projectManager.list()
   })
@@ -100,6 +101,13 @@ export function setupProjectsIPC(projectManager: ProjectManager) {
       throw new Error(`Directory "${data.name}" already exists in ${absParent}`)
     }
 
+    const appRoot = app.getAppPath()
+    const binPath = path.join(appRoot, 'node_modules', 'blacksmith-cli', 'bin', 'blacksmith.js')
+
+    if (!fs.existsSync(binPath)) {
+      throw new Error('blacksmith-cli not found. Run: npm install blacksmith-cli')
+    }
+
     const args = [
       'init', data.name,
       '-b', String(data.backendPort || 8000),
@@ -108,49 +116,46 @@ export function setupProjectsIPC(projectManager: ProjectManager) {
     ]
     if (data.ai) args.push('--ai')
 
-    return new Promise((resolve, reject) => {
-      let binPath: string | null = null
-      try {
-        const { createRequire } = require('node:module')
-        const req = createRequire(import.meta.url)
-        binPath = req.resolve('blacksmith-cli/bin/blacksmith.js')
-      } catch { /* try PATH */ }
+    const win = getWindow()
 
-      const cmd = binPath ? process.execPath : 'blacksmith'
-      const fullArgs = binPath ? [binPath, ...args] : args
-
-      const proc = spawn(cmd, fullArgs, {
-        cwd: absParent,
-        stdio: ['pipe', 'pipe', 'pipe'],
-        env: { ...process.env, FORCE_COLOR: '0' },
-      })
-
-      proc.stdin.end()
-
-      let stdout = ''
-      let stderr = ''
-      proc.stdout.on('data', (chunk: Buffer) => { stdout += chunk.toString() })
-      proc.stderr.on('data', (chunk: Buffer) => { stderr += chunk.toString() })
-
-      const timeout = setTimeout(() => {
-        proc.kill('SIGTERM')
-        reject(new Error('Project creation timed out after 5 minutes'))
-      }, 300000)
-
-      proc.on('close', (code: number) => {
-        clearTimeout(timeout)
-        if (code !== 0) {
-          return reject(new Error(`Project creation failed: ${stderr || stdout}`))
-        }
-        const project = projectManager.register(projectDir, data.name)
-        resolve({ project, output: stdout })
-      })
-
-      proc.on('error', (err: Error) => {
-        clearTimeout(timeout)
-        reject(new Error(`Failed to run blacksmith: ${err.message}`))
-      })
+    // Fire-and-forget: stream output to renderer, don't block on result
+    const proc = spawn(process.execPath, [binPath, ...args], {
+      cwd: absParent,
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env, FORCE_COLOR: '0' },
     })
+
+    proc.stdin.end()
+
+    const sendLine = (line: string) => {
+      win?.webContents.send(PROJECTS_ON_CREATE_OUTPUT, { line })
+    }
+
+    proc.stdout.on('data', (chunk: Buffer) => {
+      const lines = chunk.toString().split('\n').filter(Boolean)
+      lines.forEach(sendLine)
+    })
+
+    proc.stderr.on('data', (chunk: Buffer) => {
+      const lines = chunk.toString().split('\n').filter(Boolean)
+      lines.forEach(sendLine)
+    })
+
+    proc.on('close', (code: number) => {
+      if (code !== 0) {
+        win?.webContents.send(PROJECTS_ON_CREATE_ERROR, { error: `Process exited with code ${code}` })
+        return
+      }
+      const project = projectManager.register(projectDir, data.name)
+      win?.webContents.send(PROJECTS_ON_CREATE_DONE, { project })
+    })
+
+    proc.on('error', (err: Error) => {
+      win?.webContents.send(PROJECTS_ON_CREATE_ERROR, { error: err.message })
+    })
+
+    // Return immediately — client listens for stream events
+    return { started: true }
   })
 
   // Browse directories

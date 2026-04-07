@@ -24,7 +24,7 @@ export function setupAllIPC(
   runnerManager: RunnerManager,
 ) {
   setupFolderDialogIPC()
-  setupProjectsIPC(projectManager)
+  setupProjectsIPC(getWindow, projectManager)
   setupSessionsIPC(sessionManager, projectManager)
   setupFilesIPC(projectManager)
   setupTemplatesIPC()

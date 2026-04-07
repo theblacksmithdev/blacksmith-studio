@@ -1,18 +1,21 @@
+import { useState } from 'react'
 import { Box, Text, VStack, HStack } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
 import { Anvil, FolderPlus, ArrowRight } from 'lucide-react'
 import { PageContainer } from '@/components/shared/page-container'
 import { ProjectCard } from '@/components/dashboard/project-card'
+import { AddProjectModal } from '@/components/projects/add-project-modal'
 import { useProjects } from '@/hooks/use-projects'
 import { useSessions } from '@/hooks/use-sessions'
 import { useProjectStore } from '@/stores/project-store'
-import { Path, chatPath, activityPath, projectHome } from '@/router/paths'
+import { chatPath, activityPath, projectHome } from '@/router/paths'
 
 export default function DashboardPage() {
   const navigate = useNavigate()
   const { projects, activate } = useProjects()
   const { sessions } = useSessions()
   const activeProject = useProjectStore((s) => s.activeProject)
+  const [addModalOpen, setAddModalOpen] = useState(false)
 
   const recentSessions = sessions.slice(0, 5)
 
@@ -93,7 +96,7 @@ export default function DashboardPage() {
             </Text>
             <Box
               as="button"
-              onClick={() => navigate(Path.AddProject)}
+              onClick={() => setAddModalOpen(true)}
               css={{
                 display: 'flex', alignItems: 'center', gap: '4px',
                 padding: '4px 10px', borderRadius: '6px',
@@ -110,7 +113,7 @@ export default function DashboardPage() {
           {projects.length === 0 ? (
             <Box
               as="button"
-              onClick={() => navigate(Path.AddProject)}
+              onClick={() => setAddModalOpen(true)}
               css={{
                 width: '100%',
                 padding: '40px 20px',
@@ -141,6 +144,8 @@ export default function DashboardPage() {
           )}
         </Box>
       </PageContainer>
+
+      <AddProjectModal open={addModalOpen} onClose={() => setAddModalOpen(false)} />
     </Box>
   )
 }

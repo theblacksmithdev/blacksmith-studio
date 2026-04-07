@@ -3,6 +3,8 @@ import { STUDIO_SYSTEM_PROMPT } from './system-prompt.js'
 export interface ClaudeArgsOptions {
   sessionId: string
   prompt: string
+  isResume?: boolean
+  projectContext?: string
   model?: string
   maxBudget?: number | null
   permissionMode?: string
@@ -17,25 +19,39 @@ export function buildClaudeArgs(options: ClaudeArgsOptions): string[] {
   const {
     sessionId,
     prompt,
+    isResume = false,
+    projectContext,
     model,
     maxBudget,
     permissionMode = 'bypassPermissions',
     customInstructions,
   } = options
 
+  // For first message, prepend project context so Claude doesn't need to scan
+  const effectivePrompt = !isResume && projectContext
+    ? `Here is the current project context for reference:\n\n${projectContext}\n\n---\n\nUser request: ${prompt}`
+    : prompt
+
   const systemPrompt = customInstructions
     ? `${STUDIO_SYSTEM_PROMPT}\n\n## User's Custom Instructions\n\n${customInstructions}`
     : STUDIO_SYSTEM_PROMPT
 
   const args = [
-    '-p', prompt,
+    '-p', effectivePrompt,
     '--output-format', 'stream-json',
     '--verbose',
-    '--include-partial-messages',
-    '--session-id', sessionId,
     '--permission-mode', permissionMode,
+    '--include-partial-messages',
     '--append-system-prompt', systemPrompt,
   ]
+
+  // First message: create session with --session-id
+  // Follow-up messages: resume with --resume
+  if (isResume) {
+    args.push('--resume', sessionId)
+  } else {
+    args.push('--session-id', sessionId)
+  }
 
   if (model) {
     args.push('--model', model)

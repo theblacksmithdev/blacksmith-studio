@@ -9,6 +9,7 @@ import {
   CLAUDE_ON_MESSAGE, CLAUDE_ON_TOOL_USE, CLAUDE_ON_DONE, CLAUDE_ON_ERROR,
   FILES_ON_CHANGED,
 } from './channels.js'
+import { getProjectContext } from '../../server/services/claude/project-context.js'
 
 export function setupClaudeIPC(
   getWindow: () => BrowserWindow | null,
@@ -28,6 +29,10 @@ export function setupClaudeIPC(
       return
     }
 
+    // Check if session already has messages (i.e. this is a follow-up)
+    const existingSession = sessionManager.getSession(sessionId)
+    const isResume = !!(existingSession && existingSession.messages.length > 0)
+
     sessionManager.addMessage(sessionId, {
       id: crypto.randomUUID(),
       role: 'user',
@@ -41,9 +46,14 @@ export function setupClaudeIPC(
     const toolCalls: any[] = []
 
     try {
+      // On first message, inject project context so Claude doesn't waste time scanning
+      const projectContext = !isResume ? getProjectContext(projectPath) : undefined
+
       await claudeManager.sendPrompt({
         sessionId,
         prompt,
+        isResume,
+        projectContext,
         projectRoot: projectPath,
         model: allSettings['ai.model'] || undefined,
         maxBudget: allSettings['ai.maxBudget'] || undefined,

@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "better-sqlite3": "^12.8.0",
+    "blacksmith-cli": "^0.1.8",
     "drizzle-orm": "^0.45.2"
   },
   "devDependencies": {

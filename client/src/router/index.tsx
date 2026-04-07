@@ -5,7 +5,6 @@ import { Path } from './paths'
 
 import DashboardPage from '@/pages/dashboard'
 import ProjectsPage from '@/pages/projects'
-import AddProjectPage from '@/pages/projects/add'
 import SettingsPage from '@/pages/settings'
 import NewChatPage from '@/pages/chat/new'
 import ChatPage from '@/pages/chat'
@@ -15,9 +14,6 @@ import TemplatesPage from '@/pages/templates'
 import ActivityPage from '@/pages/activity'
 
 export const router = createBrowserRouter([
-  // Full-screen routes (no nav rail)
-  { path: Path.AddProject, element: <AddProjectPage /> },
-
   // Studio layout
   {
     element: <StudioLayout />,

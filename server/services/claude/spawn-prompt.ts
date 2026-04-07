@@ -13,19 +13,19 @@ export interface SpawnOptions extends Omit<ClaudeArgsOptions, 'sessionId' | 'pro
 /**
  * Spawn a Claude Code subprocess for a single prompt.
  * Returns a promise that resolves on successful exit, rejects on error.
- * The returned ChildProcess can be used to cancel (kill) the prompt.
  */
 export function spawnClaudePrompt(
   options: SpawnOptions,
   onChunk: ChunkCallback,
+  claudeBin: string = 'claude',
 ): { promise: Promise<void>; process: ChildProcess } {
   const { sessionId, prompt, projectRoot, ...argsOptions } = options
   console.log(`[claude] Spawning for session ${sessionId}, prompt: "${prompt.slice(0, 80)}..."`)
 
   const args = buildClaudeArgs({ sessionId, prompt, ...argsOptions })
 
-  const proc = spawn('claude', args, {
-    cwd: options.projectRoot,
+  const proc = spawn(claudeBin, args, {
+    cwd: projectRoot,
     stdio: ['ignore', 'pipe', 'pipe'],
     env: { ...process.env },
   })
@@ -40,7 +40,6 @@ export function spawnClaudePrompt(
 
     proc.stderr.on('data', (chunk: Buffer) => {
       stderrBuffer += chunk.toString()
-      console.log(`[claude] stderr: ${chunk.toString().trim()}`)
     })
 
     proc.on('close', (code, signal) => {

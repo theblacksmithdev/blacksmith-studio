@@ -44,7 +44,12 @@ export const CLAUDE_CANCEL = 'claude:cancel'
 // Health
 export const HEALTH_CHECK = 'health:check'
 
-// ─── Push/Stream Channels (replacing Socket.IO server→client) ───
+// ─── Push/Stream Channels ───
+
+// Project creation
+export const PROJECTS_ON_CREATE_OUTPUT = 'projects:onCreateOutput'
+export const PROJECTS_ON_CREATE_DONE = 'projects:onCreateDone'
+export const PROJECTS_ON_CREATE_ERROR = 'projects:onCreateError'
 
 export const CLAUDE_ON_MESSAGE = 'claude:onMessage'
 export const CLAUDE_ON_TOOL_USE = 'claude:onToolUse'
@@ -69,6 +74,7 @@ export const INVOKE_CHANNELS = [
 ] as const
 
 export const SUBSCRIBE_CHANNELS = [
+  PROJECTS_ON_CREATE_OUTPUT, PROJECTS_ON_CREATE_DONE, PROJECTS_ON_CREATE_ERROR,
   CLAUDE_ON_MESSAGE, CLAUDE_ON_TOOL_USE, CLAUDE_ON_DONE, CLAUDE_ON_ERROR,
   FILES_ON_CHANGED,
   RUNNER_ON_STATUS, RUNNER_ON_OUTPUT,

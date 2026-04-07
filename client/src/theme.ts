@@ -104,6 +104,9 @@ const config = defineConfig({
     '@keyframes shimmer': { '0%,100%': { opacity: 0.3 }, '50%': { opacity: 0.6 } },
     '@keyframes fadeIn': { from: { opacity: 0 }, to: { opacity: 1 } },
     '@keyframes dotPulse': { '0%,100%': { opacity: 0.3, transform: 'scale(0.8)' }, '50%': { opacity: 1, transform: 'scale(1)' } },
+    '@keyframes cursorBlink': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0 } },
+    '@keyframes shimmerBar': { '0%': { opacity: 0.3, transform: 'scaleX(0.5)' }, '50%': { opacity: 0.6, transform: 'scaleX(1)' }, '100%': { opacity: 0.3, transform: 'scaleX(0.5)' } },
+    '@keyframes pulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.4 } },
   },
 })
 

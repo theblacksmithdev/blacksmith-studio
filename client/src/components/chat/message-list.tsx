@@ -2,7 +2,6 @@ import { useRef, useEffect } from 'react'
 import { Box } from '@chakra-ui/react'
 import { MessageBubble } from './message-bubble'
 import { StreamingIndicator } from './streaming-indicator'
-import { PageContainer } from '@/components/shared/page-container'
 import type { Message } from '@/types'
 
 interface MessageListProps {
@@ -20,26 +19,31 @@ export function MessageList({ messages, isStreaming, partialMessage }: MessageLi
 
   return (
     <Box flex={1} overflowY="auto">
-      <PageContainer padded={false}>
-        <Box css={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {messages.map((msg, i) => (
+      <Box css={{
+        maxWidth: '760px', marginLeft: 'auto', marginRight: 'auto',
+        padding: '32px 24px 16px',
+        display: 'flex', flexDirection: 'column', gap: '20px',
+      }}>
+        {messages.map((msg, i) => {
+          const prevMsg = messages[i - 1]
+          const showSeparator = i > 0 && msg.role === 'user' && prevMsg?.role === 'assistant'
+          return (
             <Box key={msg.id}>
-              {i > 0 && msg.role !== messages[i - 1]?.role && (
-                <Box
-                  css={{
-                    height: '1px',
-                    background: 'var(--studio-border)',
-                    margin: '8px 0 16px',
-                  }}
-                />
+              {showSeparator && (
+                <Box css={{
+                  height: '1px',
+                  background: 'var(--studio-border)',
+                  margin: '4px 0 20px',
+                  opacity: 0.6,
+                }} />
               )}
               <MessageBubble message={msg} />
             </Box>
-          ))}
-          {isStreaming && <StreamingIndicator partialMessage={partialMessage} />}
-          <div ref={bottomRef} />
-        </Box>
-      </PageContainer>
+          )
+        })}
+        {isStreaming && <StreamingIndicator partialMessage={partialMessage} />}
+        <Box ref={bottomRef} css={{ height: '24px' }} />
+      </Box>
     </Box>
   )
 }
