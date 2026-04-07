@@ -1,25 +1,24 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Box, Flex, Text, VStack, IconButton } from '@chakra-ui/react'
-import { Plus, Pencil, Trash2, Wand2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Wand2, ArrowRight } from 'lucide-react'
 import { useSkills } from '@/hooks/use-skills'
-import { SkillsLibraryModal, SkillEditorModal } from '../skills-library'
+import { useProjectStore } from '@/stores/project-store'
+import { skillsBrowserPath } from '@/router/paths'
+import { SkillEditorModal } from '../skills-library'
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import type { SkillEntry } from '@/api/modules/skills'
 
 type ModalState =
   | null
-  | { type: 'library' }
   | { type: 'edit'; skill: SkillEntry }
+  | { type: 'delete'; name: string }
 
 export function SkillsSettings() {
-  const { skills, add, update, remove } = useSkills()
+  const navigate = useNavigate()
+  const pid = useProjectStore((s) => s.activeProject?.id)
+  const { skills, update, remove } = useSkills()
   const [modal, setModal] = useState<ModalState>(null)
-
-  const skillNames = new Set(skills.map((s) => s.name))
-
-  const handleAdd = async (name: string, description: string, content: string) => {
-    await add({ name, description, content })
-    setModal(null)
-  }
 
   const handleUpdate = async (name: string, description: string, content: string) => {
     await update({ name, description, content })
@@ -40,7 +39,7 @@ export function SkillsSettings() {
         </Box>
         <Box
           as="button"
-          onClick={() => setModal({ type: 'library' })}
+          onClick={() => pid && navigate(skillsBrowserPath(pid))}
           css={{
             display: 'flex', alignItems: 'center', gap: '5px',
             padding: '7px 14px', borderRadius: '8px', border: 'none',
@@ -82,7 +81,7 @@ export function SkillsSettings() {
           </Text>
           <Box
             as="button"
-            onClick={() => setModal({ type: 'library' })}
+            onClick={() => pid && navigate(skillsBrowserPath(pid))}
             css={{
               display: 'flex', alignItems: 'center', gap: '5px',
               padding: '8px 16px', borderRadius: '8px',
@@ -169,7 +168,7 @@ export function SkillsSettings() {
                   aria-label="Remove"
                   size="xs"
                   variant="ghost"
-                  onClick={() => remove(skill.name)}
+                  onClick={() => setModal({ type: 'delete', name: skill.name })}
                   css={{
                     color: 'var(--studio-text-muted)', borderRadius: '6px',
                     '&:hover': { background: 'rgba(239,68,68,0.08)', color: 'var(--studio-error)' },
@@ -183,20 +182,46 @@ export function SkillsSettings() {
         </VStack>
       )}
 
-      {/* Modals */}
-      {modal?.type === 'library' && (
-        <SkillsLibraryModal
-          existingNames={skillNames}
-          onAdd={handleAdd}
-          onClose={() => setModal(null)}
-        />
-      )}
+      {/* Browse full library */}
+      <Flex
+        as="button"
+        align="center"
+        gap={2}
+        onClick={() => pid && navigate(skillsBrowserPath(pid))}
+        css={{
+          marginTop: '12px',
+          padding: '8px 0',
+          border: 'none',
+          background: 'transparent',
+          color: 'var(--studio-text-muted)',
+          fontSize: '13px',
+          cursor: 'pointer',
+          fontFamily: 'inherit',
+          transition: 'color 0.12s ease',
+          '&:hover': { color: 'var(--studio-text-primary)' },
+        }}
+      >
+        Browse full library
+        <ArrowRight size={13} />
+      </Flex>
 
+      {/* Modals */}
       {modal?.type === 'edit' && (
         <SkillEditorModal
           skill={modal.skill}
           onSave={handleUpdate}
           onClose={() => setModal(null)}
+        />
+      )}
+
+      {modal?.type === 'delete' && (
+        <ConfirmDialog
+          title="Remove Skill"
+          message={`Remove "${modal.name}"?`}
+          description="This will delete the skill file from your project. You can re-add it later from the library."
+          confirmLabel="Remove"
+          onConfirm={async () => { await remove(modal.name); setModal(null) }}
+          onCancel={() => setModal(null)}
         />
       )}
     </VStack>

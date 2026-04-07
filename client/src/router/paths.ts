@@ -13,6 +13,7 @@ export const Path = {
   Templates: '/:projectId/templates',
   Activity: '/:projectId/activity',
   Settings: '/:projectId/settings',
+  SkillsBrowser: '/:projectId/skills',
 } as const
 
 // ─── Path builders ───
@@ -47,4 +48,8 @@ export function activityPath(projectId: string) {
 
 export function settingsPath(projectId: string) {
   return `/${projectId}/settings`
+}
+
+export function skillsBrowserPath(projectId: string) {
+  return `/${projectId}/skills`
 }
