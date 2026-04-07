@@ -87,7 +87,7 @@ export const PRESETS: McpPreset[] = [
     description: 'Read and send Slack messages, search channels',
     icon: Terminal,
     category: 'productivity',
-    config: { command: 'npx', args: ['-y', '@anthropic-ai/mcp-server-slack'], env: { SLACK_BOT_TOKEN: '' } },
+    config: { command: 'npx', args: ['-y', '@modelcontextprotocol/server-slack'], env: { SLACK_BOT_TOKEN: '' } },
     envHint: 'Get from api.slack.com/apps',
   },
 
@@ -98,7 +98,7 @@ export const PRESETS: McpPreset[] = [
     description: 'Search and read Chakra UI documentation',
     icon: BookOpen,
     category: 'development',
-    config: { command: 'npx', args: ['-y', '@anthropic-ai/mcp-docs-server', '--url', 'https://www.chakra-ui.com/docs', '--name', 'chakra-ui-docs'] },
+    config: { command: 'npx', args: ['-y', 'mcp-docs-server', '--url', 'https://www.chakra-ui.com/docs', '--name', 'chakra-ui-docs'] },
   },
   {
     name: 'react-docs',
@@ -106,7 +106,7 @@ export const PRESETS: McpPreset[] = [
     description: 'Search and read React documentation',
     icon: BookOpen,
     category: 'development',
-    config: { command: 'npx', args: ['-y', '@anthropic-ai/mcp-docs-server', '--url', 'https://react.dev', '--name', 'react-docs'] },
+    config: { command: 'npx', args: ['-y', 'mcp-docs-server', '--url', 'https://react.dev', '--name', 'react-docs'] },
   },
   {
     name: 'django-docs',
@@ -114,7 +114,7 @@ export const PRESETS: McpPreset[] = [
     description: 'Search and read Django documentation',
     icon: BookOpen,
     category: 'development',
-    config: { command: 'npx', args: ['-y', '@anthropic-ai/mcp-docs-server', '--url', 'https://docs.djangoproject.com/en/5.1/', '--name', 'django-docs'] },
+    config: { command: 'npx', args: ['-y', 'mcp-docs-server', '--url', 'https://docs.djangoproject.com/en/5.1/', '--name', 'django-docs'] },
   },
 ]
 

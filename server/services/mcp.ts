@@ -37,15 +37,15 @@ interface McpFileSchema {
 const DEFAULT_SERVERS: Record<string, McpServerConfig> = {
   'chakra-ui-docs': {
     command: 'npx',
-    args: ['-y', '@anthropic-ai/mcp-docs-server', '--url', 'https://www.chakra-ui.com/docs', '--name', 'chakra-ui-docs'],
+    args: ['-y', 'mcp-docs-server', '--url', 'https://www.chakra-ui.com/docs', '--name', 'chakra-ui-docs'],
   },
   'react-docs': {
     command: 'npx',
-    args: ['-y', '@anthropic-ai/mcp-docs-server', '--url', 'https://react.dev', '--name', 'react-docs'],
+    args: ['-y', 'mcp-docs-server', '--url', 'https://react.dev', '--name', 'react-docs'],
   },
   'django-docs': {
     command: 'npx',
-    args: ['-y', '@anthropic-ai/mcp-docs-server', '--url', 'https://docs.djangoproject.com/en/5.1/', '--name', 'django-docs'],
+    args: ['-y', 'mcp-docs-server', '--url', 'https://docs.djangoproject.com/en/5.1/', '--name', 'django-docs'],
   },
   filesystem: {
     command: 'npx',

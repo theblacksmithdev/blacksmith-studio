@@ -1,56 +1,6 @@
-import styled from '@emotion/styled'
+import { Flex, Box, Text, IconButton } from '@chakra-ui/react'
 import { X, PanelRightClose } from 'lucide-react'
 import { RunnerPreview } from '@/components/runner/preview'
-
-const Wrap = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  background: var(--studio-bg-sidebar);
-  border-left: 1px solid var(--studio-border);
-`
-
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--studio-border);
-  flex-shrink: 0;
-`
-
-const Title = styled.span`
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--studio-text-secondary);
-  flex: 1;
-`
-
-const HeaderBtn = styled.button`
-  width: 24px;
-  height: 24px;
-  border-radius: 5px;
-  border: none;
-  background: transparent;
-  color: var(--studio-text-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.12s ease;
-  flex-shrink: 0;
-
-  &:hover {
-    background: var(--studio-bg-hover);
-    color: var(--studio-text-primary);
-  }
-`
-
-const Body = styled.div`
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-`
 
 interface PreviewPanelProps {
   onClose: () => void
@@ -58,17 +8,58 @@ interface PreviewPanelProps {
 
 export function PreviewPanel({ onClose }: PreviewPanelProps) {
   return (
-    <Wrap>
-      <Header>
-        <PanelRightClose size={13} style={{ color: 'var(--studio-text-muted)' }} />
-        <Title>Preview</Title>
-        <HeaderBtn onClick={onClose} title="Close preview">
+    <Flex
+      direction="column"
+      h="full"
+      css={{
+        background: 'var(--studio-bg-sidebar)',
+        borderLeft: '1px solid var(--studio-border)',
+      }}
+    >
+      <Flex
+        align="center"
+        gap={2}
+        css={{
+          padding: '10px 12px',
+          borderBottom: '1px solid var(--studio-border)',
+          flexShrink: 0,
+        }}
+      >
+        <PanelRightClose size={13} style={{ color: 'var(--studio-text-muted)', flexShrink: 0 }} />
+        <Text
+          css={{
+            fontSize: '12px',
+            fontWeight: 500,
+            color: 'var(--studio-text-secondary)',
+            flex: 1,
+          }}
+        >
+          Preview
+        </Text>
+        <IconButton
+          aria-label="Close preview"
+          size="xs"
+          variant="ghost"
+          onClick={onClose}
+          title="Close preview"
+          css={{
+            width: '24px',
+            height: '24px',
+            borderRadius: '5px',
+            color: 'var(--studio-text-muted)',
+            '&:hover': {
+              background: 'var(--studio-bg-hover)',
+              color: 'var(--studio-text-primary)',
+            },
+          }}
+        >
           <X size={14} />
-        </HeaderBtn>
-      </Header>
-      <Body>
+        </IconButton>
+      </Flex>
+
+      <Box flex={1} minH={0} overflow="hidden">
         <RunnerPreview />
-      </Body>
-    </Wrap>
+      </Box>
+    </Flex>
   )
 }
