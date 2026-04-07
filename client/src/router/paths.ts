@@ -14,6 +14,7 @@ export const Path = {
   Activity: '/:projectId/activity',
   Settings: '/:projectId/settings',
   SkillsBrowser: '/:projectId/skills',
+  McpBrowser: '/:projectId/mcp',
 } as const
 
 // ─── Path builders ───
@@ -52,4 +53,8 @@ export function settingsPath(projectId: string) {
 
 export function skillsBrowserPath(projectId: string) {
   return `/${projectId}/skills`
+}
+
+export function mcpBrowserPath(projectId: string) {
+  return `/${projectId}/mcp`
 }

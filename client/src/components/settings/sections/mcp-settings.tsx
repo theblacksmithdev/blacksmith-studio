@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import styled from '@emotion/styled'
-import { Plus, Pencil, Trash2, Zap, Blocks } from 'lucide-react'
+import { Plus, Pencil, Trash2, Zap, Blocks, ArrowRight } from 'lucide-react'
 import { useMcp } from '@/hooks/use-mcp'
+import { useProjectStore } from '@/stores/project-store'
+import { mcpBrowserPath } from '@/router/paths'
 import { McpServerModal } from '../mcp-server-modal'
-import { McpLibraryModal } from '../mcp-library'
 import { StatusDot } from '@/components/runner/runner-primitives'
 import { MONO_FONT } from '@/components/runner/runner-primitives'
 import type { McpServerConfig, McpServerEntry } from '@/api/modules/mcp'
@@ -226,6 +228,22 @@ const EmptyBtn = styled.button`
   &:hover { background: var(--studio-bg-surface); border-color: var(--studio-border-hover); color: var(--studio-text-primary); }
 `
 
+const BrowseLink = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 12px;
+  padding: 8px 0;
+  border: none;
+  background: transparent;
+  color: var(--studio-text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.12s ease;
+  &:hover { color: var(--studio-text-primary); }
+`
+
 /* ── Helpers ── */
 
 function getServerMeta(entry: McpServerEntry): string {
@@ -244,20 +262,14 @@ function getStatusForDot(entry: McpServerEntry): 'running' | 'starting' | 'stopp
 
 type ModalState =
   | null
-  | { type: 'library' }
   | { type: 'edit'; server: McpServerEntry }
 
 export function McpSettings() {
-  const { servers, add, update, remove, toggle, testConnection } = useMcp()
+  const navigate = useNavigate()
+  const pid = useProjectStore((s) => s.activeProject?.id)
+  const { servers, update, remove, toggle, testConnection } = useMcp()
   const [modal, setModal] = useState<ModalState>(null)
   const [testing, setTesting] = useState<string | null>(null)
-
-  const serverNames = new Set(servers.map((s) => s.name))
-
-  const handleAdd = async (name: string, config: McpServerConfig) => {
-    await add({ name, config })
-    setModal(null)
-  }
 
   const handleUpdate = async (name: string, config: McpServerConfig) => {
     await update({ name, config })
@@ -277,7 +289,7 @@ export function McpSettings() {
           <Title>MCP Servers</Title>
           <Desc>Configure Model Context Protocol servers that extend Claude's capabilities.</Desc>
         </HeaderText>
-        <AddBtn onClick={() => setModal({ type: 'library' })}>
+        <AddBtn onClick={() => pid && navigate(mcpBrowserPath(pid))}>
           <Plus size={13} /> Add Server
         </AddBtn>
       </Header>
@@ -287,7 +299,7 @@ export function McpSettings() {
           <EmptyIcon><Blocks size={20} /></EmptyIcon>
           <EmptyTitle>No MCP servers configured</EmptyTitle>
           <EmptyDesc>MCP servers give Claude access to external tools and data sources.</EmptyDesc>
-          <EmptyBtn onClick={() => setModal({ type: 'library' })}>
+          <EmptyBtn onClick={() => pid && navigate(mcpBrowserPath(pid))}>
             <Plus size={13} /> Browse Library
           </EmptyBtn>
         </Empty>
@@ -328,12 +340,11 @@ export function McpSettings() {
         </List>
       )}
 
-      {modal?.type === 'library' && (
-        <McpLibraryModal
-          existingNames={serverNames}
-          onAdd={handleAdd}
-          onClose={() => setModal(null)}
-        />
+      {servers.length > 0 && (
+        <BrowseLink onClick={() => pid && navigate(mcpBrowserPath(pid))}>
+          Browse full library
+          <ArrowRight size={13} />
+        </BrowseLink>
       )}
 
       {modal?.type === 'edit' && (

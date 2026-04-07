@@ -11,6 +11,7 @@ import ChatPage from '@/pages/chat'
 import FilesPage from '@/pages/files'
 import RunPage from '@/pages/run'
 import SkillsBrowserPage from '@/pages/skills'
+import McpBrowserPage from '@/pages/mcp'
 
 export const router = createHashRouter([
   // Global routes — title bar only, no sidebar
@@ -34,6 +35,7 @@ export const router = createHashRouter([
       { path: 'run', element: <RunPage /> },
       { path: 'settings', element: <SettingsPage /> },
       { path: 'skills', element: <SkillsBrowserPage /> },
+      { path: 'mcp', element: <McpBrowserPage /> },
 
       // Redirects for removed pages
       { path: 'templates', element: <Navigate to="../chat/new" replace /> },
