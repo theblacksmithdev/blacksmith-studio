@@ -1,7 +1,7 @@
+import type { ReactNode } from 'react'
 import styled from '@emotion/styled'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Sun, Moon, ChevronLeft, ChevronRight } from 'lucide-react'
-import { useProjectStore } from '@/stores/project-store'
 import { useUiStore } from '@/stores/ui-store'
 import { useThemeMode } from '@/hooks/use-theme-mode'
 import { useWindowState } from '@/api/hooks'
@@ -21,14 +21,14 @@ const Bar = styled.div<{ fullscreen: boolean }>`
   transition: padding-left 0.2s ease;
 `
 
-const NavActions = styled.div`
+export const NavActions = styled.div`
   display: flex;
   align-items: center;
   gap: 2px;
   -webkit-app-region: no-drag;
 `
 
-const NavBtn = styled.button`
+export const NavBtn = styled.button`
   width: 26px;
   height: 26px;
   border-radius: 6px;
@@ -57,7 +57,7 @@ const NavBtn = styled.button`
   }
 `
 
-const Center = styled.div`
+export const Center = styled.div`
   flex: 1;
   display: flex;
   align-items: center;
@@ -66,7 +66,7 @@ const Center = styled.div`
   min-width: 0;
 `
 
-const PageLabel = styled.span`
+export const TitleText = styled.span`
   font-size: 12px;
   font-weight: 500;
   color: var(--studio-text-tertiary);
@@ -75,7 +75,7 @@ const PageLabel = styled.span`
   white-space: nowrap;
 `
 
-const ProjectLabel = styled.span`
+export const TitleTextBold = styled.span`
   font-size: 12px;
   font-weight: 500;
   color: var(--studio-text-primary);
@@ -84,7 +84,7 @@ const ProjectLabel = styled.span`
   white-space: nowrap;
 `
 
-const Separator = styled.span`
+export const TitleSeparator = styled.span`
   color: var(--studio-text-muted);
   font-size: 12px;
 `
@@ -124,29 +124,23 @@ const StatusDot = styled.div<{ connected: boolean }>`
   margin-left: 4px;
 `
 
-function getPageName(pathname: string): string | null {
-  if (pathname.includes('/chat')) return 'Chat'
-  if (pathname.endsWith('/code')) return 'Code'
-  if (pathname.endsWith('/run')) return 'Dev Servers'
-  if (pathname.endsWith('/templates')) return 'Templates'
-  if (pathname.endsWith('/activity')) return 'Activity'
-  if (pathname.endsWith('/settings')) return 'Settings'
-  return null
+interface TitleBarShellProps {
+  /** Extra buttons rendered before back/forward nav */
+  leading?: ReactNode
+  /** Center content (title / breadcrumb) */
+  center: ReactNode
 }
 
-export function TitleBar() {
-  const location = useLocation()
+export function TitleBarShell({ leading, center }: TitleBarShellProps) {
   const navigate = useNavigate()
   const { isFullscreen: fullscreen } = useWindowState()
-  const activeProject = useProjectStore((s) => s.activeProject)
   const connectionStatus = useUiStore((s) => s.connectionStatus)
   const { mode, toggle: toggleTheme } = useThemeMode()
-
-  const pageName = getPageName(location.pathname)
 
   return (
     <Bar fullscreen={fullscreen}>
       <NavActions>
+        {leading}
         <Tooltip content="Back">
           <NavBtn onClick={() => navigate(-1)}>
             <ChevronLeft size={15} />
@@ -159,21 +153,7 @@ export function TitleBar() {
         </Tooltip>
       </NavActions>
 
-      <Center>
-        {activeProject ? (
-          <>
-            <ProjectLabel>{activeProject.name}</ProjectLabel>
-            {pageName && (
-              <>
-                <Separator>/</Separator>
-                <PageLabel>{pageName}</PageLabel>
-              </>
-            )}
-          </>
-        ) : (
-          <PageLabel>Blacksmith Studio</PageLabel>
-        )}
-      </Center>
+      <Center>{center}</Center>
 
       <Actions>
         <Tooltip content={mode === 'dark' ? 'Light mode' : 'Dark mode'}>

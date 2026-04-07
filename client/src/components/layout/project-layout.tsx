@@ -1,23 +1,40 @@
 import { useEffect } from 'react'
+import styled from '@emotion/styled'
 import { Outlet, useParams, useNavigate } from 'react-router-dom'
 import { useProjects } from '@/hooks/use-projects'
 import { useProjectStore } from '@/stores/project-store'
 import { resetProjectStores } from '@/stores/reset'
 import { useRunnerListener } from '@/hooks/use-runner'
 import { RunnerDock } from '@/components/runner/dock'
+import { Sidebar } from './sidebar'
+import { ProjectTitleBar } from './title-bar'
 
-/**
- * Wrapper layout for project-scoped routes.
- * Reads :projectId from URL and activates that project.
- * Resets all project-scoped stores when switching projects.
- */
+const Root = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+`
+
+const Body = styled.div`
+  flex: 1;
+  display: flex;
+  min-height: 0;
+`
+
+const Content = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+`
+
 export function ProjectLayout() {
   const { projectId } = useParams<{ projectId: string }>()
   const { activate } = useProjects()
   const activeProject = useProjectStore((s) => s.activeProject)
   const navigate = useNavigate()
 
-  // Global runner status listener — active for all project pages
   useRunnerListener()
 
   useEffect(() => {
@@ -31,9 +48,15 @@ export function ProjectLayout() {
   }, [projectId, activeProject?.id])
 
   return (
-    <>
-      <Outlet />
+    <Root>
+      <ProjectTitleBar />
+      <Body>
+        <Sidebar />
+        <Content>
+          <Outlet />
+        </Content>
+      </Body>
       <RunnerDock />
-    </>
+    </Root>
   )
 }

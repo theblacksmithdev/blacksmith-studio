@@ -11,6 +11,10 @@ interface UiState {
 
   previewOpen: boolean
   setPreviewOpen: (open: boolean) => void
+
+  sidebarExpanded: boolean
+  setSidebarExpanded: (expanded: boolean) => void
+  toggleSidebar: () => void
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -22,4 +26,8 @@ export const useUiStore = create<UiState>((set) => ({
 
   previewOpen: false,
   setPreviewOpen: (previewOpen) => set({ previewOpen }),
+
+  sidebarExpanded: false,
+  setSidebarExpanded: (sidebarExpanded) => set({ sidebarExpanded }),
+  toggleSidebar: () => set((s) => ({ sidebarExpanded: !s.sidebarExpanded })),
 }))

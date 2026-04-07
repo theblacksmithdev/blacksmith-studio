@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
-import { StudioLayout } from '@/components/layout/studio-layout'
+import { AppLayout } from '@/components/layout/app-layout'
 import { ProjectLayout } from '@/components/layout/project-layout'
 import { Path } from './paths'
 
@@ -14,30 +14,28 @@ import TemplatesPage from '@/pages/templates'
 import ActivityPage from '@/pages/activity'
 
 export const router = createBrowserRouter([
-  // Studio layout
+  // Global routes — title bar only, no sidebar
   {
-    element: <StudioLayout />,
+    element: <AppLayout />,
     children: [
-      // Global routes
       { path: Path.Home, element: <DashboardPage /> },
       { path: Path.Projects, element: <ProjectsPage /> },
+    ],
+  },
 
-      // Project-scoped routes
-      {
-        path: '/:projectId',
-        element: <ProjectLayout />,
-        children: [
-          // Default: redirect /:projectId → /:projectId/chat/new
-          { index: true, element: <NewChatPage /> },
-          { path: 'chat/new', element: <NewChatPage /> },
-          { path: 'chat/:sessionId', element: <ChatPage /> },
-          { path: 'code', element: <FilesPage /> },
-          { path: 'run', element: <RunPage /> },
-          { path: 'templates', element: <TemplatesPage /> },
-          { path: 'activity', element: <ActivityPage /> },
-          { path: 'settings', element: <SettingsPage /> },
-        ],
-      },
+  // Project-scoped routes — title bar + sidebar + runner dock
+  {
+    path: '/:projectId',
+    element: <ProjectLayout />,
+    children: [
+      { index: true, element: <NewChatPage /> },
+      { path: 'chat/new', element: <NewChatPage /> },
+      { path: 'chat/:sessionId', element: <ChatPage /> },
+      { path: 'code', element: <FilesPage /> },
+      { path: 'run', element: <RunPage /> },
+      { path: 'templates', element: <TemplatesPage /> },
+      { path: 'activity', element: <ActivityPage /> },
+      { path: 'settings', element: <SettingsPage /> },
     ],
   },
 ])
