@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { Box, Text, VStack, HStack } from '@chakra-ui/react'
-import { Palette, Sparkles, Code2, FolderTree, AlertTriangle, Monitor } from 'lucide-react'
+import { Palette, Sparkles, Code2, FolderCog, AlertTriangle } from 'lucide-react'
 import { AppearanceSettings } from '@/components/settings/sections/appearance-settings'
 import { AiSettings } from '@/components/settings/sections/ai-settings'
 import { EditorSettings } from '@/components/settings/sections/editor-settings'
-import { ProjectSettings } from '@/components/settings/sections/project-settings'
-import { PreviewSettings } from '@/components/settings/sections/preview-settings'
+import { WorkspaceSettings } from '@/components/settings/sections/workspace-settings'
 import { DangerZone } from '@/components/settings/sections/danger-zone'
 import { useProjectStore } from '@/stores/project-store'
 
@@ -13,8 +12,7 @@ const sections = [
   { id: 'appearance', icon: Palette, label: 'Appearance', group: 'general' },
   { id: 'ai', icon: Sparkles, label: 'AI & Prompting', group: 'general' },
   { id: 'editor', icon: Code2, label: 'Editor', group: 'general' },
-  { id: 'project', icon: FolderTree, label: 'Project', group: 'general' },
-  { id: 'preview', icon: Monitor, label: 'Preview', group: 'general' },
+  { id: 'workspace', icon: FolderCog, label: 'Workspace', group: 'general' },
   { id: 'danger', icon: AlertTriangle, label: 'Danger Zone', group: 'danger' },
 ] as const
 
@@ -22,8 +20,7 @@ const panels: Record<string, () => JSX.Element> = {
   appearance: AppearanceSettings,
   ai: AiSettings,
   editor: EditorSettings,
-  project: ProjectSettings,
-  preview: PreviewSettings,
+  workspace: WorkspaceSettings,
   danger: DangerZone,
 }
 
@@ -147,7 +144,7 @@ export default function SettingsPage() {
           padding: '28px 40px 64px',
         }}
       >
-        <Box css={{ maxWidth: '600px' }}>
+        <Box css={{ maxWidth: '600px', margin: '0 auto' }}>
           <ActivePanel />
         </Box>
       </Box>

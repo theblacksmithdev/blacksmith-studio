@@ -1,23 +1,55 @@
-import { Box, Text, VStack } from '@chakra-ui/react'
+import { Box, Text, VStack, HStack } from '@chakra-ui/react'
+import { RotateCw } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 interface SettingsSectionProps {
   title: string
   description: string
   children: ReactNode
+  onReset?: () => void
 }
 
-export function SettingsSection({ title, description, children }: SettingsSectionProps) {
+export function SettingsSection({ title, description, children, onReset }: SettingsSectionProps) {
   return (
     <VStack gap={0} align="stretch">
-      <Box css={{ marginBottom: '16px' }}>
-        <Text css={{ fontSize: '15px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em', marginBottom: '4px' }}>
-          {title}
-        </Text>
-        <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)' }}>
-          {description}
-        </Text>
-      </Box>
+      <HStack css={{ marginBottom: '16px', alignItems: 'flex-start' }}>
+        <Box css={{ flex: 1 }}>
+          <Text css={{ fontSize: '15px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em', marginBottom: '4px' }}>
+            {title}
+          </Text>
+          <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)' }}>
+            {description}
+          </Text>
+        </Box>
+        {onReset && (
+          <Box
+            as="button"
+            onClick={onReset}
+            css={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              padding: '4px 10px',
+              borderRadius: '6px',
+              border: 'none',
+              background: 'transparent',
+              color: 'var(--studio-text-muted)',
+              fontSize: '12px',
+              cursor: 'pointer',
+              transition: 'all 0.12s ease',
+              flexShrink: 0,
+              marginTop: '2px',
+              '&:hover': {
+                background: 'var(--studio-bg-surface)',
+                color: 'var(--studio-text-secondary)',
+              },
+            }}
+          >
+            <RotateCw size={11} />
+            Reset
+          </Box>
+        )}
+      </HStack>
       <VStack
         gap={0}
         align="stretch"
