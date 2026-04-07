@@ -9,6 +9,7 @@ export function checkClaudeInstalled(cwd: string): Promise<ClaudeInstallStatus> 
     const proc = spawn('claude', ['--version'], {
       cwd,
       stdio: ['ignore', 'pipe', 'pipe'],
+      shell: true,
     })
 
     let stdout = ''

@@ -8,9 +8,13 @@ export interface SetupStatus {
   auth: { authenticated: boolean }
 }
 
+// On macOS, apps launched from Finder don't inherit the user's shell PATH.
+// Run through the user's shell to get the full PATH.
+const USER_SHELL = process.env.SHELL || '/bin/zsh'
+
 function checkNode(): { installed: boolean; version?: string } {
   try {
-    const version = execSync('node --version', { timeout: 5000 }).toString().trim()
+    const version = execSync('node --version', { timeout: 5000, shell: USER_SHELL }).toString().trim()
     const major = parseInt(version.replace('v', '').split('.')[0], 10)
     return { installed: major >= 18, version }
   } catch {
@@ -20,7 +24,7 @@ function checkNode(): { installed: boolean; version?: string } {
 
 function checkClaude(): Promise<{ installed: boolean; version?: string }> {
   return new Promise((resolve) => {
-    const proc = spawn('claude', ['--version'], { stdio: ['ignore', 'pipe', 'pipe'] })
+    const proc = spawn('claude', ['--version'], { stdio: ['ignore', 'pipe', 'pipe'], shell: true })
     let stdout = ''
     proc.stdout.on('data', (chunk: Buffer) => { stdout += chunk.toString() })
     proc.on('close', (code) => {
@@ -32,19 +36,16 @@ function checkClaude(): Promise<{ installed: boolean; version?: string }> {
 
 function checkAuth(): Promise<{ authenticated: boolean }> {
   return new Promise((resolve) => {
-    // `claude api-key` or `claude auth status` — try a lightweight check
-    // The simplest: attempt `claude --print-api-key` or check if a config file exists
-    // Safest approach: run `claude doctor` or just try `claude -p "test" --max-turns 0`
     const proc = spawn('claude', ['-p', 'ping', '--max-turns', '0', '--output-format', 'json'], {
       stdio: ['ignore', 'pipe', 'pipe'],
       timeout: 10000,
+      shell: true,
     })
 
     let stderr = ''
     proc.stderr.on('data', (chunk: Buffer) => { stderr += chunk.toString() })
 
     proc.on('close', (code) => {
-      // If it exits without auth errors, user is authenticated
       const hasAuthError = stderr.toLowerCase().includes('not authenticated') ||
         stderr.toLowerCase().includes('api key') ||
         stderr.toLowerCase().includes('login') ||
@@ -61,6 +62,7 @@ function installClaude(): Promise<{ success: boolean; error?: string }> {
     const proc = spawn('npm', ['install', '-g', '@anthropic-ai/claude-code'], {
       stdio: ['ignore', 'pipe', 'pipe'],
       timeout: 120000,
+      shell: true,
     })
 
     let stderr = ''
@@ -80,10 +82,7 @@ export function setupSetupIPC() {
   ipcMain.handle(SETUP_CHECK, async (): Promise<SetupStatus> => {
     const node = checkNode()
     const claude = await checkClaude()
-
-    // Only check auth if Claude is installed
     const auth = claude.installed ? await checkAuth() : { authenticated: false }
-
     return { node, claude, auth }
   })
 
