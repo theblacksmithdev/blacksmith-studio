@@ -56,6 +56,13 @@ export const HEALTH_CHECK = 'health:check'
 export const SETUP_CHECK = 'setup:check'
 export const SETUP_INSTALL_CLAUDE = 'setup:installClaude'
 
+// Skills
+export const SKILLS_LIST = 'skills:list'
+export const SKILLS_GET = 'skills:get'
+export const SKILLS_ADD = 'skills:add'
+export const SKILLS_UPDATE = 'skills:update'
+export const SKILLS_REMOVE = 'skills:remove'
+
 // ─── Push/Stream Channels ───
 
 // Project creation
@@ -86,6 +93,7 @@ export const INVOKE_CHANNELS = [
   MCP_LIST, MCP_ADD, MCP_UPDATE, MCP_REMOVE, MCP_TOGGLE, MCP_TEST,
   HEALTH_CHECK,
   SETUP_CHECK, SETUP_INSTALL_CLAUDE,
+  SKILLS_LIST, SKILLS_GET, SKILLS_ADD, SKILLS_UPDATE, SKILLS_REMOVE,
 ] as const
 
 export const SUBSCRIBE_CHANNELS = [

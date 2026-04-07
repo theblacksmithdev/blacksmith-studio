@@ -10,6 +10,7 @@ import { windowApi } from './modules/window'
 import { browse } from './modules/browse'
 import { mcp } from './modules/mcp'
 import { setup } from './modules/setup'
+import { skills } from './modules/skills'
 
 export const api = {
   projects,
@@ -24,4 +25,5 @@ export const api = {
   browse,
   mcp,
   setup,
+  skills,
 } as const

@@ -47,12 +47,14 @@ interface FormFieldProps {
   hint?: string
   error?: string
   required?: boolean
+  /** Fill remaining height of parent flex container */
+  fill?: boolean
   children: ReactNode
 }
 
-export function FormField({ label, hint, error, required, children }: FormFieldProps) {
+export function FormField({ label, hint, error, required, fill, children }: FormFieldProps) {
   return (
-    <ChakraField.Root required={required} invalid={!!error} css={fieldCss}>
+    <ChakraField.Root required={required} invalid={!!error} css={{ ...fieldCss, ...(fill ? { flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' } : {}) }}>
       <ChakraField.Label>{label}</ChakraField.Label>
       {children}
       {hint && !error && (

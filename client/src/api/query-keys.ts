@@ -9,6 +9,7 @@ export const queryKeys = {
   settings: ['settings'] as const,
   health: ['health'] as const,
   mcp: ['mcp'] as const,
+  skills: ['skills'] as const,
   browse: (path?: string) => ['browse', path ?? '~'] as const,
   projectValidation: (path: string) => ['projects', 'validation', path] as const,
 }
