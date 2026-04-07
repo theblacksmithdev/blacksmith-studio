@@ -74,5 +74,7 @@ export function useSettings() {
     // Preview
     frontendPath: (settings['preview.frontendPath'] ?? '/') as string,
     backendPath: (settings['preview.backendPath'] ?? '/api/docs') as string,
+    chatSplit: (settings['preview.chatSplit'] ?? 60) as number,
+    runSplit: (settings['preview.runSplit'] ?? 55) as number,
   }
 }

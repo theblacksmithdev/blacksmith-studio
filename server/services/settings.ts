@@ -18,6 +18,8 @@ const DEFAULTS: Record<string, any> = {
   'project.ignoredPatterns': 'node_modules,.git,__pycache__,venv,dist,.env,.blacksmith-studio',
   'preview.frontendPath': '/',
   'preview.backendPath': '/api/docs/',
+  'preview.chatSplit': 60,
+  'preview.runSplit': 55,
 }
 
 export class SettingsManager {

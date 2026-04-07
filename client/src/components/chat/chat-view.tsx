@@ -10,6 +10,7 @@ import { useSessions } from '@/hooks/use-sessions'
 import { useChatStore } from '@/stores/chat-store'
 import { useSessionStore } from '@/stores/session-store'
 import { useUiStore } from '@/stores/ui-store'
+import { useSettings } from '@/hooks/use-settings'
 import { PreviewPanel } from '@/components/shared/preview-panel'
 import { Tooltip } from '@/components/shared/tooltip'
 
@@ -82,6 +83,7 @@ export function ChatView() {
 
   const previewOpen = useUiStore((s) => s.previewOpen)
   const setPreviewOpen = useUiStore((s) => s.setPreviewOpen)
+  const { chatSplit, set: setSetting } = useSettings()
 
   useEffect(() => {
     if (sessionId && sessionId !== activeSessionId) {
@@ -96,6 +98,13 @@ export function ChatView() {
 
   const handleCancel = () => {
     if (sessionId) cancelPrompt(sessionId)
+  }
+
+  const handleResizeEnd = (details: { size: number[] }) => {
+    const left = Math.round(details.size[0])
+    if (left !== chatSplit) {
+      setSetting('preview.chatSplit', left)
+    }
   }
 
   const chatContent = (
@@ -130,8 +139,9 @@ export function ChatView() {
   return (
     <Splitter.Root
       panels={PANELS}
-      defaultSize={[60, 40]}
+      defaultSize={[chatSplit, 100 - chatSplit]}
       orientation="horizontal"
+      onResizeEnd={handleResizeEnd}
       css={{ height: '100%', display: 'flex' }}
     >
       <Splitter.Panel id="chat">

@@ -4,6 +4,7 @@ import { Splitter } from '@chakra-ui/react'
 import { RunnerControls } from './controls'
 import { RunnerLogs } from './logs'
 import { useUiStore } from '@/stores/ui-store'
+import { useSettings } from '@/hooks/use-settings'
 import { PreviewPanel } from '@/components/shared/preview-panel'
 
 const Page = styled.div`
@@ -72,6 +73,14 @@ const PANELS = [
 export function RunnerPage() {
   const previewOpen = useUiStore((s) => s.previewOpen)
   const setPreviewOpen = useUiStore((s) => s.setPreviewOpen)
+  const { runSplit, set: setSetting } = useSettings()
+
+  const handleResizeEnd = (details: { size: number[] }) => {
+    const left = Math.round(details.size[0])
+    if (left !== runSplit) {
+      setSetting('preview.runSplit', left)
+    }
+  }
 
   return (
     <Page>
@@ -91,8 +100,9 @@ export function RunnerPage() {
         {previewOpen ? (
           <Splitter.Root
             panels={PANELS}
-            defaultSize={[55, 45]}
+            defaultSize={[runSplit, 100 - runSplit]}
             orientation="horizontal"
+            onResizeEnd={handleResizeEnd}
             css={{ display: 'flex', flex: 1, minHeight: 0 }}
           >
             <Splitter.Panel id="logs">
