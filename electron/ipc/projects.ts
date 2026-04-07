@@ -1,4 +1,4 @@
-import { ipcMain, app, type BrowserWindow } from 'electron'
+import { ipcMain, type BrowserWindow } from 'electron'
 import fs from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
@@ -101,13 +101,6 @@ export function setupProjectsIPC(getWindow: () => BrowserWindow | null, projectM
       throw new Error(`Directory "${data.name}" already exists in ${absParent}`)
     }
 
-    const appRoot = app.getAppPath()
-    const binPath = path.join(appRoot, 'node_modules', 'blacksmith-cli', 'bin', 'blacksmith.js')
-
-    if (!fs.existsSync(binPath)) {
-      throw new Error('blacksmith-cli not found. Run: npm install blacksmith-cli')
-    }
-
     const args = [
       'init', data.name,
       '-b', String(data.backendPort || 8000),
@@ -118,11 +111,13 @@ export function setupProjectsIPC(getWindow: () => BrowserWindow | null, projectM
 
     const win = getWindow()
 
-    // Fire-and-forget: stream output to renderer, don't block on result
-    const proc = spawn(process.execPath, [binPath, ...args], {
+    // Run blacksmith via npx to ensure it uses a compatible Node version.
+    // CI=true disables interactive prompts (auto-accepts defaults).
+    const proc = spawn('npx', ['blacksmith-cli', ...args], {
       cwd: absParent,
       stdio: ['pipe', 'pipe', 'pipe'],
-      env: { ...process.env, FORCE_COLOR: '0' },
+      env: { ...process.env, FORCE_COLOR: '0', CI: '1' },
+      shell: true,
     })
 
     proc.stdin.end()

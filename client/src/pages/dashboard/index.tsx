@@ -114,7 +114,9 @@ const EmptyCard = styled.button`
 
 const EmptyIcon = styled.div`
   color: var(--studio-text-muted);
-  margin-bottom: 8px;
+  margin: 0 auto 8px;
+  display: flex;
+  justify-content: center;
 `
 
 const EmptyTitle = styled.div`
