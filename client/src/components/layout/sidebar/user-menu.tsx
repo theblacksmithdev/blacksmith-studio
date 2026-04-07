@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { LogOut, User, HelpCircle, Keyboard, Settings } from 'lucide-react'
 import { useProjectStore } from '@/stores/project-store'
 import { Path, settingsPath } from '@/router/paths'
+import { SidebarTooltip } from './sidebar-tooltip'
 
 const Wrap = styled.div`
   position: relative;
@@ -141,12 +142,14 @@ export function UserMenu({ expanded }: UserMenuProps) {
 
   return (
     <Wrap>
-      <AvatarBtn ref={btnRef} expanded={expanded} onClick={() => setOpen(!open)}>
-        <Avatar>
-          <User size={12} />
-        </Avatar>
-        <AvatarLabel visible={expanded}>Menu</AvatarLabel>
-      </AvatarBtn>
+      <SidebarTooltip label="Menu" visible={!expanded && !open}>
+        <AvatarBtn ref={btnRef} expanded={expanded} onClick={() => setOpen(!open)}>
+          <Avatar>
+            <User size={12} />
+          </Avatar>
+          <AvatarLabel visible={expanded}>Menu</AvatarLabel>
+        </AvatarBtn>
+      </SidebarTooltip>
 
       {open && createPortal(
         <>

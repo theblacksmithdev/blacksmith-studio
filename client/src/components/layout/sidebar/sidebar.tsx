@@ -106,9 +106,7 @@ export function Sidebar() {
 
       <Divider />
 
-      <SidebarTooltip label="Menu" visible={!expanded}>
-        <UserMenu expanded={expanded} />
-      </SidebarTooltip>
+      <UserMenu expanded={expanded} />
     </Nav>
   )
 }
