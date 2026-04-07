@@ -16,6 +16,8 @@ const DEFAULTS: Record<string, any> = {
   'editor.lineNumbers': true,
   'project.displayName': '',
   'project.ignoredPatterns': 'node_modules,.git,__pycache__,venv,dist,.env,.blacksmith-studio',
+  'preview.frontendPath': '/',
+  'preview.backendPath': '/api/docs/',
 }
 
 export class SettingsManager {

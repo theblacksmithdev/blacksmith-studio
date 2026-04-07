@@ -1,6 +1,6 @@
 import styled from '@emotion/styled'
 import { X, PanelRightClose } from 'lucide-react'
-import { RunnerPreview } from '@/components/runner/runner-preview'
+import { RunnerPreview } from '@/components/runner/preview'
 
 const Wrap = styled.div`
   display: flex;

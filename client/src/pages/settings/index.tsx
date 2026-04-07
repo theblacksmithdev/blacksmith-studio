@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { Box, Text, VStack, HStack } from '@chakra-ui/react'
-import { Palette, Sparkles, Code2, FolderTree, AlertTriangle } from 'lucide-react'
+import { Palette, Sparkles, Code2, FolderTree, AlertTriangle, Monitor } from 'lucide-react'
 import { AppearanceSettings } from '@/components/settings/sections/appearance-settings'
 import { AiSettings } from '@/components/settings/sections/ai-settings'
 import { EditorSettings } from '@/components/settings/sections/editor-settings'
 import { ProjectSettings } from '@/components/settings/sections/project-settings'
+import { PreviewSettings } from '@/components/settings/sections/preview-settings'
 import { DangerZone } from '@/components/settings/sections/danger-zone'
 import { useProjectStore } from '@/stores/project-store'
 
@@ -13,6 +14,7 @@ const sections = [
   { id: 'ai', icon: Sparkles, label: 'AI & Prompting', group: 'general' },
   { id: 'editor', icon: Code2, label: 'Editor', group: 'general' },
   { id: 'project', icon: FolderTree, label: 'Project', group: 'general' },
+  { id: 'preview', icon: Monitor, label: 'Preview', group: 'general' },
   { id: 'danger', icon: AlertTriangle, label: 'Danger Zone', group: 'danger' },
 ] as const
 
@@ -21,6 +23,7 @@ const panels: Record<string, () => JSX.Element> = {
   ai: AiSettings,
   editor: EditorSettings,
   project: ProjectSettings,
+  preview: PreviewSettings,
   danger: DangerZone,
 }
 

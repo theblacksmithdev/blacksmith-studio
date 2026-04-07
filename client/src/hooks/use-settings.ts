@@ -70,5 +70,9 @@ export function useSettings() {
     // Project
     displayName: (settings['project.displayName'] ?? '') as string,
     ignoredPatterns: (settings['project.ignoredPatterns'] ?? '') as string,
+
+    // Preview
+    frontendPath: (settings['preview.frontendPath'] ?? '/') as string,
+    backendPath: (settings['preview.backendPath'] ?? '/api/docs') as string,
   }
 }

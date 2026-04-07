@@ -4,7 +4,7 @@ import { useProjects } from '@/hooks/use-projects'
 import { useProjectStore } from '@/stores/project-store'
 import { resetProjectStores } from '@/stores/reset'
 import { useRunnerListener } from '@/hooks/use-runner'
-import { RunnerDock } from '@/components/runner/runner-dock'
+import { RunnerDock } from '@/components/runner/dock'
 
 /**
  * Wrapper layout for project-scoped routes.

@@ -28,7 +28,12 @@ export async function spawnBackend(
   const proc = spawn(venvPython, ['manage.py', 'runserver', `0.0.0.0:${port}`, '--noreload'], {
     cwd: backendDir,
     stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, PYTHONUNBUFFERED: '1' },
+    env: {
+      ...process.env,
+      PYTHONUNBUFFERED: '1',
+      // Allow iframe embedding in Studio's preview panel
+      STUDIO_EMBED: '1',
+    },
   })
 
   const info: ProcessInfo = { process: proc, port, status: 'starting' }

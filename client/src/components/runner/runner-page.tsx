@@ -1,8 +1,8 @@
 import styled from '@emotion/styled'
 import { PanelRight } from 'lucide-react'
 import { Splitter } from '@chakra-ui/react'
-import { RunnerControls } from './runner-controls'
-import { RunnerLogs } from './runner-logs'
+import { RunnerControls } from './controls'
+import { RunnerLogs } from './logs'
 import { useUiStore } from '@/stores/ui-store'
 import { PreviewPanel } from '@/components/shared/preview-panel'
 
