@@ -12,6 +12,15 @@ const Line = styled.div`
   }
 `
 
+const Timestamp = styled.span`
+  width: 58px;
+  flex-shrink: 0;
+  color: var(--studio-text-muted);
+  font-size: 10px;
+  padding-top: 3px;
+  font-family: ${MONO_FONT};
+`
+
 const Source = styled.span`
   width: 52px;
   flex-shrink: 0;
@@ -29,9 +38,20 @@ const Text = styled.span`
   flex: 1;
 `
 
-export function LogLine({ entry }: { entry: LogEntry }) {
+function formatTime(ts: number): string {
+  const d = new Date(ts)
+  return d.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
+}
+
+interface LogLineProps {
+  entry: LogEntry
+  showTimestamp?: boolean
+}
+
+export function LogLine({ entry, showTimestamp }: LogLineProps) {
   return (
     <Line>
+      {showTimestamp && <Timestamp>{formatTime(entry.timestamp)}</Timestamp>}
       <Source>{entry.source === 'backend' ? 'django' : 'vite'}</Source>
       <Text style={{ color: getLineColor(entry.line) }}>{entry.line}</Text>
     </Line>

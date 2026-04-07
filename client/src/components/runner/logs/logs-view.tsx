@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, useMemo } from 'react'
 import styled from '@emotion/styled'
 import { useRunnerStore } from '@/stores/runner-store'
 import { MONO_FONT } from '../runner-primitives'
@@ -36,8 +36,17 @@ export function RunnerLogs() {
   const containerRef = useRef<HTMLDivElement>(null)
   const [filter, setFilter] = useState<LogFilter>('all')
   const [autoScroll, setAutoScroll] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [showTimestamps, setShowTimestamps] = useState(false)
 
-  const filteredLogs = filter === 'all' ? logs : logs.filter((l) => l.source === filter)
+  const filteredLogs = useMemo(() => {
+    let result = filter === 'all' ? logs : logs.filter((l) => l.source === filter)
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase()
+      result = result.filter((l) => l.line.toLowerCase().includes(term))
+    }
+    return result
+  }, [logs, filter, searchTerm])
 
   useEffect(() => {
     if (autoScroll) {
@@ -66,15 +75,25 @@ export function RunnerLogs() {
         autoScroll={autoScroll}
         onScrollToBottom={scrollToBottom}
         onClear={clearLogs}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        showTimestamps={showTimestamps}
+        onToggleTimestamps={() => setShowTimestamps((v) => !v)}
       />
 
       <Container ref={containerRef} onScroll={handleScroll}>
         {filteredLogs.length === 0 ? (
           <EmptyMsg>
-            {logs.length === 0 ? 'No output yet. Start a server to see logs here.' : 'No logs match this filter.'}
+            {logs.length === 0
+              ? 'No output yet. Start a server to see logs here.'
+              : searchTerm
+                ? 'No logs match your search.'
+                : 'No logs match this filter.'}
           </EmptyMsg>
         ) : (
-          filteredLogs.map((entry, i) => <LogLine key={i} entry={entry} />)
+          filteredLogs.map((entry, i) => (
+            <LogLine key={i} entry={entry} showTimestamp={showTimestamps} />
+          ))
         )}
         <div ref={bottomRef} />
       </Container>

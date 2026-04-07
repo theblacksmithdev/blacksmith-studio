@@ -45,5 +45,17 @@ export function useRunner() {
     api.runner.stop({ target })
   }, [])
 
-  return { start, stop }
+  const restart = useCallback((target: 'backend' | 'frontend') => {
+    api.runner.stop({ target })
+    // Wait for stopped status, then restart
+    const unsub = api.runner.onStatus((data: any) => {
+      const s = target === 'backend' ? data.backend.status : data.frontend.status
+      if (s === 'stopped') {
+        unsub()
+        api.runner.start({ target })
+      }
+    })
+  }, [])
+
+  return { start, stop, restart }
 }

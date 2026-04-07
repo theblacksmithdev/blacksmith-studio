@@ -1,7 +1,6 @@
 import styled from '@emotion/styled'
-import { PanelRight } from 'lucide-react'
 import { Splitter } from '@chakra-ui/react'
-import { RunnerControls } from './controls'
+import { StatusBar } from './status-bar'
 import { RunnerLogs } from './logs'
 import { useUiStore } from '@/stores/ui-store'
 import { useSettings } from '@/hooks/use-settings'
@@ -18,8 +17,8 @@ const Body = styled.div`
   flex: 1;
   display: flex;
   min-height: 0;
-  margin: 0 20px 20px;
-  border-radius: 14px;
+  margin: 0 16px 16px;
+  border-radius: 12px;
   border: 1px solid var(--studio-border);
   background: var(--studio-bg-sidebar);
   overflow: hidden;
@@ -30,27 +29,6 @@ const LogsColumn = styled.div`
   min-width: 0;
   display: flex;
   flex-direction: column;
-`
-
-const PreviewToggleBtn = styled.button<{ active: boolean }>`
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: 1px solid var(--studio-border);
-  background: ${({ active }) => (active ? 'var(--studio-bg-hover)' : 'var(--studio-bg-surface)')};
-  color: ${({ active }) => (active ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)')};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.12s ease;
-  flex-shrink: 0;
-
-  &:hover {
-    background: var(--studio-bg-hover);
-    border-color: var(--studio-border-hover);
-    color: var(--studio-text-primary);
-  }
 `
 
 const resizeTriggerCss = {
@@ -77,23 +55,14 @@ export function RunnerPage() {
 
   const handleResizeEnd = (details: { size: number[] }) => {
     const left = Math.round(details.size[0])
-    if (left !== runSplit) {
-      setSetting('preview.runSplit', left)
-    }
+    if (left !== runSplit) setSetting('preview.runSplit', left)
   }
 
   return (
     <Page>
-      <RunnerControls
-        previewToggle={
-          <PreviewToggleBtn
-            active={previewOpen}
-            onClick={() => setPreviewOpen(!previewOpen)}
-            title={previewOpen ? 'Close preview' : 'Open preview'}
-          >
-            <PanelRight size={15} />
-          </PreviewToggleBtn>
-        }
+      <StatusBar
+        previewOpen={previewOpen}
+        onTogglePreview={() => setPreviewOpen(!previewOpen)}
       />
 
       <Body>

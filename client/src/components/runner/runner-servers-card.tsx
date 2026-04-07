@@ -2,7 +2,7 @@ import styled from '@emotion/styled'
 import { Play, Square, Server, Globe } from 'lucide-react'
 import { useRunnerStore, selectIsAnyActive, isServiceActive } from '@/stores/runner-store'
 import { useRunner } from '@/hooks/use-runner'
-import { StatusDot } from './runner-primitives'
+import { ServiceCard } from './service-card'
 
 const Card = styled.div`
   width: 100%;
@@ -30,35 +30,6 @@ const Desc = styled.div`
   color: var(--studio-text-tertiary);
 `
 
-const Actions = styled.div`
-  display: flex;
-  gap: 1px;
-  background: var(--studio-border);
-  border-top: 1px solid var(--studio-border);
-`
-
-const ServiceBtn = styled.button<{ active: boolean }>`
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 12px 14px;
-  background: ${({ active }) => (active ? 'var(--studio-bg-hover)' : 'var(--studio-bg-sidebar)')};
-  border: none;
-  color: ${({ active }) => (active ? 'var(--studio-text-primary)' : 'var(--studio-text-secondary)')};
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-family: inherit;
-
-  &:hover {
-    background: var(--studio-bg-surface);
-    color: var(--studio-text-primary);
-  }
-`
-
 const ToggleAllBtn = styled.button`
   display: flex;
   align-items: center;
@@ -80,9 +51,18 @@ const ToggleAllBtn = styled.button`
   }
 `
 
+const Services = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 12px 12px;
+`
+
 export function RunServersCard() {
   const backendStatus = useRunnerStore((s) => s.backendStatus)
   const frontendStatus = useRunnerStore((s) => s.frontendStatus)
+  const backendPort = useRunnerStore((s) => s.backendPort)
+  const frontendPort = useRunnerStore((s) => s.frontendPort)
   const anyActive = useRunnerStore(selectIsAnyActive)
   const { start, stop } = useRunner()
 
@@ -99,24 +79,24 @@ export function RunServersCard() {
           {anyActive ? 'Stop All' : 'Start All'}
         </ToggleAllBtn>
       </Header>
-      <Actions>
-        <ServiceBtn
-          active={backendStatus === 'running'}
-          onClick={() => (isServiceActive(backendStatus) ? stop('backend') : start('backend'))}
-        >
-          <StatusDot status={backendStatus} size={5} />
-          <Server size={12} />
-          Backend
-        </ServiceBtn>
-        <ServiceBtn
-          active={frontendStatus === 'running'}
-          onClick={() => (isServiceActive(frontendStatus) ? stop('frontend') : start('frontend'))}
-        >
-          <StatusDot status={frontendStatus} size={5} />
-          <Globe size={12} />
-          Frontend
-        </ServiceBtn>
-      </Actions>
+      <Services>
+        <ServiceCard
+          label="Backend"
+          icon={Server}
+          status={backendStatus}
+          port={backendPort}
+          variant="inline"
+          onToggle={() => (isServiceActive(backendStatus) ? stop('backend') : start('backend'))}
+        />
+        <ServiceCard
+          label="Frontend"
+          icon={Globe}
+          status={frontendStatus}
+          port={frontendPort}
+          variant="inline"
+          onToggle={() => (isServiceActive(frontendStatus) ? stop('frontend') : start('frontend'))}
+        />
+      </Services>
     </Card>
   )
 }
