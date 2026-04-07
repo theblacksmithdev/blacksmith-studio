@@ -5,13 +5,21 @@ export type ConnectionStatus = 'connected' | 'disconnected' | 'reconnecting'
 interface UiState {
   connectionStatus: ConnectionStatus
   setConnectionStatus: (status: ConnectionStatus) => void
+
   runnerPanelOpen: boolean
   setRunnerPanelOpen: (open: boolean) => void
+
+  previewOpen: boolean
+  setPreviewOpen: (open: boolean) => void
 }
 
 export const useUiStore = create<UiState>((set) => ({
   connectionStatus: 'disconnected',
   setConnectionStatus: (connectionStatus) => set({ connectionStatus }),
+
   runnerPanelOpen: false,
   setRunnerPanelOpen: (runnerPanelOpen) => set({ runnerPanelOpen }),
+
+  previewOpen: false,
+  setPreviewOpen: (previewOpen) => set({ previewOpen }),
 }))

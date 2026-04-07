@@ -160,7 +160,11 @@ function ServiceCard({ label, icon: Icon, status, port, onToggle }: {
 
 /* ── Main component ── */
 
-export function RunnerControls() {
+interface RunnerControlsProps {
+  previewToggle?: React.ReactNode
+}
+
+export function RunnerControls({ previewToggle }: RunnerControlsProps) {
   const { backendStatus, frontendStatus, backendPort, frontendPort } = useRunnerStore()
   const anyActive = useRunnerStore(selectIsAnyActive)
   const { start, stop } = useRunner()
@@ -169,6 +173,7 @@ export function RunnerControls() {
     <>
       <Header>
         <Title>Dev Servers</Title>
+        {previewToggle}
         <ToggleAllBtn onClick={() => (anyActive ? stop('all') : start('all'))}>
           {anyActive ? <Square size={12} /> : <Layers size={14} />}
           {anyActive ? 'Stop All' : 'Start All'}

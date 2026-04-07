@@ -1,12 +1,77 @@
 import { useEffect } from 'react'
-import { Box } from '@chakra-ui/react'
+import styled from '@emotion/styled'
 import { useParams } from 'react-router-dom'
+import { PanelRight } from 'lucide-react'
+import { Splitter } from '@chakra-ui/react'
 import { MessageList } from './message-list'
 import { ChatInput } from './chat-input'
 import { useClaude } from '@/hooks/use-claude'
 import { useSessions } from '@/hooks/use-sessions'
 import { useChatStore } from '@/stores/chat-store'
 import { useSessionStore } from '@/stores/session-store'
+import { useUiStore } from '@/stores/ui-store'
+import { PreviewPanel } from '@/components/shared/preview-panel'
+import { Tooltip } from '@/components/shared/tooltip'
+
+const ChatColumn = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+`
+
+const TopBar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 8px 14px;
+  flex-shrink: 0;
+`
+
+const PreviewToggle = styled.button<{ active: boolean }>`
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: ${({ active }) => (active ? 'var(--studio-bg-hover)' : 'transparent')};
+  color: ${({ active }) => (active ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)')};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  flex-shrink: 0;
+
+  &:hover {
+    background: var(--studio-bg-hover);
+    color: var(--studio-text-primary);
+  }
+`
+
+const InputWrap = styled.div`
+  padding: 0 24px 20px;
+  max-width: 760px;
+  margin: 0 auto;
+  width: 100%;
+`
+
+const resizeTriggerCss = {
+  width: '6px',
+  background: 'transparent',
+  borderInlineStart: '1px solid var(--studio-border)',
+  cursor: 'col-resize',
+  transition: 'border-color 0.15s ease',
+  _hover: {
+    borderInlineStartWidth: '3px',
+    borderColor: 'var(--studio-border-hover)',
+  },
+}
+
+const PANELS = [
+  { id: 'chat', minSize: 30 },
+  { id: 'preview', minSize: 20 },
+]
 
 export function ChatView() {
   const { sessionId } = useParams<{ sessionId: string }>()
@@ -15,7 +80,9 @@ export function ChatView() {
   const { messages, isStreaming, partialMessage } = useChatStore()
   const activeSessionId = useSessionStore((s) => s.activeSessionId)
 
-  // Load session from URL param on mount or when sessionId changes
+  const previewOpen = useUiStore((s) => s.previewOpen)
+  const setPreviewOpen = useUiStore((s) => s.setPreviewOpen)
+
   useEffect(() => {
     if (sessionId && sessionId !== activeSessionId) {
       loadSession(sessionId)
@@ -28,21 +95,54 @@ export function ChatView() {
   }
 
   const handleCancel = () => {
-    if (sessionId) {
-      cancelPrompt(sessionId)
-    }
+    if (sessionId) cancelPrompt(sessionId)
   }
 
-  return (
-    <Box display="flex" flexDir="column" h="full">
+  const chatContent = (
+    <ChatColumn>
+      <TopBar>
+        <Tooltip content={previewOpen ? 'Close preview' : 'Open preview'}>
+          <PreviewToggle
+            active={previewOpen}
+            onClick={() => setPreviewOpen(!previewOpen)}
+          >
+            <PanelRight size={15} />
+          </PreviewToggle>
+        </Tooltip>
+      </TopBar>
+
       <MessageList
         messages={messages}
         isStreaming={isStreaming}
         partialMessage={partialMessage}
       />
-      <Box css={{ padding: '0 24px 20px', maxWidth: '760px', margin: '0 auto', width: '100%' }}>
+
+      <InputWrap>
         <ChatInput onSend={handleSend} onCancel={handleCancel} isStreaming={isStreaming} />
-      </Box>
-    </Box>
+      </InputWrap>
+    </ChatColumn>
+  )
+
+  if (!previewOpen) {
+    return chatContent
+  }
+
+  return (
+    <Splitter.Root
+      panels={PANELS}
+      defaultSize={[60, 40]}
+      orientation="horizontal"
+      css={{ height: '100%', display: 'flex' }}
+    >
+      <Splitter.Panel id="chat">
+        {chatContent}
+      </Splitter.Panel>
+
+      <Splitter.ResizeTrigger id="chat:preview" css={resizeTriggerCss} />
+
+      <Splitter.Panel id="preview">
+        <PreviewPanel onClose={() => setPreviewOpen(false)} />
+      </Splitter.Panel>
+    </Splitter.Root>
   )
 }
