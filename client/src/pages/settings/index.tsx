@@ -1,59 +1,104 @@
-import { useState } from 'react'
-import { Box, Text, VStack, HStack } from '@chakra-ui/react'
+import { Box, Text, VStack, HStack, Flex } from '@chakra-ui/react'
+import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { Palette, Sparkles, Code2, FolderCog, Blocks, Wand2, AlertTriangle } from 'lucide-react'
-import { AppearanceSettings } from '@/components/settings/sections/appearance-settings'
-import { AiSettings } from '@/components/settings/sections/ai-settings'
-import { EditorSettings } from '@/components/settings/sections/editor-settings'
-import { WorkspaceSettings } from '@/components/settings/sections/workspace-settings'
-import { McpSettings } from '@/components/settings/sections/mcp-settings'
-import { SkillsSettings } from '@/components/settings/sections/skills-settings'
-import { DangerZone } from '@/components/settings/sections/danger-zone'
 import { useProjectStore } from '@/stores/project-store'
 
-const sections = [
-  { id: 'appearance', icon: Palette, label: 'Appearance', group: 'general' },
-  { id: 'ai', icon: Sparkles, label: 'AI & Prompting', group: 'general' },
-  { id: 'mcp', icon: Blocks, label: 'MCP Servers', group: 'general' },
-  { id: 'skills', icon: Wand2, label: 'Claude Skills', group: 'general' },
-  { id: 'editor', icon: Code2, label: 'Editor', group: 'general' },
-  { id: 'workspace', icon: FolderCog, label: 'Workspace', group: 'general' },
-  { id: 'danger', icon: AlertTriangle, label: 'Danger Zone', group: 'danger' },
-] as const
+const sidebarGroups = [
+  {
+    label: 'Claude',
+    items: [
+      { id: 'ai', icon: Sparkles, label: 'AI & Prompting' },
+      { id: 'mcp', icon: Blocks, label: 'MCP Servers' },
+      { id: 'skills', icon: Wand2, label: 'Skills' },
+    ],
+  },
+  {
+    label: 'Preferences',
+    items: [
+      { id: 'appearance', icon: Palette, label: 'Appearance' },
+      { id: 'editor', icon: Code2, label: 'Editor' },
+    ],
+  },
+  {
+    label: 'Project',
+    items: [
+      { id: 'workspace', icon: FolderCog, label: 'Workspace' },
+    ],
+  },
+]
 
-const panels: Record<string, () => JSX.Element> = {
-  appearance: AppearanceSettings,
-  ai: AiSettings,
-  mcp: McpSettings,
-  skills: SkillsSettings,
-  editor: EditorSettings,
-  workspace: WorkspaceSettings,
-  danger: DangerZone,
-}
+const dangerItems = [
+  { id: 'danger', icon: AlertTriangle, label: 'Danger Zone' },
+]
 
 export default function SettingsPage() {
-  const [active, setActive] = useState('appearance')
+  const navigate = useNavigate()
+  const location = useLocation()
   const activeProject = useProjectStore((s) => s.activeProject)
-  const ActivePanel = panels[active]
 
-  const generalSections = sections.filter((s) => s.group === 'general')
-  const dangerSections = sections.filter((s) => s.group === 'danger')
+  // Extract the active tab from the URL: /:projectId/settings/ai → "ai"
+  const pathSegments = location.pathname.split('/')
+  const active = pathSegments[pathSegments.length - 1] || 'ai'
+
+  const goTo = (id: string) => navigate(id, { relative: 'path' })
+
+  const renderItem = (item: { id: string; icon: any; label: string }, isDanger = false) => {
+    const isActive = active === item.id
+    const Icon = item.icon
+    return (
+      <Box
+        key={item.id}
+        as="button"
+        onClick={() => goTo(item.id)}
+        css={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '9px',
+          padding: '7px 12px',
+          borderRadius: '7px',
+          border: 'none',
+          background: isActive
+            ? isDanger ? 'rgba(239,68,68,0.08)' : 'var(--studio-bg-hover)'
+            : 'transparent',
+          color: isActive
+            ? isDanger ? 'var(--studio-error)' : 'var(--studio-text-primary)'
+            : isDanger ? 'var(--studio-text-muted)' : 'var(--studio-text-tertiary)',
+          fontSize: '13px',
+          fontWeight: isActive ? 500 : 400,
+          cursor: 'pointer',
+          textAlign: 'left',
+          width: '100%',
+          transition: 'all 0.1s ease',
+          '&:hover': {
+            background: isActive
+              ? isDanger ? 'rgba(239,68,68,0.08)' : 'var(--studio-bg-hover)'
+              : 'var(--studio-bg-surface)',
+            color: isDanger
+              ? isActive ? 'var(--studio-error)' : 'var(--studio-text-tertiary)'
+              : 'var(--studio-text-secondary)',
+          },
+        }}
+      >
+        <Icon size={15} style={{ flexShrink: 0 }} />
+        {item.label}
+      </Box>
+    )
+  }
 
   return (
     <HStack gap={0} align="stretch" css={{ height: '100%' }}>
-      {/* Inner sidebar */}
-      <Box
+      {/* Sidebar */}
+      <Flex
+        direction="column"
         css={{
           width: '220px',
           flexShrink: 0,
           borderRight: '1px solid var(--studio-border)',
           background: 'var(--studio-bg-sidebar)',
-          display: 'flex',
-          flexDirection: 'column',
           padding: '20px 0',
           overflowY: 'auto',
         }}
       >
-        {/* Header */}
         <Box css={{ padding: '0 20px', marginBottom: '20px' }}>
           <Text css={{ fontSize: '15px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
             Settings
@@ -65,84 +110,31 @@ export default function SettingsPage() {
           )}
         </Box>
 
-        {/* General sections */}
-        <VStack gap={0} align="stretch" css={{ padding: '0 8px' }}>
-          {generalSections.map(({ id, icon: Icon, label }) => {
-            const isActive = active === id
-            return (
-              <Box
-                key={id}
-                as="button"
-                onClick={() => setActive(id)}
-                css={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '9px',
-                  padding: '8px 12px',
-                  borderRadius: '7px',
-                  border: 'none',
-                  background: isActive ? 'var(--studio-bg-hover)' : 'transparent',
-                  color: isActive ? 'var(--studio-text-primary)' : 'var(--studio-text-tertiary)',
-                  fontSize: '13px',
-                  fontWeight: isActive ? 500 : 400,
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  width: '100%',
-                  transition: 'all 0.1s ease',
-                  '&:hover': {
-                    background: isActive ? 'var(--studio-bg-hover)' : 'var(--studio-bg-surface)',
-                    color: 'var(--studio-text-secondary)',
-                  },
-                }}
-              >
-                <Icon size={15} style={{ flexShrink: 0 }} />
-                {label}
-              </Box>
-            )
-          })}
+        <VStack gap={5} align="stretch" css={{ padding: '0 8px' }}>
+          {sidebarGroups.map((group) => (
+            <Box key={group.label}>
+              <Text css={{
+                fontSize: '10px', fontWeight: 600, textTransform: 'uppercase',
+                letterSpacing: '0.08em', color: 'var(--studio-text-muted)',
+                padding: '0 12px', marginBottom: '4px',
+              }}>
+                {group.label}
+              </Text>
+              <VStack gap={0} align="stretch">
+                {group.items.map((item) => renderItem(item))}
+              </VStack>
+            </Box>
+          ))}
         </VStack>
 
         <Box css={{ flex: 1 }} />
 
-        {/* Danger zone — at the bottom */}
         <VStack gap={0} align="stretch" css={{ padding: '0 8px', marginTop: '8px' }}>
-          {dangerSections.map(({ id, icon: Icon, label }) => {
-            const isActive = active === id
-            return (
-              <Box
-                key={id}
-                as="button"
-                onClick={() => setActive(id)}
-                css={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '9px',
-                  padding: '8px 12px',
-                  borderRadius: '7px',
-                  border: 'none',
-                  background: isActive ? 'rgba(239,68,68,0.08)' : 'transparent',
-                  color: isActive ? 'var(--studio-error)' : 'var(--studio-text-muted)',
-                  fontSize: '13px',
-                  fontWeight: isActive ? 500 : 400,
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  width: '100%',
-                  transition: 'all 0.1s ease',
-                  '&:hover': {
-                    background: isActive ? 'rgba(239,68,68,0.08)' : 'var(--studio-bg-surface)',
-                    color: isActive ? 'var(--studio-error)' : 'var(--studio-text-tertiary)',
-                  },
-                }}
-              >
-                <Icon size={15} style={{ flexShrink: 0 }} />
-                {label}
-              </Box>
-            )
-          })}
+          {dangerItems.map((item) => renderItem(item, true))}
         </VStack>
-      </Box>
+      </Flex>
 
-      {/* Content */}
+      {/* Content — rendered by nested route */}
       <Box
         css={{
           flex: 1,
@@ -151,7 +143,7 @@ export default function SettingsPage() {
         }}
       >
         <Box css={{ maxWidth: '600px', margin: '0 auto' }}>
-          <ActivePanel />
+          <Outlet />
         </Box>
       </Box>
     </HStack>

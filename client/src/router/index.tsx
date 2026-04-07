@@ -6,6 +6,13 @@ import { Path } from './paths'
 import DashboardPage from '@/pages/dashboard'
 import ProjectsPage from '@/pages/projects'
 import SettingsPage from '@/pages/settings'
+import { AiSettings } from '@/components/settings/sections/ai-settings'
+import { McpSettings } from '@/components/settings/sections/mcp-settings'
+import { SkillsSettings } from '@/components/settings/sections/skills-settings'
+import { AppearanceSettings } from '@/components/settings/sections/appearance-settings'
+import { EditorSettings } from '@/components/settings/sections/editor-settings'
+import { WorkspaceSettings } from '@/components/settings/sections/workspace-settings'
+import { DangerZone } from '@/components/settings/sections/danger-zone'
 import NewChatPage from '@/pages/chat/new'
 import ChatPage from '@/pages/chat'
 import FilesPage from '@/pages/files'
@@ -14,7 +21,6 @@ import SkillsBrowserPage from '@/pages/skills'
 import McpBrowserPage from '@/pages/mcp'
 
 export const router = createHashRouter([
-  // Global routes — title bar only, no sidebar
   {
     element: <AppLayout />,
     children: [
@@ -23,7 +29,6 @@ export const router = createHashRouter([
     ],
   },
 
-  // Project-scoped routes — title bar + sidebar + runner dock
   {
     path: '/:projectId',
     element: <ProjectLayout />,
@@ -33,11 +38,25 @@ export const router = createHashRouter([
       { path: 'chat/:sessionId', element: <ChatPage /> },
       { path: 'code', element: <FilesPage /> },
       { path: 'run', element: <RunPage /> },
-      { path: 'settings', element: <SettingsPage /> },
       { path: 'skills', element: <SkillsBrowserPage /> },
       { path: 'mcp', element: <McpBrowserPage /> },
 
-      // Redirects for removed pages
+      // Settings with nested routes
+      {
+        path: 'settings',
+        element: <SettingsPage />,
+        children: [
+          { index: true, element: <Navigate to="ai" replace /> },
+          { path: 'ai', element: <AiSettings /> },
+          { path: 'mcp', element: <McpSettings /> },
+          { path: 'skills', element: <SkillsSettings /> },
+          { path: 'appearance', element: <AppearanceSettings /> },
+          { path: 'editor', element: <EditorSettings /> },
+          { path: 'workspace', element: <WorkspaceSettings /> },
+          { path: 'danger', element: <DangerZone /> },
+        ],
+      },
+
       { path: 'templates', element: <Navigate to="../chat/new" replace /> },
       { path: 'activity', element: <Navigate to="../chat/new" replace /> },
     ],
