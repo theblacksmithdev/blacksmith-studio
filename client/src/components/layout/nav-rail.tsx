@@ -8,15 +8,11 @@ import {
   History,
   Settings,
   Anvil,
-  Sun,
-  Moon,
   LogOut,
 } from 'lucide-react'
 import { Tooltip } from '@/components/shared/tooltip'
-import { useUiStore } from '@/stores/ui-store'
 import { useProjectStore } from '@/stores/project-store'
 import { useRunnerStore, selectIsAnyRunning, selectIsAnyStarting } from '@/stores/runner-store'
-import { useThemeMode } from '@/hooks/use-theme-mode'
 import { useProjects } from '@/hooks/use-projects'
 import {
   Path,
@@ -76,9 +72,7 @@ const railBtn = (active = false) => ({
 export function NavRail() {
   const navigate = useNavigate()
   const location = useLocation()
-  const connectionStatus = useUiStore((s) => s.connectionStatus)
   const activeProject = useProjectStore((s) => s.activeProject)
-  const { mode, toggle: toggleTheme } = useThemeMode()
 
   useProjects()
 
@@ -98,7 +92,7 @@ export function NavRail() {
         alignItems: 'center',
         height: '100%',
         flexShrink: 0,
-        paddingTop: '12px',
+        paddingTop: '10px',
         paddingBottom: '10px',
       }}
     >
@@ -193,44 +187,6 @@ export function NavRail() {
             </Box>
           </Tooltip>
         )}
-
-        <Tooltip content={mode === 'dark' ? 'Light mode' : 'Dark mode'}>
-          <Box
-            as="button"
-            onClick={toggleTheme}
-            css={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              border: '1px solid var(--studio-border)',
-              background: 'var(--studio-bg-surface)',
-              color: 'var(--studio-text-secondary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              transition: 'all 0.15s ease',
-              marginTop: '4px',
-              '&:hover': {
-                background: 'var(--studio-bg-hover)',
-                color: 'var(--studio-text-primary)',
-                borderColor: 'var(--studio-border-hover)',
-              },
-            }}
-          >
-            {mode === 'dark' ? <Sun size={13} /> : <Moon size={13} />}
-          </Box>
-        </Tooltip>
-
-        <Box
-          css={{
-            width: '6px',
-            height: '6px',
-            borderRadius: '50%',
-            background: connectionStatus === 'connected' ? 'var(--studio-green)' : 'var(--studio-error)',
-            marginTop: '6px',
-          }}
-        />
       </VStack>
     </Box>
   )

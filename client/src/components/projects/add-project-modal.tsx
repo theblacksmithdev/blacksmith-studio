@@ -400,17 +400,17 @@ function CreateStep({ onClose }: { onClose: () => void }) {
     if (state !== 'creating') return
 
     const unsubs = [
-      window.electronAPI!.on('projects:onCreateOutput', (data: { line: string }) => {
+      api.subscribe('projects:onCreateOutput', (data: { line: string }) => {
         setOutputLines((prev) => [...prev, data.line])
       }),
-      window.electronAPI!.on('projects:onCreateDone', (data: { project: { id: string } }) => {
+      api.subscribe('projects:onCreateDone', (data: { project: { id: string } }) => {
         setState('success')
         setTimeout(() => {
           onClose()
           navigate(projectHome(data.project.id))
         }, 1000)
       }),
-      window.electronAPI!.on('projects:onCreateError', (data: { error: string }) => {
+      api.subscribe('projects:onCreateError', (data: { error: string }) => {
         setState('error')
         setServerError(data.error)
       }),

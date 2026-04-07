@@ -1,4 +1,5 @@
 import { useEffect, useCallback, useRef } from 'react'
+import { api } from '@/api/client'
 import { useChatStore } from '@/stores/chat-store'
 import { useFileStore } from '@/stores/file-store'
 
@@ -36,11 +37,11 @@ export function useClaude() {
     }
 
     const unsubs = [
-      window.electronAPI!.on('claude:onMessage', onMessage),
-      window.electronAPI!.on('claude:onToolUse', onToolUse),
-      window.electronAPI!.on('claude:onDone', onDone),
-      window.electronAPI!.on('claude:onError', onError),
-      window.electronAPI!.on('files:onChanged', onFilesChanged),
+      api.subscribe('claude:onMessage', onMessage),
+      api.subscribe('claude:onToolUse', onToolUse),
+      api.subscribe('claude:onDone', onDone),
+      api.subscribe('claude:onError', onError),
+      api.subscribe('files:onChanged', onFilesChanged),
     ]
 
     return () => unsubs.forEach((unsub) => unsub())
@@ -53,14 +54,14 @@ export function useClaude() {
       store.setStreaming(true)
       store.updateStreamingMessage('')
       lastContentRef.current = ''
-      window.electronAPI!.invoke('claude:sendPrompt', { sessionId, prompt })
+      api.invoke('claude:sendPrompt', { sessionId, prompt })
     },
     [],
   )
 
   const cancelPrompt = useCallback(
     (sessionId: string) => {
-      window.electronAPI!.invoke('claude:cancel', { sessionId })
+      api.invoke('claude:cancel', { sessionId })
       chatStore.getState().setStreaming(false)
     },
     [],

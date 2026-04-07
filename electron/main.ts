@@ -2,6 +2,7 @@ import { app, BrowserWindow, shell, Menu } from 'electron'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { setupAllIPC } from './ipc/index.js'
+import { WINDOW_ON_FULLSCREEN } from './ipc/channels.js'
 import { ProjectManager } from '../server/services/projects.js'
 import { SessionManager } from '../server/services/sessions.js'
 import { ClaudeManager } from '../server/services/claude/index.js'
@@ -47,6 +48,14 @@ function createWindow() {
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url)
     return { action: 'deny' }
+  })
+
+  // Forward fullscreen state to renderer
+  mainWindow.on('enter-full-screen', () => {
+    mainWindow?.webContents.send(WINDOW_ON_FULLSCREEN, true)
+  })
+  mainWindow.on('leave-full-screen', () => {
+    mainWindow?.webContents.send(WINDOW_ON_FULLSCREEN, false)
   })
 }
 

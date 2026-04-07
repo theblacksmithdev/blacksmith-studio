@@ -58,6 +58,7 @@ export const CLAUDE_ON_ERROR = 'claude:onError'
 export const FILES_ON_CHANGED = 'files:onChanged'
 export const RUNNER_ON_STATUS = 'runner:onStatus'
 export const RUNNER_ON_OUTPUT = 'runner:onOutput'
+export const WINDOW_ON_FULLSCREEN = 'window:onFullscreen'
 
 // Channel allowlists for preload security
 export const INVOKE_CHANNELS = [
@@ -78,4 +79,5 @@ export const SUBSCRIBE_CHANNELS = [
   CLAUDE_ON_MESSAGE, CLAUDE_ON_TOOL_USE, CLAUDE_ON_DONE, CLAUDE_ON_ERROR,
   FILES_ON_CHANGED,
   RUNNER_ON_STATUS, RUNNER_ON_OUTPUT,
+  WINDOW_ON_FULLSCREEN,
 ] as const
