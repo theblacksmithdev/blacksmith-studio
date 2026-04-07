@@ -9,6 +9,7 @@ import { health } from './modules/health'
 import { windowApi } from './modules/window'
 import { browse } from './modules/browse'
 import { mcp } from './modules/mcp'
+import { setup } from './modules/setup'
 
 export const api = {
   projects,
@@ -22,4 +23,5 @@ export const api = {
   window: windowApi,
   browse,
   mcp,
+  setup,
 } as const

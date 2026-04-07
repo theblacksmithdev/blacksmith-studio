@@ -52,6 +52,10 @@ export const MCP_TEST = 'mcp:test'
 // Health
 export const HEALTH_CHECK = 'health:check'
 
+// Setup
+export const SETUP_CHECK = 'setup:check'
+export const SETUP_INSTALL_CLAUDE = 'setup:installClaude'
+
 // ─── Push/Stream Channels ───
 
 // Project creation
@@ -81,6 +85,7 @@ export const INVOKE_CHANNELS = [
   CLAUDE_SEND_PROMPT, CLAUDE_CANCEL,
   MCP_LIST, MCP_ADD, MCP_UPDATE, MCP_REMOVE, MCP_TOGGLE, MCP_TEST,
   HEALTH_CHECK,
+  SETUP_CHECK, SETUP_INSTALL_CLAUDE,
 ] as const
 
 export const SUBSCRIBE_CHANNELS = [

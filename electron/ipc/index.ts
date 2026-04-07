@@ -15,6 +15,7 @@ import { setupClaudeIPC } from './claude.js'
 import { setupRunnerIPC } from './runner.js'
 import { setupHealthIPC } from './health.js'
 import { setupMcpIPC } from './mcp.js'
+import { setupSetupIPC } from './setup.js'
 import { setupFolderDialogIPC } from './folder-dialog.js'
 
 export function setupAllIPC(
@@ -36,4 +37,5 @@ export function setupAllIPC(
   setupRunnerIPC(getWindow, runnerManager, projectManager)
   setupMcpIPC(mcpManager, projectManager, settingsManager)
   setupHealthIPC(claudeManager, projectManager)
+  setupSetupIPC()
 }
