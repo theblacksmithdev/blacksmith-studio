@@ -179,14 +179,16 @@ export class McpManager {
         const proc = spawn(config.command, config.args || [], {
           stdio: ['pipe', 'pipe', 'pipe'],
           env: { ...process.env, ...config.env },
-          timeout: 5000,
+          shell: true,
         })
 
         let resolved = false
+        let stderr = ''
+
         const done = (ok: boolean, error?: string) => {
           if (resolved) return
           resolved = true
-          proc.kill()
+          try { proc.kill() } catch { /* already dead */ }
           if (ok) {
             this.errors.delete(name)
           } else if (error) {
@@ -195,10 +197,27 @@ export class McpManager {
           resolve({ ok, error })
         }
 
-        proc.on('spawn', () => done(true))
+        // Collect stderr for error reporting
+        proc.stderr.on('data', (chunk: Buffer) => { stderr += chunk.toString() })
+
+        // If we get any stdout, the server started successfully
+        proc.stdout.on('data', () => done(true))
+
+        // If it exits quickly with non-zero, it failed
+        proc.on('close', (code) => {
+          if (!resolved) {
+            if (code === 0) {
+              done(true)
+            } else {
+              const lastLine = stderr.trim().split('\n').pop() || `Exit code ${code}`
+              done(false, lastLine)
+            }
+          }
+        })
+
         proc.on('error', (err) => done(false, err.message))
 
-        setTimeout(() => done(false, 'Process did not start within 5s'), 5000)
+        setTimeout(() => done(false, 'Server did not respond within 10s'), 10000)
       } catch (e: any) {
         const err = e.message || 'Failed to spawn process'
         this.errors.set(name, err)
