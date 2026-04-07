@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { Box, Text, VStack, HStack } from '@chakra-ui/react'
+import { Box, Text, VStack, HStack, Input } from '@chakra-ui/react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Trash2, AlertTriangle, X, FolderX, Database } from 'lucide-react'
+import { Trash2, AlertTriangle, FolderX, Database } from 'lucide-react'
 import { useProjects } from '@/hooks/use-projects'
 import { useProjectStore } from '@/stores/project-store'
 import { Path } from '@/router/paths'
+import { Modal, DangerButton, GhostButton, FooterSpacer } from '@/components/shared/modal'
 
 type RemoveMode = 'soft' | 'hard' | null
 
@@ -64,138 +65,80 @@ export function DangerZone() {
         </VStack>
       </VStack>
 
-      {/* Confirmation modal */}
       {modalMode && (
-        <>
-          <Box
-            css={{
-              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
-              backdropFilter: 'blur(4px)', zIndex: 400,
-            }}
-          />
-          <Box
-            css={{
-              position: 'fixed', top: '50%', left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '440px', borderRadius: '14px',
-              border: '1px solid var(--studio-border-hover)',
-              background: 'var(--studio-bg-main)',
-              boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
-              zIndex: 401, overflow: 'hidden',
-              animation: 'pickerSlideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-            }}
-          >
-            {/* Header */}
-            <HStack gap={3} css={{ padding: '20px 20px 16px' }}>
-              <Box css={{
-                width: '36px', height: '36px', borderRadius: '10px',
-                background: 'rgba(239,68,68,0.1)', display: 'flex',
-                alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              }}>
-                {modalMode === 'hard'
-                  ? <FolderX size={18} style={{ color: 'var(--studio-error)' }} />
-                  : <Database size={18} style={{ color: 'var(--studio-error)' }} />}
-              </Box>
-              <Box css={{ flex: 1 }}>
-                <Text css={{ fontSize: '15px', fontWeight: 600, color: 'var(--studio-text-primary)' }}>
-                  {modalMode === 'hard' ? 'Delete project entirely' : 'Remove from Studio'}
+        <Modal
+          title={modalMode === 'hard' ? 'Delete project entirely' : 'Remove from Studio'}
+          onClose={closeModal}
+          width="440px"
+          headerExtra={
+            <Box css={{
+              width: '28px', height: '28px', borderRadius: '8px',
+              background: 'rgba(239,68,68,0.1)', display: 'flex',
+              alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              {modalMode === 'hard'
+                ? <FolderX size={14} style={{ color: 'var(--studio-error)' }} />
+                : <Database size={14} style={{ color: 'var(--studio-error)' }} />}
+            </Box>
+          }
+          footer={
+            <>
+              <FooterSpacer />
+              <GhostButton onClick={closeModal}>Cancel</GhostButton>
+              <DangerButton onClick={handleRemove} disabled={!confirmed || removing}>
+                <Trash2 size={13} />
+                {removing ? 'Removing...' : modalMode === 'hard' ? 'Delete everything' : 'Remove from Studio'}
+              </DangerButton>
+            </>
+          }
+        >
+          <VStack gap={4} align="stretch">
+            {/* Warning */}
+            <Box
+              css={{
+                padding: '12px 14px', borderRadius: '8px',
+                background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)',
+              }}
+            >
+              <HStack gap={2} css={{ marginBottom: '6px' }}>
+                <AlertTriangle size={14} style={{ color: 'var(--studio-error)' }} />
+                <Text css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-error)' }}>
+                  This action cannot be undone
                 </Text>
-                <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', marginTop: '2px' }}>
-                  {activeProject?.name}
+              </HStack>
+              {modalMode === 'hard' ? (
+                <Text css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)', lineHeight: 1.5 }}>
+                  This will <strong>permanently delete</strong> the folder at{' '}
+                  <code style={{ fontSize: '11px', background: 'var(--studio-bg-surface)', padding: '1px 4px', borderRadius: '3px' }}>{activeProject?.path}</code>{' '}
+                  from your disk, along with all chat history and settings.
                 </Text>
-              </Box>
-              <Box
-                as="button"
-                onClick={closeModal}
-                css={{
-                  width: '28px', height: '28px', borderRadius: '7px', border: 'none',
-                  background: 'transparent', color: 'var(--studio-text-muted)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', '&:hover': { background: 'var(--studio-bg-surface)', color: 'var(--studio-text-primary)' },
-                }}
-              >
-                <X size={16} />
-              </Box>
-            </HStack>
+              ) : (
+                <Text css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)', lineHeight: 1.5 }}>
+                  Your project files will remain on disk. All chat history and settings stored in Studio will be permanently deleted.
+                </Text>
+              )}
+            </Box>
 
-            {/* Body */}
-            <Box css={{ padding: '0 20px 20px' }}>
-              <Box
-                css={{
-                  padding: '12px 14px', borderRadius: '8px', marginBottom: '16px',
-                  background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)',
-                }}
-              >
-                <HStack gap={2} css={{ marginBottom: '6px' }}>
-                  <AlertTriangle size={14} style={{ color: 'var(--studio-error)' }} />
-                  <Text css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-error)' }}>
-                    This action cannot be undone
-                  </Text>
-                </HStack>
-                {modalMode === 'hard' ? (
-                  <Text css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)', lineHeight: 1.5 }}>
-                    This will <strong>permanently delete</strong> the folder at{' '}
-                    <code style={{ fontSize: '11px', background: 'var(--studio-bg-surface)', padding: '1px 4px', borderRadius: '3px' }}>{activeProject?.path}</code>{' '}
-                    from your disk, along with all chat history and settings in Studio.
-                  </Text>
-                ) : (
-                  <Text css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)', lineHeight: 1.5 }}>
-                    Your project files will remain on disk. All chat history and settings stored in Studio will be permanently deleted.
-                    You can re-add the project later.
-                  </Text>
-                )}
-              </Box>
-
+            {/* Confirmation input */}
+            <Box>
               <Text css={{ fontSize: '13px', color: 'var(--studio-text-secondary)', marginBottom: '8px' }}>
                 Type <strong style={{ color: 'var(--studio-text-primary)' }}>{activeProject?.name}</strong> to confirm:
               </Text>
-              <input
-                type="text"
+              <Input
                 value={confirmText}
                 onChange={(e) => setConfirmText(e.target.value)}
                 placeholder={activeProject?.name || ''}
                 autoFocus
-                style={{
-                  width: '100%', padding: '9px 12px', borderRadius: '7px',
+                css={{
+                  padding: '9px 12px', borderRadius: '7px',
                   border: '1px solid var(--studio-border)', background: 'var(--studio-bg-surface)',
-                  color: 'var(--studio-text-primary)', fontSize: '14px', outline: 'none',
-                  marginBottom: '16px',
+                  color: 'var(--studio-text-primary)', fontSize: '14px',
+                  '&:focus': { borderColor: 'var(--studio-border-hover)', boxShadow: 'none' },
                 }}
               />
-
-              <HStack gap={2} justify="end">
-                <Box
-                  as="button"
-                  onClick={closeModal}
-                  css={{
-                    padding: '8px 16px', borderRadius: '7px', border: 'none',
-                    background: 'transparent', color: 'var(--studio-text-tertiary)',
-                    fontSize: '13px', cursor: 'pointer',
-                    '&:hover': { color: 'var(--studio-text-secondary)' },
-                  }}
-                >
-                  Cancel
-                </Box>
-                <Box
-                  as="button"
-                  onClick={confirmed && !removing ? handleRemove : undefined}
-                  css={{
-                    padding: '8px 18px', borderRadius: '7px', border: 'none',
-                    background: confirmed && !removing ? 'var(--studio-error)' : 'var(--studio-bg-surface)',
-                    color: confirmed && !removing ? '#fff' : 'var(--studio-text-muted)',
-                    fontSize: '13px', fontWeight: 500,
-                    cursor: confirmed && !removing ? 'pointer' : 'default',
-                    display: 'flex', alignItems: 'center', gap: '6px',
-                    transition: 'all 0.12s ease',
-                  }}
-                >
-                  <Trash2 size={13} />
-                  {removing ? 'Removing...' : modalMode === 'hard' ? 'Delete everything' : 'Remove from Studio'}
-                </Box>
-              </HStack>
             </Box>
-          </Box>
-        </>
+          </VStack>
+        </Modal>
       )}
     </>
   )

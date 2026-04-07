@@ -1,146 +1,11 @@
 import { useState } from 'react'
-import { createPortal } from 'react-dom'
-import styled from '@emotion/styled'
-import { X, Search, Plus } from 'lucide-react'
+import { Box, Flex, HStack, Input, Button, Text } from '@chakra-ui/react'
+import { Search, Plus } from 'lucide-react'
 import type { McpServerConfig, McpServerEntry } from '@/api/modules/mcp'
+import { Modal, SecondaryButton } from '@/components/shared/modal'
 import { McpServerModal } from '../mcp-server-modal'
 import { PRESETS, CATEGORIES } from './presets'
 import { ServerListItem } from './server-list-item'
-
-/* ── Styled ── */
-
-const Overlay = styled.div`
-  position: fixed;
-  inset: 0;
-  z-index: 400;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(6px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: fadeIn 0.15s ease;
-`
-
-const Modal = styled.div`
-  width: 560px;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  background: var(--studio-bg-surface);
-  border-radius: 16px;
-  border: 1px solid var(--studio-border);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.4);
-  overflow: hidden;
-`
-
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 18px 20px;
-  border-bottom: 1px solid var(--studio-border);
-  gap: 12px;
-`
-
-const Title = styled.div`
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--studio-text-primary);
-  flex: 1;
-`
-
-const CloseBtn = styled.button`
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  border: none;
-  background: transparent;
-  color: var(--studio-text-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  &:hover { background: var(--studio-bg-hover); color: var(--studio-text-primary); }
-`
-
-const SearchBar = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  border-bottom: 1px solid var(--studio-border);
-`
-
-const SearchInput = styled.input`
-  flex: 1;
-  border: none;
-  background: transparent;
-  color: var(--studio-text-primary);
-  font-size: 13px;
-  outline: none;
-  font-family: inherit;
-  &::placeholder { color: var(--studio-text-muted); }
-`
-
-const CategoryBar = styled.div`
-  display: flex;
-  gap: 4px;
-  padding: 10px 20px;
-  border-bottom: 1px solid var(--studio-border);
-  flex-wrap: wrap;
-`
-
-const CategoryBtn = styled.button<{ active: boolean }>`
-  padding: 4px 12px;
-  border-radius: 6px;
-  border: none;
-  background: ${({ active }) => (active ? 'var(--studio-bg-hover)' : 'transparent')};
-  color: ${({ active }) => (active ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)')};
-  font-size: 12px;
-  font-weight: ${({ active }) => (active ? 500 : 400)};
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.1s ease;
-  &:hover { color: var(--studio-text-secondary); }
-`
-
-const Body = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  padding: 8px;
-`
-
-const EmptyMsg = styled.div`
-  padding: 24px;
-  text-align: center;
-  font-size: 12px;
-  color: var(--studio-text-tertiary);
-`
-
-const Footer = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 14px 20px;
-  border-top: 1px solid var(--studio-border);
-`
-
-const CustomBtn = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: 1px solid var(--studio-border);
-  background: var(--studio-bg-main);
-  color: var(--studio-text-secondary);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.12s ease;
-  &:hover { background: var(--studio-bg-surface); border-color: var(--studio-border-hover); color: var(--studio-text-primary); }
-`
-
-/* ── Component ── */
 
 interface McpLibraryModalProps {
   existingNames: Set<string>
@@ -189,33 +54,63 @@ export function McpLibraryModal({ existingNames, onAdd, onClose }: McpLibraryMod
     )
   }
 
-  return createPortal(
-    <Overlay>
-      <Modal>
-        <Header>
-          <Title>Add MCP Server</Title>
-          <CloseBtn onClick={onClose}><X size={15} /></CloseBtn>
-        </Header>
-
-        <SearchBar>
+  return (
+    <Modal
+      title="Add MCP Server"
+      onClose={onClose}
+      width="560px"
+      footer={
+        <SecondaryButton onClick={() => setShowCustom(true)}>
+          <Plus size={13} />
+          Custom Server
+        </SecondaryButton>
+      }
+    >
+      <Box css={{ margin: '-20px', display: 'flex', flexDirection: 'column' }}>
+        {/* Search */}
+        <Flex
+          align="center"
+          gap={2}
+          css={{ padding: '10px 20px', borderBottom: '1px solid var(--studio-border)' }}
+        >
           <Search size={14} style={{ color: 'var(--studio-text-muted)', flexShrink: 0 }} />
-          <SearchInput
+          <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search servers..."
             autoFocus
+            css={{ fontSize: '13px', color: 'var(--studio-text-primary)', border: 'none', outline: 'none', background: 'transparent', '&:focus': { boxShadow: 'none' }, '&::placeholder': { color: 'var(--studio-text-muted)' } }}
           />
-        </SearchBar>
+        </Flex>
 
-        <CategoryBar>
+        {/* Categories */}
+        <HStack
+          gap={1}
+          css={{ padding: '10px 20px', borderBottom: '1px solid var(--studio-border)', flexWrap: 'wrap' }}
+        >
           {CATEGORIES.map((cat) => (
-            <CategoryBtn key={cat.id} active={category === cat.id} onClick={() => setCategory(cat.id)}>
+            <Button
+              key={cat.id}
+              size="xs"
+              variant="ghost"
+              onClick={() => setCategory(cat.id)}
+              css={{
+                padding: '4px 12px',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: category === cat.id ? 500 : 400,
+                background: category === cat.id ? 'var(--studio-bg-hover)' : 'transparent',
+                color: category === cat.id ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)',
+                '&:hover': { color: 'var(--studio-text-secondary)' },
+              }}
+            >
               {cat.label}
-            </CategoryBtn>
+            </Button>
           ))}
-        </CategoryBar>
+        </HStack>
 
-        <Body>
+        {/* Server list */}
+        <Box css={{ overflowY: 'auto', padding: '8px', maxHeight: '400px' }}>
           {filtered.map((preset) => (
             <ServerListItem
               key={preset.name}
@@ -224,17 +119,13 @@ export function McpLibraryModal({ existingNames, onAdd, onClose }: McpLibraryMod
               onClick={() => setConfiguring(preset)}
             />
           ))}
-          {filtered.length === 0 && <EmptyMsg>No servers match your search.</EmptyMsg>}
-        </Body>
-
-        <Footer>
-          <CustomBtn onClick={() => setShowCustom(true)}>
-            <Plus size={13} />
-            Custom Server
-          </CustomBtn>
-        </Footer>
-      </Modal>
-    </Overlay>,
-    document.body,
+          {filtered.length === 0 && (
+            <Text css={{ padding: '24px', textAlign: 'center', fontSize: '12px', color: 'var(--studio-text-tertiary)' }}>
+              No servers match your search.
+            </Text>
+          )}
+        </Box>
+      </Box>
+    </Modal>
   )
 }

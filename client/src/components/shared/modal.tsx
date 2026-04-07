@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
-import { Dialog, Button, Flex, CloseButton } from '@chakra-ui/react'
+import { createPortal } from 'react-dom'
+import { Box, Flex, Text, Button, CloseButton } from '@chakra-ui/react'
 
 /* ── Modal ── */
 
@@ -13,91 +14,95 @@ interface ModalProps {
 }
 
 function Modal({ title, children, onClose, width = '480px', footer, headerExtra }: ModalProps) {
-  return (
-    <Dialog.Root open onOpenChange={() => {}} closeOnInteractOutside={false}>
-      <Dialog.Backdrop
+  return createPortal(
+    <Flex
+      align="center"
+      justify="center"
+      css={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 400,
+        background: 'rgba(0, 0, 0, 0.6)',
+        backdropFilter: 'blur(6px)',
+        animation: 'fadeIn 0.15s ease',
+      }}
+    >
+      <Flex
+        direction="column"
         css={{
-          background: 'rgba(0, 0, 0, 0.6)',
-          backdropFilter: 'blur(6px)',
+          width,
+          maxHeight: '85vh',
+          background: 'var(--studio-bg-surface)',
+          borderRadius: '16px',
+          border: '1px solid var(--studio-border)',
+          boxShadow: '0 24px 80px rgba(0, 0, 0, 0.4)',
+          overflow: 'hidden',
         }}
-      />
-      <Dialog.Positioner>
-        <Dialog.Content
+      >
+        {/* Header */}
+        <Flex
+          align="center"
+          gap={3}
           css={{
-            width,
-            maxHeight: '85vh',
-            background: 'var(--studio-bg-surface)',
-            borderRadius: '16px',
-            border: '1px solid var(--studio-border)',
-            boxShadow: '0 24px 80px rgba(0, 0, 0, 0.4)',
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
+            padding: '18px 20px',
+            borderBottom: '1px solid var(--studio-border)',
+            flexShrink: 0,
           }}
         >
-          <Dialog.Header
+          {headerExtra}
+          <Text
             css={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '18px 20px',
-              borderBottom: '1px solid var(--studio-border)',
-            }}
-          >
-            <Dialog.Title
-              css={{
-                fontSize: '15px',
-                fontWeight: 600,
-                color: 'var(--studio-text-primary)',
-                flex: 1,
-                letterSpacing: '-0.01em',
-              }}
-            >
-              {title}
-            </Dialog.Title>
-            {headerExtra}
-            <Dialog.CloseTrigger asChild>
-              <CloseButton
-                size="sm"
-                onClick={onClose}
-                css={{
-                  color: 'var(--studio-text-muted)',
-                  borderRadius: '6px',
-                  '&:hover': {
-                    background: 'var(--studio-bg-hover)',
-                    color: 'var(--studio-text-primary)',
-                  },
-                }}
-              />
-            </Dialog.CloseTrigger>
-          </Dialog.Header>
-
-          <Dialog.Body
-            css={{
+              fontSize: '15px',
+              fontWeight: 600,
+              color: 'var(--studio-text-primary)',
               flex: 1,
-              overflowY: 'auto',
-              padding: '20px',
+              letterSpacing: '-0.01em',
             }}
           >
-            {children}
-          </Dialog.Body>
+            {title}
+          </Text>
+          <CloseButton
+            size="sm"
+            onClick={onClose}
+            css={{
+              color: 'var(--studio-text-muted)',
+              borderRadius: '6px',
+              '&:hover': {
+                background: 'var(--studio-bg-hover)',
+                color: 'var(--studio-text-primary)',
+              },
+            }}
+          />
+        </Flex>
 
-          {footer && (
-            <Dialog.Footer
-              css={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '14px 20px',
-                borderTop: '1px solid var(--studio-border)',
-              }}
-            >
-              {footer}
-            </Dialog.Footer>
-          )}
-        </Dialog.Content>
-      </Dialog.Positioner>
-    </Dialog.Root>
+        {/* Body */}
+        <Box
+          css={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '20px',
+          }}
+        >
+          {children}
+        </Box>
+
+        {/* Footer */}
+        {footer && (
+          <Flex
+            align="center"
+            gap={2}
+            css={{
+              padding: '14px 20px',
+              borderTop: '1px solid var(--studio-border)',
+              flexShrink: 0,
+            }}
+          >
+            {footer}
+          </Flex>
+        )}
+      </Flex>
+    </Flex>,
+    document.body,
   )
 }
 
