@@ -1,113 +1,117 @@
-import { Box, Text, HStack } from '@chakra-ui/react'
+import styled from '@emotion/styled'
 import { Play, Square, Server, Globe, Layers } from 'lucide-react'
-import { useRunnerStore, type RunnerStatus } from '@/stores/runner-store'
+import { useRunnerStore, selectIsAnyActive, isServiceActive, type RunnerStatus } from '@/stores/runner-store'
 import { useRunner } from '@/hooks/use-runner'
+import { StatusDot, PortLabel } from './runner-primitives'
 
-function StatusDot({ status }: { status: RunnerStatus }) {
-  const color = status === 'running' ? 'var(--studio-green)' : status === 'starting' ? 'var(--studio-warning)' : 'var(--studio-text-muted)'
-  return (
-    <Box css={{ width: '6px', height: '6px', borderRadius: '50%', background: color, flexShrink: 0 }} />
-  )
-}
+const Bar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--studio-border);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+`
 
-function RunButton({ label, icon: Icon, status, port, onStart, onStop }: {
+const RunButton = styled.button<{ active: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--studio-border);
+  background: ${({ active }) => (active ? 'var(--studio-bg-hover)' : 'var(--studio-bg-surface)')};
+  color: var(--studio-text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  font-family: inherit;
+
+  &:hover {
+    background: var(--studio-bg-hover);
+    border-color: var(--studio-border-hover);
+  }
+`
+
+const ToggleIcon = styled.span<{ active: boolean }>`
+  margin-left: 4px;
+  color: ${({ active }) => (active ? 'var(--studio-text-secondary)' : 'var(--studio-accent)')};
+  display: flex;
+  align-items: center;
+`
+
+const ToggleAllBtn = styled.button<{ running: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: var(--studio-accent);
+  color: var(--studio-accent-fg);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  font-family: inherit;
+
+  &:hover {
+    opacity: 0.85;
+  }
+`
+
+function ServiceButton({ label, icon: Icon, status, port, onToggle }: {
   label: string
   icon: typeof Server
   status: RunnerStatus
   port: number | null
-  onStart: () => void
-  onStop: () => void
+  onToggle: () => void
 }) {
-  const isRunning = status === 'running' || status === 'starting'
+  const active = isServiceActive(status)
 
   return (
-    <Box
-      as="button"
-      onClick={isRunning ? onStop : onStart}
-      css={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        padding: '8px 14px',
-        borderRadius: '8px',
-        border: '1px solid var(--studio-border)',
-        background: isRunning ? 'var(--studio-bg-hover)' : 'var(--studio-bg-surface)',
-        color: 'var(--studio-text-primary)',
-        fontSize: '13px',
-        fontWeight: 500,
-        cursor: 'pointer',
-        transition: 'all 0.12s ease',
-        '&:hover': { background: 'var(--studio-bg-hover)', borderColor: 'var(--studio-border-hover)' },
-      }}
-    >
+    <RunButton active={active} onClick={onToggle}>
       <StatusDot status={status} />
       <Icon size={14} />
-      <Text css={{ fontSize: '13px' }}>{label}</Text>
-      {port && status === 'running' && (
-        <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)' }}>:{port}</Text>
-      )}
-      <Box css={{ marginLeft: '4px', color: isRunning ? 'var(--studio-error)' : 'var(--studio-green)' }}>
-        {isRunning ? <Square size={12} /> : <Play size={12} />}
-      </Box>
-    </Box>
+      {label}
+      {port && status === 'running' && <PortLabel>:{port}</PortLabel>}
+      <ToggleIcon active={active}>
+        {active ? <Square size={12} /> : <Play size={12} />}
+      </ToggleIcon>
+    </RunButton>
   )
 }
 
 export function RunnerControls() {
   const { backendStatus, frontendStatus, backendPort, frontendPort } = useRunnerStore()
+  const anyActive = useRunnerStore(selectIsAnyActive)
   const { start, stop } = useRunner()
 
-  const bothRunning = backendStatus === 'running' && frontendStatus === 'running'
-  const anyRunning = backendStatus === 'running' || frontendStatus === 'running' || backendStatus === 'starting' || frontendStatus === 'starting'
-
   return (
-    <HStack
-      gap={2}
-      css={{
-        padding: '12px 16px',
-        borderBottom: '1px solid var(--studio-border)',
-        flexShrink: 0,
-        flexWrap: 'wrap',
-      }}
-    >
-      <RunButton
+    <Bar>
+      <ServiceButton
         label="Backend"
         icon={Server}
         status={backendStatus}
         port={backendPort}
-        onStart={() => start('backend')}
-        onStop={() => stop('backend')}
+        onToggle={() => (isServiceActive(backendStatus) ? stop('backend') : start('backend'))}
       />
-      <RunButton
+      <ServiceButton
         label="Frontend"
         icon={Globe}
         status={frontendStatus}
         port={frontendPort}
-        onStart={() => start('frontend')}
-        onStop={() => stop('frontend')}
+        onToggle={() => (isServiceActive(frontendStatus) ? stop('frontend') : start('frontend'))}
       />
-      <Box
-        as="button"
-        onClick={anyRunning ? () => stop('all') : () => start('all')}
-        css={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-          padding: '8px 14px',
-          borderRadius: '8px',
-          border: 'none',
-          background: anyRunning ? 'var(--studio-error)' : 'var(--studio-accent)',
-          color: anyRunning ? '#fff' : 'var(--studio-accent-fg)',
-          fontSize: '13px',
-          fontWeight: 500,
-          cursor: 'pointer',
-          transition: 'all 0.12s ease',
-          '&:hover': { opacity: 0.9 },
-        }}
+      <ToggleAllBtn
+        running={anyActive}
+        onClick={() => (anyActive ? stop('all') : start('all'))}
       >
         <Layers size={14} />
-        {anyRunning ? 'Stop All' : 'Start All'}
-      </Box>
-    </HStack>
+        {anyActive ? 'Stop All' : 'Start All'}
+      </ToggleAllBtn>
+    </Bar>
   )
 }

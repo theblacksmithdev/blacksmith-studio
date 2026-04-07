@@ -15,6 +15,7 @@ import {
 import { Tooltip } from '@/components/shared/tooltip'
 import { useUiStore } from '@/stores/ui-store'
 import { useProjectStore } from '@/stores/project-store'
+import { useRunnerStore, selectIsAnyRunning, selectIsAnyStarting } from '@/stores/runner-store'
 import { useThemeMode } from '@/hooks/use-theme-mode'
 import { useProjects } from '@/hooks/use-projects'
 import {
@@ -26,6 +27,33 @@ import {
   activityPath,
   settingsPath,
 } from '@/router/paths'
+
+function RunnerBadge() {
+  const anyRunning = useRunnerStore(selectIsAnyRunning)
+  const anyStarting = useRunnerStore(selectIsAnyStarting)
+
+  if (!anyRunning && !anyStarting) return null
+
+  return (
+    <Box
+      css={{
+        position: 'absolute',
+        top: '4px',
+        right: '4px',
+        width: '7px',
+        height: '7px',
+        borderRadius: '50%',
+        background: 'var(--studio-accent)',
+        boxShadow: '0 0 4px var(--studio-border-hover)',
+        animation: anyStarting ? 'pulse-badge 1.5s ease-in-out infinite' : 'none',
+        '@keyframes pulse-badge': {
+          '0%, 100%': { opacity: 1 },
+          '50%': { opacity: 0.3 },
+        },
+      }}
+    />
+  )
+}
 
 const railBtn = (active = false) => ({
   width: '36px',
@@ -112,8 +140,9 @@ export function NavRail() {
             </Box>
           </Tooltip>
           <Tooltip content="Run">
-            <Box as="button" onClick={() => navigate(runPath(pid))} css={railBtn(pathname.endsWith('/run'))}>
+            <Box as="button" onClick={() => navigate(runPath(pid))} css={{ ...railBtn(pathname.endsWith('/run')), position: 'relative' }}>
               <Play size={18} />
+              <RunnerBadge />
             </Box>
           </Tooltip>
           <Tooltip content="Templates">

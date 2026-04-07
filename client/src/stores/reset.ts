@@ -24,12 +24,7 @@ export function resetProjectStores() {
   })
   clearFileContentCache()
 
-  // Runner — clear logs and reset status
-  useRunnerStore.setState({
-    backendStatus: 'stopped',
-    frontendStatus: 'stopped',
-    backendPort: null,
-    frontendPort: null,
-    logs: [],
-  })
+  // Runner — clear logs only; actual status will be synced
+  // from the main process by useRunnerListener on mount
+  useRunnerStore.setState({ logs: [] })
 }

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 
 export type RunnerStatus = 'stopped' | 'starting' | 'running'
+export type RunnerTarget = 'backend' | 'frontend' | 'all'
 
 export interface LogEntry {
   source: 'backend' | 'frontend'
@@ -45,3 +46,28 @@ export const useRunnerStore = create<RunnerState>((set) => ({
 
   clearLogs: () => set({ logs: [] }),
 }))
+
+/* ── Derived selectors ── */
+
+const isActive = (s: RunnerStatus) => s === 'running' || s === 'starting'
+
+export const selectIsAnyActive = (s: RunnerState) =>
+  isActive(s.backendStatus) || isActive(s.frontendStatus)
+
+export const selectIsAnyRunning = (s: RunnerState) =>
+  s.backendStatus === 'running' || s.frontendStatus === 'running'
+
+export const selectIsAnyStarting = (s: RunnerState) =>
+  s.backendStatus === 'starting' || s.frontendStatus === 'starting'
+
+/* ── Helpers ── */
+
+export function statusColor(status: RunnerStatus): string {
+  if (status === 'running') return 'var(--studio-accent)'
+  if (status === 'starting') return 'var(--studio-text-tertiary)'
+  return 'var(--studio-text-muted)'
+}
+
+export function isServiceActive(status: RunnerStatus): boolean {
+  return status === 'running' || status === 'starting'
+}

@@ -3,23 +3,9 @@ import { Box, Text, HStack } from '@chakra-ui/react'
 import { Trash2, ArrowDown } from 'lucide-react'
 import { useRunnerStore, type LogEntry } from '@/stores/runner-store'
 import { Tooltip } from '@/components/shared/tooltip'
+import { getLineColor, MONO_FONT } from './runner-primitives'
 
 type LogFilter = 'all' | 'backend' | 'frontend'
-
-function getLineColor(line: string): string {
-  // Errors
-  if (/error|Error|ERROR|Traceback|Exception/i.test(line)) return 'var(--studio-error)'
-  // Warnings
-  if (/warn|Warning|WARNING|WARN/i.test(line)) return '#f59e0b'
-  // HTTP status codes
-  if (/\s(4\d{2}|5\d{2})\s/.test(line)) return 'var(--studio-error)'
-  if (/\s(2\d{2}|3\d{2})\s/.test(line)) return '#10b981'
-  // Studio messages
-  if (line.startsWith('[studio]')) return 'var(--studio-text-tertiary)'
-  // URLs
-  if (/https?:\/\//.test(line)) return 'var(--studio-link)'
-  return 'var(--studio-text-primary)'
-}
 
 function LogLine({ entry }: { entry: LogEntry }) {
   return (
@@ -35,7 +21,7 @@ function LogLine({ entry }: { entry: LogEntry }) {
         css={{
           width: '52px',
           flexShrink: 0,
-          color: entry.source === 'backend' ? '#10b981' : '#3b82f6',
+          color: 'var(--studio-text-muted)',
           fontWeight: 600,
           textTransform: 'uppercase',
           fontSize: '10px',
@@ -178,7 +164,7 @@ export function RunnerLogs() {
           flex: 1,
           overflowY: 'auto',
           padding: '6px 0',
-          fontFamily: "'SF Mono', 'Fira Code', 'JetBrains Mono', Menlo, Consolas, monospace",
+          fontFamily: MONO_FONT,
           fontSize: '12px',
           lineHeight: '18px',
           background: 'var(--studio-bg-sidebar)',

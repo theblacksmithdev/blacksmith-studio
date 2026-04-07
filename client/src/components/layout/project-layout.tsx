@@ -3,6 +3,8 @@ import { Outlet, useParams, useNavigate } from 'react-router-dom'
 import { useProjects } from '@/hooks/use-projects'
 import { useProjectStore } from '@/stores/project-store'
 import { resetProjectStores } from '@/stores/reset'
+import { useRunnerListener } from '@/hooks/use-runner'
+import { RunnerDock } from '@/components/runner/runner-dock'
 
 /**
  * Wrapper layout for project-scoped routes.
@@ -15,6 +17,9 @@ export function ProjectLayout() {
   const activeProject = useProjectStore((s) => s.activeProject)
   const navigate = useNavigate()
 
+  // Global runner status listener — active for all project pages
+  useRunnerListener()
+
   useEffect(() => {
     if (projectId && projectId !== activeProject?.id) {
       resetProjectStores()
@@ -25,5 +30,10 @@ export function ProjectLayout() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, activeProject?.id])
 
-  return <Outlet />
+  return (
+    <>
+      <Outlet />
+      <RunnerDock />
+    </>
+  )
 }

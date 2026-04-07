@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { useProjectStore } from '@/stores/project-store'
 import { templatesPath } from '@/router/paths'
+import { RunServersCard } from '@/components/runner/runner-servers-card'
 
 const quickActions = [
   {
@@ -172,7 +173,9 @@ export function QuickActions({ onSend, onNavigate }: QuickActionsProps) {
 
   return (
     <Container>
-      <SectionLabel>Quick start</SectionLabel>
+      <RunServersCard />
+
+      <SectionLabel style={{ marginTop: '28px' }}>Quick start</SectionLabel>
 
       <Grid>
         {quickActions.map(({ icon: Icon, label, desc, prompt }) => (

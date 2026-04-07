@@ -2,12 +2,8 @@ import { Box } from '@chakra-ui/react'
 import { RunnerControls } from './runner-controls'
 import { RunnerLogs } from './runner-logs'
 import { RunnerPreview } from './runner-preview'
-import { useRunner } from '@/hooks/use-runner'
 
 export function RunnerPage() {
-  // Initialize WebSocket listener
-  useRunner()
-
   return (
     <Box css={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Controls */}
