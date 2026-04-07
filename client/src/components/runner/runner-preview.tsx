@@ -1,6 +1,64 @@
-import { Box, Text, VStack } from '@chakra-ui/react'
-import { Globe, ExternalLink } from 'lucide-react'
+import styled from '@emotion/styled'
+import { Globe, ExternalLink, Loader } from 'lucide-react'
 import { useRunnerStore } from '@/stores/runner-store'
+import { MONO_FONT } from './runner-primitives'
+
+const Wrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+`
+
+const Empty = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: var(--studio-bg-sidebar);
+`
+
+const EmptyInner = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--studio-text-muted);
+`
+
+const EmptyText = styled.div`
+  font-size: 13px;
+`
+
+const UrlBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--studio-border);
+  flex-shrink: 0;
+  background: var(--studio-bg-sidebar);
+`
+
+const UrlText = styled.span`
+  font-size: 11px;
+  color: var(--studio-text-tertiary);
+  font-family: ${MONO_FONT};
+  flex: 1;
+`
+
+const ExtLink = styled.a`
+  color: var(--studio-text-muted);
+  display: flex;
+  transition: color 0.12s ease;
+
+  &:hover {
+    color: var(--studio-text-secondary);
+  }
+`
+
+const Frame = styled.div`
+  flex: 1;
+`
 
 export function RunnerPreview() {
   const frontendStatus = useRunnerStore((s) => s.frontendStatus)
@@ -10,63 +68,37 @@ export function RunnerPreview() {
 
   if (frontendStatus !== 'running' || !url) {
     return (
-      <Box css={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', background: 'var(--studio-bg-sidebar)' }}>
-        <VStack gap={2} css={{ color: 'var(--studio-text-muted)' }}>
-          <Globe size={24} />
-          <Text css={{ fontSize: '13px' }}>
+      <Empty>
+        <EmptyInner>
+          {frontendStatus === 'starting' ? (
+            <Loader size={20} style={{ animation: 'pulse 1.5s ease-in-out infinite' }} />
+          ) : (
+            <Globe size={20} />
+          )}
+          <EmptyText>
             {frontendStatus === 'starting' ? 'Starting frontend...' : 'Start the frontend to see a preview'}
-          </Text>
-        </VStack>
-      </Box>
+          </EmptyText>
+        </EmptyInner>
+      </Empty>
     )
   }
 
   return (
-    <Box css={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Preview header */}
-      <Box
-        css={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          padding: '6px 14px',
-          borderBottom: '1px solid var(--studio-border)',
-          flexShrink: 0,
-          background: 'var(--studio-bg-sidebar)',
-        }}
-      >
-        <Globe size={12} style={{ color: 'var(--studio-text-muted)' }} />
-        <Text css={{ fontSize: '11px', color: 'var(--studio-text-tertiary)', flex: 1 }}>
-          {url}
-        </Text>
-        <Box
-          as="a"
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          css={{
-            color: 'var(--studio-text-muted)',
-            display: 'flex',
-            '&:hover': { color: 'var(--studio-text-secondary)' },
-          }}
-        >
+    <Wrap>
+      <UrlBar>
+        <Globe size={12} style={{ color: 'var(--studio-text-muted)', flexShrink: 0 }} />
+        <UrlText>{url}</UrlText>
+        <ExtLink href={url} target="_blank" rel="noopener noreferrer">
           <ExternalLink size={12} />
-        </Box>
-      </Box>
-
-      {/* iframe */}
-      <Box css={{ flex: 1 }}>
+        </ExtLink>
+      </UrlBar>
+      <Frame>
         <iframe
           src={url}
           title="Preview"
-          style={{
-            width: '100%',
-            height: '100%',
-            border: 'none',
-            background: '#fff',
-          }}
+          style={{ width: '100%', height: '100%', border: 'none', background: '#fff' }}
         />
-      </Box>
-    </Box>
+      </Frame>
+    </Wrap>
   )
 }
