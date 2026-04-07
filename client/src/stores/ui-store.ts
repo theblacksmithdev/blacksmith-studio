@@ -15,6 +15,10 @@ interface UiState {
   sidebarExpanded: boolean
   setSidebarExpanded: (expanded: boolean) => void
   toggleSidebar: () => void
+
+  historyPanelOpen: boolean
+  setHistoryPanelOpen: (open: boolean) => void
+  toggleHistoryPanel: () => void
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -30,4 +34,8 @@ export const useUiStore = create<UiState>((set) => ({
   sidebarExpanded: false,
   setSidebarExpanded: (sidebarExpanded) => set({ sidebarExpanded }),
   toggleSidebar: () => set((s) => ({ sidebarExpanded: !s.sidebarExpanded })),
+
+  historyPanelOpen: false,
+  setHistoryPanelOpen: (historyPanelOpen) => set({ historyPanelOpen }),
+  toggleHistoryPanel: () => set((s) => ({ historyPanelOpen: !s.historyPanelOpen })),
 }))

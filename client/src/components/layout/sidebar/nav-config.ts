@@ -1,16 +1,12 @@
 import {
   MessageSquare,
   FolderTree,
-  Play,
-  Sparkles,
-  History,
+  Settings,
 } from 'lucide-react'
 import {
   newChatPath,
   codePath,
-  runPath,
-  templatesPath,
-  activityPath,
+  settingsPath,
 } from '@/router/paths'
 
 export interface NavEntry {
@@ -24,10 +20,8 @@ export interface NavEntry {
 export const projectNav: NavEntry[] = [
   { id: 'chat', icon: MessageSquare, label: 'Chat', path: newChatPath, match: '/chat' },
   { id: 'code', icon: FolderTree, label: 'Code', path: codePath, match: '/code' },
-  { id: 'run', icon: Play, label: 'Dev Servers', path: runPath, match: '/run' },
-  { id: 'templates', icon: Sparkles, label: 'Templates', path: templatesPath, match: '/templates' },
 ]
 
 export const bottomNav: NavEntry[] = [
-  { id: 'activity', icon: History, label: 'Activity', path: activityPath, match: '/activity' },
+  { id: 'settings', icon: Settings, label: 'Settings', path: settingsPath, match: '/settings' },
 ]

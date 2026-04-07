@@ -1,10 +1,11 @@
 import { useEffect } from 'react'
 import styled from '@emotion/styled'
 import { useParams } from 'react-router-dom'
-import { PanelRight } from 'lucide-react'
+import { PanelRight, History } from 'lucide-react'
 import { Splitter } from '@chakra-ui/react'
 import { MessageList } from './message-list'
 import { ChatInput } from './chat-input'
+import { HistoryPanel } from './history-panel'
 import { useClaude } from '@/hooks/use-claude'
 import { useSessions } from '@/hooks/use-sessions'
 import { useChatStore } from '@/stores/chat-store'
@@ -13,6 +14,12 @@ import { useUiStore } from '@/stores/ui-store'
 import { useSettings } from '@/hooks/use-settings'
 import { PreviewPanel } from '@/components/shared/preview-panel'
 import { Tooltip } from '@/components/shared/tooltip'
+
+const Root = styled.div`
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+`
 
 const ChatColumn = styled.div`
   flex: 1;
@@ -25,12 +32,16 @@ const ChatColumn = styled.div`
 const TopBar = styled.div`
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  gap: 4px;
   padding: 8px 14px;
   flex-shrink: 0;
 `
 
-const PreviewToggle = styled.button<{ active: boolean }>`
+const Spacer = styled.div`
+  flex: 1;
+`
+
+const TopBarBtn = styled.button<{ active: boolean }>`
   width: 30px;
   height: 30px;
   border-radius: 8px;
@@ -83,6 +94,8 @@ export function ChatView() {
 
   const previewOpen = useUiStore((s) => s.previewOpen)
   const setPreviewOpen = useUiStore((s) => s.setPreviewOpen)
+  const historyOpen = useUiStore((s) => s.historyPanelOpen)
+  const toggleHistory = useUiStore((s) => s.toggleHistoryPanel)
   const { chatSplit, set: setSetting } = useSettings()
 
   useEffect(() => {
@@ -110,13 +123,18 @@ export function ChatView() {
   const chatContent = (
     <ChatColumn>
       <TopBar>
+        <Tooltip content={historyOpen ? 'Close history' : 'Chat history'}>
+          <TopBarBtn active={historyOpen} onClick={toggleHistory}>
+            <History size={15} />
+          </TopBarBtn>
+        </Tooltip>
+
+        <Spacer />
+
         <Tooltip content={previewOpen ? 'Close preview' : 'Open preview'}>
-          <PreviewToggle
-            active={previewOpen}
-            onClick={() => setPreviewOpen(!previewOpen)}
-          >
+          <TopBarBtn active={previewOpen} onClick={() => setPreviewOpen(!previewOpen)}>
             <PanelRight size={15} />
-          </PreviewToggle>
+          </TopBarBtn>
         </Tooltip>
       </TopBar>
 
@@ -132,17 +150,13 @@ export function ChatView() {
     </ChatColumn>
   )
 
-  if (!previewOpen) {
-    return chatContent
-  }
-
-  return (
+  const mainContent = previewOpen ? (
     <Splitter.Root
       panels={PANELS}
       defaultSize={[chatSplit, 100 - chatSplit]}
       orientation="horizontal"
       onResizeEnd={handleResizeEnd}
-      css={{ height: '100%', display: 'flex' }}
+      css={{ height: '100%', display: 'flex', flex: 1, minWidth: 0 }}
     >
       <Splitter.Panel id="chat">
         {chatContent}
@@ -154,5 +168,14 @@ export function ChatView() {
         <PreviewPanel onClose={() => setPreviewOpen(false)} />
       </Splitter.Panel>
     </Splitter.Root>
+  ) : (
+    chatContent
+  )
+
+  return (
+    <Root>
+      {historyOpen && <HistoryPanel />}
+      {mainContent}
+    </Root>
   )
 }
