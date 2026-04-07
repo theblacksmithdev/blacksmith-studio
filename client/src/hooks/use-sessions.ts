@@ -6,15 +6,26 @@ import { useProjectStore } from '@/stores/project-store'
 import { useChatStore } from '@/stores/chat-store'
 import type { Session, SessionSummary } from '@/types'
 
-export function useSessions() {
+interface PaginatedSessions {
+  items: SessionSummary[]
+  total: number
+}
+
+interface UseSessionsOptions {
+  limit?: number
+  offset?: number
+}
+
+export function useSessions(options?: UseSessionsOptions) {
+  const { limit, offset } = options ?? {}
   const queryClient = useQueryClient()
   const { setActiveSession } = useSessionStore()
   const { loadMessages, clearMessages } = useChatStore()
   const activeProject = useProjectStore((s) => s.activeProject)
 
   const sessionsQuery = useQuery({
-    queryKey: queryKeys.sessions,
-    queryFn: () => api.invoke<SessionSummary[]>('sessions:list'),
+    queryKey: [...queryKeys.sessions, { limit, offset }],
+    queryFn: () => api.invoke<PaginatedSessions>('sessions:list', { limit, offset }),
     enabled: !!activeProject,
   })
 
@@ -41,7 +52,8 @@ export function useSessions() {
   }
 
   return {
-    sessions: sessionsQuery.data ?? [],
+    sessions: sessionsQuery.data?.items ?? [],
+    total: sessionsQuery.data?.total ?? 0,
     isLoading: sessionsQuery.isLoading,
     fetchSessions: () => queryClient.invalidateQueries({ queryKey: queryKeys.sessions }),
     createSession: async (name?: string) => {

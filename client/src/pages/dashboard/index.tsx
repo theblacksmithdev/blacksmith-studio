@@ -13,11 +13,11 @@ import { chatPath, activityPath, projectHome } from '@/router/paths'
 export default function DashboardPage() {
   const navigate = useNavigate()
   const { projects, activate } = useProjects()
-  const { sessions } = useSessions()
+  const { sessions } = useSessions({ limit: 5 })
   const activeProject = useProjectStore((s) => s.activeProject)
   const [addModalOpen, setAddModalOpen] = useState(false)
 
-  const recentSessions = sessions.slice(0, 5)
+  const recentSessions = sessions
 
   return (
     <Box css={{ height: '100%', overflowY: 'auto' }}>

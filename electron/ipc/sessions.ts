@@ -12,9 +12,11 @@ function requireActiveProject(projectManager: ProjectManager): string {
 }
 
 export function setupSessionsIPC(sessionManager: SessionManager, projectManager: ProjectManager) {
-  ipcMain.handle(SESSIONS_LIST, () => {
+  ipcMain.handle(SESSIONS_LIST, (_e, data?: { limit?: number; offset?: number }) => {
     const projectId = requireActiveProject(projectManager)
-    return sessionManager.listSessions(projectId)
+    const items = sessionManager.listSessions(projectId, data?.limit, data?.offset)
+    const total = sessionManager.countSessions(projectId)
+    return { items, total }
   })
 
   ipcMain.handle(SESSIONS_GET, (_e, data: { id: string }) => {

@@ -13,7 +13,9 @@ import { QuickActions } from './quick-actions'
 const Page = styled.div`
   display: flex;
   flex-direction: column;
+  flex: 1;
   height: 100%;
+  min-height: 0;
 `
 
 const Content = styled.div`
@@ -22,6 +24,7 @@ const Content = styled.div`
   align-items: center;
   justify-content: center;
   overflow: auto;
+  min-height: 0;
 `
 
 const Stack = styled.div`
@@ -37,7 +40,7 @@ const Stack = styled.div`
 
 export function HomeView() {
   const { sendPrompt } = useClaude()
-  const { sessions, createSession } = useSessions()
+  const { sessions, createSession } = useSessions({ limit: 4 })
   const { isStreaming } = useChatStore()
   const navigate = useNavigate()
   const activeProject = useProjectStore((s) => s.activeProject)
@@ -60,7 +63,7 @@ export function HomeView() {
           <HomeHero />
           <ChatInput onSend={handleSend} onCancel={() => {}} isStreaming={isStreaming} />
           <RecentConversations
-            sessions={sessions.slice(0, 4)}
+            sessions={sessions}
             onSelect={handleSelectSession}
           />
           <QuickActions onSend={handleSend} onNavigate={navigate} />

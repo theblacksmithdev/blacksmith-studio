@@ -74,13 +74,17 @@ export class SessionManager {
     }
   }
 
-  listSessions(projectId: string): SessionSummary[] {
-    const rows = this.db
+  listSessions(projectId: string, limit?: number, offset?: number): SessionSummary[] {
+    let query = this.db
       .select()
       .from(sessions)
       .where(eq(sessions.projectId, projectId))
       .orderBy(desc(sessions.updatedAt))
-      .all()
+
+    if (limit != null) query = query.limit(limit) as typeof query
+    if (offset != null) query = query.offset(offset) as typeof query
+
+    const rows = query.all()
 
     return rows.map((row) => {
       const msgCount = this.db
@@ -107,6 +111,15 @@ export class SessionManager {
         lastPrompt: lastUserMsg?.content,
       }
     })
+  }
+
+  countSessions(projectId: string): number {
+    return this.db
+      .select()
+      .from(sessions)
+      .where(eq(sessions.projectId, projectId))
+      .all()
+      .length
   }
 
   addMessage(sessionId: string, message: StoredMessage): void {
