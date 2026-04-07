@@ -39,7 +39,6 @@ export function FolderPicker({ open, onClose, onSelect }: FolderPickerProps) {
     <>
       {/* Backdrop */}
       <Box
-        onClick={onClose}
         css={{
           position: 'fixed',
           inset: 0,

@@ -122,6 +122,8 @@ export function setupProjectsIPC(getWindow: () => BrowserWindow | null, projectM
 
     proc.stdin.end()
 
+    const stderrLines: string[] = []
+
     const sendLine = (line: string) => {
       win?.webContents.send(PROJECTS_ON_CREATE_OUTPUT, { line })
     }
@@ -133,12 +135,17 @@ export function setupProjectsIPC(getWindow: () => BrowserWindow | null, projectM
 
     proc.stderr.on('data', (chunk: Buffer) => {
       const lines = chunk.toString().split('\n').filter(Boolean)
-      lines.forEach(sendLine)
+      lines.forEach((line) => {
+        stderrLines.push(line)
+        sendLine(line)
+      })
     })
 
     proc.on('close', (code: number) => {
       if (code !== 0) {
-        win?.webContents.send(PROJECTS_ON_CREATE_ERROR, { error: `Process exited with code ${code}` })
+        const lastErrors = stderrLines.slice(-10).join('\n')
+        const error = lastErrors || `Process exited with code ${code}`
+        win?.webContents.send(PROJECTS_ON_CREATE_ERROR, { error })
         return
       }
       const project = projectManager.register(projectDir, data.name)

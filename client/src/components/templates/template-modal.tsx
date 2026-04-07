@@ -50,7 +50,7 @@ export function TemplateModal({ template, isOpen, onClose, onSubmit }: TemplateM
   }
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={(e) => { if (!e.open) onClose() }} size="lg">
+    <Dialog.Root open={isOpen} size="lg" closeOnInteractOutside={false}>
       <Dialog.Backdrop
         css={{
           background: 'rgba(0,0,0,0.7)',

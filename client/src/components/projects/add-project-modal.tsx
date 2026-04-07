@@ -47,7 +47,6 @@ export function AddProjectModal({ open, onClose }: AddProjectModalProps) {
     <>
       {/* Backdrop */}
       <Box
-        onClick={onClose}
         css={{
           position: 'fixed',
           inset: 0,

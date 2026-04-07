@@ -231,7 +231,7 @@ export function McpServerModal({ server, onSave, onClose }: McpServerModalProps)
   }
 
   return createPortal(
-    <Overlay onClick={onClose}>
+    <Overlay>
       <Modal onClick={(e) => e.stopPropagation()}>
         <Header>
           <Title>{isEdit ? 'Edit MCP Server' : 'Add MCP Server'}</Title>
