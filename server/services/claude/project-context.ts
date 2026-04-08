@@ -1,5 +1,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { KnowledgeManager } from '../knowledge.js'
+
+const knowledgeManager = new KnowledgeManager()
 
 const IGNORE = new Set([
   'node_modules', '.git', '__pycache__', 'venv', 'dist', '.env',
@@ -57,6 +60,13 @@ export function generateProjectContext(projectRoot: string): string {
   if (keyFileContents.length > 0) {
     lines.push('## Key Files\n')
     lines.push(keyFileContents.join('\n\n'))
+  }
+
+  // Include project knowledge base docs
+  const knowledge = knowledgeManager.getAllContent(projectRoot)
+  if (knowledge) {
+    lines.push('\n## Project Knowledge\n')
+    lines.push(knowledge)
   }
 
   return lines.join('\n')

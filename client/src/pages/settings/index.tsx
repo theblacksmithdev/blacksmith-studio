@@ -1,6 +1,6 @@
 import { Box, Text, VStack, HStack, Flex } from '@chakra-ui/react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { Palette, Sparkles, Code2, FolderCog, Blocks, Wand2, AlertTriangle } from 'lucide-react'
+import { Palette, Sparkles, Code2, FolderCog, Blocks, Wand2, BookOpen, AlertTriangle } from 'lucide-react'
 import { useProjectStore } from '@/stores/project-store'
 
 const sidebarGroups = [
@@ -23,6 +23,7 @@ const sidebarGroups = [
     label: 'Project',
     items: [
       { id: 'workspace', icon: FolderCog, label: 'Workspace' },
+      { id: 'knowledge', icon: BookOpen, label: 'Knowledge Base' },
     ],
   },
 ]

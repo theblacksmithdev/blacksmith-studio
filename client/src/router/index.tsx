@@ -13,6 +13,7 @@ import { AppearanceSettings } from '@/components/settings/sections/appearance-se
 import { EditorSettings } from '@/components/settings/sections/editor-settings'
 import { WorkspaceSettings } from '@/components/settings/sections/workspace-settings'
 import { DangerZone } from '@/components/settings/sections/danger-zone'
+import { KnowledgeSettings } from '@/components/settings/sections/knowledge-settings'
 import NewChatPage from '@/pages/chat/new'
 import ChatPage from '@/pages/chat'
 import FilesPage from '@/pages/files'
@@ -53,6 +54,7 @@ export const router = createHashRouter([
           { path: 'appearance', element: <AppearanceSettings /> },
           { path: 'editor', element: <EditorSettings /> },
           { path: 'workspace', element: <WorkspaceSettings /> },
+          { path: 'knowledge', element: <KnowledgeSettings /> },
           { path: 'danger', element: <DangerZone /> },
         ],
       },

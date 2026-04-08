@@ -11,6 +11,7 @@ import { SettingsManager } from '../server/services/settings.js'
 import { RunnerManager } from '../server/services/runner/index.js'
 import { McpManager } from '../server/services/mcp.js'
 import { SkillsManager } from '../server/services/skills.js'
+import { KnowledgeManager } from '../server/services/knowledge.js'
 import { closeDatabase } from '../server/db/index.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -127,6 +128,7 @@ app.whenReady().then(async () => {
   const runnerManager = new RunnerManager()
   const mcpManager = new McpManager()
   const skillsManager = new SkillsManager()
+  const knowledgeManager = new KnowledgeManager()
 
   // Check Claude availability
   const claudeStatus = await claudeManager.checkInstalled()
@@ -150,6 +152,7 @@ app.whenReady().then(async () => {
     runnerManager,
     mcpManager,
     skillsManager,
+    knowledgeManager,
   )
 
   app.on('activate', () => {

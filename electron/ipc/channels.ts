@@ -56,6 +56,13 @@ export const HEALTH_CHECK = 'health:check'
 export const SETUP_CHECK = 'setup:check'
 export const SETUP_INSTALL_CLAUDE = 'setup:installClaude'
 
+// Knowledge
+export const KNOWLEDGE_LIST = 'knowledge:list'
+export const KNOWLEDGE_GET = 'knowledge:get'
+export const KNOWLEDGE_SAVE = 'knowledge:save'
+export const KNOWLEDGE_CREATE = 'knowledge:create'
+export const KNOWLEDGE_REMOVE = 'knowledge:remove'
+
 // Skills
 export const SKILLS_LIST = 'skills:list'
 export const SKILLS_GET = 'skills:get'
@@ -93,6 +100,7 @@ export const INVOKE_CHANNELS = [
   MCP_LIST, MCP_ADD, MCP_UPDATE, MCP_REMOVE, MCP_TOGGLE, MCP_TEST,
   HEALTH_CHECK,
   SETUP_CHECK, SETUP_INSTALL_CLAUDE,
+  KNOWLEDGE_LIST, KNOWLEDGE_GET, KNOWLEDGE_SAVE, KNOWLEDGE_CREATE, KNOWLEDGE_REMOVE,
   SKILLS_LIST, SKILLS_GET, SKILLS_ADD, SKILLS_UPDATE, SKILLS_REMOVE,
 ] as const
 

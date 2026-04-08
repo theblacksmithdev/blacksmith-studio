@@ -6,6 +6,7 @@ import type { SettingsManager } from '../../server/services/settings.js'
 import type { RunnerManager } from '../../server/services/runner/index.js'
 import type { McpManager } from '../../server/services/mcp.js'
 import type { SkillsManager } from '../../server/services/skills.js'
+import type { KnowledgeManager } from '../../server/services/knowledge.js'
 
 import { setupProjectsIPC } from './projects.js'
 import { setupSessionsIPC } from './sessions.js'
@@ -16,6 +17,7 @@ import { setupClaudeIPC } from './claude.js'
 import { setupRunnerIPC } from './runner.js'
 import { setupHealthIPC } from './health.js'
 import { setupMcpIPC } from './mcp.js'
+import { setupKnowledgeIPC } from './knowledge.js'
 import { setupSkillsIPC } from './skills.js'
 import { setupSetupIPC } from './setup.js'
 import { setupFolderDialogIPC } from './folder-dialog.js'
@@ -29,6 +31,7 @@ export function setupAllIPC(
   runnerManager: RunnerManager,
   mcpManager: McpManager,
   skillsManager: SkillsManager,
+  knowledgeManager: KnowledgeManager,
 ) {
   setupFolderDialogIPC()
   setupProjectsIPC(getWindow, projectManager)
@@ -40,6 +43,7 @@ export function setupAllIPC(
   setupRunnerIPC(getWindow, runnerManager, projectManager)
   setupMcpIPC(mcpManager, projectManager, settingsManager)
   setupHealthIPC(claudeManager, projectManager)
+  setupKnowledgeIPC(knowledgeManager, projectManager)
   setupSkillsIPC(skillsManager, projectManager)
   setupSetupIPC()
 }
