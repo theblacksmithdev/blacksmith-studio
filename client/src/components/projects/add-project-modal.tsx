@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import {
   X, FolderOpen, Plus, ArrowLeft, Anvil, Loader2, Check,
-  AlertCircle, Package, GitBranch, Folder,
+  AlertCircle, Package, GitBranch, Folder, HardDrive, Globe,
 } from 'lucide-react'
 import { api } from '@/api'
 import { useProjects } from '@/hooks/use-projects'
@@ -20,7 +20,7 @@ interface AddProjectModalProps {
   onClose: () => void
 }
 
-type Step = 'choose' | 'import' | 'create'
+type Step = 'choose' | 'import' | 'create' | 'clone'
 
 export function AddProjectModal({ open, onClose }: AddProjectModalProps) {
   const [step, setStep] = useState<Step>('choose')
@@ -41,7 +41,7 @@ export function AddProjectModal({ open, onClose }: AddProjectModalProps) {
 
   if (!open) return null
 
-  const title = step === 'choose' ? 'Add Project' : step === 'import' ? 'Import Existing' : 'Create New'
+  const title = step === 'choose' ? 'Add Project' : step === 'import' ? 'Import Existing' : step === 'clone' ? 'Clone from Git' : 'Create New'
 
   return (
     <>
@@ -65,7 +65,7 @@ export function AddProjectModal({ open, onClose }: AddProjectModalProps) {
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: step === 'choose' ? '480px' : '520px',
+          width: step === 'choose' ? '480px' : step === 'clone' ? '500px' : '520px',
           maxHeight: '85vh',
           borderRadius: '16px',
           border: '1px solid var(--studio-border-hover)',
@@ -108,8 +108,9 @@ export function AddProjectModal({ open, onClose }: AddProjectModalProps) {
               {title}
             </Text>
             <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', marginTop: '1px' }}>
-              {step === 'choose' && 'Import an existing project or create a new one'}
+              {step === 'choose' && 'Import, clone, or create a new project'}
               {step === 'import' && 'Select your project folder'}
+              {step === 'clone' && 'Clone a repository from a Git URL'}
               {step === 'create' && 'Scaffold a fullstack Django + React project'}
             </Text>
           </Box>
@@ -135,6 +136,7 @@ export function AddProjectModal({ open, onClose }: AddProjectModalProps) {
             <ChooseStep
               onImport={() => setStep('import')}
               onCreate={() => setStep('create')}
+              onClone={() => setStep('clone')}
             />
           )}
           {step === 'import' && (
@@ -142,6 +144,9 @@ export function AddProjectModal({ open, onClose }: AddProjectModalProps) {
           )}
           {step === 'create' && (
             <CreateStep onClose={onClose} />
+          )}
+          {step === 'clone' && (
+            <CloneStep onClose={onClose} />
           )}
         </Box>
       </Box>
@@ -157,15 +162,45 @@ export function AddProjectModal({ open, onClose }: AddProjectModalProps) {
 
 // ─── Choose Step ───
 
-function ChooseStep({ onImport, onCreate }: { onImport: () => void; onCreate: () => void }) {
+function ChooseStep({ onImport, onCreate, onClone }: { onImport: () => void; onCreate: () => void; onClone: () => void }) {
   return (
-    <VStack gap={3} align="stretch">
-      <OptionCard
-        icon={<FolderOpen size={20} />}
-        title="Import existing project"
-        description="Select a folder that already has a project."
-        onClick={onImport}
-      />
+    <VStack gap={5} align="stretch">
+      {/* Local */}
+      <Box>
+        <HStack gap={2} css={{ paddingLeft: '4px', marginBottom: '8px' }}>
+          <Box css={{ color: 'var(--studio-text-muted)', display: 'flex' }}><HardDrive size={11} /></Box>
+          <Text css={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--studio-text-muted)' }}>From your machine</Text>
+        </HStack>
+        <OptionCard
+          icon={<FolderOpen size={20} />}
+          title="Open existing project"
+          description="Select a project folder on your machine."
+          onClick={onImport}
+        />
+      </Box>
+
+      {/* Remote */}
+      <Box>
+        <HStack gap={2} css={{ paddingLeft: '4px', marginBottom: '8px' }}>
+          <Box css={{ color: 'var(--studio-text-muted)', display: 'flex' }}><Globe size={11} /></Box>
+          <Text css={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--studio-text-muted)' }}>From the internet</Text>
+        </HStack>
+        <OptionCard
+          icon={<GitBranch size={20} />}
+          title="Clone a Git repository"
+          description="Clone from GitHub, GitLab, or any Git URL."
+          onClick={onClone}
+        />
+      </Box>
+
+      {/* Separator */}
+      <HStack gap={3} css={{ padding: '0 4px' }}>
+        <Box css={{ flex: 1, height: '1px', background: 'var(--studio-border)' }} />
+        <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)', flexShrink: 0 }}>or</Text>
+        <Box css={{ flex: 1, height: '1px', background: 'var(--studio-border)' }} />
+      </HStack>
+
+      {/* New */}
       <OptionCard
         icon={<Plus size={20} />}
         title="Create new project"
@@ -570,6 +605,217 @@ function CreateStep({ onClose }: { onClose: () => void }) {
               }}
             >
               Create Project
+            </Box>
+          </>
+        )}
+      </VStack>
+
+      <FolderPicker
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onSelect={(p) => setValue('parentPath', p, { shouldValidate: true })}
+      />
+
+      <style>{`@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }`}</style>
+    </form>
+  )
+}
+
+// ─── Clone Step ───
+
+const cloneSchema = z.object({
+  gitUrl: z.string().min(1, 'Repository URL is required'),
+  parentPath: z.string().min(1, 'Select a destination folder'),
+  name: z.string().optional(),
+})
+
+type CloneState = 'idle' | 'cloning' | 'success' | 'error'
+
+function CloneStep({ onClose }: { onClose: () => void }) {
+  const navigate = useNavigate()
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [state, setState] = useState<CloneState>('idle')
+  const [serverError, setServerError] = useState('')
+  const [outputLines, setOutputLines] = useState<string[]>([])
+  const logEndRef = useRef<HTMLDivElement>(null)
+
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<z.infer<typeof cloneSchema>>({
+    resolver: zodResolver(cloneSchema),
+    defaultValues: { gitUrl: '', parentPath: '', name: '' },
+  })
+
+  const gitUrl = watch('gitUrl')
+  const parentPath = watch('parentPath')
+  const name = watch('name')
+  const derivedName = name || gitUrl.replace(/\.git$/, '').split('/').pop()?.replace(/[^a-zA-Z0-9_-]/g, '') || ''
+
+  useEffect(() => {
+    if (state !== 'cloning') return
+    const unsubs = [
+      api.projects.onCreateOutput((data) => {
+        setOutputLines((prev) => [...prev, data.line])
+      }),
+      api.projects.onCreateDone((data) => {
+        setState('success')
+        setTimeout(() => {
+          onClose()
+          navigate(projectHome(data.project.id))
+        }, 1000)
+      }),
+      api.projects.onCreateError((data) => {
+        setState('error')
+        setServerError(data.error)
+      }),
+    ]
+    return () => unsubs.forEach((u) => u())
+  }, [state, onClose, navigate])
+
+  useEffect(() => {
+    logEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [outputLines])
+
+  const onSubmit = async (data: z.infer<typeof cloneSchema>) => {
+    setState('cloning')
+    setServerError('')
+    setOutputLines([])
+    try {
+      await api.projects.clone({
+        gitUrl: data.gitUrl.trim(),
+        parentPath: data.parentPath,
+        name: data.name?.trim() || undefined,
+      })
+    } catch (err: any) {
+      setState('error')
+      setServerError(err.message || 'Failed to start clone')
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <VStack gap={4} align="stretch">
+        {state === 'cloning' || state === 'success' ? (
+          <>
+            <Box css={{
+              background: 'var(--studio-code-bg)', borderRadius: '10px',
+              border: '1px solid var(--studio-border)', overflow: 'hidden',
+            }}>
+              <HStack gap={2} css={{
+                padding: '8px 12px', borderBottom: '1px solid var(--studio-border)',
+                background: 'rgba(255,255,255,0.02)',
+              }}>
+                <Loader2 size={13} style={{
+                  color: state === 'success' ? 'var(--studio-green)' : 'var(--studio-text-tertiary)',
+                  animation: state === 'cloning' ? 'spin 1s linear infinite' : 'none',
+                }} />
+                <Text css={{ fontSize: '12px', fontWeight: 500, color: 'var(--studio-text-secondary)' }}>
+                  {state === 'success' ? 'Repository cloned successfully' : `Cloning ${derivedName}...`}
+                </Text>
+              </HStack>
+              <Box css={{
+                padding: '12px', maxHeight: '240px', overflowY: 'auto',
+                fontFamily: "'SF Mono', 'Fira Code', Menlo, monospace", fontSize: '12px',
+                lineHeight: '20px', color: 'var(--studio-text-secondary)',
+              }}>
+                {outputLines.map((line, i) => (
+                  <Box key={i} css={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{line}</Box>
+                ))}
+                {state === 'cloning' && outputLines.length === 0 && (
+                  <Text css={{ color: 'var(--studio-text-muted)', fontStyle: 'italic' }}>Connecting to remote...</Text>
+                )}
+                <div ref={logEndRef} />
+              </Box>
+            </Box>
+
+            {state === 'success' && (
+              <HStack gap={2} css={{ padding: '10px 12px', borderRadius: '8px', background: 'rgba(16,163,127,0.1)', border: '1px solid rgba(16,163,127,0.2)' }}>
+                <Check size={14} style={{ color: 'var(--studio-green)', flexShrink: 0 }} />
+                <Text css={{ fontSize: '13px', color: 'var(--studio-green)', fontWeight: 500 }}>Cloned! Redirecting...</Text>
+              </HStack>
+            )}
+          </>
+        ) : (
+          <>
+            <FormField label="Repository URL" error={errors.gitUrl?.message}>
+              <input {...register('gitUrl')} placeholder="https://github.com/user/repo.git" style={inputCss} />
+            </FormField>
+
+            <FormField label="Clone to" error={errors.parentPath?.message}>
+              <Box
+                as="button"
+                type="button"
+                onClick={async () => {
+                  if (isElectron()) {
+                    const p = await selectFolderNative()
+                    if (p) setValue('parentPath', p, { shouldValidate: true })
+                  } else {
+                    setPickerOpen(true)
+                  }
+                }}
+                css={{
+                  width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
+                  padding: '10px 14px', borderRadius: '8px',
+                  border: '1px solid var(--studio-border)',
+                  background: 'var(--studio-bg-surface)',
+                  cursor: 'pointer', textAlign: 'left',
+                  transition: 'all 0.12s ease',
+                  '&:hover': { borderColor: 'var(--studio-border-hover)' },
+                }}
+              >
+                <FolderOpen size={15} style={{ color: parentPath ? 'var(--studio-green)' : 'var(--studio-text-muted)', flexShrink: 0 }} />
+                <Text css={{
+                  flex: 1, fontSize: '13px',
+                  color: parentPath ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)',
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  fontFamily: parentPath ? "'SF Mono', Menlo, monospace" : 'inherit',
+                }}>
+                  {parentPath || 'Select a folder...'}
+                </Text>
+                <Text css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)', flexShrink: 0 }}>Browse</Text>
+              </Box>
+            </FormField>
+
+            <FormField label="Project name (optional)" error={errors.name?.message}>
+              <input {...register('name')} placeholder={derivedName || 'Auto-detected from URL'} style={inputCss} />
+            </FormField>
+
+            {parentPath && derivedName && (
+              <HStack gap={2} css={{
+                padding: '10px 12px', borderRadius: '8px',
+                background: 'var(--studio-bg-sidebar)', border: '1px solid var(--studio-border)',
+              }}>
+                <GitBranch size={14} style={{ color: 'var(--studio-text-muted)', flexShrink: 0 }} />
+                <Text css={{
+                  fontSize: '12px', fontFamily: "'SF Mono', Menlo, monospace",
+                  color: 'var(--studio-text-secondary)',
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>
+                  {parentPath}/{derivedName}
+                </Text>
+              </HStack>
+            )}
+
+            {state === 'error' && (
+              <HStack gap={2} css={{ padding: '10px 12px', borderRadius: '8px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                <AlertCircle size={14} style={{ color: 'var(--studio-error)', flexShrink: 0 }} />
+                <Text css={{ fontSize: '12px', color: 'var(--studio-error)' }}>{serverError}</Text>
+              </HStack>
+            )}
+
+            <Box
+              as="button"
+              type="submit"
+              disabled={!gitUrl || !parentPath}
+              css={{
+                width: '100%', padding: '11px', borderRadius: '10px', border: 'none',
+                background: (gitUrl && parentPath) ? 'var(--studio-accent)' : 'var(--studio-bg-surface)',
+                color: (gitUrl && parentPath) ? 'var(--studio-accent-fg)' : 'var(--studio-text-muted)',
+                fontSize: '14px', fontWeight: 500,
+                cursor: (gitUrl && parentPath) ? 'pointer' : 'default',
+                transition: 'all 0.15s ease',
+                '&:hover': (gitUrl && parentPath) ? { opacity: 0.9 } : {},
+              }}
+            >
+              Clone & Add to Studio
             </Box>
           </>
         )}

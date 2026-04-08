@@ -14,6 +14,7 @@ export interface ProjectCreateInput { name: string; parentPath: string; ai: bool
 export interface ProjectActivateInput { id: string }
 export interface ProjectRenameInput { id: string; name: string }
 export interface ProjectRemoveInput { id: string; hard?: boolean }
+export interface ProjectCloneInput { gitUrl: string; parentPath: string; name?: string }
 export interface ProjectValidateInput { path: string }
 export interface ProjectValidateResult { valid: boolean; path: string; name: string; isBlacksmithProject: boolean; hasPackageJson: boolean; hasGit: boolean }
 

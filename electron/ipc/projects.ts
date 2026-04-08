@@ -5,7 +5,7 @@ import os from 'node:os'
 import { spawn } from 'node:child_process'
 import type { ProjectManager } from '../../server/services/projects.js'
 import {
-  PROJECTS_LIST, PROJECTS_GET_ACTIVE, PROJECTS_REGISTER, PROJECTS_CREATE,
+  PROJECTS_LIST, PROJECTS_GET_ACTIVE, PROJECTS_REGISTER, PROJECTS_CREATE, PROJECTS_CLONE,
   PROJECTS_ACTIVATE, PROJECTS_RENAME, PROJECTS_REMOVE, PROJECTS_VALIDATE,
   BROWSE_LIST,
   PROJECTS_ON_CREATE_OUTPUT, PROJECTS_ON_CREATE_DONE, PROJECTS_ON_CREATE_ERROR,
@@ -157,6 +157,76 @@ export function setupProjectsIPC(getWindow: () => BrowserWindow | null, projectM
     })
 
     // Return immediately — client listens for stream events
+    return { started: true }
+  })
+
+  // Clone from Git
+  ipcMain.handle(PROJECTS_CLONE, (_e, data: {
+    gitUrl: string; parentPath: string; name?: string
+  }) => {
+    if (!data.gitUrl || !data.parentPath) throw new Error('gitUrl and parentPath are required')
+
+    const absParent = path.resolve(data.parentPath)
+    if (!fs.existsSync(absParent) || !fs.statSync(absParent).isDirectory()) {
+      throw new Error('parentPath is not a valid directory')
+    }
+
+    // Derive project name from URL if not provided
+    const repoName = data.name || data.gitUrl
+      .replace(/\.git$/, '')
+      .split('/')
+      .pop()
+      ?.replace(/[^a-zA-Z0-9_-]/g, '') || 'cloned-project'
+
+    const projectDir = path.join(absParent, repoName)
+    if (fs.existsSync(projectDir)) {
+      throw new Error(`Directory "${repoName}" already exists in ${absParent}`)
+    }
+
+    const win = getWindow()
+
+    const proc = spawn('git', ['clone', '--progress', data.gitUrl, repoName], {
+      cwd: absParent,
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env, GIT_TERMINAL_PROMPT: '0' },
+    })
+
+    proc.stdin.end()
+
+    const stderrLines: string[] = []
+
+    const sendLine = (line: string) => {
+      win?.webContents.send(PROJECTS_ON_CREATE_OUTPUT, { line })
+    }
+
+    proc.stdout.on('data', (chunk: Buffer) => {
+      chunk.toString().split('\n').filter(Boolean).forEach(sendLine)
+    })
+
+    // git clone sends progress to stderr
+    proc.stderr.on('data', (chunk: Buffer) => {
+      const lines = chunk.toString().split(/\r?\n/).filter(Boolean)
+      lines.forEach((line) => {
+        stderrLines.push(line)
+        sendLine(line)
+      })
+    })
+
+    proc.on('close', (code: number) => {
+      if (code !== 0) {
+        const lastErrors = stderrLines.slice(-10).join('\n')
+        const error = lastErrors || `git clone exited with code ${code}`
+        win?.webContents.send(PROJECTS_ON_CREATE_ERROR, { error })
+        return
+      }
+      const project = projectManager.register(projectDir, repoName)
+      win?.webContents.send(PROJECTS_ON_CREATE_DONE, { project })
+    })
+
+    proc.on('error', (err: Error) => {
+      win?.webContents.send(PROJECTS_ON_CREATE_ERROR, { error: err.message })
+    })
+
     return { started: true }
   })
 

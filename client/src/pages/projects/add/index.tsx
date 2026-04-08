@@ -6,8 +6,9 @@ import { Path } from '@/router/paths'
 import { ChooseType } from './choose-type'
 import { ImportExisting } from './import-existing'
 import { CreateNew } from './create-new'
+import { CloneFromGit } from './clone-from-git'
 
-type Step = 'choose' | 'import-existing' | 'create-new'
+type Step = 'choose' | 'import-existing' | 'create-new' | 'clone-git'
 
 export default function AddProjectPage() {
   const [step, setStep] = useState<Step>('choose')
@@ -72,6 +73,7 @@ export default function AddProjectPage() {
           <ChooseType
             onExisting={() => setStep('import-existing')}
             onNew={() => setStep('create-new')}
+            onClone={() => setStep('clone-git')}
           />
         )}
         {step === 'import-existing' && (
@@ -79,6 +81,9 @@ export default function AddProjectPage() {
         )}
         {step === 'create-new' && (
           <CreateNew />
+        )}
+        {step === 'clone-git' && (
+          <CloneFromGit />
         )}
       </Box>
     </Box>

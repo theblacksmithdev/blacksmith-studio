@@ -9,6 +9,7 @@ export const PROJECTS_ACTIVATE = 'projects:activate'
 export const PROJECTS_RENAME = 'projects:rename'
 export const PROJECTS_REMOVE = 'projects:remove'
 export const PROJECTS_VALIDATE = 'projects:validate'
+export const PROJECTS_CLONE = 'projects:clone'
 
 // Browse
 export const BROWSE_LIST = 'browse:list'
@@ -107,7 +108,7 @@ export const GIT_ON_STATUS_CHANGE = 'git:onStatusChange'
 
 // Channel allowlists for preload security
 export const INVOKE_CHANNELS = [
-  PROJECTS_LIST, PROJECTS_GET_ACTIVE, PROJECTS_REGISTER, PROJECTS_CREATE,
+  PROJECTS_LIST, PROJECTS_GET_ACTIVE, PROJECTS_REGISTER, PROJECTS_CREATE, PROJECTS_CLONE,
   PROJECTS_ACTIVATE, PROJECTS_RENAME, PROJECTS_REMOVE, PROJECTS_VALIDATE,
   BROWSE_LIST,
   SESSIONS_LIST, SESSIONS_GET, SESSIONS_CREATE, SESSIONS_RENAME, SESSIONS_DELETE,

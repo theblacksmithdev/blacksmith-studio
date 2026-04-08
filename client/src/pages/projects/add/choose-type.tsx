@@ -1,12 +1,13 @@
-import { Box, Text, VStack, HStack } from '@chakra-ui/react'
-import { FolderOpen, Plus, ArrowRight } from 'lucide-react'
+import { Box, Text, VStack, Flex } from '@chakra-ui/react'
+import { FolderOpen, Plus, ArrowRight, GitBranch, Globe, HardDrive } from 'lucide-react'
 
 interface ChooseTypeProps {
   onExisting: () => void
   onNew: () => void
+  onClone: () => void
 }
 
-export function ChooseType({ onExisting, onNew }: ChooseTypeProps) {
+export function ChooseType({ onExisting, onNew, onClone }: ChooseTypeProps) {
   return (
     <VStack gap={8} css={{ maxWidth: '520px', width: '100%', padding: '0 24px' }}>
       <VStack gap={2}>
@@ -14,21 +15,45 @@ export function ChooseType({ onExisting, onNew }: ChooseTypeProps) {
           Add a project
         </Text>
         <Text css={{ fontSize: '14px', color: 'var(--studio-text-tertiary)', textAlign: 'center' }}>
-          Import an existing project or create a new one from scratch.
+          Open a local project, clone from a remote, or start fresh.
         </Text>
       </VStack>
 
-      <VStack gap={3} align="stretch" css={{ width: '100%' }}>
+      <VStack gap={5} align="stretch" css={{ width: '100%' }}>
+        {/* ── Local ── */}
+        <Box>
+          <GroupLabel icon={<HardDrive size={11} />} label="From your machine" />
+          <OptionCard
+            icon={<FolderOpen size={20} />}
+            title="Open existing project"
+            description="Select a project folder already on your machine."
+            onClick={onExisting}
+          />
+        </Box>
+
+        {/* ── Remote ── */}
+        <Box>
+          <GroupLabel icon={<Globe size={11} />} label="From the internet" />
+          <OptionCard
+            icon={<GitBranch size={20} />}
+            title="Clone a Git repository"
+            description="Clone from GitHub, GitLab, Bitbucket, or any Git URL."
+            onClick={onClone}
+          />
+        </Box>
+
+        {/* ── Separator ── */}
+        <Flex align="center" gap={3} css={{ padding: '0 4px' }}>
+          <Box css={{ flex: 1, height: '1px', background: 'var(--studio-border)' }} />
+          <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)', flexShrink: 0 }}>or</Text>
+          <Box css={{ flex: 1, height: '1px', background: 'var(--studio-border)' }} />
+        </Flex>
+
+        {/* ── New ── */}
         <OptionCard
-          icon={<FolderOpen size={22} />}
-          title="Import existing project"
-          description="Select a folder on your machine that already has a project in it."
-          onClick={onExisting}
-        />
-        <OptionCard
-          icon={<Plus size={22} />}
+          icon={<Plus size={20} />}
           title="Create new project"
-          description="Scaffold a new Blacksmith project with Django backend and React frontend."
+          description="Scaffold a new Blacksmith project with Django + React."
           onClick={onNew}
         />
       </VStack>
@@ -36,31 +61,46 @@ export function ChooseType({ onExisting, onNew }: ChooseTypeProps) {
   )
 }
 
-function OptionCard({ icon, title, description, onClick, disabled }: {
+function GroupLabel({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <Flex align="center" gap={2} css={{ paddingLeft: '4px', marginBottom: '8px' }}>
+      <Box css={{ color: 'var(--studio-text-muted)', display: 'flex' }}>{icon}</Box>
+      <Text css={{
+        fontSize: '11px',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.06em',
+        color: 'var(--studio-text-muted)',
+      }}>
+        {label}
+      </Text>
+    </Flex>
+  )
+}
+
+function OptionCard({ icon, title, description, onClick }: {
   icon: React.ReactNode
   title: string
   description: string
   onClick: () => void
-  disabled?: boolean
 }) {
   return (
     <Box
       as="button"
-      onClick={disabled ? undefined : onClick}
+      onClick={onClick}
       css={{
         display: 'flex',
         alignItems: 'center',
         gap: '16px',
-        padding: '20px',
+        padding: '18px 20px',
         borderRadius: '12px',
         border: '1px solid var(--studio-border)',
         background: 'var(--studio-bg-sidebar)',
-        cursor: disabled ? 'default' : 'pointer',
+        cursor: 'pointer',
         textAlign: 'left',
         width: '100%',
         transition: 'all 0.15s ease',
-        opacity: disabled ? 0.5 : 1,
-        '&:hover': disabled ? {} : {
+        '&:hover': {
           borderColor: 'var(--studio-border-hover)',
           background: 'var(--studio-bg-hover)',
           '& .option-arrow': { opacity: 1, transform: 'translateX(0)' },
@@ -69,9 +109,9 @@ function OptionCard({ icon, title, description, onClick, disabled }: {
     >
       <Box
         css={{
-          width: '48px',
-          height: '48px',
-          borderRadius: '12px',
+          width: '44px',
+          height: '44px',
+          borderRadius: '11px',
           background: 'var(--studio-bg-surface)',
           display: 'flex',
           alignItems: 'center',
@@ -83,32 +123,25 @@ function OptionCard({ icon, title, description, onClick, disabled }: {
         {icon}
       </Box>
       <Box css={{ flex: 1 }}>
-        <Text css={{ fontSize: '15px', fontWeight: 500, color: 'var(--studio-text-primary)', marginBottom: '2px' }}>
+        <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)', marginBottom: '2px', letterSpacing: '-0.01em' }}>
           {title}
         </Text>
-        <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', lineHeight: 1.4 }}>
+        <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', lineHeight: 1.4 }}>
           {description}
         </Text>
-        {disabled && (
-          <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)', marginTop: '4px' }}>
-            Coming soon
-          </Text>
-        )}
       </Box>
-      {!disabled && (
-        <Box
-          className="option-arrow"
-          css={{
-            opacity: 0,
-            transform: 'translateX(-4px)',
-            transition: 'all 0.15s ease',
-            color: 'var(--studio-text-muted)',
-            flexShrink: 0,
-          }}
-        >
-          <ArrowRight size={18} />
-        </Box>
-      )}
+      <Box
+        className="option-arrow"
+        css={{
+          opacity: 0,
+          transform: 'translateX(-4px)',
+          transition: 'all 0.15s ease',
+          color: 'var(--studio-text-muted)',
+          flexShrink: 0,
+        }}
+      >
+        <ArrowRight size={16} />
+      </Box>
     </Box>
   )
 }
