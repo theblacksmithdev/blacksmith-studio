@@ -1,8 +1,10 @@
 import { ipcMain, type BrowserWindow } from 'electron'
 import type { RunnerManager, RunnerTarget } from '../../server/services/runner/index.js'
 import type { ProjectManager } from '../../server/services/projects.js'
+import type { SettingsManager } from '../../server/services/settings.js'
+import { detectNodeInstallations } from '../../server/services/runner/detect-node.js'
 import {
-  RUNNER_GET_STATUS, RUNNER_START, RUNNER_STOP,
+  RUNNER_GET_STATUS, RUNNER_START, RUNNER_STOP, RUNNER_DETECT_NODE,
   RUNNER_ON_STATUS, RUNNER_ON_OUTPUT,
 } from './channels.js'
 
@@ -10,6 +12,7 @@ export function setupRunnerIPC(
   getWindow: () => BrowserWindow | null,
   runnerManager: RunnerManager,
   projectManager: ProjectManager,
+  settingsManager: SettingsManager,
 ) {
   // Register push callbacks for streaming output/status
   runnerManager.onOutput((source, line) => {
@@ -24,13 +27,19 @@ export function setupRunnerIPC(
     return runnerManager.getStatus()
   })
 
+  ipcMain.handle(RUNNER_DETECT_NODE, () => {
+    return detectNodeInstallations()
+  })
+
   ipcMain.handle(RUNNER_START, async (_e, data: { target: RunnerTarget | 'all' }) => {
     const projectPath = projectManager.getActivePath()
     if (!projectPath) throw new Error('No active project')
+    const projectId = projectManager.getActiveId()
+    const nodePath = projectId ? settingsManager.get(projectId, 'runner.nodePath') : ''
 
-    if (data.target === 'all') await runnerManager.startAll(projectPath)
-    else if (data.target === 'backend') await runnerManager.startBackend(projectPath)
-    else if (data.target === 'frontend') await runnerManager.startFrontend(projectPath)
+    if (data.target === 'all') await runnerManager.startAll(projectPath, nodePath)
+    else if (data.target === 'backend') await runnerManager.startBackend(projectPath, nodePath)
+    else if (data.target === 'frontend') await runnerManager.startFrontend(projectPath, nodePath)
   })
 
   ipcMain.handle(RUNNER_STOP, (_e, data: { target: RunnerTarget | 'all' }) => {

@@ -61,6 +61,8 @@ export interface RunnerTargetInput { target: RunnerTarget }
 export interface RunnerServiceStatus { status: 'stopped' | 'starting' | 'running'; port: number | null }
 export interface RunnerStatusResult { backend: RunnerServiceStatus; frontend: RunnerServiceStatus }
 
+export interface NodeInstallation { label: string; path: string; version: string }
+
 // Subscribe events
 export interface RunnerOutputEvent { source: 'backend' | 'frontend'; line: string }
 

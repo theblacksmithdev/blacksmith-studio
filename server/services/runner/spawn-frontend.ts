@@ -10,6 +10,7 @@ export async function spawnFrontend(
   processes: Map<RunnerTarget, ProcessInfo>,
   emit: (source: RunnerTarget, line: string) => void,
   emitStatus: () => void,
+  nodePath?: string,
 ): Promise<void> {
   if (processes.has('frontend')) return
 
@@ -22,12 +23,22 @@ export async function spawnFrontend(
     return
   }
 
+  // Build env with custom Node path prepended if configured
+  const env: Record<string, string | undefined> = { ...process.env, FORCE_COLOR: '0' }
+  let npmCmd = 'npm'
+  if (nodePath) {
+    const nodeDir = path.dirname(nodePath)
+    env.PATH = `${nodeDir}${path.delimiter}${process.env.PATH ?? ''}`
+    npmCmd = path.join(nodeDir, 'npm')
+    emit('frontend', `[studio] Using Node: ${nodePath}`)
+  }
+
   emit('frontend', `[studio] Starting Vite on port ${port}...`)
 
-  const proc = spawn('npm', ['run', 'dev', '--', '--port', String(port)], {
+  const proc = spawn(npmCmd, ['run', 'dev', '--', '--port', String(port)], {
     cwd: frontendDir,
     stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, FORCE_COLOR: '0' },
+    env,
     shell: true,
   })
 

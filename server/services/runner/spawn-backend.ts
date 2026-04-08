@@ -10,6 +10,7 @@ export async function spawnBackend(
   processes: Map<RunnerTarget, ProcessInfo>,
   emit: (source: RunnerTarget, line: string) => void,
   emitStatus: () => void,
+  _nodePath?: string,
 ): Promise<void> {
   if (processes.has('backend')) return
 

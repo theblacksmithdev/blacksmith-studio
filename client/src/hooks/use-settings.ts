@@ -76,5 +76,8 @@ export function useSettings() {
     backendPath: (settings['preview.backendPath'] ?? '/api/docs') as string,
     chatSplit: (settings['preview.chatSplit'] ?? 60) as number,
     runSplit: (settings['preview.runSplit'] ?? 55) as number,
+
+    // Runner
+    nodePath: (settings['runner.nodePath'] ?? '') as string,
   }
 }

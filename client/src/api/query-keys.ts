@@ -19,4 +19,5 @@ export const queryKeys = {
   gitBranches: ['git', 'versions'] as const,
   gitSyncStatus: ['git', 'syncStatus'] as const,
   gitConflicts: ['git', 'conflicts'] as const,
+  nodeInstallations: ['runner', 'nodeInstallations'] as const,
 }

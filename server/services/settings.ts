@@ -20,6 +20,7 @@ const DEFAULTS: Record<string, any> = {
   'preview.backendPath': '/api/docs/',
   'preview.chatSplit': 60,
   'preview.runSplit': 55,
+  'runner.nodePath': '',
 }
 
 export class SettingsManager {

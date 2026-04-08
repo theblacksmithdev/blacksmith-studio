@@ -36,26 +36,28 @@ export class RunnerManager {
     }
   }
 
-  async startBackend(projectRoot: string): Promise<void> {
+  async startBackend(projectRoot: string, nodePath?: string): Promise<void> {
     await spawnBackend(
       projectRoot,
       this.processes,
       (source, line) => this.emit(source, line),
       () => this.emitStatus(),
+      nodePath,
     )
   }
 
-  async startFrontend(projectRoot: string): Promise<void> {
+  async startFrontend(projectRoot: string, nodePath?: string): Promise<void> {
     await spawnFrontend(
       projectRoot,
       this.processes,
       (source, line) => this.emit(source, line),
       () => this.emitStatus(),
+      nodePath,
     )
   }
 
-  async startAll(projectRoot: string): Promise<void> {
-    await Promise.all([this.startBackend(projectRoot), this.startFrontend(projectRoot)])
+  async startAll(projectRoot: string, nodePath?: string): Promise<void> {
+    await Promise.all([this.startBackend(projectRoot, nodePath), this.startFrontend(projectRoot, nodePath)])
   }
 
   stopBackend(): void {

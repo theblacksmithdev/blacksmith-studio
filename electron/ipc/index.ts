@@ -46,7 +46,7 @@ export function setupAllIPC(
   setupTemplatesIPC()
   setupSettingsIPC(settingsManager, projectManager)
   setupClaudeIPC(getWindow, claudeManager, sessionManager, projectManager, settingsManager, mcpManager)
-  setupRunnerIPC(getWindow, runnerManager, projectManager)
+  setupRunnerIPC(getWindow, runnerManager, projectManager, settingsManager)
   setupMcpIPC(mcpManager, projectManager, settingsManager)
   setupHealthIPC(claudeManager, projectManager)
   setupKnowledgeIPC(knowledgeManager, projectManager)
