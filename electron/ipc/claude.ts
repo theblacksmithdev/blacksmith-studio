@@ -65,6 +65,7 @@ export function setupClaudeIPC(
           projectPath,
           Array.isArray(allSettings['mcp.disabledServers']) ? allSettings['mcp.disabledServers'] : [],
         ),
+        nodePath: allSettings['runner.nodePath'] || undefined,
       }, (chunk) => {
         if (chunk.type === 'assistant') {
           const textBlocks = (chunk.message?.content || []).filter((b: any) => b.type === 'text')

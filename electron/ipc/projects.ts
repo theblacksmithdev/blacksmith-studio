@@ -4,6 +4,8 @@ import path from 'node:path'
 import os from 'node:os'
 import { spawn } from 'node:child_process'
 import type { ProjectManager } from '../../server/services/projects.js'
+import type { SettingsManager } from '../../server/services/settings.js'
+import { nodeEnv, nodeCmd } from '../../server/services/node-env.js'
 import {
   PROJECTS_LIST, PROJECTS_GET_ACTIVE, PROJECTS_REGISTER, PROJECTS_CREATE, PROJECTS_CLONE,
   PROJECTS_ACTIVATE, PROJECTS_RENAME, PROJECTS_REMOVE, PROJECTS_VALIDATE,
@@ -11,7 +13,7 @@ import {
   PROJECTS_ON_CREATE_OUTPUT, PROJECTS_ON_CREATE_DONE, PROJECTS_ON_CREATE_ERROR,
 } from './channels.js'
 
-export function setupProjectsIPC(getWindow: () => BrowserWindow | null, projectManager: ProjectManager) {
+export function setupProjectsIPC(getWindow: () => BrowserWindow | null, projectManager: ProjectManager, settingsManager: SettingsManager) {
   ipcMain.handle(PROJECTS_LIST, () => {
     return projectManager.list()
   })
@@ -110,13 +112,15 @@ export function setupProjectsIPC(getWindow: () => BrowserWindow | null, projectM
     if (data.ai) args.push('--ai')
 
     const win = getWindow()
+    const projectId = projectManager.getActiveId()
+    const nodePath = projectId ? (settingsManager.get(projectId, 'runner.nodePath') || undefined) : undefined
 
     // Run blacksmith via npx to ensure it uses a compatible Node version.
     // CI=true disables interactive prompts (auto-accepts defaults).
-    const proc = spawn('npx', ['blacksmith-cli', ...args], {
+    const proc = spawn(nodeCmd('npx', nodePath), ['blacksmith-cli', ...args], {
       cwd: absParent,
       stdio: ['pipe', 'pipe', 'pipe'],
-      env: { ...process.env, FORCE_COLOR: '0', CI: '1' },
+      env: nodeEnv(nodePath, { FORCE_COLOR: '0', CI: '1' }),
       shell: true,
     })
 

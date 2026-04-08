@@ -17,6 +17,7 @@ export interface SendPromptOptions {
   permissionMode?: string
   customInstructions?: string
   mcpConfigPath?: string
+  nodePath?: string
 }
 
 export class ClaudeManager {

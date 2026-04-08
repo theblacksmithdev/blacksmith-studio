@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { spawn } from 'node:child_process'
+import { nodeEnv } from './node-env.js'
 
 /* ── Types ── */
 
@@ -136,7 +137,7 @@ export class McpManager {
     this.write(projectRoot, data)
   }
 
-  async testConnection(projectRoot: string, name: string): Promise<{ ok: boolean; error?: string }> {
+  async testConnection(projectRoot: string, name: string, nodePath?: string): Promise<{ ok: boolean; error?: string }> {
     const data = this.read(projectRoot)
     const config = data.mcpServers[name]
     if (!config) {
@@ -146,7 +147,7 @@ export class McpManager {
     if ('url' in config) {
       return this.testHttp(config as McpServerHttp, name)
     }
-    return this.testStdio(config as McpServerStdio, name)
+    return this.testStdio(config as McpServerStdio, name, nodePath)
   }
 
   private async testHttp(config: McpServerHttp, name: string): Promise<{ ok: boolean; error?: string }> {
@@ -173,12 +174,12 @@ export class McpManager {
     }
   }
 
-  private testStdio(config: McpServerStdio, name: string): Promise<{ ok: boolean; error?: string }> {
+  testStdio(config: McpServerStdio, name: string, nodePath?: string): Promise<{ ok: boolean; error?: string }> {
     return new Promise((resolve) => {
       try {
         const proc = spawn(config.command, config.args || [], {
           stdio: ['pipe', 'pipe', 'pipe'],
-          env: { ...process.env, ...config.env },
+          env: nodeEnv(nodePath, config.env),
           shell: true,
         })
 

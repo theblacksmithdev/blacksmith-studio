@@ -58,7 +58,8 @@ export function setupMcpIPC(
   })
 
   ipcMain.handle(MCP_TEST, async (_e, data: { name: string }) => {
-    const { path: root } = requireActiveProject(projectManager)
-    return mcpManager.testConnection(root, data.name)
+    const { id, path: root } = requireActiveProject(projectManager)
+    const nodePath = settingsManager.get(id, 'runner.nodePath') || ''
+    return mcpManager.testConnection(root, data.name, nodePath)
   })
 }

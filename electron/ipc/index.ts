@@ -40,7 +40,7 @@ export function setupAllIPC(
   terminalManager: TerminalManager,
 ) {
   setupFolderDialogIPC()
-  setupProjectsIPC(getWindow, projectManager)
+  setupProjectsIPC(getWindow, projectManager, settingsManager)
   setupSessionsIPC(sessionManager, projectManager)
   setupFilesIPC(projectManager)
   setupTemplatesIPC()
@@ -51,7 +51,7 @@ export function setupAllIPC(
   setupHealthIPC(claudeManager, projectManager)
   setupKnowledgeIPC(knowledgeManager, projectManager)
   setupSkillsIPC(skillsManager, projectManager)
-  setupSetupIPC()
+  setupSetupIPC(settingsManager, projectManager)
   setupGitIPC(getWindow, gitManager, projectManager)
-  setupTerminalIPC(getWindow, terminalManager, projectManager)
+  setupTerminalIPC(getWindow, terminalManager, projectManager, settingsManager)
 }

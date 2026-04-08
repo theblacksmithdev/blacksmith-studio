@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process'
 import type { ChildProcess } from 'node:child_process'
 import { buildClaudeArgs, type ClaudeArgsOptions } from './args.js'
+import { nodeEnv } from '../node-env.js'
 import { createNdjsonParser } from './ndjson-parser.js'
 import type { ChunkCallback } from './types.js'
 
@@ -8,6 +9,7 @@ export interface SpawnOptions extends Omit<ClaudeArgsOptions, 'sessionId' | 'pro
   sessionId: string
   prompt: string
   projectRoot: string
+  nodePath?: string
 }
 
 /**
@@ -19,7 +21,7 @@ export function spawnClaudePrompt(
   onChunk: ChunkCallback,
   claudeBin: string = 'claude',
 ): { promise: Promise<void>; process: ChildProcess } {
-  const { sessionId, prompt, projectRoot, ...argsOptions } = options
+  const { sessionId, prompt, projectRoot, nodePath, ...argsOptions } = options
   console.log(`[claude] Spawning for session ${sessionId}, prompt: "${prompt.slice(0, 80)}..."`)
 
   const args = buildClaudeArgs({ sessionId, prompt, ...argsOptions })
@@ -27,7 +29,7 @@ export function spawnClaudePrompt(
   const proc = spawn(claudeBin, args, {
     cwd: projectRoot,
     stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env },
+    env: nodeEnv(nodePath),
   })
 
   const parser = createNdjsonParser(onChunk)

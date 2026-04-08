@@ -4,6 +4,7 @@ import fs from 'node:fs'
 import type { ProcessInfo, RunnerTarget } from './types.js'
 import { findAvailablePort } from './port-utils.js'
 import { loadProjectConfig } from './config.js'
+import { nodeEnv, nodeCmd } from '../node-env.js'
 
 export async function spawnFrontend(
   projectRoot: string,
@@ -23,22 +24,13 @@ export async function spawnFrontend(
     return
   }
 
-  // Build env with custom Node path prepended if configured
-  const env: Record<string, string | undefined> = { ...process.env, FORCE_COLOR: '0' }
-  let npmCmd = 'npm'
-  if (nodePath) {
-    const nodeDir = path.dirname(nodePath)
-    env.PATH = `${nodeDir}${path.delimiter}${process.env.PATH ?? ''}`
-    npmCmd = path.join(nodeDir, 'npm')
-    emit('frontend', `[studio] Using Node: ${nodePath}`)
-  }
-
+  if (nodePath) emit('frontend', `[studio] Using Node: ${nodePath}`)
   emit('frontend', `[studio] Starting Vite on port ${port}...`)
 
-  const proc = spawn(npmCmd, ['run', 'dev', '--', '--port', String(port)], {
+  const proc = spawn(nodeCmd('npm', nodePath), ['run', 'dev', '--', '--port', String(port)], {
     cwd: frontendDir,
     stdio: ['ignore', 'pipe', 'pipe'],
-    env,
+    env: nodeEnv(nodePath, { FORCE_COLOR: '0' }),
     shell: true,
   })
 

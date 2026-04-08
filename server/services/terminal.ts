@@ -1,4 +1,5 @@
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process'
+import path from 'node:path'
 import os from 'node:os'
 import fs from 'node:fs'
 
@@ -31,14 +32,18 @@ export class TerminalManager {
     return '/bin/sh'
   }
 
-  async spawn(cwd: string, _cols?: number, _rows?: number): Promise<string> {
+  async spawn(cwd: string, _cols?: number, _rows?: number, nodePath?: string): Promise<string> {
     const id = `term-${++this.idCounter}`
     const shell = this.resolveShell()
 
-    // Build clean env
+    // Build clean env with configured Node on PATH
     const env: Record<string, string> = {}
     for (const [k, v] of Object.entries(process.env)) {
       if (v !== undefined) env[k] = v
+    }
+    if (nodePath) {
+      const nodeDir = path.dirname(nodePath)
+      env.PATH = `${nodeDir}${path.delimiter}${env.PATH ?? ''}`
     }
     env.TERM = 'dumb'
     env.PS1 = '\\w $ '

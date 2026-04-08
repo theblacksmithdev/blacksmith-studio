@@ -1,6 +1,9 @@
 import { ipcMain } from 'electron'
 import { spawn, execSync } from 'node:child_process'
 import { SETUP_CHECK, SETUP_INSTALL_CLAUDE } from './channels.js'
+import type { SettingsManager } from '../../server/services/settings.js'
+import type { ProjectManager } from '../../server/services/projects.js'
+import { nodeEnv, nodeCmd } from '../../server/services/node-env.js'
 
 export interface NodeStatus {
   installed: boolean
@@ -14,9 +17,19 @@ export interface SetupStatus {
   auth: { authenticated: boolean }
 }
 
-function checkNode(): NodeStatus {
+function getNodePath(settingsManager: SettingsManager, projectManager: ProjectManager): string | undefined {
+  const projectId = projectManager.getActiveId()
+  if (!projectId) return undefined
+  return settingsManager.get(projectId, 'runner.nodePath') || undefined
+}
+
+function checkNode(nodePath?: string): NodeStatus {
   try {
-    const version = execSync('node --version', { timeout: 5000 }).toString().trim()
+    const bin = nodeCmd('node', nodePath)
+    const version = execSync(`"${bin}" --version`, {
+      timeout: 5000,
+      env: nodeEnv(nodePath),
+    }).toString().trim()
     const major = parseInt(version.replace('v', '').split('.')[0], 10)
     if (major >= 18) return { installed: true, version }
     return { installed: false, version, outdated: true }
@@ -58,11 +71,13 @@ function checkAuth(): Promise<{ authenticated: boolean }> {
   })
 }
 
-function installClaude(): Promise<{ success: boolean; error?: string }> {
+function installClaude(nodePath?: string): Promise<{ success: boolean; error?: string }> {
   return new Promise((resolve) => {
-    const proc = spawn('npm', ['install', '-g', '@anthropic-ai/claude-code'], {
+    const proc = spawn(nodeCmd('npm', nodePath), ['install', '-g', '@anthropic-ai/claude-code'], {
       stdio: ['ignore', 'pipe', 'pipe'],
+      env: nodeEnv(nodePath),
       timeout: 120000,
+      shell: true,
     })
 
     let stderr = ''
@@ -78,9 +93,10 @@ function installClaude(): Promise<{ success: boolean; error?: string }> {
   })
 }
 
-export function setupSetupIPC() {
+export function setupSetupIPC(settingsManager: SettingsManager, projectManager: ProjectManager) {
   ipcMain.handle(SETUP_CHECK, async (): Promise<SetupStatus> => {
-    const node = checkNode()
+    const nodePath = getNodePath(settingsManager, projectManager)
+    const node = checkNode(nodePath)
     const claude = await checkClaude()
 
     // If Claude is installed, Node is guaranteed available (Claude requires Node 18+)
@@ -95,6 +111,7 @@ export function setupSetupIPC() {
   })
 
   ipcMain.handle(SETUP_INSTALL_CLAUDE, async () => {
-    return installClaude()
+    const nodePath = getNodePath(settingsManager, projectManager)
+    return installClaude(nodePath)
   })
 }
