@@ -5,6 +5,7 @@ import { useProjects } from '@/hooks/use-projects'
 import { useProjectStore } from '@/stores/project-store'
 import { resetProjectStores } from '@/stores/reset'
 import { useRunnerListener } from '@/hooks/use-runner'
+import { useGitListener } from '@/hooks/use-git'
 import { RunnerDock } from '@/components/runner/dock'
 import { Sidebar } from './sidebar'
 import { ProjectTitleBar } from './title-bar'
@@ -36,6 +37,7 @@ export function ProjectLayout() {
   const navigate = useNavigate()
 
   useRunnerListener()
+  useGitListener()
 
   useEffect(() => {
     if (projectId && projectId !== activeProject?.id) {

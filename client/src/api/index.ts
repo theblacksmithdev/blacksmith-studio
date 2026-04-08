@@ -12,6 +12,7 @@ import { mcp } from './modules/mcp'
 import { setup } from './modules/setup'
 import { skills } from './modules/skills'
 import { knowledge } from './modules/knowledge'
+import { git } from './modules/git'
 
 export const api = {
   projects,
@@ -28,4 +29,5 @@ export const api = {
   setup,
   skills,
   knowledge,
+  git,
 } as const

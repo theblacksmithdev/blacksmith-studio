@@ -13,4 +13,10 @@ export const queryKeys = {
   knowledge: ['knowledge'] as const,
   browse: (path?: string) => ['browse', path ?? '~'] as const,
   projectValidation: (path: string) => ['projects', 'validation', path] as const,
+  gitStatus: ['git', 'status'] as const,
+  gitChangedFiles: ['git', 'changedFiles'] as const,
+  gitHistory: ['git', 'history'] as const,
+  gitBranches: ['git', 'versions'] as const,
+  gitSyncStatus: ['git', 'syncStatus'] as const,
+  gitConflicts: ['git', 'conflicts'] as const,
 }

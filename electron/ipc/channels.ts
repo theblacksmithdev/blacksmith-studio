@@ -70,6 +70,23 @@ export const SKILLS_ADD = 'skills:add'
 export const SKILLS_UPDATE = 'skills:update'
 export const SKILLS_REMOVE = 'skills:remove'
 
+// Git
+export const GIT_STATUS = 'git:status'
+export const GIT_CHANGED_FILES = 'git:changedFiles'
+export const GIT_DIFF = 'git:diff'
+export const GIT_CREATE_CHECKPOINT = 'git:createCheckpoint'
+export const GIT_GENERATE_MESSAGE = 'git:generateMessage'
+export const GIT_HISTORY = 'git:history'
+export const GIT_LIST_VERSIONS = 'git:listVersions'
+export const GIT_CREATE_VERSION = 'git:createVersion'
+export const GIT_SWITCH_VERSION = 'git:switchVersion'
+export const GIT_APPLY_VERSION = 'git:applyVersion'
+export const GIT_SYNC = 'git:sync'
+export const GIT_SYNC_STATUS = 'git:syncStatus'
+export const GIT_CONFLICTS = 'git:conflicts'
+export const GIT_RESOLVE_CONFLICT = 'git:resolveConflict'
+export const GIT_INIT = 'git:init'
+
 // ─── Push/Stream Channels ───
 
 // Project creation
@@ -85,6 +102,7 @@ export const FILES_ON_CHANGED = 'files:onChanged'
 export const RUNNER_ON_STATUS = 'runner:onStatus'
 export const RUNNER_ON_OUTPUT = 'runner:onOutput'
 export const WINDOW_ON_FULLSCREEN = 'window:onFullscreen'
+export const GIT_ON_STATUS_CHANGE = 'git:onStatusChange'
 
 // Channel allowlists for preload security
 export const INVOKE_CHANNELS = [
@@ -102,6 +120,12 @@ export const INVOKE_CHANNELS = [
   SETUP_CHECK, SETUP_INSTALL_CLAUDE,
   KNOWLEDGE_LIST, KNOWLEDGE_GET, KNOWLEDGE_SAVE, KNOWLEDGE_CREATE, KNOWLEDGE_REMOVE,
   SKILLS_LIST, SKILLS_GET, SKILLS_ADD, SKILLS_UPDATE, SKILLS_REMOVE,
+  GIT_STATUS, GIT_CHANGED_FILES, GIT_DIFF,
+  GIT_CREATE_CHECKPOINT, GIT_GENERATE_MESSAGE, GIT_HISTORY,
+  GIT_LIST_VERSIONS, GIT_CREATE_VERSION, GIT_SWITCH_VERSION, GIT_APPLY_VERSION,
+  GIT_SYNC, GIT_SYNC_STATUS,
+  GIT_CONFLICTS, GIT_RESOLVE_CONFLICT,
+  GIT_INIT,
 ] as const
 
 export const SUBSCRIBE_CHANNELS = [
@@ -110,4 +134,5 @@ export const SUBSCRIBE_CHANNELS = [
   FILES_ON_CHANGED,
   RUNNER_ON_STATUS, RUNNER_ON_OUTPUT,
   WINDOW_ON_FULLSCREEN,
+  GIT_ON_STATUS_CHANGE,
 ] as const

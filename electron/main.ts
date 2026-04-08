@@ -12,6 +12,7 @@ import { RunnerManager } from '../server/services/runner/index.js'
 import { McpManager } from '../server/services/mcp.js'
 import { SkillsManager } from '../server/services/skills.js'
 import { KnowledgeManager } from '../server/services/knowledge.js'
+import { GitManager } from '../server/services/git.js'
 import { closeDatabase } from '../server/db/index.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -129,6 +130,7 @@ app.whenReady().then(async () => {
   const mcpManager = new McpManager()
   const skillsManager = new SkillsManager()
   const knowledgeManager = new KnowledgeManager()
+  const gitManager = new GitManager()
 
   // Check Claude availability
   const claudeStatus = await claudeManager.checkInstalled()
@@ -153,6 +155,7 @@ app.whenReady().then(async () => {
     mcpManager,
     skillsManager,
     knowledgeManager,
+    gitManager,
   )
 
   app.on('activate', () => {
@@ -164,6 +167,7 @@ app.whenReady().then(async () => {
   // Cleanup on quit
   app.on('before-quit', () => {
     runnerManager.stopAll()
+    gitManager.stopAllWatching()
     closeDatabase()
     console.log('[studio] Runner processes stopped, database closed')
   })

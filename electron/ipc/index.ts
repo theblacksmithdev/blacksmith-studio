@@ -7,6 +7,7 @@ import type { RunnerManager } from '../../server/services/runner/index.js'
 import type { McpManager } from '../../server/services/mcp.js'
 import type { SkillsManager } from '../../server/services/skills.js'
 import type { KnowledgeManager } from '../../server/services/knowledge.js'
+import type { GitManager } from '../../server/services/git.js'
 
 import { setupProjectsIPC } from './projects.js'
 import { setupSessionsIPC } from './sessions.js'
@@ -21,6 +22,7 @@ import { setupKnowledgeIPC } from './knowledge.js'
 import { setupSkillsIPC } from './skills.js'
 import { setupSetupIPC } from './setup.js'
 import { setupFolderDialogIPC } from './folder-dialog.js'
+import { setupGitIPC } from './git.js'
 
 export function setupAllIPC(
   getWindow: () => BrowserWindow | null,
@@ -32,6 +34,7 @@ export function setupAllIPC(
   mcpManager: McpManager,
   skillsManager: SkillsManager,
   knowledgeManager: KnowledgeManager,
+  gitManager: GitManager,
 ) {
   setupFolderDialogIPC()
   setupProjectsIPC(getWindow, projectManager)
@@ -46,4 +49,5 @@ export function setupAllIPC(
   setupKnowledgeIPC(knowledgeManager, projectManager)
   setupSkillsIPC(skillsManager, projectManager)
   setupSetupIPC()
+  setupGitIPC(getWindow, gitManager, projectManager)
 }

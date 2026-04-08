@@ -1,6 +1,7 @@
 import { useChatStore } from './chat-store'
 import { useFileStore } from './file-store'
 import { useRunnerStore } from './runner-store'
+import { useGitStore } from './git-store'
 import { useSessionStore } from './session-store'
 import { clearFileContentCache } from '@/hooks/use-files'
 
@@ -27,4 +28,14 @@ export function resetProjectStores() {
   // Runner — clear logs only; actual status will be synced
   // from the main process by useRunnerListener on mount
   useRunnerStore.setState({ logs: [] })
+
+  // Git — reset to unknown; will be synced by useGitListener
+  useGitStore.setState({
+    initialized: false,
+    branch: '',
+    changedCount: 0,
+    syncStatus: 'unknown',
+    ahead: 0,
+    behind: 0,
+  })
 }

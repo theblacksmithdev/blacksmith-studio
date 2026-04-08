@@ -2,11 +2,13 @@ import {
   MessageSquare,
   FolderTree,
   Play,
+  History,
 } from 'lucide-react'
 import {
   newChatPath,
   codePath,
   runPath,
+  checkpointsPath,
 } from '@/router/paths'
 
 export interface NavEntry {
@@ -20,6 +22,7 @@ export interface NavEntry {
 export const projectNav: NavEntry[] = [
   { id: 'chat', icon: MessageSquare, label: 'Chat', path: newChatPath, match: '/chat' },
   { id: 'code', icon: FolderTree, label: 'Code', path: codePath, match: '/code' },
+  { id: 'git', icon: History, label: 'Source Control', path: checkpointsPath, match: '/checkpoints' },
 ]
 
 export const bottomNav: NavEntry[] = [

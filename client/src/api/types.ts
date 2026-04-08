@@ -74,6 +74,57 @@ export interface ClaudeToolUseEvent { sessionId: string; toolId: string; toolNam
 export interface ClaudeDoneEvent { sessionId: string; costUsd: number; durationMs: number }
 export interface ClaudeErrorEvent { sessionId: string; error: string; code: string }
 
+/* ── Git ── */
+
+export interface GitStatusResult {
+  initialized: boolean
+  branch: string
+  changedCount: number
+  syncStatus: 'synced' | 'ahead' | 'behind' | 'diverged' | 'local-only' | 'unknown'
+  ahead: number
+  behind: number
+}
+
+export interface GitChangedFile {
+  path: string
+  status: 'modified' | 'added' | 'deleted' | 'renamed' | 'untracked'
+  staged: boolean
+}
+
+export interface GitCommitEntry {
+  hash: string
+  message: string
+  author: string
+  date: string
+  filesChanged: number
+}
+
+export interface GitBranchInfo {
+  name: string
+  current: boolean
+  label: string
+}
+
+export interface GitSyncStatus {
+  ahead: number
+  behind: number
+  hasRemote: boolean
+}
+
+export interface GitConflictFile {
+  path: string
+}
+
+export interface GitCommitInput { message: string; files?: string[] }
+export interface GitHistoryInput { limit?: number }
+export interface GitDiffInput { path: string }
+export interface GitCreateBranchInput { name: string }
+export interface GitSwitchBranchInput { name: string }
+export interface GitMergeInput { source: string; target: string }
+export interface GitMergeResult { success: boolean; conflicts: string[] }
+export interface GitSyncResult { success: boolean; error?: string }
+export interface GitResolveConflictInput { path: string; resolution: 'ours' | 'theirs' }
+
 /* ── Re-exports for convenience ── */
 
 export type { Project, Session, SessionSummary, FileNode, PromptTemplate, HealthStatus }
