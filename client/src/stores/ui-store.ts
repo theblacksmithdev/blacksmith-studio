@@ -19,6 +19,10 @@ interface UiState {
   historyPanelOpen: boolean
   setHistoryPanelOpen: (open: boolean) => void
   toggleHistoryPanel: () => void
+
+  terminalOpen: boolean
+  setTerminalOpen: (open: boolean) => void
+  toggleTerminal: () => void
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -38,4 +42,8 @@ export const useUiStore = create<UiState>((set) => ({
   historyPanelOpen: false,
   setHistoryPanelOpen: (historyPanelOpen) => set({ historyPanelOpen }),
   toggleHistoryPanel: () => set((s) => ({ historyPanelOpen: !s.historyPanelOpen })),
+
+  terminalOpen: false,
+  setTerminalOpen: (terminalOpen) => set({ terminalOpen }),
+  toggleTerminal: () => set((s) => ({ terminalOpen: !s.terminalOpen })),
 }))

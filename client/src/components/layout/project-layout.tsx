@@ -6,7 +6,9 @@ import { useProjectStore } from '@/stores/project-store'
 import { resetProjectStores } from '@/stores/reset'
 import { useRunnerListener } from '@/hooks/use-runner'
 import { useGitListener } from '@/hooks/use-git'
+import { useUiStore } from '@/stores/ui-store'
 import { RunnerDock } from '@/components/runner/dock'
+import { TerminalPanel } from '@/components/terminal'
 import { Sidebar } from './sidebar'
 import { ProjectTitleBar } from './title-bar'
 
@@ -22,11 +24,19 @@ const Body = styled.div`
   min-height: 0;
 `
 
-const Content = styled.div`
+const Main = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
+`
+
+const Content = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   overflow: hidden;
 `
 
@@ -38,6 +48,18 @@ export function ProjectLayout() {
 
   useRunnerListener()
   useGitListener()
+
+  // Keyboard shortcut: Ctrl+` / Cmd+` to toggle terminal
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === '`') {
+        e.preventDefault()
+        useUiStore.getState().toggleTerminal()
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
 
   useEffect(() => {
     if (projectId && projectId !== activeProject?.id) {
@@ -54,9 +76,12 @@ export function ProjectLayout() {
       <ProjectTitleBar />
       <Body>
         <Sidebar />
-        <Content>
-          <Outlet />
-        </Content>
+        <Main>
+          <Content>
+            <Outlet />
+          </Content>
+          <TerminalPanel />
+        </Main>
       </Body>
       <RunnerDock />
     </Root>

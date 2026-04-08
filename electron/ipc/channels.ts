@@ -71,6 +71,12 @@ export const SKILLS_ADD = 'skills:add'
 export const SKILLS_UPDATE = 'skills:update'
 export const SKILLS_REMOVE = 'skills:remove'
 
+// Terminal
+export const TERMINAL_SPAWN = 'terminal:spawn'
+export const TERMINAL_WRITE = 'terminal:write'
+export const TERMINAL_RESIZE = 'terminal:resize'
+export const TERMINAL_KILL = 'terminal:kill'
+
 // Git
 export const GIT_STATUS = 'git:status'
 export const GIT_CHANGED_FILES = 'git:changedFiles'
@@ -104,6 +110,8 @@ export const FILES_ON_CHANGED = 'files:onChanged'
 export const RUNNER_ON_STATUS = 'runner:onStatus'
 export const RUNNER_ON_OUTPUT = 'runner:onOutput'
 export const WINDOW_ON_FULLSCREEN = 'window:onFullscreen'
+export const TERMINAL_ON_OUTPUT = 'terminal:onOutput'
+export const TERMINAL_ON_EXIT = 'terminal:onExit'
 export const GIT_ON_STATUS_CHANGE = 'git:onStatusChange'
 
 // Channel allowlists for preload security
@@ -122,6 +130,7 @@ export const INVOKE_CHANNELS = [
   SETUP_CHECK, SETUP_INSTALL_CLAUDE,
   KNOWLEDGE_LIST, KNOWLEDGE_GET, KNOWLEDGE_SAVE, KNOWLEDGE_CREATE, KNOWLEDGE_REMOVE,
   SKILLS_LIST, SKILLS_GET, SKILLS_ADD, SKILLS_UPDATE, SKILLS_REMOVE,
+  TERMINAL_SPAWN, TERMINAL_WRITE, TERMINAL_RESIZE, TERMINAL_KILL,
   GIT_STATUS, GIT_CHANGED_FILES, GIT_DIFF,
   GIT_CREATE_CHECKPOINT, GIT_GENERATE_MESSAGE, GIT_HISTORY,
   GIT_LIST_VERSIONS, GIT_CREATE_VERSION, GIT_SWITCH_VERSION, GIT_APPLY_VERSION,
@@ -137,5 +146,6 @@ export const SUBSCRIBE_CHANNELS = [
   FILES_ON_CHANGED,
   RUNNER_ON_STATUS, RUNNER_ON_OUTPUT,
   WINDOW_ON_FULLSCREEN,
+  TERMINAL_ON_OUTPUT, TERMINAL_ON_EXIT,
   GIT_ON_STATUS_CHANGE,
 ] as const

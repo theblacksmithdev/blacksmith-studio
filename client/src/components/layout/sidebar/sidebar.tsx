@@ -9,6 +9,7 @@ import { projectNav, bottomNav } from './nav-config'
 import { RunnerBadge } from './runner-badge'
 import { NewChatButton } from './new-chat-button'
 import { UserMenu } from './user-menu'
+import { Terminal } from 'lucide-react'
 
 const COLLAPSED_WIDTH = 56
 const EXPANDED_WIDTH = 210
@@ -48,6 +49,8 @@ export function Sidebar() {
   const location = useLocation()
   const activeProject = useProjectStore((s) => s.activeProject)
   const expanded = useUiStore((s) => s.sidebarExpanded)
+  const terminalOpen = useUiStore((s) => s.terminalOpen)
+  const toggleTerminal = useUiStore((s) => s.toggleTerminal)
 
   useProjects()
 
@@ -98,6 +101,17 @@ export function Sidebar() {
                 </NavButton>
               </SidebarTooltip>
             ))}
+
+            <SidebarTooltip label="Terminal" visible={!expanded}>
+              <NavButton
+                active={terminalOpen}
+                expanded={expanded}
+                onClick={toggleTerminal}
+              >
+                <Terminal size={18} style={{ flexShrink: 0 }} />
+                <NavLabel visible={expanded}>Terminal</NavLabel>
+              </NavButton>
+            </SidebarTooltip>
           </Section>
         </>
       ) : (
