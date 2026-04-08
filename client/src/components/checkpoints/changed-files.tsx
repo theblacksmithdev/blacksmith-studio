@@ -1,5 +1,4 @@
 import styled from '@emotion/styled'
-import { FileText, FilePlus, FileX, FileQuestion } from 'lucide-react'
 import type { GitChangedFile } from '@/api/types'
 
 const List = styled.div`
@@ -12,46 +11,36 @@ const FileRow = styled.button<{ selected?: boolean }>`
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px;
+  padding: 7px 10px;
   border: none;
   border-radius: 8px;
   background: ${(p) => (p.selected ? 'var(--studio-bg-hover)' : 'transparent')};
   color: var(--studio-text-primary);
-  font-size: 13px;
-  font-family: 'SF Mono', monospace;
+  font-size: 12px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
   cursor: pointer;
   text-align: left;
   width: 100%;
-  transition: background 0.1s ease;
+  transition: all 0.12s ease;
 
   &:hover {
-    background: var(--studio-bg-hover);
+    background: var(--studio-bg-surface);
   }
 `
 
-const Badge = styled.span<{ variant: string }>`
+const StatusIndicator = styled.span<{ status: string }>`
+  width: 14px;
+  flex-shrink: 0;
   font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  padding: 2px 6px;
-  border-radius: 4px;
-  flex-shrink: 0;
-  text-transform: uppercase;
-  background: ${(p) => {
-    switch (p.variant) {
-      case 'modified': return 'rgba(255, 180, 50, 0.15)'
-      case 'added':
-      case 'untracked': return 'rgba(80, 200, 120, 0.15)'
-      case 'deleted': return 'rgba(240, 80, 80, 0.15)'
-      default: return 'var(--studio-bg-surface)'
-    }
-  }};
+  text-align: center;
+  letter-spacing: 0.02em;
   color: ${(p) => {
-    switch (p.variant) {
-      case 'modified': return '#e6a520'
+    switch (p.status) {
+      case 'modified': return 'var(--studio-warning)'
       case 'added':
-      case 'untracked': return '#40c870'
-      case 'deleted': return '#e04040'
+      case 'untracked': return 'var(--studio-green)'
+      case 'deleted': return 'var(--studio-error)'
       default: return 'var(--studio-text-muted)'
     }
   }};
@@ -62,22 +51,25 @@ const FileName = styled.span`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--studio-text-secondary);
 `
 
-function statusIcon(status: GitChangedFile['status']) {
-  switch (status) {
-    case 'modified': return <FileText size={14} />
-    case 'added':
-    case 'untracked': return <FilePlus size={14} />
-    case 'deleted': return <FileX size={14} />
-    default: return <FileQuestion size={14} />
-  }
-}
+const EmptyMessage = styled.div`
+  padding: 20px 12px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--studio-text-muted);
+  line-height: 1.6;
+`
 
-function statusLabel(status: GitChangedFile['status']) {
+function statusLetter(status: GitChangedFile['status']): string {
   switch (status) {
-    case 'untracked': return 'new'
-    default: return status
+    case 'modified': return 'M'
+    case 'added': return 'A'
+    case 'deleted': return 'D'
+    case 'renamed': return 'R'
+    case 'untracked': return 'U'
+    default: return '?'
   }
 }
 
@@ -89,11 +81,7 @@ interface Props {
 
 export function ChangedFilesList({ files, selectedPath, onSelect }: Props) {
   if (files.length === 0) {
-    return (
-      <div style={{ padding: '24px', textAlign: 'center', color: 'var(--studio-text-muted)', fontSize: '13px' }}>
-        No uncommitted changes
-      </div>
-    )
+    return <EmptyMessage>No uncommitted changes</EmptyMessage>
   }
 
   return (
@@ -104,11 +92,10 @@ export function ChangedFilesList({ files, selectedPath, onSelect }: Props) {
           selected={selectedPath === f.path}
           onClick={() => onSelect(f.path)}
         >
-          <span style={{ color: 'var(--studio-text-muted)', flexShrink: 0 }}>
-            {statusIcon(f.status)}
-          </span>
+          <StatusIndicator status={f.status}>
+            {statusLetter(f.status)}
+          </StatusIndicator>
           <FileName>{f.path}</FileName>
-          <Badge variant={f.status}>{statusLabel(f.status)}</Badge>
         </FileRow>
       ))}
     </List>

@@ -27,6 +27,15 @@ export interface CommitEntry {
   filesChanged: number
 }
 
+export interface CommitDetail {
+  hash: string
+  message: string
+  author: string
+  date: string
+  files: { path: string; status: string; insertions: number; deletions: number }[]
+  diff: string
+}
+
 export interface BranchInfo {
   name: string
   current: boolean
@@ -164,6 +173,39 @@ export class GitManager {
     } catch {
       return []
     }
+  }
+
+  async getCommitDetail(projectPath: string, hash: string): Promise<CommitDetail> {
+    const git = this.git(projectPath)
+    const EMPTY_TREE = '4b825dc642cb6eb9a060e54bf899d15f3f462b21'
+
+    // Get commit metadata via git show
+    const logRaw = await git.raw([
+      'log', '-1', '--format=%H%n%s%n%an%n%aI', hash,
+    ])
+    const [fullHash, message, author, date] = logRaw.trim().split('\n')
+    if (!fullHash) throw new Error(`Commit ${hash} not found`)
+
+    // Check if commit has a parent
+    const parentRaw = await git.raw(['rev-parse', `${hash}^`]).catch(() => '')
+    const parent = parentRaw.trim() || EMPTY_TREE
+
+    // Get the diff
+    const diff = await git.raw(['diff', parent, hash])
+
+    // Get file stats
+    const numstatRaw = await git.raw(['diff', '--numstat', parent, hash])
+    const files = numstatRaw.trim().split('\n').filter(Boolean).map((line) => {
+      const [ins, del, ...pathParts] = line.split('\t')
+      return {
+        path: pathParts.join('\t'),
+        status: 'modified',
+        insertions: parseInt(ins) || 0,
+        deletions: parseInt(del) || 0,
+      }
+    })
+
+    return { hash: fullHash, message, author, date, files, diff }
   }
 
   /* ── Branches ── */

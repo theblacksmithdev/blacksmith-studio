@@ -15,6 +15,8 @@ import type {
   GitMergeResult,
   GitSyncResult,
   GitResolveConflictInput,
+  GitCommitDetail,
+  GitCommitDetailInput,
 } from '../types'
 
 export const git = {
@@ -27,6 +29,7 @@ export const git = {
   commit: (input: GitCommitInput) => raw.invoke<string>('git:createCheckpoint', input),
   generateMessage: () => raw.invoke<string>('git:generateMessage'),
   history: (input?: GitHistoryInput) => raw.invoke<GitCommitEntry[]>('git:history', input),
+  commitDetail: (input: GitCommitDetailInput) => raw.invoke<GitCommitDetail>('git:commitDetail', input),
 
   // Branches
   listBranches: () => raw.invoke<GitBranchInfo[]>('git:listVersions'),

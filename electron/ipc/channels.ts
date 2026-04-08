@@ -85,6 +85,7 @@ export const GIT_SYNC = 'git:sync'
 export const GIT_SYNC_STATUS = 'git:syncStatus'
 export const GIT_CONFLICTS = 'git:conflicts'
 export const GIT_RESOLVE_CONFLICT = 'git:resolveConflict'
+export const GIT_COMMIT_DETAIL = 'git:commitDetail'
 export const GIT_INIT = 'git:init'
 
 // ─── Push/Stream Channels ───
@@ -125,6 +126,7 @@ export const INVOKE_CHANNELS = [
   GIT_LIST_VERSIONS, GIT_CREATE_VERSION, GIT_SWITCH_VERSION, GIT_APPLY_VERSION,
   GIT_SYNC, GIT_SYNC_STATUS,
   GIT_CONFLICTS, GIT_RESOLVE_CONFLICT,
+  GIT_COMMIT_DETAIL,
   GIT_INIT,
 ] as const
 

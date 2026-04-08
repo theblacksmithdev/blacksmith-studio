@@ -115,6 +115,16 @@ export interface GitConflictFile {
   path: string
 }
 
+export interface GitCommitDetail {
+  hash: string
+  message: string
+  author: string
+  date: string
+  files: { path: string; status: string; insertions: number; deletions: number }[]
+  diff: string
+}
+
+export interface GitCommitDetailInput { hash: string }
 export interface GitCommitInput { message: string; files?: string[] }
 export interface GitHistoryInput { limit?: number }
 export interface GitDiffInput { path: string }

@@ -1,51 +1,81 @@
 import { useEffect, useState } from 'react'
 import styled from '@emotion/styled'
+import { FileCode2 } from 'lucide-react'
 import { api } from '@/api'
 
 const Container = styled.div`
   flex: 1;
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: var(--studio-bg-sidebar);
   border-radius: 10px;
   border: 1px solid var(--studio-border);
 `
 
 const Header = styled.div`
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--studio-border);
-  font-size: 12px;
-  font-family: 'SF Mono', monospace;
-  color: var(--studio-text-secondary);
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 8px;
-`
-
-const DiffContent = styled.pre`
-  padding: 12px 16px;
-  margin: 0;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--studio-border);
   font-size: 12px;
-  font-family: 'SF Mono', monospace;
-  line-height: 1.7;
+  font-family: 'SF Mono', 'Fira Code', monospace;
   color: var(--studio-text-secondary);
-  overflow-x: auto;
 `
 
-const DiffLine = styled.div<{ type: 'add' | 'remove' | 'context' }>`
-  padding: 0 4px;
-  margin: 0 -4px;
-  border-radius: 3px;
+const Stats = styled.span`
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 500;
+`
+
+const DiffContent = styled.div`
+  flex: 1;
+  overflow: auto;
+  padding: 0;
+`
+
+const DiffTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  line-height: 20px;
+`
+
+const DiffRow = styled.tr<{ type: 'add' | 'remove' | 'context' }>`
   background: ${(p) => {
     switch (p.type) {
-      case 'add': return 'rgba(80, 200, 120, 0.08)'
-      case 'remove': return 'rgba(240, 80, 80, 0.08)'
+      case 'add': return 'rgba(16, 163, 127, 0.06)'
+      case 'remove': return 'rgba(239, 68, 68, 0.06)'
       default: return 'transparent'
     }
   }};
+`
+
+const LineNum = styled.td`
+  width: 48px;
+  padding: 0 8px;
+  text-align: right;
+  color: var(--studio-text-muted);
+  font-size: 11px;
+  user-select: none;
+  opacity: 0.6;
+  vertical-align: top;
+`
+
+const LineContent = styled.td<{ type: 'add' | 'remove' | 'context' }>`
+  padding: 0 14px 0 8px;
+  white-space: pre-wrap;
+  word-break: break-all;
   color: ${(p) => {
     switch (p.type) {
-      case 'add': return '#50c878'
-      case 'remove': return '#e05050'
+      case 'add': return 'var(--studio-green)'
+      case 'remove': return 'var(--studio-error)'
       default: return 'var(--studio-text-tertiary)'
     }
   }};
@@ -53,8 +83,10 @@ const DiffLine = styled.div<{ type: 'add' | 'remove' | 'context' }>`
 
 const Placeholder = styled.div`
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 10px;
   height: 100%;
   color: var(--studio-text-muted);
   font-size: 13px;
@@ -75,25 +107,21 @@ export function DiffViewer({ filePath }: Props) {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (!filePath) {
-      setDiff(null)
-      return
-    }
-
+    if (!filePath) { setDiff(null); return }
     setLoading(true)
     api.git.diff({ path: filePath }).then((d) => {
       setDiff(d)
       setLoading(false)
-    }).catch(() => {
-      setDiff(null)
-      setLoading(false)
-    })
+    }).catch(() => { setDiff(null); setLoading(false) })
   }, [filePath])
 
   if (!filePath) {
     return (
       <Container>
-        <Placeholder>Select a file to view diff</Placeholder>
+        <Placeholder>
+          <FileCode2 size={24} style={{ opacity: 0.4 }} />
+          Select a file to view diff
+        </Placeholder>
       </Container>
     )
   }
@@ -121,19 +149,28 @@ export function DiffViewer({ filePath }: Props) {
   return (
     <Container>
       <Header>
-        <span>{filePath}</span>
-        <span style={{ marginLeft: 'auto' }}>
-          {addCount > 0 && <span style={{ color: '#50c878' }}>+{addCount}</span>}
-          {addCount > 0 && removeCount > 0 && <span> </span>}
-          {removeCount > 0 && <span style={{ color: '#e05050' }}>-{removeCount}</span>}
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {filePath}
         </span>
+        <Stats>
+          {addCount > 0 && <span style={{ color: 'var(--studio-green)' }}>+{addCount}</span>}
+          {removeCount > 0 && <span style={{ color: 'var(--studio-error)' }}>-{removeCount}</span>}
+        </Stats>
       </Header>
       <DiffContent>
-        {lines.map((line, i) => (
-          <DiffLine key={i} type={classifyLine(line)}>
-            {line || ' '}
-          </DiffLine>
-        ))}
+        <DiffTable>
+          <tbody>
+            {lines.map((line, i) => {
+              const type = classifyLine(line)
+              return (
+                <DiffRow key={i} type={type}>
+                  <LineNum>{i + 1}</LineNum>
+                  <LineContent type={type}>{line || ' '}</LineContent>
+                </DiffRow>
+              )
+            })}
+          </tbody>
+        </DiffTable>
       </DiffContent>
     </Container>
   )

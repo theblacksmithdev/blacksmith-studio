@@ -1,13 +1,45 @@
 import { useState } from 'react'
 import styled from '@emotion/styled'
-import { Button, Flex, Text } from '@chakra-ui/react'
 import { ArrowUpDown, Check, AlertCircle, Cloud, CloudOff } from 'lucide-react'
 import { useGitSyncStatus, useGit } from '@/hooks/use-git'
 
-const SyncInfo = styled.span`
-  font-size: 11px;
+const Btn = styled.button<{ variant?: 'success' | 'error' }>`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--studio-border);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  color: ${(p) => {
+    if (p.variant === 'success') return 'var(--studio-green)'
+    if (p.variant === 'error') return 'var(--studio-error)'
+    return 'var(--studio-text-secondary)'
+  }};
+
+  &:hover {
+    background: var(--studio-bg-hover);
+    border-color: var(--studio-border-hover);
+    color: var(--studio-text-primary);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+    &:hover { background: transparent; }
+  }
+`
+
+const Badge = styled.span`
+  font-size: 10px;
+  font-weight: 500;
   color: var(--studio-text-muted);
-  margin-left: 4px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
 `
 
 export function SyncButton() {
@@ -18,27 +50,12 @@ export function SyncButton() {
 
   if (isLoading) return null
 
-  // No remote configured
   if (syncStatus && !syncStatus.hasRemote) {
     return (
-      <Button
-        size="sm"
-        variant="ghost"
-        disabled
-        css={{
-          padding: '6px 12px',
-          borderRadius: '8px',
-          border: '1px solid var(--studio-border)',
-          background: 'transparent',
-          color: 'var(--studio-text-muted)',
-          fontSize: '12px',
-          cursor: 'not-allowed',
-          opacity: 0.5,
-        }}
-      >
+      <Btn disabled title="No remote configured">
         <CloudOff size={13} />
-        <span style={{ marginLeft: '6px' }}>No remote</span>
-      </Button>
+        No remote
+      </Btn>
     )
   }
 
@@ -61,60 +78,45 @@ export function SyncButton() {
   const isSynced = ahead === 0 && behind === 0
 
   return (
-    <Button
-      size="sm"
-      variant="ghost"
+    <Btn
       onClick={handleSync}
       disabled={syncing}
-      css={{
-        padding: '6px 12px',
-        borderRadius: '8px',
-        border: '1px solid var(--studio-border)',
-        background: 'transparent',
-        color: result === 'success'
-          ? 'var(--studio-accent)'
-          : result === 'error'
-          ? '#e04040'
-          : 'var(--studio-text-secondary)',
-        fontSize: '12px',
-        transition: 'all 0.15s ease',
-        '&:hover': { background: 'var(--studio-bg-hover)' },
-        '&:disabled': { opacity: 0.7 },
-      }}
+      variant={result ?? undefined}
+      title={syncing ? 'Syncing...' : isSynced ? 'Up to date' : `${ahead} ahead, ${behind} behind`}
     >
       {syncing ? (
         <>
           <ArrowUpDown size={13} style={{ animation: 'spin 1s linear infinite' }} />
-          <span style={{ marginLeft: '6px' }}>Syncing...</span>
+          Syncing...
         </>
       ) : result === 'success' ? (
         <>
           <Check size={13} />
-          <span style={{ marginLeft: '6px' }}>Synced</span>
+          Synced
         </>
       ) : result === 'error' ? (
         <>
           <AlertCircle size={13} />
-          <span style={{ marginLeft: '6px' }}>Sync failed</span>
+          Failed
         </>
       ) : isSynced ? (
         <>
           <Cloud size={13} />
-          <span style={{ marginLeft: '6px' }}>Synced</span>
+          Push / Pull
         </>
       ) : (
         <>
           <ArrowUpDown size={13} />
-          <span style={{ marginLeft: '6px' }}>Sync</span>
+          Push / Pull
           {(ahead > 0 || behind > 0) && (
-            <SyncInfo>
-              {ahead > 0 && `${ahead}\u2191`}
+            <Badge>
+              {ahead > 0 && `\u2191${ahead}`}
               {ahead > 0 && behind > 0 && ' '}
-              {behind > 0 && `${behind}\u2193`}
-            </SyncInfo>
+              {behind > 0 && `\u2193${behind}`}
+            </Badge>
           )}
         </>
       )}
-    </Button>
+    </Btn>
   )
 }

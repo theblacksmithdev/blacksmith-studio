@@ -7,6 +7,7 @@ import {
   GIT_LIST_VERSIONS, GIT_CREATE_VERSION, GIT_SWITCH_VERSION, GIT_APPLY_VERSION,
   GIT_SYNC, GIT_SYNC_STATUS,
   GIT_CONFLICTS, GIT_RESOLVE_CONFLICT,
+  GIT_COMMIT_DETAIL,
   GIT_INIT,
   GIT_ON_STATUS_CHANGE,
 } from './channels.js'
@@ -120,6 +121,13 @@ export function setupGitIPC(
   ipcMain.handle(GIT_RESOLVE_CONFLICT, async (_e, data: { path: string; resolution: 'ours' | 'theirs' }) => {
     const p = await requireRepo()
     return gitManager.resolveConflict(p, data.path, data.resolution)
+  })
+
+  // ── Commit Detail ──
+
+  ipcMain.handle(GIT_COMMIT_DETAIL, async (_e, data: { hash: string }) => {
+    const p = await requireRepo()
+    return gitManager.getCommitDetail(p, data.hash)
   })
 
   // ── Init ──

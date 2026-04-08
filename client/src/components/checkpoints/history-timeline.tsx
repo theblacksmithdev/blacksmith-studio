@@ -7,53 +7,58 @@ const Container = styled.div`
 `
 
 const DateGroup = styled.div`
-  margin-bottom: 4px;
-`
-
-const DateLabel = styled.div`
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--studio-text-secondary);
-  padding: 12px 0 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &::before {
-    content: '';
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--studio-accent);
-    flex-shrink: 0;
+  &:not(:first-of-type) {
+    margin-top: 4px;
   }
 `
 
-const EntryRow = styled.div`
+const DateLabel = styled.div`
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--studio-text-muted);
+  padding: 8px 0 6px;
+  letter-spacing: 0.02em;
+`
+
+const EntryRow = styled.button`
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 0 8px 24px;
+  padding: 8px 12px;
+  margin-left: 6px;
+  border: none;
   border-left: 1px solid var(--studio-border);
-  margin-left: 3.5px;
+  border-radius: 0;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease;
+
+  &:hover {
+    background: var(--studio-bg-surface);
+  }
 `
 
 const Dot = styled.div`
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--studio-border);
+  border: 1.5px solid var(--studio-bg-main);
   flex-shrink: 0;
-  margin-left: -3.5px;
+  margin-left: -4px;
 `
 
 const Message = styled.span`
   font-size: 13px;
+  font-weight: 450;
   color: var(--studio-text-primary);
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  letter-spacing: -0.01em;
 `
 
 const Meta = styled.span`
@@ -61,6 +66,22 @@ const Meta = styled.span`
   color: var(--studio-text-muted);
   flex-shrink: 0;
   white-space: nowrap;
+`
+
+const Hash = styled.span`
+  font-size: 11px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  color: var(--studio-text-muted);
+  flex-shrink: 0;
+  opacity: 0.7;
+`
+
+const EmptyMessage = styled.div`
+  padding: 20px 12px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--studio-text-muted);
+  line-height: 1.6;
 `
 
 function formatRelative(dateStr: string): string {
@@ -81,7 +102,6 @@ function formatRelative(dateStr: string): string {
 
 function groupByDate(entries: GitCommitEntry[]): Map<string, GitCommitEntry[]> {
   const groups = new Map<string, GitCommitEntry[]>()
-
   for (const entry of entries) {
     const date = new Date(entry.date)
     const now = new Date()
@@ -90,27 +110,23 @@ function groupByDate(entries: GitCommitEntry[]): Map<string, GitCommitEntry[]> {
     let key: string
     if (diffDays === 0) key = 'Today'
     else if (diffDays === 1) key = 'Yesterday'
-    else if (diffDays < 7) key = `${diffDays} days ago`
+    else if (diffDays < 7) key = date.toLocaleDateString(undefined, { weekday: 'long' })
     else key = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
 
     if (!groups.has(key)) groups.set(key, [])
     groups.get(key)!.push(entry)
   }
-
   return groups
 }
 
 interface Props {
   entries: GitCommitEntry[]
+  onSelect?: (hash: string) => void
 }
 
-export function HistoryTimeline({ entries }: Props) {
+export function HistoryTimeline({ entries, onSelect }: Props) {
   if (entries.length === 0) {
-    return (
-      <div style={{ padding: '24px', textAlign: 'center', color: 'var(--studio-text-muted)', fontSize: '13px' }}>
-        No commits yet. Make your first commit to start tracking history.
-      </div>
-    )
+    return <EmptyMessage>No commits yet. Make your first commit to start tracking history.</EmptyMessage>
   }
 
   const groups = groupByDate(entries)
@@ -121,13 +137,11 @@ export function HistoryTimeline({ entries }: Props) {
         <DateGroup key={date}>
           <DateLabel>{date}</DateLabel>
           {items.map((entry) => (
-            <EntryRow key={entry.hash}>
+            <EntryRow key={entry.hash} onClick={() => onSelect?.(entry.hash)}>
               <Dot />
+              <Hash>{entry.hash.slice(0, 7)}</Hash>
               <Message>{entry.message}</Message>
               <Meta>{formatRelative(entry.date)}</Meta>
-              {entry.filesChanged > 0 && (
-                <Meta>({entry.filesChanged} file{entry.filesChanged !== 1 ? 's' : ''})</Meta>
-              )}
             </EntryRow>
           ))}
         </DateGroup>
