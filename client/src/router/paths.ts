@@ -16,6 +16,7 @@ export const Path = {
   SkillsBrowser: '/:projectId/skills',
   McpBrowser: '/:projectId/mcp',
   Checkpoints: '/:projectId/checkpoints',
+  Agents: '/:projectId/agents',
 } as const
 
 // ─── Path builders ───
@@ -62,4 +63,8 @@ export function mcpBrowserPath(projectId: string) {
 
 export function checkpointsPath(projectId: string) {
   return `/${projectId}/checkpoints`
+}
+
+export function agentsPath(projectId: string) {
+  return `/${projectId}/agents`
 }

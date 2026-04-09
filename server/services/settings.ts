@@ -21,6 +21,7 @@ const DEFAULTS: Record<string, any> = {
   'preview.chatSplit': 60,
   'preview.runSplit': 55,
   'runner.nodePath': '',
+  'agents.nodePositions': null,
 }
 
 export class SettingsManager {

@@ -14,6 +14,7 @@ import { skills } from './modules/skills'
 import { knowledge } from './modules/knowledge'
 import { git } from './modules/git'
 import { terminal } from './modules/terminal'
+import { agents } from './modules/agents'
 
 export const api = {
   projects,
@@ -32,4 +33,5 @@ export const api = {
   knowledge,
   git,
   terminal,
+  agents,
 } as const

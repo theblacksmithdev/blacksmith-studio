@@ -61,3 +61,57 @@ export const settings = sqliteTable('settings', {
   key: text('key').notNull(),
   value: text('value').notNull(),
 })
+
+/**
+ * Agent dispatches — a PM dispatch session (prompt → plan → task executions).
+ */
+export const agentDispatches = sqliteTable('agent_dispatches', {
+  id: text('id').primaryKey(),
+  projectId: text('project_id')
+    .notNull()
+    .references(() => projects.id, { onDelete: 'cascade' }),
+  prompt: text('prompt').notNull(),
+  planMode: text('plan_mode').notNull(), // 'single' | 'multi' | 'clarification'
+  planSummary: text('plan_summary').notNull(),
+  status: text('status').notNull(), // 'planning' | 'executing' | 'completed' | 'failed' | 'cancelled'
+  totalCostUsd: text('total_cost_usd').notNull(),
+  totalDurationMs: integer('total_duration_ms').notNull(),
+  createdAt: text('created_at').notNull(),
+  completedAt: text('completed_at'),
+})
+
+/**
+ * Agent tasks — individual tasks within a dispatch.
+ */
+export const agentTasks = sqliteTable('agent_tasks', {
+  id: text('id').primaryKey(),
+  dispatchId: text('dispatch_id')
+    .notNull()
+    .references(() => agentDispatches.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  role: text('role').notNull(),
+  prompt: text('prompt').notNull(),
+  status: text('status').notNull(), // 'pending' | 'running' | 'done' | 'error' | 'skipped'
+  orderIndex: integer('order_index').notNull(),
+  executionId: text('execution_id'),
+  sessionId: text('session_id'), // Claude CLI session ID for resumption
+  responseText: text('response_text'),
+  error: text('error'),
+  costUsd: text('cost_usd'),
+  durationMs: integer('duration_ms'),
+})
+
+/**
+ * Agent chat messages — conversation history in the agents panel.
+ */
+export const agentChatMessages = sqliteTable('agent_chat_messages', {
+  id: text('id').primaryKey(),
+  projectId: text('project_id')
+    .notNull()
+    .references(() => projects.id, { onDelete: 'cascade' }),
+  role: text('role').notNull(), // 'user' | 'agent' | 'system'
+  agentRole: text('agent_role'), // which agent sent it (null for user/system)
+  content: text('content').notNull(),
+  dispatchId: text('dispatch_id'), // links to the dispatch this message relates to
+  timestamp: text('timestamp').notNull(),
+})

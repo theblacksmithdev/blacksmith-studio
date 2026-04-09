@@ -25,6 +25,8 @@ export class ClaudeManager {
   private claudePath: string | null = null
 
   /** Resolve and cache the absolute path to the claude binary. */
+  getClaudeBin(): string { return this.resolveClaudePath() }
+
   private resolveClaudePath(): string {
     if (this.claudePath) return this.claudePath
 

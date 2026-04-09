@@ -21,6 +21,7 @@ import RunPage from '@/pages/run'
 import SkillsBrowserPage from '@/pages/skills'
 import McpBrowserPage from '@/pages/mcp'
 import CheckpointsPage from '@/pages/checkpoints'
+import AgentsPageRoute from '@/pages/agents'
 
 export const router = createHashRouter([
   {
@@ -43,6 +44,7 @@ export const router = createHashRouter([
       { path: 'skills', element: <SkillsBrowserPage /> },
       { path: 'mcp', element: <McpBrowserPage /> },
       { path: 'checkpoints', element: <CheckpointsPage /> },
+      { path: 'agents', element: <AgentsPageRoute /> },
 
       // Settings with nested routes
       {

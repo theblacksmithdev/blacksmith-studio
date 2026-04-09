@@ -96,6 +96,28 @@ export const GIT_RESOLVE_CONFLICT = 'git:resolveConflict'
 export const GIT_COMMIT_DETAIL = 'git:commitDetail'
 export const GIT_INIT = 'git:init'
 
+// Agents
+export const AGENTS_LIST = 'agents:list'
+export const AGENTS_ROUTE = 'agents:route'
+export const AGENTS_DISPATCH = 'agents:dispatch'
+export const AGENTS_EXECUTE = 'agents:execute'
+export const AGENTS_CANCEL = 'agents:cancel'
+export const AGENTS_CANCEL_ALL = 'agents:cancelAll'
+export const AGENTS_HISTORY = 'agents:history'
+export const AGENTS_LIST_PIPELINES = 'agents:listPipelines'
+export const AGENTS_RUN_PIPELINE = 'agents:runPipeline'
+export const AGENTS_RUN_WORKFLOW = 'agents:runWorkflow'
+export const AGENTS_BUILD = 'agents:build'
+export const AGENTS_BUILD_RESUME = 'agents:buildResume'
+export const AGENTS_BUILD_CANCEL = 'agents:buildCancel'
+export const AGENTS_BUILD_PROGRESS = 'agents:buildProgress'
+export const AGENTS_RESPOND = 'agents:respond'
+export const AGENTS_SET_AUTO_APPROVE = 'agents:setAutoApprove'
+export const AGENTS_LIST_DISPATCHES = 'agents:listDispatches'
+export const AGENTS_GET_DISPATCH = 'agents:getDispatch'
+export const AGENTS_LIST_CHAT = 'agents:listChat'
+export const AGENTS_CLEAR_CHAT = 'agents:clearChat'
+
 // ─── Push/Stream Channels ───
 
 // Project creation
@@ -114,6 +136,10 @@ export const WINDOW_ON_FULLSCREEN = 'window:onFullscreen'
 export const TERMINAL_ON_OUTPUT = 'terminal:onOutput'
 export const TERMINAL_ON_EXIT = 'terminal:onExit'
 export const GIT_ON_STATUS_CHANGE = 'git:onStatusChange'
+export const AGENTS_ON_EVENT = 'agents:onEvent'
+export const AGENTS_ON_WORKFLOW_EVENT = 'agents:onWorkflowEvent'
+export const AGENTS_ON_BUILD_EVENT = 'agents:onBuildEvent'
+export const AGENTS_ON_INPUT_REQUEST = 'agents:onInputRequest'
 
 // Channel allowlists for preload security
 export const INVOKE_CHANNELS = [
@@ -139,6 +165,11 @@ export const INVOKE_CHANNELS = [
   GIT_CONFLICTS, GIT_RESOLVE_CONFLICT,
   GIT_COMMIT_DETAIL,
   GIT_INIT,
+  AGENTS_LIST, AGENTS_ROUTE, AGENTS_DISPATCH, AGENTS_EXECUTE, AGENTS_CANCEL, AGENTS_CANCEL_ALL,
+  AGENTS_HISTORY, AGENTS_LIST_PIPELINES, AGENTS_RUN_PIPELINE, AGENTS_RUN_WORKFLOW,
+  AGENTS_BUILD, AGENTS_BUILD_RESUME, AGENTS_BUILD_CANCEL, AGENTS_BUILD_PROGRESS,
+  AGENTS_RESPOND, AGENTS_SET_AUTO_APPROVE,
+  AGENTS_LIST_DISPATCHES, AGENTS_GET_DISPATCH, AGENTS_LIST_CHAT, AGENTS_CLEAR_CHAT,
 ] as const
 
 export const SUBSCRIBE_CHANNELS = [
@@ -149,4 +180,5 @@ export const SUBSCRIBE_CHANNELS = [
   WINDOW_ON_FULLSCREEN,
   TERMINAL_ON_OUTPUT, TERMINAL_ON_EXIT,
   GIT_ON_STATUS_CHANGE,
+  AGENTS_ON_EVENT, AGENTS_ON_WORKFLOW_EVENT, AGENTS_ON_BUILD_EVENT, AGENTS_ON_INPUT_REQUEST,
 ] as const

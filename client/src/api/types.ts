@@ -138,6 +138,108 @@ export interface GitMergeResult { success: boolean; conflicts: string[] }
 export interface GitSyncResult { success: boolean; error?: string }
 export interface GitResolveConflictInput { path: string; resolution: 'ours' | 'theirs' }
 
+/* ── Agents ── */
+
+export type AgentRole =
+  | 'frontend-engineer' | 'backend-engineer' | 'fullstack-engineer'
+  | 'devops-engineer' | 'qa-engineer' | 'security-engineer'
+  | 'database-engineer' | 'ui-designer' | 'technical-writer'
+  | 'code-reviewer' | 'architect' | 'product-manager'
+
+export type AgentStatus = 'idle' | 'thinking' | 'executing' | 'paused' | 'error' | 'done'
+
+export interface AgentInfo {
+  role: AgentRole
+  title: string
+  description: string
+  isRunning: boolean
+}
+
+export interface AgentRouteResult {
+  role: AgentRole
+  confidence: 'high' | 'medium' | 'low'
+}
+
+export interface AgentExecution {
+  id: string
+  agentId: string
+  sessionId: string
+  status: AgentStatus
+  prompt: string
+  startedAt: string
+  completedAt: string | null
+  costUsd: number
+  durationMs: number
+  error: string | null
+}
+
+export type AgentEventType = 'status' | 'message' | 'tool_use' | 'tool_result' | 'thinking' | 'error' | 'done' | 'handoff' | 'activity' | 'task_status' | 'dispatch_plan'
+
+export interface AgentEvent {
+  type: AgentEventType
+  agentId: string
+  executionId: string
+  timestamp: string
+  data: Record<string, any>
+}
+
+export interface DispatchTask {
+  id: string
+  title: string
+  role: AgentRole
+  prompt: string
+  dependsOn: string[]
+  /** Client-side tracking */
+  status?: 'pending' | 'running' | 'done' | 'error' | 'skipped'
+}
+
+export interface DispatchPlan {
+  mode: 'single' | 'multi' | 'clarification'
+  task?: DispatchTask
+  tasks: DispatchTask[]
+  summary: string
+}
+
+export interface DispatchResult {
+  plan: DispatchPlan
+  executions: AgentExecution[]
+}
+
+export interface PipelineTemplate {
+  id: string
+  name: string
+  description: string
+  steps: { role: AgentRole; promptTemplate: string; dependsOn: number | null }[]
+}
+
+export interface WorkflowEvent {
+  type: string
+  workflowId: string
+  stepIndex: number | null
+  timestamp: string
+  data: Record<string, any>
+}
+
+export interface BuildEvent {
+  type: string
+  buildId: string
+  timestamp: string
+  phaseIndex?: number
+  taskId?: string
+  data: Record<string, any>
+}
+
+export interface InputRequest {
+  id: string
+  type: 'approve' | 'choose' | 'text'
+  question: string
+  context?: string
+  options?: { value: string; label: string }[]
+  defaultValue: string
+  source: { buildId: string; phaseIndex?: number; taskId?: string }
+  timestamp: string
+}
+
 /* ── Re-exports for convenience ── */
 
 export type { Project, Session, SessionSummary, FileNode, PromptTemplate, HealthStatus }

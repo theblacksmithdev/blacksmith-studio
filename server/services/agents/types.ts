@@ -1,0 +1,180 @@
+import type { ChildProcess } from 'node:child_process'
+
+/* ── Agent Identity ── */
+
+/** Every agent role maps to a real tech discipline */
+export type AgentRole =
+  | 'frontend-engineer'
+  | 'backend-engineer'
+  | 'fullstack-engineer'
+  | 'devops-engineer'
+  | 'qa-engineer'
+  | 'security-engineer'
+  | 'database-engineer'
+  | 'ui-designer'
+  | 'technical-writer'
+  | 'code-reviewer'
+  | 'architect'
+  | 'product-manager'
+
+/** Static metadata that defines an agent role */
+export interface AgentRoleDefinition {
+  role: AgentRole
+  title: string
+  description: string
+  /** System prompt injected into every session for this role */
+  systemPrompt: string
+  /** Which file patterns this agent focuses on (for context filtering) */
+  filePatterns: string[]
+  /** Default permission mode for Claude CLI */
+  permissionMode: string
+  /** Preferred model override (null = use project default) */
+  preferredModel: string | null
+  /** Maximum budget per execution in USD (null = use project default) */
+  maxBudget: number | null
+  /** MCP server names this agent should have access to */
+  mcpServers: string[] | 'all'
+  /** Tool names this agent is allowed/expected to use */
+  allowedTools: string[] | 'all'
+  /** Directories this agent should focus on within the project */
+  scopeDirs: string[]
+  /**
+   * Config/entry files the agent needs for context (e.g. tsconfig.json, manage.py).
+   * Looked up in both the project root and each scope dir.
+   * Directories are skipped — only regular files are read.
+   */
+  keyFiles: string[]
+}
+
+/* ── Agent Execution ── */
+
+export type AgentStatus = 'idle' | 'thinking' | 'executing' | 'paused' | 'error' | 'done'
+
+/** A running or completed agent execution */
+export interface AgentExecution {
+  id: string
+  agentId: string
+  sessionId: string
+  status: AgentStatus
+  prompt: string
+  startedAt: string
+  completedAt: string | null
+  costUsd: number
+  durationMs: number
+  error: string | null
+  /** The agent's full text response. Available after execution completes. */
+  responseText: string
+}
+
+/** Live state of a running agent process */
+export interface AgentProcess {
+  execution: AgentExecution
+  process: ChildProcess
+}
+
+/* ── Agent Events (streamed to UI) ── */
+
+export type AgentEventType =
+  | 'status'
+  | 'message'
+  | 'tool_use'
+  | 'tool_result'
+  | 'thinking'
+  | 'error'
+  | 'done'
+  | 'handoff'
+  | 'activity'
+  | 'task_status'
+  | 'dispatch_plan'
+
+export interface AgentEvent {
+  type: AgentEventType
+  agentId: string
+  executionId: string
+  timestamp: string
+  data: AgentEventData
+}
+
+export type AgentEventData =
+  | { type: 'status'; status: AgentStatus; message?: string }
+  | { type: 'message'; content: string; isPartial: boolean }
+  | { type: 'tool_use'; toolId: string; toolName: string; input: Record<string, unknown> }
+  | { type: 'tool_result'; toolId: string; output: string }
+  | { type: 'thinking'; content: string }
+  | { type: 'error'; error: string; recoverable: boolean }
+  | { type: 'done'; costUsd: number; durationMs: number; summary: string }
+  | { type: 'handoff'; targetRole: AgentRole; reason: string; context: string }
+  | { type: 'activity'; description: string }
+  | { type: 'task_status'; taskId: string; status: 'pending' | 'running' | 'done' | 'error' | 'skipped'; title: string; role: AgentRole }
+  | { type: 'dispatch_plan'; plan: { mode: string; summary: string; tasks: { id: string; title: string; role: AgentRole; dependsOn: string[] }[] } }
+
+/* ── Agent Configuration (per project) ── */
+
+export interface AgentConfig {
+  role: AgentRole
+  enabled: boolean
+  /** Additional instructions layered on top of role system prompt */
+  customInstructions: string
+  /** Override model for this specific agent */
+  model: string | null
+  /** Override budget for this specific agent */
+  maxBudget: number | null
+}
+
+/* ── Workflow (managed multi-agent execution) ── */
+
+export type WorkflowStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
+
+/** A single step in a workflow pipeline */
+export interface WorkflowStep {
+  role: AgentRole
+  prompt: string
+  /** If set, this step depends on the output of a previous step (by index) */
+  dependsOn: number | null
+  status: WorkflowStatus
+  executionId: string | null
+  result: string | null
+  error: string | null
+}
+
+/** A multi-agent workflow managed by AgentManager */
+export interface Workflow {
+  id: string
+  name: string
+  status: WorkflowStatus
+  steps: WorkflowStep[]
+  totalCostUsd: number
+  totalDurationMs: number
+  startedAt: string
+  completedAt: string | null
+  maxBudgetUsd: number | null
+}
+
+export type WorkflowEventType =
+  | 'workflow:started'
+  | 'workflow:step_started'
+  | 'workflow:step_completed'
+  | 'workflow:step_failed'
+  | 'workflow:completed'
+  | 'workflow:failed'
+  | 'workflow:cancelled'
+
+export interface WorkflowEvent {
+  type: WorkflowEventType
+  workflowId: string
+  stepIndex: number | null
+  timestamp: string
+  data: {
+    role?: AgentRole
+    status: WorkflowStatus
+    message?: string
+    costUsd?: number
+    durationMs?: number
+  }
+}
+
+export type WorkflowEventCallback = (event: WorkflowEvent) => void
+
+/* ── Callbacks ── */
+
+export type AgentEventCallback = (event: AgentEvent) => void

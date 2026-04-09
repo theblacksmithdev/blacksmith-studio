@@ -25,6 +25,7 @@ import { setupSetupIPC } from './setup.js'
 import { setupFolderDialogIPC } from './folder-dialog.js'
 import { setupGitIPC } from './git.js'
 import { setupTerminalIPC } from './terminal.js'
+import { setupAgentsIPC } from './agents.js'
 
 export function setupAllIPC(
   getWindow: () => BrowserWindow | null,
@@ -54,4 +55,5 @@ export function setupAllIPC(
   setupSetupIPC(settingsManager, projectManager)
   setupGitIPC(getWindow, gitManager, projectManager)
   setupTerminalIPC(getWindow, terminalManager, projectManager, settingsManager)
+  setupAgentsIPC(getWindow, projectManager, settingsManager, claudeManager, mcpManager)
 }

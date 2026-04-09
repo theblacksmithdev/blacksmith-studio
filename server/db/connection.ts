@@ -77,6 +77,50 @@ export function getDatabase() {
     CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp);
     CREATE INDEX IF NOT EXISTS idx_tool_calls_message_id ON tool_calls(message_id);
     CREATE INDEX IF NOT EXISTS idx_settings_project_id ON settings(project_id);
+
+    CREATE TABLE IF NOT EXISTS agent_dispatches (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+      prompt TEXT NOT NULL,
+      plan_mode TEXT NOT NULL,
+      plan_summary TEXT NOT NULL,
+      status TEXT NOT NULL,
+      total_cost_usd TEXT NOT NULL DEFAULT '0',
+      total_duration_ms INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      completed_at TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS agent_tasks (
+      id TEXT PRIMARY KEY,
+      dispatch_id TEXT NOT NULL REFERENCES agent_dispatches(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      role TEXT NOT NULL,
+      prompt TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending',
+      order_index INTEGER NOT NULL,
+      execution_id TEXT,
+      session_id TEXT,
+      response_text TEXT,
+      error TEXT,
+      cost_usd TEXT,
+      duration_ms INTEGER
+    );
+
+    CREATE TABLE IF NOT EXISTS agent_chat_messages (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+      role TEXT NOT NULL,
+      agent_role TEXT,
+      content TEXT NOT NULL,
+      dispatch_id TEXT,
+      timestamp TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_agent_dispatches_project_id ON agent_dispatches(project_id);
+    CREATE INDEX IF NOT EXISTS idx_agent_tasks_dispatch_id ON agent_tasks(dispatch_id);
+    CREATE INDEX IF NOT EXISTS idx_agent_chat_messages_project_id ON agent_chat_messages(project_id);
+    CREATE INDEX IF NOT EXISTS idx_agent_chat_messages_timestamp ON agent_chat_messages(timestamp);
   `)
 
   _db = drizzle(_sqlite, { schema })
