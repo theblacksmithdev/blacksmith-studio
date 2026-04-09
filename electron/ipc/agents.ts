@@ -118,7 +118,8 @@ export function setupAgentsIPC(
         data.prompt,
         result.plan.mode,
         result.plan.summary,
-        result.plan.tasks.map((t) => ({ id: t.id, title: t.title, role: t.role, prompt: t.prompt })),
+        result.plan.tasks.map((t) => ({ id: t.id, title: t.title, description: t.description, role: t.role, prompt: t.prompt })),
+        data.conversationId,
       )
 
       for (const exec of result.executions) {

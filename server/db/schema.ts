@@ -104,9 +104,14 @@ export const agentTasks = sqliteTable('agent_tasks', {
     .notNull()
     .references(() => agentDispatches.id, { onDelete: 'cascade' }),
   title: text('title').notNull(),
+  description: text('description'),
   role: text('role').notNull(),
   prompt: text('prompt').notNull(),
   status: text('status').notNull(), // 'pending' | 'running' | 'done' | 'error' | 'skipped'
+  /** 'main' = PM-assigned task, 'subtask' = agent decomposed, 'bugfix' = QA escalation */
+  taskType: text('task_type'),
+  /** Parent task ID if this is a decomposed sub-task */
+  parentTaskId: text('parent_task_id'),
   orderIndex: integer('order_index').notNull(),
   executionId: text('execution_id'),
   sessionId: text('session_id'), // Claude CLI session ID for resumption

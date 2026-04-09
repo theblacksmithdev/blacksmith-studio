@@ -10,6 +10,8 @@ import type { AgentRole, AgentEvent } from '../types.js'
 export interface DispatchTask {
   id: string
   title: string
+  /** Brief description of what this task delivers */
+  description: string
   role: AgentRole
   prompt: string
   /** IDs of tasks this depends on (must complete first) */
@@ -71,10 +73,10 @@ Respond with ONLY a JSON object. No markdown fences, no explanation.
 
 {
   "mode": "single" | "multi",
-  "task": { "id": "t1", "title": "...", "role": "...", "prompt": "...", "dependsOn": [] },
+  "task": { "id": "t1", "title": "...", "description": "What this task delivers", "role": "...", "prompt": "...", "dependsOn": [] },
   "tasks": [
-    { "id": "t1", "title": "...", "role": "...", "prompt": "...", "dependsOn": [] },
-    { "id": "t2", "title": "...", "role": "...", "prompt": "...", "dependsOn": ["t1"] }
+    { "id": "t1", "title": "...", "description": "What this task delivers", "role": "...", "prompt": "...", "dependsOn": [] },
+    { "id": "t2", "title": "...", "description": "What this task delivers", "role": "...", "prompt": "...", "dependsOn": ["t1"] }
   ],
   "summary": "Brief description of the plan"
 }
@@ -248,6 +250,7 @@ function parsePlan(raw: string): DispatchPlan {
     return {
       id: uniqueId,
       title: task.title ?? `Task ${index + 1}`,
+      description: task.description ?? '',
       role: task.role as AgentRole,
       prompt: task.prompt,
       dependsOn: Array.isArray(task.dependsOn) ? task.dependsOn : [],

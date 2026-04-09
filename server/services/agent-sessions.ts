@@ -123,7 +123,8 @@ export class AgentSessionManager {
     prompt: string,
     planMode: string,
     planSummary: string,
-    tasks: { id: string; title: string; role: string; prompt: string }[],
+    tasks: { id: string; title: string; description?: string; role: string; prompt: string }[],
+    conversationId?: string,
   ): string {
     const id = crypto.randomUUID()
     const now = new Date().toISOString()
@@ -131,6 +132,7 @@ export class AgentSessionManager {
     this.db.insert(agentDispatches).values({
       id,
       projectId,
+      conversationId: conversationId ?? null,
       prompt,
       planMode,
       planSummary,
@@ -146,14 +148,39 @@ export class AgentSessionManager {
         id: task.id,
         dispatchId: id,
         title: task.title,
+        description: task.description ?? null,
         role: task.role,
         prompt: task.prompt,
         status: 'pending',
+        taskType: 'main',
         orderIndex: i,
       }).run()
     }
 
     return id
+  }
+
+  /** Persist decomposed sub-tasks linked to a parent task */
+  addSubTasks(
+    dispatchId: string,
+    parentTaskId: string,
+    subtasks: { id: string; title: string; description?: string; prompt: string; role: string }[],
+  ): void {
+    for (let i = 0; i < subtasks.length; i++) {
+      const sub = subtasks[i]
+      this.db.insert(agentTasks).values({
+        id: sub.id,
+        dispatchId,
+        title: sub.title,
+        description: sub.description ?? null,
+        role: sub.role,
+        prompt: sub.prompt,
+        status: 'pending',
+        taskType: 'subtask',
+        parentTaskId,
+          orderIndex: i,
+      }).run()
+    }
   }
 
   updateDispatchStatus(

@@ -277,6 +277,11 @@ export function TaskDrawer({ onClose }: TaskDrawerProps) {
                           </Text>
                           <RoleTag $active={isActive}>{roleLabel(task.role)}</RoleTag>
                         </Flex>
+                        {task.description && (
+                          <Text css={{ fontSize: '10px', color: 'var(--studio-text-secondary)', marginTop: '2px', lineHeight: 1.4 }}>
+                            {task.description}
+                          </Text>
+                        )}
                         <Text css={{ fontSize: '10px', color: 'var(--studio-text-muted)', marginTop: '2px' }}>
                           {statusText(task.status)}
                           {agentSubtasks.length > 0 && ` · ${agentSubtasks.filter((s) => s.status === 'done').length}/${agentSubtasks.length} sub-tasks`}

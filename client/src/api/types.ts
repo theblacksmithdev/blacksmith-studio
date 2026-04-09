@@ -186,6 +186,7 @@ export interface AgentEvent {
 export interface DispatchTask {
   id: string
   title: string
+  description: string
   role: AgentRole
   prompt: string
   dependsOn: string[]

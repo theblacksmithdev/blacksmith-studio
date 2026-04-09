@@ -21,6 +21,8 @@ export type AgentRole =
 export interface AgentRoleDefinition {
   role: AgentRole
   title: string
+  /** Short display label for task badges (e.g. "Frontend", "Backend", "Design") */
+  label: string
   description: string
   /** System prompt injected into every session for this role */
   systemPrompt: string

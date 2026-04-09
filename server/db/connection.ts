@@ -140,6 +140,9 @@ export function getDatabase() {
     'ALTER TABLE agent_dispatches ADD COLUMN conversation_id TEXT REFERENCES agent_conversations(id) ON DELETE CASCADE',
     'ALTER TABLE agent_chat_messages ADD COLUMN conversation_id TEXT REFERENCES agent_conversations(id) ON DELETE CASCADE',
     'ALTER TABLE agent_tasks ADD COLUMN session_id TEXT',
+    'ALTER TABLE agent_tasks ADD COLUMN description TEXT',
+    'ALTER TABLE agent_tasks ADD COLUMN task_type TEXT',
+    'ALTER TABLE agent_tasks ADD COLUMN parent_task_id TEXT',
   ]
 
   for (const sql of migrations) {

@@ -52,7 +52,7 @@ export abstract class DecomposableAgent extends BaseAgent {
   ): Promise<SubTask[]> {
     // Safety: stop recursing after MAX_DECOMPOSE_DEPTH
     if (depth >= MAX_DECOMPOSE_DEPTH) {
-      return [{ id: `leaf-${crypto.randomUUID().slice(0, 8)}`, title: prompt.slice(0, 60), prompt }]
+      return [{ id: `leaf-${crypto.randomUUID().slice(0, 8)}`, title: prompt.slice(0, 60), description: '', prompt }]
     }
 
     this.emitStandalone({
@@ -66,7 +66,7 @@ export abstract class DecomposableAgent extends BaseAgent {
 
     // Simple enough — return as a leaf
     if (assessment.simple || assessment.subtasks.length === 0) {
-      return [{ id: `leaf-${crypto.randomUUID().slice(0, 8)}`, title: prompt.slice(0, 60), prompt }]
+      return [{ id: `leaf-${crypto.randomUUID().slice(0, 8)}`, title: prompt.slice(0, 60), description: '', prompt }]
     }
 
     // Complex — recursively assess each sub-task

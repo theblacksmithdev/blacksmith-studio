@@ -100,8 +100,8 @@ export class AgentManager {
         const execution = await this.execute({ ...options, role: routeResult.role })
         const plan: DispatchPlan = {
           mode: 'single',
-          task: { id: 't0', title: execution.prompt.slice(0, 60), role: routeResult.role, prompt: options.prompt, dependsOn: [] },
-          tasks: [{ id: 't0', title: execution.prompt.slice(0, 60), role: routeResult.role, prompt: options.prompt, dependsOn: [] }],
+          task: { id: 't0', title: execution.prompt.slice(0, 60), description: '', role: routeResult.role, prompt: options.prompt, dependsOn: [] },
+          tasks: [{ id: 't0', title: execution.prompt.slice(0, 60), description: '', role: routeResult.role, prompt: options.prompt, dependsOn: [] }],
           summary: `Direct to ${agent.title} (requested by user)`,
         }
         return { plan, executions: [execution] }
@@ -138,7 +138,7 @@ export class AgentManager {
         plan: {
           mode: plan.mode,
           summary: plan.summary,
-          tasks: plan.tasks.map((t) => ({ id: t.id, title: t.title, role: t.role, dependsOn: t.dependsOn })),
+          tasks: plan.tasks.map((t) => ({ id: t.id, title: t.title, description: t.description, role: t.role, dependsOn: t.dependsOn })),
         },
       },
     })

@@ -8,6 +8,8 @@ import { DECOMPOSER_PROMPT } from './prompt.js'
 export interface SubTask {
   id: string
   title: string
+  /** Brief description of what this sub-task delivers */
+  description: string
   prompt: string
 }
 
@@ -111,6 +113,7 @@ function parseAssessment(raw: string): ComplexityAssessment {
       .map((s: any, i: number) => ({
         id: s.id ?? `s${i + 1}`,
         title: s.title ?? `Sub-task ${i + 1}`,
+        description: s.description ?? '',
         prompt: s.prompt,
       }))
 

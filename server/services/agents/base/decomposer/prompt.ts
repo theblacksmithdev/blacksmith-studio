@@ -27,6 +27,6 @@ IMPORTANT: Each sub-task will ALSO be assessed for complexity. So don't try to m
 ## Output format:
 {"simple": true, "subtasks": []}
 OR
-{"simple": false, "subtasks": [{"id": "s1", "title": "Short title", "prompt": "Specific instructions..."}]}
+{"simple": false, "subtasks": [{"id": "s1", "title": "Short title", "description": "What this sub-task delivers", "prompt": "Specific instructions..."}]}
 
 Respond with ONLY the JSON. No explanation.`
