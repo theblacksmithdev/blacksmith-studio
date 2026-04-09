@@ -121,7 +121,6 @@ export function setupAgentsIPC(
         result.plan.tasks.map((t) => ({ id: t.id, title: t.title, role: t.role, prompt: t.prompt })),
       )
 
-      // Update task results from executions — persist session IDs for resumption
       for (const exec of result.executions) {
         const matchingTask = result.plan.tasks.find((t) => t.role === exec.agentId)
         if (matchingTask) {
@@ -136,7 +135,6 @@ export function setupAgentsIPC(
         }
       }
 
-      // Update dispatch final status
       const totalCost = result.executions.reduce((sum, e) => sum + e.costUsd, 0)
       const totalDuration = result.executions.reduce((sum, e) => sum + e.durationMs, 0)
       const anyFailed = result.executions.some((e) => e.status === 'error')
@@ -148,9 +146,15 @@ export function setupAgentsIPC(
         anyFailed ? 'Dispatch completed with errors' : `All tasks finished — $${totalCost.toFixed(4)}`,
         undefined,
         dispatchId,
+        data.conversationId,
       )
     } else if (result.plan.mode === 'clarification') {
-      sessionManager.addChatMessage(project.id, 'agent', result.plan.summary, 'product-manager')
+      sessionManager.addChatMessage(project.id, 'agent', result.plan.summary, 'product-manager', undefined, data.conversationId)
+    }
+
+    // Update conversation title from the first prompt if it exists
+    if (data.conversationId) {
+      sessionManager.touchConversation(data.conversationId)
     }
 
     return result
