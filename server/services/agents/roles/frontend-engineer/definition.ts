@@ -31,7 +31,7 @@ ${DEVELOPER_BOUNDARIES}`,
     '*.json', '*.html', '*.svg',
   ],
   scopeDirs: ['frontend', 'client', 'src', 'app'],
-  selfDecompose: true,
+  selfDecompose: false,
   keyFiles: [
     'package.json', 'tsconfig.json', 'vite.config.ts', 'next.config.js',
     'next.config.ts', 'tailwind.config.ts', 'tailwind.config.js',

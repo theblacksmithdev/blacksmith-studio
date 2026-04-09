@@ -32,7 +32,7 @@ ${DEVELOPER_BOUNDARIES}`,
     'Makefile', 'Procfile', '*.tf', '*.json',
   ],
   scopeDirs: ['.', '.github', '.gitlab', 'deploy', 'infra', 'ops'],
-  selfDecompose: true,
+  selfDecompose: false,
   keyFiles: [
     'Dockerfile', 'docker-compose.yml', 'docker-compose.yaml',
     'Makefile', 'Procfile', '.env.example',

@@ -29,7 +29,7 @@ ${DEVELOPER_BOUNDARIES}`,
     '*.py', '*.sql', '*.json', '*.toml', '*.yml',
   ],
   scopeDirs: ['backend', 'server', '.'],
-  selfDecompose: true,
+  selfDecompose: false,
   keyFiles: [
     'requirements.txt', 'pyproject.toml', 'manage.py',
     'settings.py', 'models.py', 'schema.prisma',

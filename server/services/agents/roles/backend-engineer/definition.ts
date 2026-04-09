@@ -31,7 +31,7 @@ ${DEVELOPER_BOUNDARIES}`,
     '*.sql', '*.json',
   ],
   scopeDirs: ['backend', 'server', 'api', '.'],
-  selfDecompose: true,
+  selfDecompose: false,
   keyFiles: [
     'requirements.txt', 'pyproject.toml', 'setup.cfg', 'manage.py',
     'settings.py', 'urls.py', 'conftest.py',

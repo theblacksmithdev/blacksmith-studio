@@ -1,8 +1,8 @@
 import styled from '@emotion/styled'
 import { Box, Text } from '@chakra-ui/react'
 import { Network } from 'lucide-react'
-import { ChatMessages } from './chat/chat-messages'
-import { ChatInput } from './chat/chat-input'
+import { ChatMessages } from './chat-messages'
+import { ChatInput } from './chat-input'
 
 const Shell = styled.div`
   display: flex;

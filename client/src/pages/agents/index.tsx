@@ -1,4 +1,4 @@
-import { ConversationsList } from '@/components/agents/conversations-list'
+import { ConversationsList } from '@/components/agents/conversations'
 
 export default function AgentsListPage() {
   return <ConversationsList />
