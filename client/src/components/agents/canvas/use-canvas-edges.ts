@@ -5,8 +5,8 @@ import { CONNECTIONS } from './layout'
 import type { CanvasSettings } from './settings'
 
 /**
- * Hub-and-spoke edges from PM to each agent.
- * Edges glow green when the spoke agent is active.
+ * Pipeline edges modelling real engineering workflow.
+ * An edge lights up when work is flowing through it (source or target active).
  * All styling driven by persisted canvas settings.
  */
 export function useCanvasEdges(nodeIds: Set<string>, canvas: CanvasSettings) {
@@ -25,7 +25,7 @@ export function useCanvasEdges(nodeIds: Set<string>, canvas: CanvasSettings) {
     const next: Edge[] = CONNECTIONS
       .filter(([s, t]) => nodeIds.has(s) && nodeIds.has(t))
       .map(([source, target]) => {
-        const isActive = active.has(target)
+        const isActive = active.has(source) || active.has(target)
 
         return {
           id: `${source}-${target}`,

@@ -20,7 +20,7 @@ function AgentNodeComponent({ data }: NodeProps & { data: AgentNodeData }) {
 
   return (
     <>
-      <Handle type="target" position={Position.Left} style={handleStyle} />
+      <Handle type="target" position={Position.Top} style={handleStyle} />
       <NodeWrapper $status={data.status} $selected={data.selected} $isCenter={isCenter}>
         <StatusDot $status={data.status} />
         <IconWrap $active={isActive} $isCenter={isCenter}>
@@ -29,7 +29,7 @@ function AgentNodeComponent({ data }: NodeProps & { data: AgentNodeData }) {
         <Title $isCenter={isCenter}>{data.title}</Title>
         <Activity $status={data.status}>{statusLabel}</Activity>
       </NodeWrapper>
-      <Handle type="source" position={Position.Right} style={handleStyle} />
+      <Handle type="source" position={Position.Bottom} style={handleStyle} />
     </>
   )
 }
