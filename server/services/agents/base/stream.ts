@@ -1,6 +1,6 @@
 import type { ChildProcess } from 'node:child_process'
 import { createNdjsonParser } from '../../claude/ndjson-parser.js'
-import { describeToolUse, describeMessageStart } from '../activity.js'
+import { describeToolUse, describeMessageStart } from '../utils/activity.js'
 import type {
   AgentStatus,
   AgentExecution,

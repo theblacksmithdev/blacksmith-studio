@@ -26,8 +26,7 @@ export type {
   WorkflowEventCallback,
 } from './types.js'
 
-export { buildAgentContext } from './context.js'
-export { describeToolUse, describeMessageStart } from './activity.js'
+export { buildAgentContext, describeToolUse, describeMessageStart } from './utils/index.js'
 
 export {
   AgentManager,
