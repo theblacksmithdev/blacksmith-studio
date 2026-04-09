@@ -29,6 +29,8 @@ interface AgentState {
   dispatchPlan: DispatchPlan | null
   /** Tasks with live status tracking */
   dispatchTasks: DispatchTask[]
+  /** Sub-tasks created by agent self-decomposition, keyed by parent agent role */
+  subtasks: Map<string, { id: string; title: string; status: string; index: number; total: number }[]>
   /** Whether the task tray is visible */
   taskTrayOpen: boolean
 
@@ -59,6 +61,7 @@ export const useAgentStore = create<AgentState>((set) => ({
   pendingInputs: [],
   dispatchPlan: null,
   dispatchTasks: [],
+  subtasks: new Map(),
   taskTrayOpen: false,
 
   setAgents: (agents) => set({ agents }),
@@ -85,6 +88,24 @@ export const useAgentStore = create<AgentState>((set) => ({
           t.id === taskId ? { ...t, status } : t,
         ),
       }
+    }
+
+    // Handle subtask_status events — track sub-tasks from agent self-decomposition
+    if (event.data.type === 'subtask_status') {
+      const { subtaskId, status, title, index, total } = event.data as any
+      const agentId = event.agentId
+      const subtasks = new Map(state.subtasks)
+      const existing = subtasks.get(agentId) ?? []
+
+      const idx = existing.findIndex((s) => s.id === subtaskId)
+      if (idx >= 0) {
+        existing[idx] = { ...existing[idx], status }
+      } else {
+        existing.push({ id: subtaskId, title, status, index, total })
+      }
+
+      subtasks.set(agentId, [...existing])
+      return { subtasks }
     }
 
     const activities = new Map(state.activities)

@@ -173,7 +173,7 @@ export interface AgentExecution {
   error: string | null
 }
 
-export type AgentEventType = 'status' | 'message' | 'tool_use' | 'tool_result' | 'thinking' | 'error' | 'done' | 'handoff' | 'activity' | 'task_status' | 'dispatch_plan'
+export type AgentEventType = 'status' | 'message' | 'tool_use' | 'tool_result' | 'thinking' | 'error' | 'done' | 'handoff' | 'activity' | 'task_status' | 'subtask_status' | 'dispatch_plan'
 
 export interface AgentEvent {
   type: AgentEventType

@@ -91,6 +91,7 @@ export type AgentEventType =
   | 'handoff'
   | 'activity'
   | 'task_status'
+  | 'subtask_status'
   | 'dispatch_plan'
 
 export interface AgentEvent {
@@ -112,6 +113,7 @@ export type AgentEventData =
   | { type: 'handoff'; targetRole: AgentRole; reason: string; context: string }
   | { type: 'activity'; description: string }
   | { type: 'task_status'; taskId: string; status: 'pending' | 'running' | 'done' | 'error' | 'skipped'; title: string; role: AgentRole }
+  | { type: 'subtask_status'; parentTaskId: string; subtaskId: string; status: 'pending' | 'running' | 'done' | 'error'; title: string; index: number; total: number }
   | { type: 'dispatch_plan'; plan: { mode: string; summary: string; tasks: { id: string; title: string; role: AgentRole; dependsOn: string[] }[] } }
 
 /* ── Agent Configuration (per project) ── */

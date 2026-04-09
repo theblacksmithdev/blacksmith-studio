@@ -134,6 +134,41 @@ const RoleTag = styled.span<{ $active: boolean }>`
   color: ${({ $active }) => $active ? 'var(--studio-green)' : 'var(--studio-text-muted)'};
 `
 
+/* ── Sub-task styles ── */
+
+const SubTaskList = styled.div`
+  padding: 4px 0 8px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`
+
+const SubTaskRow = styled.div<{ $status: string }>`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+`
+
+const SubTaskIcon = styled.div<{ $status: string }>`
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: scale(0.75);
+
+  color: ${({ $status }) =>
+    $status === 'done' ? 'var(--studio-green)'
+    : $status === 'running' ? 'var(--studio-green)'
+    : $status === 'error' ? 'var(--studio-error)'
+    : 'var(--studio-text-tertiary)'
+  };
+
+  ${({ $status }) => $status === 'running' && css`
+    animation: ${spin} 1s linear infinite;
+  `}
+`
+
 /* ── Helpers ── */
 
 function getIcon(status: DispatchTask['status']) {
@@ -169,6 +204,7 @@ interface TaskDrawerProps {
 export function TaskDrawer({ onClose }: TaskDrawerProps) {
   const tasks = useAgentStore((s) => s.dispatchTasks)
   const plan = useAgentStore((s) => s.dispatchPlan)
+  const subtasks = useAgentStore((s) => s.subtasks)
 
   const done = tasks.filter((t) => t.status === 'done').length
   const errored = tasks.filter((t) => t.status === 'error').length
@@ -220,33 +256,57 @@ export function TaskDrawer({ onClose }: TaskDrawerProps) {
               {tasks.map((task) => {
                 const status = task.status ?? 'pending'
                 const isActive = status === 'running'
+                const agentSubtasks = subtasks.get(task.role) ?? []
 
                 return (
-                  <TaskRow key={task.id} $status={status}>
-                    <StepIcon $status={status}>
-                      {getIcon(task.status)}
-                    </StepIcon>
-                    <Box css={{ flex: 1, minWidth: 0 }}>
-                      <Flex align="center" gap="6px">
-                        <Text css={{
-                          fontSize: '12px', fontWeight: 500, letterSpacing: '-0.01em',
-                          color: status === 'skipped' ? 'var(--studio-text-muted)' : 'var(--studio-text-primary)',
-                          textDecoration: status === 'skipped' ? 'line-through' : 'none',
-                          flex: 1, minWidth: 0,
-                          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                        }}>
-                          {task.title}
+                  <Box key={task.id}>
+                    <TaskRow $status={status}>
+                      <StepIcon $status={status}>
+                        {getIcon(task.status)}
+                      </StepIcon>
+                      <Box css={{ flex: 1, minWidth: 0 }}>
+                        <Flex align="center" gap="6px">
+                          <Text css={{
+                            fontSize: '12px', fontWeight: 500, letterSpacing: '-0.01em',
+                            color: status === 'skipped' ? 'var(--studio-text-muted)' : 'var(--studio-text-primary)',
+                            textDecoration: status === 'skipped' ? 'line-through' : 'none',
+                            flex: 1, minWidth: 0,
+                            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                          }}>
+                            {task.title}
+                          </Text>
+                          <RoleTag $active={isActive}>{roleLabel(task.role)}</RoleTag>
+                        </Flex>
+                        <Text css={{ fontSize: '10px', color: 'var(--studio-text-muted)', marginTop: '2px' }}>
+                          {statusText(task.status)}
+                          {agentSubtasks.length > 0 && ` · ${agentSubtasks.filter((s) => s.status === 'done').length}/${agentSubtasks.length} sub-tasks`}
+                          {(task as any).error && status === 'error' && (
+                            <span style={{ color: 'var(--studio-error)' }}> — {String((task as any).error).slice(0, 80)}</span>
+                          )}
                         </Text>
-                        <RoleTag $active={isActive}>{roleLabel(task.role)}</RoleTag>
-                      </Flex>
-                      <Text css={{ fontSize: '10px', color: 'var(--studio-text-muted)', marginTop: '2px' }}>
-                        {statusText(task.status)}
-                        {(task as any).error && status === 'error' && (
-                          <span style={{ color: 'var(--studio-error)' }}> — {String((task as any).error).slice(0, 80)}</span>
-                        )}
-                      </Text>
-                    </Box>
-                  </TaskRow>
+                      </Box>
+                    </TaskRow>
+
+                    {/* Sub-tasks from agent self-decomposition */}
+                    {agentSubtasks.length > 0 && (isActive || status === 'done' || status === 'error') && (
+                      <SubTaskList>
+                        {agentSubtasks.map((sub) => (
+                          <SubTaskRow key={sub.id} $status={sub.status}>
+                            <SubTaskIcon $status={sub.status}>
+                              {getIcon(sub.status as any)}
+                            </SubTaskIcon>
+                            <Text css={{
+                              fontSize: '10px', color: 'var(--studio-text-secondary)',
+                              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                              flex: 1, minWidth: 0,
+                            }}>
+                              {sub.title}
+                            </Text>
+                          </SubTaskRow>
+                        ))}
+                      </SubTaskList>
+                    )}
+                  </Box>
                 )
               })}
             </ScrollArea>
