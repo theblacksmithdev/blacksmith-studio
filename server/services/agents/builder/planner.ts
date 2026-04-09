@@ -4,7 +4,7 @@ import path from 'node:path'
 import { spawn } from 'node:child_process'
 import { createNdjsonParser } from '../../claude/ndjson-parser.js'
 import { nodeEnv } from '../../node-env.js'
-import type { AgentExecuteOptions } from '../base-agent.js'
+import type { AgentExecuteOptions } from '../base/index.js'
 import type { AgentRole } from '../types.js'
 import type { BuildPlan, BuildPhase, BuildTask } from './types.js'
 

@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process'
-import { BaseAgent, type AgentExecuteOptions, type ToolCallRecord } from '../base-agent.js'
+import { BaseAgent, type AgentExecuteOptions, type ToolCallRecord } from '../base/index.js'
 import type { AgentRoleDefinition, AgentExecution } from '../types.js'
 
 const DEFINITION: AgentRoleDefinition = {

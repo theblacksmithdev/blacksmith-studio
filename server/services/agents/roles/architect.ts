@@ -1,4 +1,4 @@
-import { BaseAgent, type ToolCallRecord } from '../base-agent.js'
+import { BaseAgent, type ToolCallRecord } from '../base/index.js'
 import type { AgentRoleDefinition, AgentExecution } from '../types.js'
 
 const DEFINITION: AgentRoleDefinition = {

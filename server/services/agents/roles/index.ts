@@ -24,7 +24,7 @@ import { SecurityEngineerAgent } from './security-engineer.js'
 import { TechnicalWriterAgent } from './technical-writer.js'
 import { ProductManagerAgent } from './product-manager.js'
 import type { AgentRole } from '../types.js'
-import type { BaseAgent } from '../base-agent.js'
+import type { BaseAgent } from '../base/index.js'
 
 /** Registry of all available agent roles. Instantiates one agent per role. */
 export function createAgentRegistry(): Map<AgentRole, BaseAgent> {

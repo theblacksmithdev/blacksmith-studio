@@ -6,7 +6,7 @@ import type { McpManager } from '../../server/services/mcp.js'
 import { AgentManager, ProjectBuilder } from '../../server/services/agents/index.js'
 import { AgentSessionManager } from '../../server/services/agent-sessions.js'
 import type { AgentRole } from '../../server/services/agents/types.js'
-import type { AgentExecuteOptions } from '../../server/services/agents/base-agent.js'
+import type { AgentExecuteOptions } from '../../server/services/agents/base/index.js'
 import {
   AGENTS_LIST, AGENTS_ROUTE, AGENTS_DISPATCH, AGENTS_EXECUTE, AGENTS_CANCEL, AGENTS_CANCEL_ALL,
   AGENTS_HISTORY, AGENTS_LIST_PIPELINES, AGENTS_RUN_PIPELINE, AGENTS_RUN_WORKFLOW,

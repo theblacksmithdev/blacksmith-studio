@@ -1,5 +1,5 @@
 import crypto from 'node:crypto'
-import type { BaseAgent, AgentExecuteOptions } from '../base-agent.js'
+import type { BaseAgent, AgentExecuteOptions } from '../base/index.js'
 import type {
   AgentRole,
   AgentExecution,

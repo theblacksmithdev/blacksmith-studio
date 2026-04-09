@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process'
 import { createNdjsonParser } from '../../claude/ndjson-parser.js'
 import { nodeEnv } from '../../node-env.js'
-import type { AgentExecuteOptions } from '../base-agent.js'
+import type { AgentExecuteOptions } from '../base/index.js'
 import type { AgentRole, AgentEvent } from '../types.js'
 
 /* ── Task Plan Types ── */

@@ -1,4 +1,4 @@
-import type { AgentExecuteOptions } from '../base-agent.js'
+import type { AgentExecuteOptions } from '../base/index.js'
 import type { AgentRole, AgentExecution, AgentEvent } from '../types.js'
 
 /** Roles that produce code and should go through the quality gate */

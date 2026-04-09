@@ -1,10 +1,11 @@
-export { BaseAgent } from './base-agent.js'
+export { BaseAgent } from './base/index.js'
 export type {
   AgentExecuteOptions,
   ToolCallRecord,
   HandoffDescriptor,
   ValidationResult,
-} from './base-agent.js'
+} from './base/index.js'
+export { buildSystemPrompt, buildCliArgs, streamExecution } from './base/index.js'
 
 export type {
   AgentRole,

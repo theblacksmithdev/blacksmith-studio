@@ -1,4 +1,4 @@
-import type { AgentExecuteOptions } from '../base-agent.js'
+import type { AgentExecuteOptions } from '../base/index.js'
 import type { AgentRole, AgentExecution, Workflow, WorkflowEvent } from '../types.js'
 
 type ExecuteFn = (options: AgentExecuteOptions & { role?: AgentRole }) => Promise<AgentExecution>

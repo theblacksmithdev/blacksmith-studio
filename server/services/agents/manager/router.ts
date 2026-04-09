@@ -1,5 +1,5 @@
 import type { AgentRole } from '../types.js'
-import type { BaseAgent } from '../base-agent.js'
+import type { BaseAgent } from '../base/index.js'
 
 /**
  * Routing rules that map keywords/patterns to agent roles.

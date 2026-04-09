@@ -1,4 +1,4 @@
-import type { BaseAgent, AgentExecuteOptions } from '../base-agent.js'
+import type { BaseAgent, AgentExecuteOptions } from '../base/index.js'
 import type { AgentRole, AgentExecution, AgentEvent } from '../types.js'
 
 const MAX_HANDOFF_DEPTH = 5
