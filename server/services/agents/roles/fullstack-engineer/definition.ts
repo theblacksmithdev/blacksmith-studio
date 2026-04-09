@@ -1,7 +1,6 @@
-import { BaseAgent, type ToolCallRecord } from '../base/index.js'
-import type { AgentRoleDefinition, AgentExecution } from '../types.js'
+import type { AgentRoleDefinition } from '../../types.js'
 
-const DEFINITION: AgentRoleDefinition = {
+export const DEFINITION: AgentRoleDefinition = {
   role: 'fullstack-engineer',
   title: 'Fullstack Engineer',
   description: 'Senior fullstack engineer who works across the entire Django + React stack, coordinating frontend and backend changes together.',
@@ -42,55 +41,4 @@ const DEFINITION: AgentRoleDefinition = {
   maxBudget: null,
   mcpServers: 'all',
   allowedTools: 'all',
-}
-
-export class FullstackEngineerAgent extends BaseAgent {
-  get definition(): AgentRoleDefinition {
-    return DEFINITION
-  }
-
-  protected transformPrompt(prompt: string): string {
-    return [
-      prompt,
-      '',
-      'Guidelines for this task:',
-      '- Implement both backend and frontend changes together as one cohesive feature.',
-      '- Start from the data model, then API, then frontend integration.',
-      '- Ensure TypeScript types match Django serializer output exactly.',
-      '- Include loading, error, and empty states on the frontend.',
-      '- Add or update tests on the backend for any new logic.',
-    ].join('\n')
-  }
-
-  protected processResult(
-    _execution: AgentExecution,
-    fullResponse: string,
-    toolCalls: ToolCallRecord[],
-  ): string {
-    const filesCreated = toolCalls.filter((tc) => tc.toolName === 'Write').length
-    const filesEdited = toolCalls.filter((tc) => tc.toolName === 'Edit').length
-
-    // Categorize by likely stack side
-    const pyFiles = toolCalls.filter((tc) =>
-      (tc.toolName === 'Write' || tc.toolName === 'Edit') &&
-      typeof tc.input.file_path === 'string' && tc.input.file_path.endsWith('.py')
-    ).length
-    const tsFiles = toolCalls.filter((tc) =>
-      (tc.toolName === 'Write' || tc.toolName === 'Edit') &&
-      typeof tc.input.file_path === 'string' && (tc.input.file_path.endsWith('.ts') || tc.input.file_path.endsWith('.tsx'))
-    ).length
-
-    const parts: string[] = []
-    if (filesCreated + filesEdited > 0) {
-      parts.push(`${filesCreated + filesEdited} file(s) touched`)
-      if (pyFiles > 0 && tsFiles > 0) parts.push(`(${pyFiles} backend, ${tsFiles} frontend)`)
-    }
-
-    if (parts.length === 0) {
-      const firstLine = fullResponse.split('\n').find((l) => l.trim()) ?? 'Analysis complete'
-      return firstLine.slice(0, 120)
-    }
-
-    return parts.join(' ')
-  }
 }
