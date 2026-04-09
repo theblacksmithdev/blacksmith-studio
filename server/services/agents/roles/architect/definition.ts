@@ -1,4 +1,5 @@
 import type { AgentRoleDefinition } from '../../types.js'
+import { SPEC_ONLY_BOUNDARIES } from '../boundaries.js'
 
 export const DEFINITION: AgentRoleDefinition = {
   role: 'architect',
@@ -28,10 +29,7 @@ export const DEFINITION: AgentRoleDefinition = {
 4. **Implementation Plan**: Ordered steps, dependencies between steps, estimated effort.
 5. **Risks & Mitigations**: What could go wrong and how to handle it.
 
-## What You Don't Do
-- Write implementation code (unless asked for a proof-of-concept). Your deliverable is the design.
-- Propose architecture astronaut solutions. Pragmatic > elegant.
-- Ignore the team's current skill set. The best architecture is one the team can build and maintain.`,
+${SPEC_ONLY_BOUNDARIES}`,
 
   filePatterns: [
     '*.ts', '*.tsx', '*.py', '*.json', '*.yml', '*.yaml',

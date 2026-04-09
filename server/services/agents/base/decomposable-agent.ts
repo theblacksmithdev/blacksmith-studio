@@ -2,17 +2,20 @@ import crypto from 'node:crypto'
 import type { AgentExecution } from '../types.js'
 import type { AgentExecuteOptions } from './types.js'
 import { BaseAgent } from './base-agent.js'
-import { assessComplexity } from './decomposer/index.js'
+import { assessComplexity, type SubTask } from './decomposer/index.js'
+
+/** Max recursion depth to prevent infinite splitting */
+const MAX_DECOMPOSE_DEPTH = 3
 
 /**
- * Extends BaseAgent with self-decomposition capability.
+ * Extends BaseAgent with recursive self-decomposition.
  *
  * Before executing, assesses whether the task is too complex for one pass.
- * If so, breaks it into sub-tasks and executes them serially within the
- * same Claude session — so each sub-task has full context of previous work.
+ * If so, breaks it into sub-tasks. Each sub-task is ALSO assessed — if it's
+ * still too complex, it gets split again. This recurses until every leaf
+ * task is genuinely simple enough for one excellent pass.
  *
- * Emits `subtask_status` events so the client can track sub-task progress
- * in the task drawer alongside the parent PM-dispatched tasks.
+ * All sub-tasks execute serially within the same Claude session for context continuity.
  */
 export abstract class DecomposableAgent extends BaseAgent {
 
@@ -23,16 +26,15 @@ export abstract class DecomposableAgent extends BaseAgent {
     if (!validation.valid) throw new Error(`Prompt rejected by ${this.title}: ${validation.reason}`)
 
     if (this.definition.selfDecompose) {
-      this.emitStandalone({ type: 'activity', description: `${this.title} assessing task complexity...` })
+      // Recursively flatten complex tasks into simple leaf tasks
+      const leafTasks = await this.flattenToLeafTasks(options.prompt, options, 0)
 
-      const assessment = await assessComplexity(options.prompt, this.definition, options)
-
-      if (!assessment.simple && assessment.subtasks.length > 0) {
+      if (leafTasks.length > 1) {
         this.emitStandalone({
           type: 'activity',
-          description: `Splitting into ${assessment.subtasks.length} sub-tasks for better quality`,
+          description: `Decomposed into ${leafTasks.length} focused tasks`,
         })
-        return this.executeSubTasks(assessment.subtasks, options)
+        return this.executeSubTasks(leafTasks, options)
       }
     }
 
@@ -40,16 +42,53 @@ export abstract class DecomposableAgent extends BaseAgent {
   }
 
   /**
-   * Execute sub-tasks serially within the same Claude session.
-   * Emits subtask_status events for each sub-task so the UI can track them.
+   * Recursively decompose a prompt into leaf tasks that are each simple enough
+   * for one excellent pass. If a sub-task is still complex, it gets split again.
+   */
+  private async flattenToLeafTasks(
+    prompt: string,
+    options: AgentExecuteOptions,
+    depth: number,
+  ): Promise<SubTask[]> {
+    // Safety: stop recursing after MAX_DECOMPOSE_DEPTH
+    if (depth >= MAX_DECOMPOSE_DEPTH) {
+      return [{ id: `leaf-${crypto.randomUUID().slice(0, 8)}`, title: prompt.slice(0, 60), prompt }]
+    }
+
+    this.emitStandalone({
+      type: 'activity',
+      description: depth === 0
+        ? `${this.title} assessing task complexity...`
+        : `Re-assessing sub-task complexity (depth ${depth})...`,
+    })
+
+    const assessment = await assessComplexity(prompt, this.definition, options)
+
+    // Simple enough — return as a leaf
+    if (assessment.simple || assessment.subtasks.length === 0) {
+      return [{ id: `leaf-${crypto.randomUUID().slice(0, 8)}`, title: prompt.slice(0, 60), prompt }]
+    }
+
+    // Complex — recursively assess each sub-task
+    const allLeaves: SubTask[] = []
+
+    for (const sub of assessment.subtasks) {
+      const childLeaves = await this.flattenToLeafTasks(sub.prompt, options, depth + 1)
+      allLeaves.push(...childLeaves)
+    }
+
+    return allLeaves
+  }
+
+  /**
+   * Execute leaf sub-tasks serially within the same Claude session.
+   * Emits subtask_status events for the UI task drawer.
    */
   private async executeSubTasks(
-    subtasks: { id: string; title: string; prompt: string }[],
+    subtasks: SubTask[],
     options: AgentExecuteOptions,
   ): Promise<AgentExecution> {
     const sessionId = options.sessionId ?? crypto.randomUUID()
-    // Use the parent task's prompt as an identifier for linking sub-tasks
-    // The PM's task_status event has the taskId — we use the execution's prompt to find it
     const parentTaskId = options.prompt.slice(0, 60)
     let lastExecution: AgentExecution | null = null
     let totalCost = 0
@@ -57,7 +96,7 @@ export abstract class DecomposableAgent extends BaseAgent {
     let combinedResponse = ''
     const startedAt = new Date().toISOString()
 
-    // Emit all sub-tasks as pending first
+    // Emit all as pending
     for (let i = 0; i < subtasks.length; i++) {
       this.emitStandalone({
         type: 'subtask_status',
@@ -73,7 +112,6 @@ export abstract class DecomposableAgent extends BaseAgent {
     for (let i = 0; i < subtasks.length; i++) {
       const sub = subtasks[i]
 
-      // Mark running
       this.emitStandalone({
         type: 'subtask_status',
         parentTaskId,
@@ -102,7 +140,6 @@ export abstract class DecomposableAgent extends BaseAgent {
       combinedResponse += execution.responseText + '\n\n'
 
       if (execution.status === 'error') {
-        // Mark this one as error
         this.emitStandalone({
           type: 'subtask_status',
           parentTaskId,
@@ -112,7 +149,6 @@ export abstract class DecomposableAgent extends BaseAgent {
           index: i,
           total: subtasks.length,
         })
-
         this.emitStandalone({ type: 'activity', description: `Sub-task "${sub.title}" failed — stopping` })
         execution.costUsd = totalCost
         execution.durationMs = totalDuration
@@ -120,7 +156,6 @@ export abstract class DecomposableAgent extends BaseAgent {
         return execution
       }
 
-      // Mark done
       this.emitStandalone({
         type: 'subtask_status',
         parentTaskId,

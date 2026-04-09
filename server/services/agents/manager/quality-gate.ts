@@ -1,6 +1,7 @@
 import type { AgentExecuteOptions } from '../base/index.js'
 import type { AgentRole, AgentExecution, AgentEvent } from '../types.js'
 import type { ChangeSet } from '../utils/change-tracker.js'
+import { extractBugReport, buildBugFixPrompt } from './bug-report.js'
 
 /** Roles that produce code and should go through the quality gate */
 const CODE_PRODUCING_ROLES = new Set<AgentRole>([
@@ -124,24 +125,51 @@ export async function runQualityGate(
       break
     }
 
-    testFailures = `Tests failed (cycle ${cycle + 1}/${MAX_TEST_CYCLES})`
-    emit(activityEvent(originalTask.role, `Fixing test failures (cycle ${cycle + 1})...`))
+    // Check if QA produced a bug report (major issue it can't fix)
+    const bugReport = extractBugReport(testExec)
 
-    const fixPrompt = buildFixPrompt(originalTask, 'test', testExec)
-    const fixExec = await execute({
-      ...baseOptions,
-      prompt: fixPrompt,
-      role: originalTask.role,
-    })
-    executions.push(fixExec)
+    if (bugReport) {
+      // QA found a major bug — route to the appropriate developer via PM
+      const targetRole = bugReport.suggestedRole
+      emit(activityEvent('qa-engineer', `Major bug found in ${bugReport.file} — escalating to ${targetRole}`))
+      emit(activityEvent('product-manager', `Re-assigning bug fix: "${bugReport.description}" → ${targetRole}`))
 
-    if (fixExec.status !== 'done') {
-      emit(activityEvent(originalTask.role, 'Fix attempt failed'))
-      passed = false
-      break
+      const bugFixPrompt = buildBugFixPrompt(bugReport)
+      const fixExec = await execute({
+        ...baseOptions,
+        prompt: bugFixPrompt,
+        role: targetRole,
+      })
+      executions.push(fixExec)
+
+      if (fixExec.status !== 'done') {
+        emit(activityEvent(targetRole, 'Bug fix attempt failed'))
+        passed = false
+        break
+      }
+
+      emit(activityEvent('qa-engineer', `Re-running tests after ${targetRole} fixed the bug...`))
+    } else {
+      // No bug report — QA couldn't fix it, send to original task's role
+      testFailures = `Tests failed (cycle ${cycle + 1}/${MAX_TEST_CYCLES})`
+      emit(activityEvent(originalTask.role, `Fixing test failures (cycle ${cycle + 1})...`))
+
+      const fixPrompt = buildFixPrompt(originalTask, 'test', testExec)
+      const fixExec = await execute({
+        ...baseOptions,
+        prompt: fixPrompt,
+        role: originalTask.role,
+      })
+      executions.push(fixExec)
+
+      if (fixExec.status !== 'done') {
+        emit(activityEvent(originalTask.role, 'Fix attempt failed'))
+        passed = false
+        break
+      }
+
+      emit(activityEvent('qa-engineer', `Re-running tests after fixes (cycle ${cycle + 1})...`))
     }
-
-    emit(activityEvent('qa-engineer', `Re-running tests after fixes (cycle ${cycle + 1})...`))
   }
 
   if (testFailures) {

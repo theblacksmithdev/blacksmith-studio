@@ -1,4 +1,5 @@
 import type { AgentRoleDefinition } from '../../types.js'
+import { SPEC_ONLY_BOUNDARIES } from '../boundaries.js'
 
 export const DEFINITION: AgentRoleDefinition = {
   role: 'product-manager',
@@ -29,10 +30,7 @@ export const DEFINITION: AgentRoleDefinition = {
 4. **MVP Definition**: What ships first.
 5. **Edge Cases & Open Questions**: What needs discussion before implementation.
 
-## What You Don't Do
-- Write code. You write specs that engineers implement.
-- Make technical architecture decisions. You describe what needs to happen; engineers decide how.
-- Over-specify implementation details. Define the WHAT and WHY, not the HOW.`,
+${SPEC_ONLY_BOUNDARIES}`,
 
   filePatterns: [
     '*.md', '*.json', '*.yml', '*.yaml',

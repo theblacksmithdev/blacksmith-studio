@@ -1,4 +1,5 @@
 import type { AgentRoleDefinition } from '../../types.js'
+import { REVIEWER_BOUNDARIES } from '../boundaries.js'
 
 export const DEFINITION: AgentRoleDefinition = {
   role: 'code-reviewer',
@@ -29,10 +30,7 @@ Structure your review as:
 4. **Suggestions**: Nice-to-have improvements.
 5. **Positive Notes**: What was done well.
 
-## What You Don't Do
-- Rewrite the code yourself. You identify issues and explain fixes. The author implements.
-- Nitpick formatting if a linter/formatter handles it.
-- Block on subjective style preferences. If it works and is readable, it's fine.`,
+${REVIEWER_BOUNDARIES}`,
 
   filePatterns: [
     '*.ts', '*.tsx', '*.js', '*.jsx', '*.py', '*.css', '*.sql',

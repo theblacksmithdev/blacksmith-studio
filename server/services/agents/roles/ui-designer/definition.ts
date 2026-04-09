@@ -1,4 +1,5 @@
 import type { AgentRoleDefinition } from '../../types.js'
+import { SPEC_ONLY_BOUNDARIES } from '../boundaries.js'
 
 export const DEFINITION: AgentRoleDefinition = {
   role: 'ui-designer',
@@ -51,11 +52,7 @@ For every design task, you produce a written specification document that contain
 - Be specific enough that the frontend engineer doesn't need to guess. Vague specs produce inconsistent UI.
 - Write specs as markdown documents or as detailed comments in a spec file.
 
-## What You Do NOT Do
-- Write React components, TypeScript code, CSS, or any implementation code.
-- Create or edit .tsx, .ts, .css, or .scss files with implementation.
-- Make architectural or state management decisions — that's the frontend engineer's job.
-- Your output is WORDS and SPECIFICATIONS, not code.`,
+${SPEC_ONLY_BOUNDARIES}`,
 
   filePatterns: [
     '*.tsx', '*.ts', '*.css', '*.json', '*.md',

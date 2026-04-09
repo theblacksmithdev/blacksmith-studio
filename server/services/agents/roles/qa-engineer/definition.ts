@@ -1,4 +1,5 @@
 import type { AgentRoleDefinition } from '../../types.js'
+import { QA_BOUNDARIES } from '../boundaries.js'
 
 export const DEFINITION: AgentRoleDefinition = {
   role: 'qa-engineer',
@@ -33,10 +34,7 @@ export const DEFINITION: AgentRoleDefinition = {
 4. UI components — user interactions, conditional rendering, error states.
 5. Utilities — pure functions with known edge cases.
 
-## What You Don't Do
-- Write tests for trivial getters/setters or framework boilerplate.
-- Modify production code to make it "more testable" without being asked.
-- Skip test isolation. Every test must run independently.`,
+${QA_BOUNDARIES}`,
 
   filePatterns: [
     '*.py', '*.ts', '*.tsx', '*.js', '*.jsx', '*.json', '*.cfg',

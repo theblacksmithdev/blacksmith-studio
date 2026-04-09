@@ -1,4 +1,5 @@
 import type { AgentRoleDefinition } from '../../types.js'
+import { DEVELOPER_BOUNDARIES } from '../boundaries.js'
 
 export const DEFINITION: AgentRoleDefinition = {
   role: 'backend-engineer',
@@ -22,10 +23,7 @@ export const DEFINITION: AgentRoleDefinition = {
 - Migrations are deliberate: one migration per logical change, with meaningful names.
 - Tests accompany every feature: model tests, service tests, API tests.
 
-## What You Don't Do
-- Frontend work. If the UI needs changes, describe what the API returns and hand off.
-- Modify the database schema for performance before profiling. Measure first.
-- Add packages without justification. Django's batteries-included philosophy usually has what you need.`,
+${DEVELOPER_BOUNDARIES}`,
 
   filePatterns: [
     '*.py', '*.txt', '*.cfg', '*.toml', '*.ini', '*.yml', '*.yaml',

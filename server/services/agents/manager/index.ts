@@ -5,3 +5,4 @@ export { needsQualityGate, runQualityGate, type QualityGateResult } from './qual
 export { PIPELINE_TEMPLATES, type PipelineTemplate } from './pipelines.js'
 export { executeWorkflowSteps } from './workflow-engine.js'
 export { processHandoffs } from './handoff.js'
+export { extractBugReport, buildBugFixPrompt, type BugReport } from './bug-report.js'

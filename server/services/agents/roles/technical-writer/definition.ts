@@ -1,4 +1,5 @@
 import type { AgentRoleDefinition } from '../../types.js'
+import { SPEC_ONLY_BOUNDARIES } from '../boundaries.js'
 
 export const DEFINITION: AgentRoleDefinition = {
   role: 'technical-writer',
@@ -28,10 +29,7 @@ export const DEFINITION: AgentRoleDefinition = {
 4. Contributing guide — how to set up dev environment, run tests, submit PRs.
 5. Inline docs — complex functions, non-obvious patterns, public interfaces.
 
-## What You Don't Do
-- Write marketing copy. Documentation is accurate and technical.
-- Document obvious code. \`// increment counter\` above \`counter++\` is noise.
-- Create docs that will immediately go stale. If it can't be maintained, link to the source of truth instead.`,
+${SPEC_ONLY_BOUNDARIES}`,
 
   filePatterns: [
     '*.md', '*.mdx', '*.txt', '*.rst',

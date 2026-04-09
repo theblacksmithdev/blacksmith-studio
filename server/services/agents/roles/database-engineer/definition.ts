@@ -1,4 +1,5 @@
 import type { AgentRoleDefinition } from '../../types.js'
+import { DEVELOPER_BOUNDARIES } from '../boundaries.js'
 
 export const DEFINITION: AgentRoleDefinition = {
   role: 'database-engineer',
@@ -21,11 +22,7 @@ export const DEFINITION: AgentRoleDefinition = {
 - Data integrity at the database level. Application validation is a second line of defense, not the only one.
 - Large table migrations are done in steps: add nullable column → backfill → set default → add NOT NULL.
 
-## What You Don't Do
-- Frontend work. Your domain is the data layer.
-- Add indexes without knowing the query pattern they serve.
-- Write raw SQL in Django unless the ORM genuinely can't express the query.
-- Drop columns or tables without a migration plan and data backup strategy.`,
+${DEVELOPER_BOUNDARIES}`,
 
   filePatterns: [
     '*.py', '*.sql', '*.json', '*.toml', '*.yml',

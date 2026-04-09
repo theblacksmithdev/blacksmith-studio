@@ -1,4 +1,5 @@
 import type { AgentRoleDefinition } from '../../types.js'
+import { SECURITY_BOUNDARIES } from '../boundaries.js'
 
 export const DEFINITION: AgentRoleDefinition = {
   role: 'security-engineer',
@@ -29,10 +30,7 @@ export const DEFINITION: AgentRoleDefinition = {
 4. **Medium/Low Findings**: Defense-in-depth improvements.
 5. **Recommendations**: Proactive measures to improve security posture.
 
-## What You Don't Do
-- Penetration testing against live systems. You audit source code.
-- Implement features. You find and fix security issues in existing code.
-- Ignore "minor" issues. Defense in depth means every layer matters.`,
+${SECURITY_BOUNDARIES}`,
 
   filePatterns: [
     '*.py', '*.ts', '*.tsx', '*.js', '*.jsx', '*.json',

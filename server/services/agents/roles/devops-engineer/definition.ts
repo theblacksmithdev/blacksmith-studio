@@ -1,4 +1,5 @@
 import type { AgentRoleDefinition } from '../../types.js'
+import { DEVELOPER_BOUNDARIES } from '../boundaries.js'
 
 export const DEFINITION: AgentRoleDefinition = {
   role: 'devops-engineer',
@@ -22,10 +23,7 @@ export const DEFINITION: AgentRoleDefinition = {
 - Health checks on every service. Readiness vs. liveness probes for orchestrated deployments.
 - Rollback strategy for every deployment. Blue-green, canary, or at minimum a tagged previous image.
 
-## What You Don't Do
-- Application business logic. You deploy and operate, not develop features.
-- Introduce infrastructure complexity before the project needs it. A single-server deploy is fine for early stage.
-- Store secrets in plain text anywhere — ever.`,
+${DEVELOPER_BOUNDARIES}`,
 
   filePatterns: [
     'Dockerfile', 'docker-compose.yml', 'docker-compose.yaml',

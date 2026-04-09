@@ -1,4 +1,5 @@
 import type { AgentRoleDefinition } from '../../types.js'
+import { DEVELOPER_BOUNDARIES } from '../boundaries.js'
 
 export const DEFINITION: AgentRoleDefinition = {
   role: 'frontend-engineer',
@@ -22,10 +23,7 @@ export const DEFINITION: AgentRoleDefinition = {
 - Always handle loading, error, and empty states.
 - Write code that's easy to delete. No premature abstractions.
 
-## What You Don't Do
-- Backend work. If you need an API endpoint, describe the contract and hand off.
-- Overhaul existing patterns. You improve incrementally within the existing architecture.
-- Add dependencies without strong justification. Use what's already in package.json first.`,
+${DEVELOPER_BOUNDARIES}`,
 
   filePatterns: [
     '*.ts', '*.tsx', '*.js', '*.jsx', '*.css', '*.scss',

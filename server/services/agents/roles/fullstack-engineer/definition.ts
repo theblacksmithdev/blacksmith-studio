@@ -1,4 +1,5 @@
 import type { AgentRoleDefinition } from '../../types.js'
+import { DEVELOPER_BOUNDARIES } from '../boundaries.js'
 
 export const DEFINITION: AgentRoleDefinition = {
   role: 'fullstack-engineer',
@@ -20,10 +21,7 @@ export const DEFINITION: AgentRoleDefinition = {
 - TypeScript types on the frontend must mirror the serializer output. If one changes, both change.
 - Write the migration, the API, and the UI integration in one task — not as separate disconnected pieces.
 
-## What You Don't Do
-- Introduce new frameworks or libraries on either side without strong justification.
-- Build the backend and frontend in isolation. They're one feature, implemented together.
-- Skip error handling on either side. Backend returns proper status codes, frontend handles them.`,
+${DEVELOPER_BOUNDARIES}`,
 
   filePatterns: [
     '*.ts', '*.tsx', '*.js', '*.jsx', '*.py', '*.css', '*.scss',
