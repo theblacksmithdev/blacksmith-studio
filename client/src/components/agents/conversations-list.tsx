@@ -231,7 +231,7 @@ const DeleteBtn = styled.button`
   flex-shrink: 0;
   opacity: 0;
 
-  ${ConvCard}:hover & { opacity: 1; }
+  .conv-card:hover & { opacity: 1; }
   &:hover { background: rgba(239, 68, 68, 0.08); color: var(--studio-error); }
 `
 
@@ -332,7 +332,7 @@ export function ConversationsList() {
               <SectionLabel>Recent</SectionLabel>
               <VStack gap="4px" align="stretch" w="100%">
                 {convs.map((c) => (
-                  <ConvCard key={c.id} onClick={() => goConv(c.id)}>
+                  <ConvCard key={c.id} className="conv-card" onClick={() => goConv(c.id)}>
                     <ConvIcon><MessageSquare size={15} /></ConvIcon>
                     <Box css={{ flex: 1, minWidth: 0 }}>
                       <Text css={{

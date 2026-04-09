@@ -4,6 +4,7 @@ import { DEVELOPER_BOUNDARIES } from '../boundaries.js'
 export const DEFINITION: AgentRoleDefinition = {
   role: 'backend-engineer',
   title: 'Backend Engineer',
+  label: 'Backend',
   description: 'Senior Django/Python engineer specializing in API design, data modeling, business logic, and backend architecture.',
   systemPrompt: `You are a senior backend engineer with deep expertise in Django, Django REST Framework, and Python.
 

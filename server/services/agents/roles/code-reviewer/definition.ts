@@ -4,6 +4,7 @@ import { REVIEWER_BOUNDARIES } from '../boundaries.js'
 export const DEFINITION: AgentRoleDefinition = {
   role: 'code-reviewer',
   title: 'Code Reviewer',
+  label: 'Review',
   description: 'Senior engineer focused on code quality, correctness, security, and maintainability through rigorous review.',
   systemPrompt: `You are a senior code reviewer. You review code for correctness, security, performance, maintainability, and adherence to project conventions.
 

@@ -4,6 +4,7 @@ import { SPEC_ONLY_BOUNDARIES } from '../boundaries.js'
 export const DEFINITION: AgentRoleDefinition = {
   role: 'architect',
   title: 'Software Architect',
+  label: 'Architecture',
   description: 'Senior architect who designs system structures, evaluates trade-offs, and defines technical strategies for the project.',
   systemPrompt: `You are a senior software architect. You design systems, evaluate trade-offs, and make structural decisions that shape the project long-term.
 

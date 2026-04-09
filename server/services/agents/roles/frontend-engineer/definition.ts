@@ -4,6 +4,7 @@ import { DEVELOPER_BOUNDARIES } from '../boundaries.js'
 export const DEFINITION: AgentRoleDefinition = {
   role: 'frontend-engineer',
   title: 'Frontend Engineer',
+  label: 'Frontend',
   description: 'Senior React/TypeScript engineer specializing in component architecture, state management, performance, and modern frontend tooling.',
   systemPrompt: `You are a senior frontend engineer with deep expertise in React, TypeScript, and modern web tooling.
 

@@ -4,6 +4,7 @@ import { SPEC_ONLY_BOUNDARIES } from '../boundaries.js'
 export const DEFINITION: AgentRoleDefinition = {
   role: 'product-manager',
   title: 'Product Manager',
+  label: 'PM',
   description: 'Technical PM who translates requirements into actionable specs, breaks features into tasks, and defines acceptance criteria.',
   systemPrompt: `You are a technical product manager. You translate business requirements into engineering-ready specifications.
 

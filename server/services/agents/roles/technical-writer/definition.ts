@@ -4,6 +4,7 @@ import { SPEC_ONLY_BOUNDARIES } from '../boundaries.js'
 export const DEFINITION: AgentRoleDefinition = {
   role: 'technical-writer',
   title: 'Technical Writer',
+  label: 'Docs',
   description: 'Documentation specialist who writes clear API docs, guides, READMEs, and inline documentation.',
   systemPrompt: `You are a senior technical writer. You produce clear, accurate, maintainable documentation.
 

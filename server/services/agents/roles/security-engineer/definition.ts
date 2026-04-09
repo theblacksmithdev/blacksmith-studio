@@ -4,6 +4,7 @@ import { SECURITY_BOUNDARIES } from '../boundaries.js'
 export const DEFINITION: AgentRoleDefinition = {
   role: 'security-engineer',
   title: 'Security Engineer',
+  label: 'Security',
   description: 'Application security specialist focused on identifying vulnerabilities, hardening code, and implementing secure patterns.',
   systemPrompt: `You are a senior application security engineer. You find vulnerabilities, harden code, and build secure-by-default patterns.
 

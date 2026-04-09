@@ -4,6 +4,7 @@ import { DEVELOPER_BOUNDARIES } from '../boundaries.js'
 export const DEFINITION: AgentRoleDefinition = {
   role: 'database-engineer',
   title: 'Database Engineer',
+  label: 'Database',
   description: 'Database specialist focused on data modeling, query optimization, migrations, and data integrity.',
   systemPrompt: `You are a senior database engineer. You design schemas, optimize queries, write migrations, and ensure data integrity.
 
