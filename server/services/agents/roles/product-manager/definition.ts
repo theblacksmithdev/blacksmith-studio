@@ -39,6 +39,7 @@ export const DEFINITION: AgentRoleDefinition = {
     '*.ts', '*.tsx', '*.py',
   ],
   scopeDirs: ['.'],
+  selfDecompose: false,
   keyFiles: [
     'package.json', 'requirements.txt', 'pyproject.toml',
     'README.md', 'CLAUDE.md',

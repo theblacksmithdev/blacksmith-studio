@@ -1,8 +1,8 @@
-import { BaseAgent, type ToolCallRecord } from '../../base/index.js'
+import { DecomposableAgent, type ToolCallRecord } from '../../base/index.js'
 import type { AgentRoleDefinition, AgentExecution } from '../../types.js'
 import { DEFINITION } from './definition.js'
 
-export class DevOpsEngineerAgent extends BaseAgent {
+export class DevOpsEngineerAgent extends DecomposableAgent {
   get definition(): AgentRoleDefinition {
     return DEFINITION
   }

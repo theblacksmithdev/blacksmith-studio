@@ -39,6 +39,7 @@ Structure your review as:
     '*.json', '*.yml', '*.yaml',
   ],
   scopeDirs: ['.'],
+  selfDecompose: false,
   keyFiles: [
     'package.json', 'requirements.txt', 'pyproject.toml',
     'tsconfig.json', '.eslintrc.json', '.eslintrc.js',

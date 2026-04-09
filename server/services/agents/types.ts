@@ -44,6 +44,12 @@ export interface AgentRoleDefinition {
    * Directories are skipped — only regular files are read.
    */
   keyFiles: string[]
+  /**
+   * If true, the agent can self-decompose complex tasks into smaller sub-tasks
+   * and execute them serially within the same session. Each sub-task builds on
+   * the previous one's output. Only enable for implementation-heavy roles.
+   */
+  selfDecompose: boolean
 }
 
 /* ── Agent Execution ── */

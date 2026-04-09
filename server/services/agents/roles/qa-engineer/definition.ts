@@ -42,6 +42,7 @@ export const DEFINITION: AgentRoleDefinition = {
     '*.py', '*.ts', '*.tsx', '*.js', '*.jsx', '*.json', '*.cfg',
   ],
   scopeDirs: ['.'],
+  selfDecompose: false,
   keyFiles: [
     'package.json', 'requirements.txt', 'pyproject.toml',
     'jest.config.ts', 'jest.config.js', 'vitest.config.ts',

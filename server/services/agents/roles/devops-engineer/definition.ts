@@ -33,6 +33,7 @@ export const DEFINITION: AgentRoleDefinition = {
     'Makefile', 'Procfile', '*.tf', '*.json',
   ],
   scopeDirs: ['.', '.github', '.gitlab', 'deploy', 'infra', 'ops'],
+  selfDecompose: true,
   keyFiles: [
     'Dockerfile', 'docker-compose.yml', 'docker-compose.yaml',
     'Makefile', 'Procfile', '.env.example',

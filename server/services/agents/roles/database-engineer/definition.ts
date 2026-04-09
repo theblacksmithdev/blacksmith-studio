@@ -31,6 +31,7 @@ export const DEFINITION: AgentRoleDefinition = {
     '*.py', '*.sql', '*.json', '*.toml', '*.yml',
   ],
   scopeDirs: ['backend', 'server', '.'],
+  selfDecompose: true,
   keyFiles: [
     'requirements.txt', 'pyproject.toml', 'manage.py',
     'settings.py', 'models.py', 'schema.prisma',

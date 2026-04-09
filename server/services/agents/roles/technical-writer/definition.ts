@@ -39,6 +39,7 @@ export const DEFINITION: AgentRoleDefinition = {
     '*.json', '*.yml', '*.yaml',
   ],
   scopeDirs: ['.', 'docs'],
+  selfDecompose: false,
   keyFiles: [
     'README.md', 'CONTRIBUTING.md', 'CHANGELOG.md',
     'package.json', 'requirements.txt', 'pyproject.toml',

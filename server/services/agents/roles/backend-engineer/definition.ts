@@ -32,6 +32,7 @@ export const DEFINITION: AgentRoleDefinition = {
     '*.sql', '*.json',
   ],
   scopeDirs: ['backend', 'server', 'api', '.'],
+  selfDecompose: true,
   keyFiles: [
     'requirements.txt', 'pyproject.toml', 'setup.cfg', 'manage.py',
     'settings.py', 'urls.py', 'conftest.py',

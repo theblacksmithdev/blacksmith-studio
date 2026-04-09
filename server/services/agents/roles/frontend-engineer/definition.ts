@@ -32,6 +32,7 @@ export const DEFINITION: AgentRoleDefinition = {
     '*.json', '*.html', '*.svg',
   ],
   scopeDirs: ['frontend', 'client', 'src', 'app'],
+  selfDecompose: true,
   keyFiles: [
     'package.json', 'tsconfig.json', 'vite.config.ts', 'next.config.js',
     'next.config.ts', 'tailwind.config.ts', 'tailwind.config.js',

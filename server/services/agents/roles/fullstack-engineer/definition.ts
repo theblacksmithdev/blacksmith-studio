@@ -30,6 +30,7 @@ export const DEFINITION: AgentRoleDefinition = {
     '*.json', '*.html', '*.sql', '*.yml',
   ],
   scopeDirs: ['frontend', 'backend', 'client', 'server', 'src', 'api', '.'],
+  selfDecompose: true,
   keyFiles: [
     'package.json', 'tsconfig.json', 'vite.config.ts',
     'requirements.txt', 'pyproject.toml', 'manage.py',

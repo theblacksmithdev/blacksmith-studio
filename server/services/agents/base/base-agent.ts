@@ -19,18 +19,13 @@ import { streamExecution } from './stream.js'
 /**
  * Abstract base class for all AI agents.
  *
- * Each subclass represents a real tech role and must implement:
- * - definition: the role's static metadata
- * - transformPrompt: role-specific prompt framing
- * - processResult: extract summary from completed execution
- *
- * The base class handles the full lifecycle:
- * context → prompt → spawn → stream → result → handoff
+ * Handles the core lifecycle: validate → context → prompt → spawn → stream → result.
+ * No decomposition logic — that lives in DecomposableAgent for roles that need it.
  */
 export abstract class BaseAgent {
   private _activeProcess: AgentProcess | null = null
   private _listeners: AgentEventCallback[] = []
-  private _settled = false
+  protected _settled = false
 
   /* ── Abstract ── */
 
@@ -60,6 +55,29 @@ export abstract class BaseAgent {
     const validation = this.validatePrompt(options.prompt)
     if (!validation.valid) throw new Error(`Prompt rejected by ${this.title}: ${validation.reason}`)
 
+    return this.executeSingle(options)
+  }
+
+  cancel(): void {
+    if (!this._activeProcess || this._settled) return
+    const { execution, process } = this._activeProcess
+    this._settled = true
+
+    console.log(`[agent:${this.role}] Cancelling execution ${execution.id}`)
+    process.kill('SIGTERM')
+
+    execution.status = 'error'
+    execution.error = 'Cancelled by user'
+    execution.completedAt = new Date().toISOString()
+    execution.durationMs = Date.now() - new Date(execution.startedAt).getTime()
+
+    this.emit({ type: 'error', error: 'Cancelled by user', recoverable: false }, execution)
+    this._activeProcess = null
+  }
+
+  /* ── Single-pass execution (also used by DecomposableAgent for sub-tasks) ── */
+
+  protected async executeSingle(options: AgentExecuteOptions): Promise<AgentExecution> {
     const executionId = crypto.randomUUID()
     const sessionId = options.sessionId ?? crypto.randomUUID()
     const isResume = !!(options.resume && options.sessionId)
@@ -75,7 +93,7 @@ export abstract class BaseAgent {
     this._settled = false
     this.emit({ type: 'status', status: 'thinking', message: `${this.title} is analyzing the request...` }, execution)
 
-    // Context
+    // Context (skip on resume — already in session)
     let fullContext = ''
     if (!isResume) {
       const roleContext = buildAgentContext(options.projectRoot, this.definition)
@@ -120,26 +138,9 @@ export abstract class BaseAgent {
     return result
   }
 
-  cancel(): void {
-    if (!this._activeProcess || this._settled) return
-    const { execution, process } = this._activeProcess
-    this._settled = true
+  /* ── Event emission ── */
 
-    console.log(`[agent:${this.role}] Cancelling execution ${execution.id}`)
-    process.kill('SIGTERM')
-
-    execution.status = 'error'
-    execution.error = 'Cancelled by user'
-    execution.completedAt = new Date().toISOString()
-    execution.durationMs = Date.now() - new Date(execution.startedAt).getTime()
-
-    this.emit({ type: 'error', error: 'Cancelled by user', recoverable: false }, execution)
-    this._activeProcess = null
-  }
-
-  /* ── Internal ── */
-
-  private emit(data: AgentEventData, execution: AgentExecution): void {
+  protected emit(data: AgentEventData, execution: AgentExecution): void {
     const event: AgentEvent = {
       type: data.type,
       agentId: this.role,
@@ -154,7 +155,22 @@ export abstract class BaseAgent {
     }
   }
 
-  private setStatus(execution: AgentExecution, status: AgentStatus, message?: string): void {
+  protected emitStandalone(data: AgentEventData): void {
+    const event: AgentEvent = {
+      type: data.type,
+      agentId: this.role,
+      executionId: '',
+      timestamp: new Date().toISOString(),
+      data,
+    }
+    for (const cb of this._listeners) {
+      try { cb(event) } catch (err) {
+        console.error(`[agent:${this.role}] Event listener error:`, err)
+      }
+    }
+  }
+
+  protected setStatus(execution: AgentExecution, status: AgentStatus, message?: string): void {
     execution.status = status
     this.emit({ type: 'status', status, message }, execution)
   }

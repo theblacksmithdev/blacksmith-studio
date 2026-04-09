@@ -1,4 +1,4 @@
-export { BaseAgent } from './base/index.js'
+export { BaseAgent, DecomposableAgent } from './base/index.js'
 export type {
   AgentExecuteOptions,
   ToolCallRecord,

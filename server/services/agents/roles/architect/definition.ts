@@ -38,6 +38,7 @@ export const DEFINITION: AgentRoleDefinition = {
     '*.toml', '*.md', '*.sql',
   ],
   scopeDirs: ['.'],
+  selfDecompose: false,
   keyFiles: [
     'package.json', 'requirements.txt', 'pyproject.toml',
     'tsconfig.json', 'manage.py', 'settings.py',

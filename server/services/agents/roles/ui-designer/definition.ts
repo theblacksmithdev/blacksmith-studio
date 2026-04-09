@@ -61,6 +61,7 @@ For every design task, you produce a written specification document that contain
     '*.tsx', '*.ts', '*.css', '*.json', '*.md',
   ],
   scopeDirs: ['frontend', 'client', 'src', 'app'],
+  selfDecompose: false,
   keyFiles: [
     'package.json', 'tailwind.config.ts', 'tailwind.config.js',
     'theme.ts', 'theme.js', 'tokens.ts', 'tokens.css',

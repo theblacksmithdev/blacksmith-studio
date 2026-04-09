@@ -39,6 +39,7 @@ export const DEFINITION: AgentRoleDefinition = {
     '*.yml', '*.yaml', '*.env.example', '*.cfg', '*.toml',
   ],
   scopeDirs: ['.'],
+  selfDecompose: false,
   keyFiles: [
     'package.json', 'requirements.txt', 'pyproject.toml',
     'settings.py', '.env.example', 'manage.py',
