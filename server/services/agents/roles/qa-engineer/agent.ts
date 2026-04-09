@@ -39,7 +39,9 @@ export class QaEngineerAgent extends BaseAgent {
       '- Cover the happy path first, then edge cases, then error conditions.',
       '- Use descriptive test names that explain the scenario being tested.',
       '- Include proper setup/teardown. No test interdependence.',
-      '- Run the tests after writing them to confirm they pass.',
+      '- After writing your tests, run the FULL test suite (not just your new tests) to catch regressions.',
+      '- For Python: `python -m pytest`. For TypeScript: `npx vitest run` or `npx jest`.',
+      '- Report both new test results and existing test results separately.',
     ].join('\n')
   }
 

@@ -1,5 +1,6 @@
 import crypto from 'node:crypto'
 import type { BaseAgent, AgentExecuteOptions } from '../base/index.js'
+import { takeSnapshot, computeChanges } from '../utils/change-tracker.js'
 import type {
   AgentRole,
   AgentExecution,
@@ -142,6 +143,9 @@ export class AgentManager {
       },
     })
 
+    // Snapshot git state before agents start working
+    const snapshot = takeSnapshot(options.projectRoot)
+
     // Single task from PM — just run it
     if (plan.mode === 'single' && plan.task) {
       const execution = await this.execute({
@@ -151,25 +155,26 @@ export class AgentManager {
       })
       const executions = [execution]
 
-      // Quality gate after single task (if it produced code)
       if (execution.status === 'done' && needsQualityGate(plan.task.role)) {
-        const gateExecs = await this.runFinalQualityGate(plan.task, options)
+        const changes = computeChanges(options.projectRoot, snapshot)
+        const gateExecs = await this.runFinalQualityGate(plan.task, options, changes)
         executions.push(...gateExecs)
       }
 
       return { plan, executions }
     }
 
-    // Multi-task: execute all tasks in dependency order, then quality gate once at the end
+    // Multi-task: execute all tasks, then quality gate with the full change set
     const executions = await this.executeTaskPlan(plan.tasks, options)
 
-    // Run quality gate once after all tasks complete
     const anyCodeProduced = plan.tasks.some((t) => needsQualityGate(t.role))
     const allSucceeded = executions.every((e) => e.status === 'done')
     if (anyCodeProduced && allSucceeded) {
+      const changes = computeChanges(options.projectRoot, snapshot)
       const gateExecs = await this.runFinalQualityGate(
         { role: 'code-reviewer' as AgentRole, prompt: plan.summary, title: plan.summary },
         options,
+        changes,
       )
       executions.push(...gateExecs)
     }
@@ -179,25 +184,22 @@ export class AgentManager {
 
   /**
    * Run the quality gate once at the end of a dispatch.
-   * Code reviewer reviews all changes, QA writes tests for the full feature.
+   * Passes the exact ChangeSet so reviewer/QA only look at new work.
    */
   private async runFinalQualityGate(
     context: { role: AgentRole; prompt: string; title: string },
     options: AgentExecuteOptions,
+    changes?: import('../utils/change-tracker.js').ChangeSet,
   ): Promise<AgentExecution[]> {
-    this.emitAgentEvent({
-      type: 'activity',
-      agentId: 'product-manager',
-      executionId: '',
-      timestamp: new Date().toISOString(),
-      data: { type: 'activity', description: 'Running final quality gate — review & tests...' },
-    })
+    const fileCount = changes?.files.length ?? 0
+    this.emitPM(`Running quality gate${fileCount > 0 ? ` on ${fileCount} changed files` : ''}...`)
 
     const gateResult = await runQualityGate(
       context,
       options,
       (opts) => this.execute(opts),
       (event) => this.emitAgentEvent(event),
+      changes,
     )
 
     this.emitAgentEvent({
