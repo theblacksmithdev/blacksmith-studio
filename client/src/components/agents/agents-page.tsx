@@ -1,16 +1,19 @@
 import { useEffect, useCallback, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate, useParams } from 'react-router-dom'
 import styled from '@emotion/styled'
 import { ReactFlowProvider } from '@xyflow/react'
 import { ListTodo } from 'lucide-react'
 import { api } from '@/api'
 import { queryKeys } from '@/api/query-keys'
 import { useAgentStore } from '@/stores/agent-store'
+import { useProjectStore } from '@/stores/project-store'
 import { Tooltip } from '@/components/shared/tooltip'
 import { AgentCanvas } from './agent-canvas'
 import { AgentChat } from './agent-chat'
 import { AgentDetail } from './agent-detail'
 import { TaskDrawer } from './task-drawer'
+import { agentsConversationPath } from '@/router/paths'
 import type { AgentRole } from '@/api/types'
 
 const Layout = styled.div`
@@ -68,7 +71,16 @@ const Badge = styled.span`
   color: var(--studio-text-muted);
 `
 
-export function AgentsPage() {
+interface AgentsPageProps {
+  conversationId?: string
+}
+
+export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
+  const params = useParams()
+  const navigate = useNavigate()
+  const activeProject = useProjectStore((s) => s.activeProject)
+  const conversationId = propConvId ?? params.conversationId
+  const [currentConvId, setCurrentConvId] = useState<string | undefined>(conversationId)
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   const { data: agents = [] } = useQuery({
@@ -88,27 +100,25 @@ export function AgentsPage() {
   const dispatchTasks = useAgentStore((s) => s.dispatchTasks)
   const loadPersistedChat = useAgentStore((s) => s.loadPersistedChat)
   const chatMessages = useAgentStore((s) => s.chatMessages)
+  const clearChat = useAgentStore((s) => s.clearChat)
 
   useEffect(() => {
     if (agents.length > 0) setAgents(agents)
   }, [agents, setAgents])
 
-  // Load persisted chat on mount
+  // Load persisted chat for this conversation
   useEffect(() => {
-    if (chatMessages.length === 0) {
-      api.agents.listChat().then((messages) => {
+    clearChat()
+    if (currentConvId) {
+      api.agents.listChat(currentConvId).then((messages) => {
         if (messages.length > 0) {
           loadPersistedChat(messages.map((m: any) => ({
-            id: m.id,
-            role: m.role,
-            agentRole: m.agentRole,
-            content: m.content,
-            timestamp: m.timestamp,
+            id: m.id, role: m.role, agentRole: m.agentRole, content: m.content, timestamp: m.timestamp,
           })))
         }
-      }).catch(() => { /* ignore */ })
+      }).catch(() => {})
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentConvId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const unsubs = [
@@ -116,49 +126,52 @@ export function AgentsPage() {
         handleAgentEvent(event)
 
         if (event.data.type === 'activity') {
-          addChatMessage({
-            role: 'agent',
-            agentRole: event.agentId as AgentRole,
-            content: event.data.description,
-          })
+          addChatMessage({ role: 'agent', agentRole: event.agentId as AgentRole, content: event.data.description })
         } else if (event.data.type === 'done') {
-          addChatMessage({
-            role: 'system',
-            content: `${event.agentId.replace(/-/g, ' ')} completed — $${event.data.costUsd?.toFixed(4) ?? '0'}`,
-          })
+          addChatMessage({ role: 'system', content: `${event.agentId.replace(/-/g, ' ')} completed — $${event.data.costUsd?.toFixed(4) ?? '0'}` })
         } else if (event.data.type === 'error') {
-          addChatMessage({
-            role: 'system',
-            content: `${event.agentId.replace(/-/g, ' ')}: ${event.data.error}`,
-          })
+          addChatMessage({ role: 'system', content: `${event.agentId.replace(/-/g, ' ')}: ${event.data.error}` })
         }
       }),
       api.agents.onBuildEvent((event) => {
         handleBuildEvent(event)
         addChatMessage({ role: 'system', content: event.data.message })
       }),
-      api.agents.onInputRequest((request) => {
-        addInputRequest(request)
-      }),
+      api.agents.onInputRequest((request) => { addInputRequest(request) }),
     ]
-
     return () => unsubs.forEach((unsub) => unsub())
   }, [handleAgentEvent, handleBuildEvent, addInputRequest, addChatMessage])
 
   const handleSend = useCallback(async (message: string) => {
     addChatMessage({ role: 'user', content: message })
 
-    try {
-      const result = await api.agents.dispatch(message)
+    let convId = currentConvId
 
-      const totalCost = result.executions.reduce((sum, e) => sum + e.costUsd, 0)
+    // Create conversation on first message if we're on /agents/new
+    if (!convId) {
+      try {
+        const conv = await api.agents.createConversation(message.slice(0, 60))
+        convId = conv.id as string
+        setCurrentConvId(convId)
+        if (activeProject && convId) {
+          navigate(agentsConversationPath(activeProject.id, convId), { replace: true })
+        }
+      } catch (err: any) {
+        addChatMessage({ role: 'system', content: `Failed to create conversation: ${err.message}` })
+        return
+      }
+    }
+
+    try {
+      const result = await api.agents.dispatch(message, convId)
+      const totalCost = result.executions.reduce((sum: number, e: any) => sum + e.costUsd, 0)
       if (totalCost > 0) {
         addChatMessage({ role: 'system', content: `All tasks finished — total $${totalCost.toFixed(4)}` })
       }
     } catch (err: any) {
       addChatMessage({ role: 'system', content: `Error: ${err.message}` })
     }
-  }, [addChatMessage])
+  }, [addChatMessage, currentConvId, activeProject, navigate])
 
   const handleRespond = useCallback(async (requestId: string, value: string) => {
     removeInputRequest(requestId)
@@ -178,25 +191,15 @@ export function AgentsPage() {
   return (
     <Layout>
       <ChatPanel>
-        <AgentChat
-          onSend={handleSend}
-          onRespond={handleRespond}
-          isProcessing={isProcessing}
-        />
+        <AgentChat onSend={handleSend} onRespond={handleRespond} isProcessing={isProcessing} />
       </ChatPanel>
 
       <CanvasPanel>
         <ReactFlowProvider>
           <AgentCanvas agents={agents} onNodeClick={handleNodeClick} />
         </ReactFlowProvider>
-
-        {/* Always-visible tasks button */}
         <Tooltip content="View task plan">
-          <TasksBtn
-            $active={hasRunning}
-            $hasTasks={hasTasks}
-            onClick={() => setDrawerOpen(true)}
-          >
+          <TasksBtn $active={hasRunning} $hasTasks={hasTasks} onClick={() => setDrawerOpen(true)}>
             <ListTodo size={14} />
             Tasks
             {hasTasks && <Badge>{completedCount}/{dispatchTasks.length}</Badge>}
@@ -205,15 +208,10 @@ export function AgentsPage() {
       </CanvasPanel>
 
       {selectedAgentInfo && (
-        <AgentDetail
-          agent={selectedAgentInfo}
-          onClose={() => selectAgent(null)}
-        />
+        <AgentDetail agent={selectedAgentInfo} onClose={() => selectAgent(null)} />
       )}
 
-      {drawerOpen && (
-        <TaskDrawer onClose={() => setDrawerOpen(false)} />
-      )}
+      {drawerOpen && <TaskDrawer onClose={() => setDrawerOpen(false)} />}
     </Layout>
   )
 }

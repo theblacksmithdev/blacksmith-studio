@@ -13,6 +13,7 @@ import {
   AGENTS_BUILD, AGENTS_BUILD_RESUME, AGENTS_BUILD_CANCEL, AGENTS_BUILD_PROGRESS,
   AGENTS_RESPOND, AGENTS_SET_AUTO_APPROVE,
   AGENTS_LIST_DISPATCHES, AGENTS_GET_DISPATCH, AGENTS_LIST_CHAT, AGENTS_CLEAR_CHAT,
+  AGENTS_CREATE_CONVERSATION, AGENTS_LIST_CONVERSATIONS, AGENTS_DELETE_CONVERSATION,
   AGENTS_ON_EVENT, AGENTS_ON_WORKFLOW_EVENT, AGENTS_ON_BUILD_EVENT, AGENTS_ON_INPUT_REQUEST,
 } from './channels.js'
 
@@ -85,14 +86,14 @@ export function setupAgentsIPC(
 
   // ── PM-First Dispatch ──
 
-  ipcMain.handle(AGENTS_DISPATCH, async (_e, data: { prompt: string }) => {
+  ipcMain.handle(AGENTS_DISPATCH, async (_e, data: { prompt: string; conversationId?: string }) => {
     const project = projectManager.getActive()
     if (!project) throw new Error('No active project')
 
     const baseOptions = resolveBaseOptions(projectManager, settingsManager, claudeManager, mcpManager)
 
     // Persist user message
-    sessionManager.addChatMessage(project.id, 'user', data.prompt)
+    sessionManager.addChatMessage(project.id, 'user', data.prompt, undefined, undefined, data.conversationId)
 
     // Inject recent dispatch history so the PM knows what was done before
     const history = sessionManager.getRecentDispatchContext(project.id)
@@ -236,15 +237,33 @@ export function setupAgentsIPC(
     return sessionManager.getDispatch(data.dispatchId)
   })
 
-  ipcMain.handle(AGENTS_LIST_CHAT, () => {
+  ipcMain.handle(AGENTS_LIST_CHAT, (_e, data?: { conversationId?: string }) => {
     const project = projectManager.getActive()
     if (!project) throw new Error('No active project')
-    return sessionManager.listChatMessages(project.id)
+    return sessionManager.listChatMessages(project.id, data?.conversationId)
   })
 
   ipcMain.handle(AGENTS_CLEAR_CHAT, () => {
     const project = projectManager.getActive()
     if (!project) throw new Error('No active project')
     sessionManager.clearChatMessages(project.id)
+  })
+
+  // ── Conversations ──
+
+  ipcMain.handle(AGENTS_CREATE_CONVERSATION, (_e, data?: { title?: string }) => {
+    const project = projectManager.getActive()
+    if (!project) throw new Error('No active project')
+    return sessionManager.createConversation(project.id, data?.title)
+  })
+
+  ipcMain.handle(AGENTS_LIST_CONVERSATIONS, () => {
+    const project = projectManager.getActive()
+    if (!project) throw new Error('No active project')
+    return sessionManager.listConversations(project.id)
+  })
+
+  ipcMain.handle(AGENTS_DELETE_CONVERSATION, (_e, data: { conversationId: string }) => {
+    sessionManager.deleteConversation(data.conversationId)
   })
 }

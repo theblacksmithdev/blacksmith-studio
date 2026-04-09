@@ -1,7 +1,7 @@
 import crypto from 'node:crypto'
 import { eq, desc, and } from 'drizzle-orm'
 import { getDatabase } from '../db/index.js'
-import { agentDispatches, agentTasks, agentChatMessages } from '../db/schema.js'
+import { agentConversations, agentDispatches, agentTasks, agentChatMessages } from '../db/schema.js'
 
 /* ── Types ── */
 
@@ -54,6 +54,66 @@ export class AgentSessionManager {
 
   private get db() {
     return getDatabase()
+  }
+
+  /* ── Conversations ── */
+
+  createConversation(projectId: string, title?: string): { id: string; title: string; createdAt: string; updatedAt: string } {
+    const id = crypto.randomUUID()
+    const now = new Date().toISOString()
+    const convTitle = title || `Conversation ${new Date().toLocaleDateString()}`
+
+    this.db.insert(agentConversations).values({
+      id,
+      projectId,
+      title: convTitle,
+      createdAt: now,
+      updatedAt: now,
+    }).run()
+
+    return { id, title: convTitle, createdAt: now, updatedAt: now }
+  }
+
+  listConversations(projectId: string, limit = 50): { id: string; title: string; createdAt: string; updatedAt: string; messageCount: number }[] {
+    const rows = this.db.select().from(agentConversations)
+      .where(eq(agentConversations.projectId, projectId))
+      .orderBy(desc(agentConversations.updatedAt))
+      .limit(limit)
+      .all()
+
+    return rows.map((row) => {
+      const msgCount = this.db.select().from(agentChatMessages)
+        .where(eq(agentChatMessages.conversationId, row.id))
+        .all().length
+
+      return { ...row, messageCount: msgCount }
+    })
+  }
+
+  getConversation(conversationId: string): { id: string; title: string; createdAt: string; updatedAt: string } | null {
+    return this.db.select().from(agentConversations)
+      .where(eq(agentConversations.id, conversationId))
+      .get() ?? null
+  }
+
+  updateConversationTitle(conversationId: string, title: string): void {
+    this.db.update(agentConversations)
+      .set({ title, updatedAt: new Date().toISOString() })
+      .where(eq(agentConversations.id, conversationId))
+      .run()
+  }
+
+  touchConversation(conversationId: string): void {
+    this.db.update(agentConversations)
+      .set({ updatedAt: new Date().toISOString() })
+      .where(eq(agentConversations.id, conversationId))
+      .run()
+  }
+
+  deleteConversation(conversationId: string): void {
+    this.db.delete(agentConversations)
+      .where(eq(agentConversations.id, conversationId))
+      .run()
   }
 
   /* ── Dispatches ── */
@@ -253,6 +313,7 @@ export class AgentSessionManager {
     content: string,
     agentRole?: string,
     dispatchId?: string,
+    conversationId?: string,
   ): AgentChatRecord {
     const id = crypto.randomUUID()
     const timestamp = new Date().toISOString()
@@ -263,16 +324,24 @@ export class AgentSessionManager {
       role,
       agentRole: agentRole ?? null,
       content,
+      conversationId: conversationId ?? null,
       dispatchId: dispatchId ?? null,
       timestamp,
     }).run()
 
+    // Touch conversation to update its updatedAt
+    if (conversationId) this.touchConversation(conversationId)
+
     return { id, projectId, role, agentRole: agentRole ?? null, content, dispatchId: dispatchId ?? null, timestamp }
   }
 
-  listChatMessages(projectId: string, limit = 200): AgentChatRecord[] {
+  listChatMessages(projectId: string, conversationId?: string, limit = 200): AgentChatRecord[] {
+    const condition = conversationId
+      ? and(eq(agentChatMessages.projectId, projectId), eq(agentChatMessages.conversationId, conversationId))
+      : eq(agentChatMessages.projectId, projectId)
+
     return this.db.select().from(agentChatMessages)
-      .where(eq(agentChatMessages.projectId, projectId))
+      .where(condition)
       .orderBy(agentChatMessages.timestamp)
       .limit(limit)
       .all()

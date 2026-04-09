@@ -17,6 +17,8 @@ export const Path = {
   McpBrowser: '/:projectId/mcp',
   Checkpoints: '/:projectId/checkpoints',
   Agents: '/:projectId/agents',
+  AgentsNew: '/:projectId/agents/new',
+  AgentsConversation: '/:projectId/agents/:conversationId',
 } as const
 
 // ─── Path builders ───
@@ -67,4 +69,12 @@ export function checkpointsPath(projectId: string) {
 
 export function agentsPath(projectId: string) {
   return `/${projectId}/agents`
+}
+
+export function agentsNewPath(projectId: string) {
+  return `/${projectId}/agents/new`
+}
+
+export function agentsConversationPath(projectId: string, conversationId: string) {
+  return `/${projectId}/agents/${conversationId}`
 }

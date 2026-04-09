@@ -117,6 +117,9 @@ export const AGENTS_LIST_DISPATCHES = 'agents:listDispatches'
 export const AGENTS_GET_DISPATCH = 'agents:getDispatch'
 export const AGENTS_LIST_CHAT = 'agents:listChat'
 export const AGENTS_CLEAR_CHAT = 'agents:clearChat'
+export const AGENTS_CREATE_CONVERSATION = 'agents:createConversation'
+export const AGENTS_LIST_CONVERSATIONS = 'agents:listConversations'
+export const AGENTS_DELETE_CONVERSATION = 'agents:deleteConversation'
 
 // ─── Push/Stream Channels ───
 
@@ -170,6 +173,7 @@ export const INVOKE_CHANNELS = [
   AGENTS_BUILD, AGENTS_BUILD_RESUME, AGENTS_BUILD_CANCEL, AGENTS_BUILD_PROGRESS,
   AGENTS_RESPOND, AGENTS_SET_AUTO_APPROVE,
   AGENTS_LIST_DISPATCHES, AGENTS_GET_DISPATCH, AGENTS_LIST_CHAT, AGENTS_CLEAR_CHAT,
+  AGENTS_CREATE_CONVERSATION, AGENTS_LIST_CONVERSATIONS, AGENTS_DELETE_CONVERSATION,
 ] as const
 
 export const SUBSCRIBE_CHANNELS = [

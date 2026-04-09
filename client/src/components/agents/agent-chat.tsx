@@ -1,12 +1,8 @@
-import { useState } from 'react'
 import styled from '@emotion/styled'
-import { Text } from '@chakra-ui/react'
-import { Network, MessageSquare, History } from 'lucide-react'
+import { Box, Text } from '@chakra-ui/react'
+import { Network } from 'lucide-react'
 import { ChatMessages } from './chat/chat-messages'
 import { ChatInput } from './chat/chat-input'
-import { ChatHistory } from './chat/chat-history'
-
-/* ── Layout ── */
 
 const Shell = styled.div`
   display: flex;
@@ -17,15 +13,12 @@ const Shell = styled.div`
 `
 
 const Header = styled.div`
-  padding: 16px 16px 0;
-  flex-shrink: 0;
-`
-
-const Brand = styled.div`
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--studio-border);
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 14px;
+  flex-shrink: 0;
 `
 
 const BrandIcon = styled.div`
@@ -41,43 +34,12 @@ const BrandIcon = styled.div`
   flex-shrink: 0;
 `
 
-const Tabs = styled.div`
-  display: flex;
-  background: var(--studio-bg-surface);
-  border-radius: 8px;
-  padding: 3px;
-  gap: 2px;
-`
-
-const Tab = styled.button<{ $active: boolean }>`
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 6px 0;
-  font-size: 11px;
-  font-weight: 500;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.12s ease;
-
-  background: ${({ $active }) => $active ? 'var(--studio-bg-main)' : 'transparent'};
-  color: ${({ $active }) => $active ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)'};
-  box-shadow: ${({ $active }) => $active ? '0 1px 3px rgba(0,0,0,0.06)' : 'none'};
-  &:hover { color: ${({ $active }) => $active ? 'var(--studio-text-primary)' : 'var(--studio-text-secondary)'}; }
-`
-
 const Body = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
 `
-
-/* ── Component ── */
 
 interface AgentChatProps {
   onSend: (msg: string) => void
@@ -86,44 +48,24 @@ interface AgentChatProps {
 }
 
 export function AgentChat({ onSend, onRespond, isProcessing }: AgentChatProps) {
-  const [tab, setTab] = useState<'chat' | 'history'>('chat')
-
-  const handleSend = (msg: string) => {
-    onSend(msg)
-    setTab('chat')
-  }
-
   return (
     <Shell>
       <Header>
-        <Brand>
-          <BrandIcon><Network size={12} /></BrandIcon>
-          <Text css={{ fontSize: '13px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em', flex: 1 }}>
+        <BrandIcon><Network size={12} /></BrandIcon>
+        <Box css={{ flex: 1 }}>
+          <Text css={{ fontSize: '13px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
             Agent Team
           </Text>
-        </Brand>
-        <Tabs>
-          <Tab $active={tab === 'chat'} onClick={() => setTab('chat')}>
-            <MessageSquare size={11} /> Chat
-          </Tab>
-          <Tab $active={tab === 'history'} onClick={() => setTab('history')}>
-            <History size={11} /> History
-          </Tab>
-        </Tabs>
+          <Text css={{ fontSize: '10px', color: 'var(--studio-text-muted)', marginTop: '1px' }}>
+            Describe what you need built
+          </Text>
+        </Box>
       </Header>
 
-      {tab === 'chat' && (
-        <Body>
-          <ChatMessages onRespond={onRespond} />
-          <ChatInput onSend={handleSend} disabled={isProcessing} />
-        </Body>
-      )}
-
-      {tab === 'history' && (
-        <Body>
-          <ChatHistory />
-        </Body>
-      )}
+      <Body>
+        <ChatMessages onRespond={onRespond} />
+        <ChatInput onSend={onSend} disabled={isProcessing} />
+      </Body>
     </Shell>
   )
 }

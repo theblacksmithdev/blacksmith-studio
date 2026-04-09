@@ -78,9 +78,18 @@ export function getDatabase() {
     CREATE INDEX IF NOT EXISTS idx_tool_calls_message_id ON tool_calls(message_id);
     CREATE INDEX IF NOT EXISTS idx_settings_project_id ON settings(project_id);
 
+    CREATE TABLE IF NOT EXISTS agent_conversations (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS agent_dispatches (
       id TEXT PRIMARY KEY,
       project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+      conversation_id TEXT REFERENCES agent_conversations(id) ON DELETE CASCADE,
       prompt TEXT NOT NULL,
       plan_mode TEXT NOT NULL,
       plan_summary TEXT NOT NULL,
@@ -113,14 +122,34 @@ export function getDatabase() {
       role TEXT NOT NULL,
       agent_role TEXT,
       content TEXT NOT NULL,
+      conversation_id TEXT REFERENCES agent_conversations(id) ON DELETE CASCADE,
       dispatch_id TEXT,
       timestamp TEXT NOT NULL
     );
 
+    CREATE INDEX IF NOT EXISTS idx_agent_conversations_project_id ON agent_conversations(project_id);
     CREATE INDEX IF NOT EXISTS idx_agent_dispatches_project_id ON agent_dispatches(project_id);
     CREATE INDEX IF NOT EXISTS idx_agent_tasks_dispatch_id ON agent_tasks(dispatch_id);
     CREATE INDEX IF NOT EXISTS idx_agent_chat_messages_project_id ON agent_chat_messages(project_id);
     CREATE INDEX IF NOT EXISTS idx_agent_chat_messages_timestamp ON agent_chat_messages(timestamp);
+  `)
+
+  // ── Migrations for existing databases ──
+  // ALTER TABLE is safe to run — fails silently if column already exists
+  const migrations = [
+    'ALTER TABLE agent_dispatches ADD COLUMN conversation_id TEXT REFERENCES agent_conversations(id) ON DELETE CASCADE',
+    'ALTER TABLE agent_chat_messages ADD COLUMN conversation_id TEXT REFERENCES agent_conversations(id) ON DELETE CASCADE',
+    'ALTER TABLE agent_tasks ADD COLUMN session_id TEXT',
+  ]
+
+  for (const sql of migrations) {
+    try { _sqlite.exec(sql) } catch { /* column already exists — safe to ignore */ }
+  }
+
+  // Indexes for new columns (IF NOT EXISTS is safe)
+  _sqlite.exec(`
+    CREATE INDEX IF NOT EXISTS idx_agent_dispatches_conversation_id ON agent_dispatches(conversation_id);
+    CREATE INDEX IF NOT EXISTS idx_agent_chat_messages_conversation_id ON agent_chat_messages(conversation_id);
   `)
 
   _db = drizzle(_sqlite, { schema })

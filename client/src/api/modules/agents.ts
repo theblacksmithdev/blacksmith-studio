@@ -18,8 +18,8 @@ export const agents = {
   route: (prompt: string) => raw.invoke<AgentRouteResult>('agents:route', { prompt }),
 
   // ── PM-First Dispatch (main entry point) ──
-  dispatch: (prompt: string) =>
-    raw.invoke<DispatchResult>('agents:dispatch', { prompt }),
+  dispatch: (prompt: string, conversationId?: string) =>
+    raw.invoke<DispatchResult>('agents:dispatch', { prompt, conversationId }),
 
   // ── Direct Single Execution ──
   execute: (data: { prompt: string; role?: AgentRole }) =>
@@ -55,8 +55,13 @@ export const agents = {
   // ── Persistence ──
   listDispatches: (limit?: number) => raw.invoke<any[]>('agents:listDispatches', { limit }),
   getDispatch: (dispatchId: string) => raw.invoke<any>('agents:getDispatch', { dispatchId }),
-  listChat: () => raw.invoke<any[]>('agents:listChat'),
+  listChat: (conversationId?: string) => raw.invoke<any[]>('agents:listChat', { conversationId }),
   clearChat: () => raw.invoke<void>('agents:clearChat'),
+
+  // ── Conversations ──
+  createConversation: (title?: string) => raw.invoke<any>('agents:createConversation', { title }),
+  listConversations: () => raw.invoke<any[]>('agents:listConversations'),
+  deleteConversation: (conversationId: string) => raw.invoke<void>('agents:deleteConversation', { conversationId }),
 
   // ── Subscriptions (push events from main process) ──
   onEvent: (cb: (event: AgentEvent) => void) =>

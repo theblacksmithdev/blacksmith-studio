@@ -1,3 +1,4 @@
+import crypto from 'node:crypto'
 import { spawn } from 'node:child_process'
 import { createNdjsonParser } from '../../claude/ndjson-parser.js'
 import { nodeEnv } from '../../node-env.js'
@@ -28,7 +29,7 @@ export interface DispatchPlan {
 
 /* ── System Prompt ── */
 
-const PM_SYSTEM_PROMPT = `You are the lead project manager for a software team. Analyze the user's request, read the existing codebase for context, and produce an intelligent task plan.
+const PM_SYSTEM_PROMPT = `You are the lead project manager for a software team. Analyze the user's request and produce an intelligent task plan. You do NOT have access to the filesystem — do NOT try to read files or run commands. Work only from the information given to you.
 
 ## Available Team Members
 - frontend-engineer: React, TypeScript, components, hooks, pages, state management, styling. IMPLEMENTS code from UI/UX specs.
@@ -228,7 +229,10 @@ function parsePlan(raw: string): DispatchPlan {
 
   const mode = parsed.mode === 'single' ? 'single' : 'multi'
   const summary = parsed.summary ?? ''
-  const allTaskIds = new Set<string>()
+
+  // Generate a dispatch prefix so task IDs are globally unique across dispatches
+  const prefix = crypto.randomUUID().slice(0, 8)
+  const idMap = new Map<string, string>() // original PM id → globally unique id
 
   function validateTask(task: any, index: number): DispatchTask {
     if (!task.role || !VALID_ROLES.has(task.role)) {
@@ -237,10 +241,12 @@ function parsePlan(raw: string): DispatchPlan {
     if (!task.prompt) {
       throw new Error(`Task ${index}: missing prompt`)
     }
-    const id = task.id ?? `t${index}`
-    allTaskIds.add(id)
+    const originalId = task.id ?? `t${index}`
+    const uniqueId = `${prefix}-${originalId}`
+    idMap.set(originalId, uniqueId)
+
     return {
-      id,
+      id: uniqueId,
       title: task.title ?? `Task ${index + 1}`,
       role: task.role as AgentRole,
       prompt: task.prompt,
@@ -255,15 +261,18 @@ function parsePlan(raw: string): DispatchPlan {
 
   const tasks = (parsed.tasks || []).map((t: any, i: number) => validateTask(t, i))
 
-  // Validate dependency references
+  // Remap dependency references from PM's original IDs to our globally unique IDs
   for (const task of tasks) {
-    task.dependsOn = task.dependsOn.filter((dep: string) => {
-      if (!allTaskIds.has(dep)) {
-        console.warn(`[pm-dispatcher] Task "${task.id}" references unknown dep "${dep}", removing`)
-        return false
-      }
-      return true
-    })
+    task.dependsOn = task.dependsOn
+      .map((dep: string) => {
+        const mapped = idMap.get(dep)
+        if (!mapped) {
+          console.warn(`[pm-dispatcher] Task "${task.id}" references unknown dep "${dep}", removing`)
+          return null
+        }
+        return mapped
+      })
+      .filter(Boolean) as string[]
   }
 
   if (tasks.length === 0) {

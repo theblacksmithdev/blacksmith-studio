@@ -63,6 +63,19 @@ export const settings = sqliteTable('settings', {
 })
 
 /**
+ * Agent conversations — a conversation thread in the agents panel.
+ */
+export const agentConversations = sqliteTable('agent_conversations', {
+  id: text('id').primaryKey(),
+  projectId: text('project_id')
+    .notNull()
+    .references(() => projects.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+})
+
+/**
  * Agent dispatches — a PM dispatch session (prompt → plan → task executions).
  */
 export const agentDispatches = sqliteTable('agent_dispatches', {
@@ -70,6 +83,8 @@ export const agentDispatches = sqliteTable('agent_dispatches', {
   projectId: text('project_id')
     .notNull()
     .references(() => projects.id, { onDelete: 'cascade' }),
+  conversationId: text('conversation_id')
+    .references(() => agentConversations.id, { onDelete: 'cascade' }),
   prompt: text('prompt').notNull(),
   planMode: text('plan_mode').notNull(), // 'single' | 'multi' | 'clarification'
   planSummary: text('plan_summary').notNull(),
@@ -112,6 +127,8 @@ export const agentChatMessages = sqliteTable('agent_chat_messages', {
   role: text('role').notNull(), // 'user' | 'agent' | 'system'
   agentRole: text('agent_role'), // which agent sent it (null for user/system)
   content: text('content').notNull(),
+  conversationId: text('conversation_id')
+    .references(() => agentConversations.id, { onDelete: 'cascade' }),
   dispatchId: text('dispatch_id'), // links to the dispatch this message relates to
   timestamp: text('timestamp').notNull(),
 })

@@ -1,5 +1,5 @@
-import { AgentsPage } from '@/components/agents'
+import { ConversationsList } from '@/components/agents/conversations-list'
 
-export default function AgentsPageRoute() {
-  return <AgentsPage />
+export default function AgentsListPage() {
+  return <ConversationsList />
 }
