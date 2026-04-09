@@ -1,5 +1,4 @@
 export { AgentCanvas } from './agent-canvas'
-export { CanvasToolbar } from './canvas-toolbar'
 export { useCanvasNodes } from './use-canvas-nodes'
 export { useCanvasEdges } from './use-canvas-edges'
-export { buildNodes, buildStaticEdges, EDGE_TYPE_OPTIONS, type EdgeTypeValue } from './layout'
+export { buildNodes, CONNECTIONS } from './layout'

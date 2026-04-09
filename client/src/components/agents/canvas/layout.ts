@@ -1,56 +1,69 @@
-import type { Node, Edge } from '@xyflow/react'
+import type { Node } from '@xyflow/react'
 import type { AgentRole, AgentInfo } from '@/api/types'
 import type { AgentNodeData } from '../node'
 
-export type EdgeTypeValue = 'default' | 'smoothstep' | 'step' | 'straight'
+/** Center of the radial layout */
+const CENTER = { x: 500, y: 400 }
 
-export const EDGE_TYPE_OPTIONS = [
-  { value: 'default' as const, label: 'Bezier' },
-  { value: 'smoothstep' as const, label: 'Smooth' },
-  { value: 'step' as const, label: 'Step' },
-  { value: 'straight' as const, label: 'Straight' },
+/** Radius from center to outer ring nodes */
+const RADIUS = 340
+
+/**
+ * Radial order — clockwise from 12 o'clock.
+ * Grouped by discipline: planning → design → engineering → quality → ops.
+ */
+const RING_ORDER: AgentRole[] = [
+  'architect',
+  'ui-designer',
+  'frontend-engineer',
+  'fullstack-engineer',
+  'backend-engineer',
+  'database-engineer',
+  'devops-engineer',
+  'security-engineer',
+  'qa-engineer',
+  'code-reviewer',
+  'technical-writer',
 ]
 
-/** Semantic positions mirroring the dev pipeline: Planning → Building → Quality */
-const POSITIONS: Record<AgentRole, { x: number; y: number; isCenter?: boolean }> = {
-  'product-manager':    { x: 80,  y: 300, isCenter: true },
-  'architect':          { x: 300, y: 100 },
-  'ui-designer':        { x: 300, y: 500 },
-  'database-engineer':  { x: 340, y: 300 },
-  'backend-engineer':   { x: 560, y: 300 },
-  'frontend-engineer':  { x: 780, y: 220 },
-  'fullstack-engineer': { x: 780, y: 420 },
-  'qa-engineer':        { x: 560, y: 520 },
-  'code-reviewer':      { x: 780, y: 600 },
-  'security-engineer':  { x: 340, y: 520 },
-  'devops-engineer':    { x: 560, y: 100 },
-  'technical-writer':   { x: 1000, y: 420 },
+/** Node dimensions for centering (half-width, half-height approx) */
+const NODE_OFFSET = { x: 76, y: 50 }
+const CENTER_OFFSET = { x: 88, y: 55 }
+
+function radialPosition(index: number, total: number): { x: number; y: number } {
+  const angle = (2 * Math.PI * index) / total - Math.PI / 2 // start at 12 o'clock
+  return {
+    x: Math.round(CENTER.x + RADIUS * Math.cos(angle) - NODE_OFFSET.x),
+    y: Math.round(CENTER.y + RADIUS * Math.sin(angle) - NODE_OFFSET.y),
+  }
 }
 
-/** Static pipeline connections showing the natural dev flow */
-const CONNECTIONS: [string, string][] = [
-  ['product-manager', 'architect'],
-  ['product-manager', 'database-engineer'],
-  ['product-manager', 'ui-designer'],
-  ['product-manager', 'devops-engineer'],
-  ['architect', 'database-engineer'],
-  ['architect', 'devops-engineer'],
-  ['database-engineer', 'backend-engineer'],
-  ['backend-engineer', 'frontend-engineer'],
-  ['ui-designer', 'frontend-engineer'],
-  ['backend-engineer', 'fullstack-engineer'],
-  ['backend-engineer', 'qa-engineer'],
-  ['frontend-engineer', 'qa-engineer'],
-  ['qa-engineer', 'code-reviewer'],
-  ['security-engineer', 'qa-engineer'],
-  ['code-reviewer', 'technical-writer'],
-]
+/** Hub-and-spoke connections: PM ↔ every agent */
+export const CONNECTIONS: [string, string][] = RING_ORDER.map(
+  (role) => ['product-manager', role],
+)
 
 export function buildNodes(agents: AgentInfo[]): Node[] {
+  const positions = new Map<AgentRole, { x: number; y: number; isCenter: boolean }>()
+
+  // PM at center
+  positions.set('product-manager', {
+    x: CENTER.x - CENTER_OFFSET.x,
+    y: CENTER.y - CENTER_OFFSET.y,
+    isCenter: true,
+  })
+
+  // Outer ring
+  const total = RING_ORDER.length
+  RING_ORDER.forEach((role, i) => {
+    const pos = radialPosition(i, total)
+    positions.set(role, { ...pos, isCenter: false })
+  })
+
   return agents
-    .filter((a) => POSITIONS[a.role])
+    .filter((a) => positions.has(a.role))
     .map((agent) => {
-      const pos = POSITIONS[agent.role]
+      const pos = positions.get(agent.role)!
       return {
         id: agent.role,
         type: 'agent',
@@ -61,19 +74,8 @@ export function buildNodes(agents: AgentInfo[]): Node[] {
           status: 'idle',
           activity: null,
           selected: false,
-          isCenter: pos.isCenter ?? false,
+          isCenter: pos.isCenter,
         } satisfies AgentNodeData,
       }
     })
-}
-
-export function buildStaticEdges(type: EdgeTypeValue = 'default'): Edge[] {
-  return CONNECTIONS.map(([source, target]) => ({
-    id: `static-${source}-${target}`,
-    source,
-    target,
-    type,
-    animated: false,
-    style: { stroke: 'var(--studio-border-hover)', strokeWidth: 1, opacity: 0.5 },
-  }))
 }

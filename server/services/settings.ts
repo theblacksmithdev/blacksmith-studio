@@ -22,7 +22,6 @@ const DEFAULTS: Record<string, any> = {
   'preview.runSplit': 55,
   'runner.nodePath': '',
   'agents.nodePositions': null,
-  'agents.edgeType': 'default',
 }
 
 export class SettingsManager {

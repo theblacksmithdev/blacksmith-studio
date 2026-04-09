@@ -16,15 +16,6 @@ interface ChatMessage {
   timestamp: string
 }
 
-/** A recorded interaction between two agents */
-interface AgentInteraction {
-  from: AgentRole
-  to: AgentRole
-  label: string
-  timestamp: number
-  active: boolean
-}
-
 interface AgentState {
   agents: AgentInfo[]
   activities: Map<AgentRole, AgentActivity>
@@ -33,9 +24,6 @@ interface AgentState {
   buildActive: boolean
   buildEvents: BuildEvent[]
   pendingInputs: InputRequest[]
-
-  /** Live interactions between agents (for dynamic canvas edges) */
-  interactions: AgentInteraction[]
 
   /** Current dispatch plan from PM */
   dispatchPlan: DispatchPlan | null
@@ -71,7 +59,6 @@ export const useAgentStore = create<AgentState>((set) => ({
   buildActive: false,
   buildEvents: [],
   pendingInputs: [],
-  interactions: [],
   dispatchPlan: null,
   dispatchTasks: [],
   subtasks: new Map(),
@@ -93,26 +80,14 @@ export const useAgentStore = create<AgentState>((set) => ({
       return {}
     }
 
-    // Handle task_status events — direct task tray updates + interaction tracking
+    // Handle task_status events — direct task tray updates
     if (event.data.type === 'task_status') {
-      const { taskId, status, role, title } = event.data as { taskId: string; status: DispatchTask['status']; role: AgentRole; title: string }
-      const now = Date.now()
-      let interactions = [...state.interactions]
-
-      if (status === 'running' && role) {
-        interactions = addInteraction(interactions, 'product-manager' as AgentRole, role, now, title ?? 'Assigned task')
-      } else if (status === 'done' && role) {
-        interactions = deactivateInteraction(interactions, 'product-manager' as AgentRole, role)
-        interactions = addInteraction(interactions, role, 'product-manager' as AgentRole, now, 'Completed')
-      } else if (status === 'error' && role) {
-        interactions = deactivateInteraction(interactions, 'product-manager' as AgentRole, role)
-      }
+      const { taskId, status } = event.data as { taskId: string; status: DispatchTask['status'] }
 
       return {
         dispatchTasks: state.dispatchTasks.map((t) =>
           t.id === taskId ? { ...t, status } : t,
         ),
-        interactions,
       }
     }
 
@@ -222,32 +197,3 @@ export const useAgentStore = create<AgentState>((set) => ({
   setTaskTrayOpen: (open) => set({ taskTrayOpen: open }),
 }))
 
-/* ── Interaction helpers ── */
-
-function addInteraction(
-  interactions: AgentInteraction[],
-  from: AgentRole,
-  to: AgentRole,
-  timestamp: number,
-  label: string,
-): AgentInteraction[] {
-  // Update label if interaction already active
-  const idx = interactions.findIndex((i) => i.from === from && i.to === to && i.active)
-  if (idx >= 0) {
-    const updated = [...interactions]
-    updated[idx] = { ...updated[idx], label, timestamp }
-    return updated
-  }
-
-  return [...interactions, { from, to, label, timestamp, active: true }]
-}
-
-function deactivateInteraction(
-  interactions: AgentInteraction[],
-  from: AgentRole,
-  to: AgentRole,
-): AgentInteraction[] {
-  return interactions.map((i) =>
-    i.from === from && i.to === to && i.active ? { ...i, active: false } : i,
-  )
-}
