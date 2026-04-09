@@ -1,8 +1,8 @@
-import { useEffect, useCallback, useState } from 'react'
+import { useEffect, useCallback, useState, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
 import { ReactFlowProvider } from '@xyflow/react'
-import { ListTodo } from 'lucide-react'
+import { ListTodo, MessageSquare, X } from 'lucide-react'
 import { api } from '@/api'
 import { queryKeys } from '@/api/query-keys'
 import { useAgentStore } from '@/stores/agent-store'
@@ -13,7 +13,10 @@ import { AgentDetail } from '../detail'
 import { TaskDrawer } from '../drawer'
 import { useAgentEvents } from './use-agent-events'
 import { useConversation } from './use-conversation'
-import { Layout, ChatPanel, CanvasPanel, TasksBtn, Badge } from './styles'
+import {
+  Layout, CanvasPanel, ButtonGroup, TasksBtn, ChatBtn, Badge, UnreadDot,
+  ChatOverlay,
+} from './styles'
 import type { AgentRole } from '@/api/types'
 
 interface AgentsPageProps {
@@ -24,6 +27,11 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
   const params = useParams()
   const conversationId = propConvId ?? params.conversationId
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [chatOpen, setChatOpen] = useState(false)
+  const [chatClosing, setChatClosing] = useState(false)
+  const [hasUnread, setHasUnread] = useState(false)
+  const chatOpenRef = useRef(chatOpen)
+  chatOpenRef.current = chatOpen
 
   const { data: agents = [] } = useQuery({
     queryKey: queryKeys.agents,
@@ -36,6 +44,7 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
   const selectAgent = useAgentStore((s) => s.selectAgent)
   const buildActive = useAgentStore((s) => s.buildActive)
   const dispatchTasks = useAgentStore((s) => s.dispatchTasks)
+  const chatMessages = useAgentStore((s) => s.chatMessages)
 
   useEffect(() => {
     if (agents.length > 0) setAgents(agents)
@@ -43,6 +52,29 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
 
   useAgentEvents()
   const { currentConvId, handleSend } = useConversation(conversationId)
+
+  // Track unread messages when chat is closed
+  const prevCountRef = useRef(chatMessages.length)
+  useEffect(() => {
+    if (chatMessages.length > prevCountRef.current && !chatOpenRef.current) {
+      setHasUnread(true)
+    }
+    prevCountRef.current = chatMessages.length
+  }, [chatMessages.length])
+
+  const openChat = useCallback(() => {
+    setChatOpen(true)
+    setChatClosing(false)
+    setHasUnread(false)
+  }, [])
+
+  const closeChat = useCallback(() => {
+    setChatClosing(true)
+    setTimeout(() => {
+      setChatOpen(false)
+      setChatClosing(false)
+    }, 200)
+  }, [])
 
   const handleRespond = useCallback(async (requestId: string, value: string) => {
     removeInputRequest(requestId)
@@ -61,21 +93,36 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
 
   return (
     <Layout>
-      <ChatPanel>
-        <AgentChat onSend={handleSend} onRespond={handleRespond} isProcessing={isProcessing} />
-      </ChatPanel>
-
       <CanvasPanel>
         <ReactFlowProvider>
           <AgentCanvas agents={agents} onNodeClick={handleNodeClick} conversationId={currentConvId} />
         </ReactFlowProvider>
-        <Tooltip content="View task plan">
-          <TasksBtn $active={hasRunning} $hasTasks={hasTasks} onClick={() => setDrawerOpen(true)}>
-            <ListTodo size={14} />
-            Tasks
-            {hasTasks && <Badge>{completedCount}/{dispatchTasks.length}</Badge>}
-          </TasksBtn>
-        </Tooltip>
+
+        {/* Floating buttons */}
+        <ButtonGroup $shift={chatOpen && !chatClosing}>
+          <Tooltip content={chatOpen ? 'Close chat' : 'Open chat'}>
+            <ChatBtn $active={chatOpen} onClick={chatOpen ? closeChat : openChat}>
+              {chatOpen ? <X size={14} /> : <MessageSquare size={14} />}
+              Chat
+              {hasUnread && !chatOpen && <UnreadDot />}
+            </ChatBtn>
+          </Tooltip>
+
+          <Tooltip content="View task plan">
+            <TasksBtn $active={hasRunning} $hasTasks={hasTasks} onClick={() => setDrawerOpen(true)}>
+              <ListTodo size={14} />
+              Tasks
+              {hasTasks && <Badge>{completedCount}/{dispatchTasks.length}</Badge>}
+            </TasksBtn>
+          </Tooltip>
+        </ButtonGroup>
+
+        {/* Sliding chat panel within the canvas */}
+        {chatOpen && (
+          <ChatOverlay $closing={chatClosing}>
+            <AgentChat onSend={handleSend} onRespond={handleRespond} isProcessing={isProcessing} onClose={closeChat} />
+          </ChatOverlay>
+        )}
       </CanvasPanel>
 
       {selectedAgentInfo && (

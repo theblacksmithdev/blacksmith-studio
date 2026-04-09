@@ -1,6 +1,6 @@
 import styled from '@emotion/styled'
 import { Box, Text } from '@chakra-ui/react'
-import { Network } from 'lucide-react'
+import { Network, X } from 'lucide-react'
 import { ChatMessages } from './chat-messages'
 import { ChatInput } from './chat-input'
 
@@ -9,7 +9,6 @@ const Shell = styled.div`
   flex-direction: column;
   height: 100%;
   background: var(--studio-bg-sidebar);
-  border-right: 1px solid var(--studio-border);
 `
 
 const Header = styled.div`
@@ -34,6 +33,27 @@ const BrandIcon = styled.div`
   flex-shrink: 0;
 `
 
+const CloseBtn = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--studio-text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+  transition: all 0.12s ease;
+
+  &:hover {
+    background: var(--studio-bg-hover);
+    color: var(--studio-text-primary);
+  }
+`
+
 const Body = styled.div`
   flex: 1;
   display: flex;
@@ -45,9 +65,10 @@ interface AgentChatProps {
   onSend: (msg: string) => void
   onRespond: (id: string, val: string) => void
   isProcessing: boolean
+  onClose?: () => void
 }
 
-export function AgentChat({ onSend, onRespond, isProcessing }: AgentChatProps) {
+export function AgentChat({ onSend, onRespond, isProcessing, onClose }: AgentChatProps) {
   return (
     <Shell>
       <Header>
@@ -60,6 +81,11 @@ export function AgentChat({ onSend, onRespond, isProcessing }: AgentChatProps) {
             Describe what you need built
           </Text>
         </Box>
+        {onClose && (
+          <CloseBtn onClick={onClose}>
+            <X size={14} />
+          </CloseBtn>
+        )}
       </Header>
 
       <Body>
