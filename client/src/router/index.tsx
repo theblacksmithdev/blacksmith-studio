@@ -24,6 +24,7 @@ import CheckpointsPage from '@/pages/checkpoints'
 import AgentsListPage from '@/pages/agents'
 import AgentsNewPage from '@/pages/agents/new'
 import AgentsConversationPage from '@/pages/agents/conversation'
+import ProjectHomePage from '@/pages/home'
 
 export const router = createHashRouter([
   {
@@ -38,7 +39,7 @@ export const router = createHashRouter([
     path: '/:projectId',
     element: <ProjectLayout />,
     children: [
-      { index: true, element: <NewChatPage /> },
+      { index: true, element: <ProjectHomePage /> },
       { path: 'chat/new', element: <NewChatPage /> },
       { path: 'chat/:sessionId', element: <ChatPage /> },
       { path: 'code', element: <FilesPage /> },
