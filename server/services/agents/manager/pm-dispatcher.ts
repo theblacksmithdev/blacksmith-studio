@@ -7,6 +7,8 @@ import type { AgentRole, AgentEvent } from '../types.js'
 
 /* ── Task Plan Types ── */
 
+export type TaskModel = 'fast' | 'balanced' | 'premium'
+
 export interface DispatchTask {
   id: string
   title: string
@@ -16,6 +18,8 @@ export interface DispatchTask {
   prompt: string
   /** IDs of tasks this depends on (must complete first) */
   dependsOn: string[]
+  /** AI model selected by PM based on task complexity */
+  model: TaskModel
 }
 
 export interface DispatchPlan {
@@ -70,15 +74,25 @@ IMPORTANT: Agents will execute your tasks exactly as given. They will NOT break 
 7. Each task's prompt should tell the agent exactly what files to read, what to create, and what the output should look like.
 8. Only include QA, security, or docs tasks when the request warrants them. A simple model change doesn't need a security audit.
 
+## Model Selection
+
+Each task must include a "model" field. Choose the tier based on the complexity and stakes of that specific task:
+
+- **"premium"** — For tasks that require deep reasoning, complex architecture decisions, security-critical code, or intricate multi-file changes. Use for: architect (system design), security-engineer (audits), complex backend logic, database schema design with tricky constraints.
+- **"balanced"** — The default. For standard implementation work: building features, writing components, API endpoints, tests, documentation. Good balance of quality and speed.
+- **"fast"** — For simple, mechanical tasks: renaming, small config changes, straightforward documentation updates, adding a single field, writing simple test cases.
+
+**Default to "balanced"** when unsure. Only upgrade to "premium" for genuinely complex reasoning. Only downgrade to "fast" for genuinely trivial work.
+
 ## Output Format
 Respond with ONLY a JSON object. No markdown fences, no explanation.
 
 {
   "mode": "single" | "multi",
-  "task": { "id": "t1", "title": "...", "description": "What this task delivers", "role": "...", "prompt": "...", "dependsOn": [] },
+  "task": { "id": "t1", "title": "...", "description": "...", "role": "...", "prompt": "...", "dependsOn": [], "model": "balanced" },
   "tasks": [
-    { "id": "t1", "title": "...", "description": "What this task delivers", "role": "...", "prompt": "...", "dependsOn": [] },
-    { "id": "t2", "title": "...", "description": "What this task delivers", "role": "...", "prompt": "...", "dependsOn": ["t1"] }
+    { "id": "t1", "title": "...", "description": "...", "role": "...", "prompt": "...", "dependsOn": [], "model": "balanced" },
+    { "id": "t2", "title": "...", "description": "...", "role": "...", "prompt": "...", "dependsOn": ["t1"], "model": "fast" }
   ],
   "summary": "Brief description of the plan"
 }
@@ -249,6 +263,9 @@ function parsePlan(raw: string): DispatchPlan {
     const uniqueId = `${prefix}-${originalId}`
     idMap.set(originalId, uniqueId)
 
+    const VALID_MODELS = new Set<TaskModel>(['fast', 'balanced', 'premium'])
+    const model = VALID_MODELS.has(task.model) ? task.model : 'balanced'
+
     return {
       id: uniqueId,
       title: task.title ?? `Task ${index + 1}`,
@@ -256,6 +273,7 @@ function parsePlan(raw: string): DispatchPlan {
       role: task.role as AgentRole,
       prompt: task.prompt,
       dependsOn: Array.isArray(task.dependsOn) ? task.dependsOn : [],
+      model,
     }
   }
 

@@ -1,18 +1,18 @@
 import { useState } from 'react'
 import styled from '@emotion/styled'
 import { Box, Text, Textarea } from '@chakra-ui/react'
-import { ArrowUp } from 'lucide-react'
+import { ArrowUp, Loader2 } from 'lucide-react'
 import { Tooltip } from '@/components/shared/tooltip'
 
 const Wrap = styled.div`
-  padding: 10px 14px 14px;
+  padding: 8px 12px 12px;
   flex-shrink: 0;
 `
 
 const Card = styled.div`
   position: relative;
   background: var(--studio-bg-main);
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid var(--studio-border);
   transition: all 0.15s ease;
 
@@ -22,10 +22,27 @@ const Card = styled.div`
   }
 `
 
+const Footer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px 8px 14px;
+`
+
+const Hint = styled.span`
+  font-size: 9px;
+  color: var(--studio-text-muted);
+  user-select: none;
+  opacity: 0.6;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+`
+
 const Send = styled.button<{ $on: boolean }>`
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   border: none;
   display: flex;
   align-items: center;
@@ -37,7 +54,10 @@ const Send = styled.button<{ $on: boolean }>`
   background: ${({ $on }) => $on ? 'var(--studio-accent)' : 'var(--studio-bg-hover)'};
   color: ${({ $on }) => $on ? 'var(--studio-accent-fg)' : 'var(--studio-text-muted)'};
   cursor: ${({ $on }) => $on ? 'pointer' : 'default'};
-  &:hover { ${({ $on }) => $on && 'transform: scale(1.06);'} }
+
+  &:hover {
+    ${({ $on }) => $on && 'transform: scale(1.05); opacity: 0.9;'}
+  }
 `
 
 interface ChatInputProps {
@@ -59,6 +79,8 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); send() }
   }
 
+  const canSend = !!val.trim() && !disabled
+
   return (
     <Wrap>
       <Card>
@@ -66,28 +88,34 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
           value={val}
           onChange={(e) => setVal(e.target.value)}
           onKeyDown={onKey}
-          placeholder="Build a user dashboard..."
+          placeholder={disabled ? 'Agents are working...' : 'Build a user dashboard...'}
           resize="none"
           rows={2}
           disabled={disabled}
           css={{
-            minHeight: '48px', maxHeight: '120px',
-            padding: '12px 40px 12px 14px',
+            minHeight: '44px', maxHeight: '100px',
+            padding: '10px 14px 4px',
             background: 'transparent', border: 'none', outline: 'none',
             color: 'var(--studio-text-primary)',
-            fontSize: '13px', lineHeight: '1.5',
+            fontSize: '12.5px', lineHeight: '1.5',
             '&::placeholder': { color: 'var(--studio-text-tertiary)' },
             '&:focus': { outline: 'none', boxShadow: 'none', borderColor: 'transparent' },
           }}
         />
-        <Box css={{ position: 'absolute', right: '8px', bottom: '8px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <Text css={{ fontSize: '9px', color: 'var(--studio-text-muted)', userSelect: 'none', opacity: 0.7 }}>{'\u2318'}↵</Text>
+        <Footer>
+          <Hint>
+            {disabled ? (
+              <><Loader2 size={9} style={{ animation: 'spin 1s linear infinite' }} /> Processing</>
+            ) : (
+              <>{'\u2318'}+Return to send</>
+            )}
+          </Hint>
           <Tooltip content="Send">
-            <Send $on={!!val.trim() && !disabled} onClick={send}>
+            <Send $on={canSend} onClick={send}>
               <ArrowUp size={13} />
             </Send>
           </Tooltip>
-        </Box>
+        </Footer>
       </Card>
     </Wrap>
   )

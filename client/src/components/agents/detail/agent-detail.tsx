@@ -1,80 +1,106 @@
-import { Box, Text, CloseButton } from '@chakra-ui/react'
-import { Layers } from 'lucide-react'
+import { Box, Text } from '@chakra-ui/react'
+import { Layers, X, Clock } from 'lucide-react'
 import { useAgentStore } from '@/stores/agent-store'
 import { ROLE_ICONS } from '../shared/role-icons'
 import type { AgentInfo } from '@/api/types'
-import { Panel, Header, Body, Section, SectionLabel, StatusChip, StatusDot, ActivityText } from './styles'
+import {
+  Panel, Header, HeaderTop, IconBox, CloseBtn,
+  StatusBadge, StatusDot,
+  Body, Section, SectionLabel, AboutText,
+  Timeline, TimelineItem, TimelineTrack, TimelineDot, TimelineLine,
+  TimelineContent, TimelineText, TimelineTime, EmptyActivity,
+} from './styles'
 
 interface AgentDetailProps {
   agent: AgentInfo
   onClose: () => void
 }
 
+function formatTime(ts: string): string {
+  const d = new Date(ts)
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+}
+
+function statusLabel(status: string): string {
+  switch (status) {
+    case 'idle': return 'Ready'
+    case 'thinking': return 'Thinking'
+    case 'executing': return 'Executing'
+    case 'done': return 'Complete'
+    case 'error': return 'Error'
+    default: return 'Unknown'
+  }
+}
+
 export function AgentDetail({ agent, onClose }: AgentDetailProps) {
   const activity = useAgentStore((s) => s.activities.get(agent.role))
   const Icon = ROLE_ICONS[agent.role] ?? Layers
-
   const status = activity?.status ?? 'idle'
-  const statusLabel =
-    status === 'idle' ? 'Ready' :
-    status === 'thinking' ? 'Thinking' :
-    status === 'executing' ? 'Executing' :
-    status === 'done' ? 'Complete' :
-    status === 'error' ? 'Error' : 'Unknown'
-
   const isActive = status === 'executing' || status === 'thinking'
+  const history = activity?.history ?? []
+
+  const reversed = [...history].reverse()
 
   return (
     <Panel>
       <Header>
-        <Box css={{
-          width: 14, height: 14, borderRadius: '8px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0, transition: 'all 0.15s ease',
-          ...(isActive ? {
-            background: 'linear-gradient(135deg, rgba(16, 163, 127, 0.15), rgba(16, 163, 127, 0.05))',
-            border: '1px solid rgba(16, 163, 127, 0.2)',
-            color: 'var(--studio-green)',
-          } : {
-            background: 'var(--studio-bg-hover)',
-            border: '1px solid transparent',
-            color: 'var(--studio-text-tertiary)',
-          }),
-        }}>
-          <Icon size={18} />
-        </Box>
-        <Box css={{ flex: 1, minWidth: 0 }}>
-          <Text css={{ fontSize: '14px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
-            {agent.title}
-          </Text>
-          <StatusChip $status={status}>
-            <StatusDot $status={status} />
-            {statusLabel}
-          </StatusChip>
-        </Box>
-        <CloseButton
-          size="sm"
-          onClick={onClose}
-          css={{
-            color: 'var(--studio-text-muted)', borderRadius: '6px', flexShrink: 0,
-            '&:hover': { background: 'var(--studio-bg-hover)', color: 'var(--studio-text-primary)' },
-          }}
-        />
+        <HeaderTop>
+          <IconBox $active={isActive}>
+            <Icon size={18} />
+          </IconBox>
+          <Box css={{ flex: 1, minWidth: 0 }}>
+            <Text css={{ fontSize: '14px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
+              {agent.title}
+            </Text>
+          </Box>
+          <CloseBtn onClick={onClose}>
+            <X size={14} />
+          </CloseBtn>
+        </HeaderTop>
+        <StatusBadge $status={status}>
+          <StatusDot $status={status} />
+          {statusLabel(status)}
+        </StatusBadge>
       </Header>
 
       <Body>
-        {activity?.activity && (
-          <Section>
-            <SectionLabel>Current Activity</SectionLabel>
-            <ActivityText>{activity.activity}</ActivityText>
-          </Section>
-        )}
-
+        {/* About */}
         <Section>
           <SectionLabel>About</SectionLabel>
-          <Text css={{ fontSize: '12px', color: 'var(--studio-text-secondary)', lineHeight: 1.65 }}>
-            {agent.description}
-          </Text>
+          <AboutText>{agent.description}</AboutText>
+        </Section>
+
+        {/* Activity Timeline */}
+        <Section>
+          <SectionLabel>Activity</SectionLabel>
+          {history.length === 0 ? (
+            <EmptyActivity>
+              <Clock size={16} />
+              No activity yet
+            </EmptyActivity>
+          ) : (
+            <Timeline>
+              {reversed.map((entry, i) => {
+                const isLatest = i === 0
+                const isLast = i === reversed.length - 1
+
+                return (
+                  <TimelineItem key={entry.id} $status={entry.status} $isLatest={isLatest}>
+                    <TimelineTrack>
+                      <TimelineDot $status={entry.status} />
+                      {!isLast && <TimelineLine />}
+                    </TimelineTrack>
+                    <TimelineContent>
+                      <TimelineText $status={entry.status} $isLatest={isLatest}>
+                        {entry.text}
+                      </TimelineText>
+                      <TimelineTime>{formatTime(entry.timestamp)}</TimelineTime>
+                    </TimelineContent>
+                  </TimelineItem>
+                )
+              })}
+            </Timeline>
+          )}
         </Section>
       </Body>
     </Panel>

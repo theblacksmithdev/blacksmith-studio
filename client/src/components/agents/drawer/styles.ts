@@ -126,6 +126,29 @@ export const RoleTag = styled.span<{ $active: boolean }>`
   color: ${({ $active }) => $active ? 'var(--studio-green)' : 'var(--studio-text-muted)'};
 `
 
+export const ModelTag = styled.span<{ $model: string }>`
+  font-size: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 1px 5px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  margin-top: 2px;
+
+  background: ${({ $model }) =>
+    $model === 'premium' ? 'rgba(168, 85, 247, 0.08)'
+    : $model === 'fast' ? 'rgba(59, 130, 246, 0.08)'
+    : 'var(--studio-bg-hover)'
+  };
+  color: ${({ $model }) =>
+    $model === 'premium' ? 'rgb(168, 85, 247)'
+    : $model === 'fast' ? 'rgb(59, 130, 246)'
+    : 'var(--studio-text-muted)'
+  };
+`
+
 /* ── Sub-task styles ── */
 
 export const SubTaskList = styled.div`

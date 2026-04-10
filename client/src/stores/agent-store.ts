@@ -1,11 +1,19 @@
 import { create } from 'zustand'
 import type { AgentRole, AgentEvent, AgentInfo, BuildEvent, InputRequest, DispatchTask, DispatchPlan } from '@/api/types'
 
+interface ActivityEntry {
+  id: string
+  text: string
+  status: 'thinking' | 'executing' | 'done' | 'error'
+  timestamp: string
+}
+
 interface AgentActivity {
   role: AgentRole
   status: 'idle' | 'thinking' | 'executing' | 'done' | 'error'
   activity: string | null
   lastEvent: AgentEvent | null
+  history: ActivityEntry[]
 }
 
 interface ChatMessage {
@@ -117,21 +125,29 @@ export const useAgentStore = create<AgentState>((set) => ({
       status: 'idle' as const,
       activity: null,
       lastEvent: null,
+      history: [],
     }
 
-    const updated = { ...current, lastEvent: event }
+    const updated = { ...current, lastEvent: event, history: [...current.history] }
+    const ts = event.timestamp ?? new Date().toISOString()
 
     if (event.data.type === 'status') {
       updated.status = event.data.status
-      if (event.data.message) updated.activity = event.data.message
+      if (event.data.message) {
+        updated.activity = event.data.message
+        updated.history.push({ id: crypto.randomUUID(), text: event.data.message, status: event.data.status, timestamp: ts })
+      }
     } else if (event.data.type === 'activity') {
       updated.activity = event.data.description
+      updated.history.push({ id: crypto.randomUUID(), text: event.data.description, status: updated.status as any ?? 'executing', timestamp: ts })
     } else if (event.data.type === 'done') {
       updated.status = 'done'
       updated.activity = event.data.summary ?? 'Done'
+      updated.history.push({ id: crypto.randomUUID(), text: event.data.summary ?? 'Completed', status: 'done', timestamp: ts })
     } else if (event.data.type === 'error') {
       updated.status = 'error'
       updated.activity = event.data.error
+      updated.history.push({ id: crypto.randomUUID(), text: event.data.error, status: 'error', timestamp: ts })
     }
 
     activities.set(agentId, updated)

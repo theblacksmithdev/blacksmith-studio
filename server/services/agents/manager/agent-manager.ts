@@ -98,10 +98,11 @@ export class AgentManager {
 
       if (isExplicit) {
         const execution = await this.execute({ ...options, role: routeResult.role })
+        const directTask: DispatchTask = { id: 't0', title: execution.prompt.slice(0, 60), description: '', role: routeResult.role, prompt: options.prompt, dependsOn: [], model: 'balanced' }
         const plan: DispatchPlan = {
           mode: 'single',
-          task: { id: 't0', title: execution.prompt.slice(0, 60), description: '', role: routeResult.role, prompt: options.prompt, dependsOn: [] },
-          tasks: [{ id: 't0', title: execution.prompt.slice(0, 60), description: '', role: routeResult.role, prompt: options.prompt, dependsOn: [] }],
+          task: directTask,
+          tasks: [directTask],
           summary: `Direct to ${agent.title} (requested by user)`,
         }
         return { plan, executions: [execution] }
@@ -421,12 +422,24 @@ export class AgentManager {
     const existingSession = this.roleSessions.get(task.role)
     const isResume = !!existingSession
 
+    // Map provider-agnostic tier to concrete model ID
+    // TODO: make this configurable when multi-provider support lands
+    const modelMap: Record<string, string> = {
+      premium: 'claude-opus-4-6',
+      balanced: 'claude-sonnet-4-6',
+      fast: 'claude-haiku-4-5-20251001',
+    }
+    const taskModel = task.model ? modelMap[task.model] ?? undefined : undefined
+
     const execution = await this.execute({
       ...baseOptions,
       prompt: contextPrefix + task.prompt,
       role: task.role,
       sessionId: existingSession,
       resume: isResume,
+      agentConfig: taskModel
+        ? { ...baseOptions.agentConfig!, model: taskModel }
+        : baseOptions.agentConfig,
     })
 
     // Store session for future use by this role

@@ -26,3 +26,11 @@ export function statusText(status: DispatchTask['status']): string {
 export function roleLabel(role: string): string {
   return role.replace('-engineer', '').replace('-', ' ')
 }
+
+export function modelLabel(model?: string): string {
+  switch (model) {
+    case 'premium': return 'Premium'
+    case 'fast': return 'Fast'
+    default: return 'Balanced'
+  }
+}

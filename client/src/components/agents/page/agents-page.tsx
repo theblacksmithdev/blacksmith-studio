@@ -123,11 +123,11 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
             <AgentChat onSend={handleSend} onRespond={handleRespond} isProcessing={isProcessing} onClose={closeChat} />
           </ChatOverlay>
         )}
+        {/* Agent detail panel within the canvas */}
+        {selectedAgentInfo && (
+          <AgentDetail agent={selectedAgentInfo} onClose={() => selectAgent(null)} />
+        )}
       </CanvasPanel>
-
-      {selectedAgentInfo && (
-        <AgentDetail agent={selectedAgentInfo} onClose={() => selectAgent(null)} />
-      )}
 
       {drawerOpen && <TaskDrawer onClose={() => setDrawerOpen(false)} />}
     </Layout>

@@ -183,6 +183,8 @@ export interface AgentEvent {
   data: Record<string, any>
 }
 
+export type TaskModel = 'fast' | 'balanced' | 'premium'
+
 export interface DispatchTask {
   id: string
   title: string
@@ -190,6 +192,8 @@ export interface DispatchTask {
   role: AgentRole
   prompt: string
   dependsOn: string[]
+  /** AI model selected by PM based on task complexity */
+  model: TaskModel
   /** Client-side tracking */
   status?: 'pending' | 'running' | 'done' | 'error' | 'skipped'
 }

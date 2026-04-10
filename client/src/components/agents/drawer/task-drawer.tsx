@@ -3,10 +3,10 @@ import { Sparkles } from 'lucide-react'
 import { Drawer } from '@/components/shared/drawer'
 import { EmptyState } from '@/components/shared/empty-state'
 import { useAgentStore } from '@/stores/agent-store'
-import { getIcon, statusText, roleLabel } from './helpers'
+import { getIcon, statusText, roleLabel, modelLabel } from './helpers'
 import {
   Content, ScrollArea, SummaryCard, ProgressTrack, ProgressFill,
-  StatChip, Separator, TaskRow, StepIcon, RoleTag,
+  StatChip, Separator, TaskRow, StepIcon, RoleTag, ModelTag,
   SubTaskList, SubTaskRow, SubTaskIcon,
 } from './styles'
 
@@ -88,6 +88,7 @@ export function TaskDrawer({ onClose }: TaskDrawerProps) {
                           }}>
                             {task.title}
                           </Text>
+                          <ModelTag $model={task.model ?? 'balanced'}>{modelLabel(task.model)}</ModelTag>
                           <RoleTag $active={isActive}>{roleLabel(task.role)}</RoleTag>
                         </Flex>
                         {task.description && (
