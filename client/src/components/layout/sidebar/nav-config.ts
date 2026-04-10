@@ -2,7 +2,7 @@ import {
   MessageSquare,
   FolderTree,
   Play,
-  History,
+  GitBranch,
   Network,
 } from 'lucide-react'
 import {
@@ -24,8 +24,8 @@ export interface NavEntry {
 export const projectNav: NavEntry[] = [
   { id: 'chat', icon: MessageSquare, label: 'Chat', path: newChatPath, match: '/chat' },
   { id: 'agents', icon: Network, label: 'Agents', path: agentsPath, match: '/agents' },
-  { id: 'code', icon: FolderTree, label: 'Code', path: codePath, match: '/code' },
-  { id: 'git', icon: History, label: 'Source Control', path: checkpointsPath, match: '/checkpoints' },
+  { id: 'code', icon: FolderTree, label: 'Files', path: codePath, match: '/code' },
+  { id: 'git', icon: GitBranch, label: 'Source Control', path: checkpointsPath, match: '/checkpoints' },
 ]
 
 export const bottomNav: NavEntry[] = [

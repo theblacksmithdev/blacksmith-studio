@@ -65,7 +65,7 @@ export function Sidebar() {
     <Nav expanded={expanded}>
       {isInsideProject && pid ? (
         <>
-          <SidebarTooltip label="New Chat" visible={!expanded}>
+          <SidebarTooltip label="Home" visible={!expanded}>
             <NewChatButton expanded={expanded} />
           </SidebarTooltip>
 

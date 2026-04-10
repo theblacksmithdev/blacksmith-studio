@@ -1,8 +1,8 @@
 import styled from '@emotion/styled'
 import { useNavigate } from 'react-router-dom'
-import { Plus } from 'lucide-react'
+import { Home } from 'lucide-react'
 import { useProjectStore } from '@/stores/project-store'
-import { newChatPath } from '@/router/paths'
+import { projectHome } from '@/router/paths'
 
 const Btn = styled.button<{ expanded: boolean }>`
   display: flex;
@@ -51,9 +51,9 @@ export function NewChatButton({ expanded }: NewChatButtonProps) {
   if (!pid) return null
 
   return (
-    <Btn expanded={expanded} onClick={() => navigate(newChatPath(pid))}>
-      <Plus size={16} style={{ flexShrink: 0 }} />
-      <Label visible={expanded}>New Chat</Label>
+    <Btn expanded={expanded} onClick={() => navigate(projectHome(pid))}>
+      <Home size={16} style={{ flexShrink: 0 }} />
+      <Label visible={expanded}>Home</Label>
     </Btn>
   )
 }
