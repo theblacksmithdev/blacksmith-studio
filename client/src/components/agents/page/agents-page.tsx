@@ -2,7 +2,7 @@ import { useEffect, useCallback, useState, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
 import { ReactFlowProvider } from '@xyflow/react'
-import { ListTodo, MessageSquare, X } from 'lucide-react'
+import { ListTodo, MessageSquare, X, Square } from 'lucide-react'
 import { api } from '@/api'
 import { queryKeys } from '@/api/query-keys'
 import { useAgentStore } from '@/stores/agent-store'
@@ -15,7 +15,7 @@ import { TaskDrawer } from '../drawer'
 import { useAgentEvents } from './use-agent-events'
 import { useConversation } from './use-conversation'
 import {
-  Layout, CanvasPanel, ButtonGroup, TasksBtn, ChatBtn, Badge, UnreadDot,
+  Layout, CanvasPanel, ButtonGroup, TasksBtn, ChatBtn, StopBtn, Badge, UnreadDot,
   ChatOverlay,
 } from './styles'
 import type { AgentRole } from '@/api/types'
@@ -83,6 +83,14 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
     await api.agents.respond(requestId, value)
   }, [removeInputRequest])
 
+  const handleStop = useCallback(async () => {
+    const confirmed = window.confirm(
+      'Stop all running agents? This will cancel the current task and skip all remaining tasks in the pipeline.',
+    )
+    if (!confirmed) return
+    await api.agents.cancelAll()
+  }, [])
+
   const handleNodeClick = useCallback((role: AgentRole) => {
     selectAgent(selectedAgent === role ? null : role)
   }, [selectedAgent, selectAgent])
@@ -146,6 +154,15 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
               {hasTasks && <Badge>{completedCount}/{dispatchTasks.length}</Badge>}
             </TasksBtn>
           </Tooltip>
+
+          {isProcessing && (
+            <Tooltip content="Stop all agents">
+              <StopBtn onClick={handleStop}>
+                <Square size={12} />
+                Stop
+              </StopBtn>
+            </Tooltip>
+          )}
         </ButtonGroup>
 
         {/* Sliding chat panel within the canvas */}

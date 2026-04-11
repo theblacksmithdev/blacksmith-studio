@@ -1,6 +1,7 @@
 import type { AgentExecuteOptions } from '../base/index.js'
 import type { AgentRole, AgentExecution, AgentEvent } from '../types.js'
 import type { ChangeSet } from '../utils/change-tracker.js'
+import type { ReviewLevel } from './pm-dispatcher.js'
 import { extractBugReport, buildBugFixPrompt } from './bug-report.js'
 
 /** Roles that produce code and should go through the quality gate */
@@ -10,7 +11,6 @@ const CODE_PRODUCING_ROLES = new Set<AgentRole>([
   'fullstack-engineer',
   'database-engineer',
   'devops-engineer',
-  'ui-designer',
   'security-engineer',
 ])
 
@@ -19,9 +19,14 @@ const MAX_TEST_CYCLES = 2
 
 type ExecuteFn = (options: AgentExecuteOptions & { role?: AgentRole }) => Promise<AgentExecution>
 type EmitFn = (event: AgentEvent) => void
+/** Resolves the most recent Claude session ID for a role (for session continuity) */
+type SessionResolverFn = (role: AgentRole) => string | undefined
+/** Returns true if execution has been cancelled */
+type CancelledFn = () => boolean
 
 /** Check if a role produces code that should be reviewed and tested */
-export function needsQualityGate(role: AgentRole): boolean {
+export function needsQualityGate(role: AgentRole, reviewLevel?: ReviewLevel): boolean {
+  if (reviewLevel === 'none') return false
   return CODE_PRODUCING_ROLES.has(role)
 }
 
@@ -32,20 +37,35 @@ export function needsQualityGate(role: AgentRole): boolean {
  * files modified during this dispatch — not the entire codebase.
  */
 export async function runQualityGate(
-  originalTask: { role: AgentRole; prompt: string; title: string },
+  originalTask: { role: AgentRole; prompt: string; title: string; reviewLevel?: ReviewLevel },
   baseOptions: AgentExecuteOptions,
   execute: ExecuteFn,
   emit: EmitFn,
   changes?: ChangeSet,
+  resolveSession?: SessionResolverFn,
+  isCancelled?: CancelledFn,
 ): Promise<QualityGateResult> {
   const executions: AgentExecution[] = []
   let passed = true
+  const level = originalTask.reviewLevel ?? 'full'
+
+  // 'none' should never reach here (needsQualityGate filters it), but guard anyway
+  if (level === 'none') {
+    return { passed: true, executions: [], reviewCycles: 0, testCycles: 0 }
+  }
 
   // ── Review Loop ──
   emit(activityEvent('code-reviewer', `Reviewing ${originalTask.title}...`))
 
+  const maxReviewCycles = level === 'light' ? 1 : MAX_REVIEW_CYCLES
+
   let reviewIssues: string | null = null
-  for (let cycle = 0; cycle < MAX_REVIEW_CYCLES; cycle++) {
+  for (let cycle = 0; cycle < maxReviewCycles; cycle++) {
+    if (isCancelled?.()) {
+      emit(activityEvent('code-reviewer', 'Review cancelled'))
+      return { passed: false, executions, reviewCycles: cycle, testCycles: 0 }
+    }
+
     const reviewPrompt = cycle === 0
       ? buildReviewPrompt(originalTask, changes)
       : buildReReviewPrompt(originalTask, cycle)
@@ -71,14 +91,16 @@ export async function runQualityGate(
       break
     }
 
-    reviewIssues = `Code review found issues (cycle ${cycle + 1}/${MAX_REVIEW_CYCLES})`
+    reviewIssues = `Code review found issues (cycle ${cycle + 1}/${maxReviewCycles})`
     emit(activityEvent(originalTask.role, `Fixing review feedback (cycle ${cycle + 1})...`))
 
     const fixPrompt = buildFixPrompt(originalTask, 'review', reviewExec)
+    const existingSession = resolveSession?.(originalTask.role)
     const fixExec = await execute({
       ...baseOptions,
       prompt: fixPrompt,
       role: originalTask.role,
+      ...(existingSession ? { sessionId: existingSession, resume: true } : {}),
     })
     executions.push(fixExec)
 
@@ -92,11 +114,25 @@ export async function runQualityGate(
   }
 
   if (reviewIssues) {
-    emit(activityEvent('code-reviewer', `Review issues remain after ${MAX_REVIEW_CYCLES} cycles — proceeding to tests`))
+    emit(activityEvent('code-reviewer', `Review issues remain after ${maxReviewCycles} cycles — proceeding${level === 'light' ? '' : ' to tests'}`))
   }
 
-  // ── Test Loop ──
+  // ── Test Loop (skip for 'light' review level) ──
+  if (level === 'light') {
+    return {
+      passed,
+      executions,
+      reviewCycles: Math.min(maxReviewCycles, executions.filter((e) => e.agentId === 'code-reviewer').length),
+      testCycles: 0,
+    }
+  }
+
   emit(activityEvent('qa-engineer', `Writing tests for ${originalTask.title}...`))
+
+  if (isCancelled?.()) {
+    emit(activityEvent('qa-engineer', 'Testing cancelled'))
+    return { passed: false, executions, reviewCycles: executions.filter((e) => e.agentId === 'code-reviewer').length, testCycles: 0 }
+  }
 
   let testFailures: string | null = null
   for (let cycle = 0; cycle < MAX_TEST_CYCLES; cycle++) {
@@ -135,10 +171,12 @@ export async function runQualityGate(
       emit(activityEvent('product-manager', `Re-assigning bug fix: "${bugReport.description}" → ${targetRole}`))
 
       const bugFixPrompt = buildBugFixPrompt(bugReport)
+      const bugFixSession = resolveSession?.(targetRole)
       const fixExec = await execute({
         ...baseOptions,
         prompt: bugFixPrompt,
         role: targetRole,
+        ...(bugFixSession ? { sessionId: bugFixSession, resume: true } : {}),
       })
       executions.push(fixExec)
 
@@ -155,10 +193,12 @@ export async function runQualityGate(
       emit(activityEvent(originalTask.role, `Fixing test failures (cycle ${cycle + 1})...`))
 
       const fixPrompt = buildFixPrompt(originalTask, 'test', testExec)
+      const testFixSession = resolveSession?.(originalTask.role)
       const fixExec = await execute({
         ...baseOptions,
         prompt: fixPrompt,
         role: originalTask.role,
+        ...(testFixSession ? { sessionId: testFixSession, resume: true } : {}),
       })
       executions.push(fixExec)
 
@@ -309,6 +349,15 @@ function buildTestPrompt(
     }
   }
 
+  // Extract unique directories from changed files for scoped test runs
+  const changedDirs = new Set<string>()
+  if (changes && changes.files.length > 0) {
+    for (const f of changes.files) {
+      const dir = f.path.split('/').slice(0, -1).join('/')
+      if (dir) changedDirs.add(dir)
+    }
+  }
+
   lines.push(
     'Original task description:',
     task.prompt,
@@ -320,11 +369,31 @@ function buildTestPrompt(
     '- Use the project\'s existing test framework and patterns.',
     '- Cover: happy path, edge cases, error conditions.',
     '',
-    '## Step 2: Run the FULL test suite',
-    '- After writing your tests, run the ENTIRE existing test suite — not just your new tests.',
-    '- For Python: `python -m pytest` (or the project\'s test command).',
-    '- For TypeScript/JS: `npx vitest run` or `npx jest` (or the project\'s test command).',
-    '- This catches regressions where new code breaks existing functionality.',
+    '## Step 2: Run tests (scoped to affected areas)',
+    '- After writing your tests, run tests SCOPED to the affected directories and your new test files.',
+    '- Do NOT run the entire project test suite — only run tests relevant to the changed code.',
+  )
+
+  if (changedDirs.size > 0) {
+    lines.push(
+      '',
+      '**Affected directories:**',
+      ...Array.from(changedDirs).map((d) => `  - ${d}`),
+      '',
+      '**Scoped test commands:**',
+      '- For Python: `python -m pytest ' + Array.from(changedDirs).slice(0, 5).join(' ') + '` (test only affected dirs)',
+      '- For TypeScript/JS: `npx vitest run --dir ' + Array.from(changedDirs)[0] + '` or target specific test files',
+    )
+  } else {
+    lines.push(
+      '- For Python: `python -m pytest` targeting the relevant test files.',
+      '- For TypeScript/JS: `npx vitest run` targeting the relevant test files.',
+    )
+  }
+
+  lines.push(
+    '',
+    '- If you need to verify no regressions in closely related modules, include those directories too — but do NOT run the entire suite.',
     '',
     '## Reporting',
     '- If ALL tests pass (new + existing), start with "TESTS PASSED:" and show the total count.',
@@ -337,11 +406,10 @@ function buildTestPrompt(
 
 function buildReTestPrompt(task: { title: string }, cycle: number): string {
   return [
-    `Re-run ALL tests for "${task.title}" after the author applied fixes (attempt ${cycle + 1}).`,
+    `Re-run tests for "${task.title}" after the author applied fixes (attempt ${cycle + 1}).`,
     '',
-    '- Run the FULL test suite — both your new tests and all existing tests.',
-    '- For Python: `python -m pytest`',
-    '- For TypeScript/JS: `npx vitest run` or `npx jest`',
+    '- Run the same scoped tests you ran before — your new tests plus tests in the affected directories.',
+    '- Do NOT run the entire project test suite unless the fixes touched new areas.',
     '- If all tests pass, start your response with "TESTS PASSED:".',
     '- If any tests fail, start your response with "TESTS FAILED:" with failure details.',
     '- Distinguish between failures in new tests vs regressions in existing tests.',

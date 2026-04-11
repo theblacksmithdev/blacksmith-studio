@@ -46,6 +46,30 @@ export const TasksBtn = styled(FloatingBase)<{ $hasTasks: boolean }>`
   opacity: ${({ $hasTasks }) => $hasTasks ? 1 : 0.5};
 `
 
+export const StopBtn = styled.button`
+  position: static;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.06);
+  color: var(--studio-error);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.12s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.4);
+  }
+`
+
 export const ButtonGroup = styled.div<{ $shift?: boolean }>`
   position: absolute;
   bottom: 16px;

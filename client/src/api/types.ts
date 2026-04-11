@@ -226,6 +226,7 @@ export interface AgentEvent {
 }
 
 export type TaskModel = 'fast' | 'balanced' | 'premium'
+export type ReviewLevel = 'none' | 'light' | 'full'
 
 export interface DispatchTask {
   id: string
@@ -236,6 +237,8 @@ export interface DispatchTask {
   dependsOn: string[]
   /** AI model selected by PM based on task complexity */
   model: TaskModel
+  /** How much quality gate scrutiny this task receives */
+  reviewLevel: ReviewLevel
   /** Client-side tracking */
   status?: 'pending' | 'running' | 'done' | 'error' | 'skipped'
 }

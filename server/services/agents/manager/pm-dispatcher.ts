@@ -9,6 +9,14 @@ import type { AgentRole, AgentEvent } from '../types.js'
 
 export type TaskModel = 'fast' | 'balanced' | 'premium'
 
+/**
+ * Review level determines how much quality gate scrutiny a task receives.
+ * - 'none': Skip quality gate entirely (specs, docs, trivial changes)
+ * - 'light': One review pass, no test cycle (simple renames, config changes)
+ * - 'full': Full review + test cycles (features, complex logic, security-critical code)
+ */
+export type ReviewLevel = 'none' | 'light' | 'full'
+
 export interface DispatchTask {
   id: string
   title: string
@@ -20,6 +28,8 @@ export interface DispatchTask {
   dependsOn: string[]
   /** AI model selected by PM based on task complexity */
   model: TaskModel
+  /** How much quality gate scrutiny this task needs */
+  reviewLevel: ReviewLevel
 }
 
 export interface DispatchPlan {
@@ -109,21 +119,35 @@ When agents complete their work, their output is automatically saved as an artif
 
 Each task must include a "model" field. Choose the tier based on the complexity and stakes of that specific task:
 
-- **"premium"** — For tasks that require deep reasoning, complex architecture decisions, security-critical code, or intricate multi-file changes. Use for: architect (system design), security-engineer (audits), complex backend logic, database schema design with tricky constraints.
-- **"balanced"** — The default. For standard implementation work: building features, writing components, API endpoints, tests, documentation. Good balance of quality and speed.
-- **"fast"** — For simple, mechanical tasks: renaming, small config changes, straightforward documentation updates, adding a single field, writing simple test cases.
+- **"premium"** — Deep reasoning, complex architecture, security-critical code, intricate multi-file changes.
+- **"balanced"** — The default. Standard implementation: features, components, API endpoints, tests, docs.
+- **"fast"** — Simple, mechanical tasks: renaming, config changes, adding a single field.
 
-**Default to "balanced"** when unsure. Only upgrade to "premium" for genuinely complex reasoning. Only downgrade to "fast" for genuinely trivial work.
+**Default to "balanced"** when unsure.
+
+## Review Level
+
+Each task must include a "reviewLevel" field. This controls how much quality gate scrutiny the task receives after execution:
+
+- **"none"** — Skip quality gate entirely. Use for: spec-only roles (ui-designer, architect, technical-writer, product-manager), documentation, config-only changes, and non-code tasks.
+- **"light"** — One review pass, no test cycle. Use for: simple renames, small config changes, straightforward additions, single-file edits with low risk.
+- **"full"** — Full review + test cycles. Use for: new features, complex logic, security-critical code, multi-file changes, database migrations, API changes.
+
+**Guidelines:**
+- Spec/design tasks are ALWAYS "none" — they produce specifications, not code.
+- Simple one-file changes → "light".
+- Anything touching auth, payments, data models, or multi-file features → "full".
+- Default to "full" when unsure — it's safer to over-review than under-review.
 
 ## Output Format
 Respond with ONLY a JSON object. No markdown fences, no explanation.
 
 {
   "mode": "single" | "multi",
-  "task": { "id": "t1", "title": "...", "description": "...", "role": "...", "prompt": "...", "dependsOn": [], "model": "balanced" },
+  "task": { "id": "t1", "title": "...", "description": "...", "role": "...", "prompt": "...", "dependsOn": [], "model": "balanced", "reviewLevel": "full" },
   "tasks": [
-    { "id": "t1", "title": "...", "description": "...", "role": "...", "prompt": "...", "dependsOn": [], "model": "balanced" },
-    { "id": "t2", "title": "...", "description": "...", "role": "...", "prompt": "...", "dependsOn": ["t1"], "model": "fast" }
+    { "id": "t1", "title": "...", "description": "...", "role": "...", "prompt": "...", "dependsOn": [], "model": "balanced", "reviewLevel": "none" },
+    { "id": "t2", "title": "...", "description": "...", "role": "...", "prompt": "...", "dependsOn": ["t1"], "model": "fast", "reviewLevel": "light" }
   ],
   "summary": "Brief description of the plan"
 }
@@ -297,6 +321,9 @@ function parsePlan(raw: string): DispatchPlan {
     const VALID_MODELS = new Set<TaskModel>(['fast', 'balanced', 'premium'])
     const model = VALID_MODELS.has(task.model) ? task.model : 'balanced'
 
+    const VALID_REVIEW_LEVELS = new Set<ReviewLevel>(['none', 'light', 'full'])
+    const reviewLevel = VALID_REVIEW_LEVELS.has(task.reviewLevel) ? task.reviewLevel : 'full'
+
     return {
       id: uniqueId,
       title: task.title ?? `Task ${index + 1}`,
@@ -305,6 +332,7 @@ function parsePlan(raw: string): DispatchPlan {
       prompt: task.prompt,
       dependsOn: Array.isArray(task.dependsOn) ? task.dependsOn : [],
       model,
+      reviewLevel,
     }
   }
 

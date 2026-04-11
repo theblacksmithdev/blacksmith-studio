@@ -39,6 +39,8 @@ export class AgentManager {
   private lastHandoffEvent: AgentEvent | null = null
   /** Tracks Claude session IDs per role for session continuity across dispatches */
   private roleSessions = new Map<AgentRole, string>()
+  /** Set by cancelAll() to abort the current task plan between tasks */
+  private _cancelled = false
 
   constructor() {
     this.registry = createAgentRegistry()
@@ -86,6 +88,8 @@ export class AgentManager {
   async dispatch(
     options: AgentExecuteOptions,
   ): Promise<{ plan: DispatchPlan; executions: AgentExecution[] }> {
+    this._cancelled = false
+
     // Only bypass PM if the user explicitly targets a role with @role or "as a ..."
     const routeResult = this.route(options.prompt)
     if (routeResult.confidence === 'high' && routeResult.role) {
@@ -99,7 +103,7 @@ export class AgentManager {
 
       if (isExplicit) {
         const execution = await this.execute({ ...options, role: routeResult.role })
-        const directTask: DispatchTask = { id: 't0', title: execution.prompt.slice(0, 60), description: '', role: routeResult.role, prompt: options.prompt, dependsOn: [], model: 'balanced' }
+        const directTask: DispatchTask = { id: 't0', title: execution.prompt.slice(0, 60), description: '', role: routeResult.role, prompt: options.prompt, dependsOn: [], model: 'balanced', reviewLevel: 'full' }
         const plan: DispatchPlan = {
           mode: 'single',
           task: directTask,
@@ -157,9 +161,9 @@ export class AgentManager {
       })
       const executions = [execution]
 
-      if (execution.status === 'done' && needsQualityGate(plan.task.role)) {
+      if (execution.status === 'done' && needsQualityGate(plan.task.role, plan.task.reviewLevel)) {
         const changes = computeChanges(options.projectRoot, snapshot)
-        const gateExecs = await this.runFinalQualityGate(plan.task, options, changes)
+        const gateExecs = await this.runFinalQualityGate({ ...plan.task, reviewLevel: plan.task.reviewLevel }, options, changes)
         executions.push(...gateExecs)
       }
 
@@ -173,12 +177,19 @@ export class AgentManager {
     // Multi-task: execute all tasks, then quality gate with the full change set
     const executions = await this.executeTaskPlan(plan.tasks, options, artifacts)
 
-    const anyCodeProduced = plan.tasks.some((t) => needsQualityGate(t.role))
+    // Determine the highest review level needed across all tasks
+    const reviewLevels = plan.tasks
+      .filter((t) => needsQualityGate(t.role, t.reviewLevel))
+      .map((t) => t.reviewLevel)
+    const highestReviewLevel = reviewLevels.includes('full') ? 'full'
+      : reviewLevels.includes('light') ? 'light'
+      : null
+
     const allSucceeded = executions.every((e) => e.status === 'done')
-    if (anyCodeProduced && allSucceeded) {
+    if (highestReviewLevel && allSucceeded) {
       const changes = computeChanges(options.projectRoot, snapshot)
       const gateExecs = await this.runFinalQualityGate(
-        { role: 'code-reviewer' as AgentRole, prompt: plan.summary, title: plan.summary },
+        { role: 'code-reviewer' as AgentRole, prompt: plan.summary, title: plan.summary, reviewLevel: highestReviewLevel },
         options,
         changes,
       )
@@ -193,7 +204,7 @@ export class AgentManager {
    * Passes the exact ChangeSet so reviewer/QA only look at new work.
    */
   private async runFinalQualityGate(
-    context: { role: AgentRole; prompt: string; title: string },
+    context: { role: AgentRole; prompt: string; title: string; reviewLevel?: import('./pm-dispatcher.js').ReviewLevel },
     options: AgentExecuteOptions,
     changes?: import('../utils/change-tracker.js').ChangeSet,
   ): Promise<AgentExecution[]> {
@@ -206,6 +217,8 @@ export class AgentManager {
       (opts) => this.execute(opts),
       (event) => this.emitAgentEvent(event),
       changes,
+      (role) => this.roleSessions.get(role),
+      () => this._cancelled,
     )
 
     this.emitAgentEvent({
@@ -272,9 +285,14 @@ export class AgentManager {
   }
 
   cancelAll(): void {
+    this._cancelled = true
+
+    // Kill any currently running agent process
     for (const agent of this.registry.values()) {
       if (agent.isRunning) agent.cancel()
     }
+
+    // Cancel active workflows
     for (const [id, workflow] of this.activeWorkflows) {
       if (workflow.status === 'running') {
         workflow.status = 'cancelled'
@@ -289,6 +307,8 @@ export class AgentManager {
       }
     }
     this.activeWorkflows.clear()
+
+    this.emitPM('Execution cancelled by user')
   }
 
   /* ── PM Task Plan Execution ── */
@@ -309,6 +329,23 @@ export class AgentManager {
     const artifactPaths = new Map<string, string>()
 
     for (const task of tasks) {
+      // Check if execution was cancelled between tasks
+      if (this._cancelled) {
+        for (const remaining of tasks) {
+          if (!completed.has(remaining.id)) {
+            this.emitTaskStatus(remaining.id, 'skipped', remaining.title, remaining.role)
+            const cancelledExec: AgentExecution = {
+              id: crypto.randomUUID(), agentId: remaining.role, sessionId: '', status: 'error',
+              prompt: remaining.prompt, startedAt: new Date().toISOString(), completedAt: new Date().toISOString(),
+              costUsd: 0, durationMs: 0, error: 'Cancelled by user', responseText: '',
+            }
+            completed.set(remaining.id, cancelledExec)
+            executions.push(cancelledExec)
+          }
+        }
+        break
+      }
+
       // Check all dependencies are satisfied
       const unmetDeps = task.dependsOn.filter((dep) => !completed.has(dep))
       if (unmetDeps.length > 0) {
@@ -424,35 +461,37 @@ export class AgentManager {
     completed: Map<string, AgentExecution>,
     artifactPaths: Map<string, string>,
   ): Promise<AgentExecution> {
-    // Build context references — point the agent to artifact files on disk
+    // Build context references — pass ALL previous artifacts so every agent
+    // has full visibility into the work done so far (architect's design,
+    // database schema, backend API shape, design specs, etc.)
     const contextParts: string[] = []
 
-    for (const depId of task.dependsOn) {
-      const depExec = completed.get(depId)
-      if (!depExec || depExec.status !== 'done') continue
+    for (const [prevTaskId, prevExec] of completed) {
+      // Skip failed tasks and the current task's own role (no self-reference)
+      if (prevExec.status !== 'done') continue
+      if (prevExec.agentId === task.role) continue
 
-      const artifactPath = artifactPaths.get(depId)
+      const artifactPath = artifactPaths.get(prevTaskId)
 
       if (artifactPath) {
-        // Point to the artifact file — agent reads it with its file tools (no truncation)
+        const roleName = prevExec.agentId.replace(/-/g, ' ')
         contextParts.push(
-          `## Artifact from previous task (${depExec.agentId})\n\n` +
-          `The ${depExec.agentId.replace(/-/g, ' ')} has completed their work and produced an artifact.\n` +
-          `**You MUST read this file before starting your work:** \`${artifactPath}\`\n` +
-          `This file contains the full output, specifications, or deliverables from the previous step. ` +
-          `Your task should build directly on what's described in this artifact.`
+          `## Artifact from ${roleName}\n\n` +
+          `The ${roleName} has completed their work and produced an artifact.\n` +
+          `**Read this file for context:** \`${artifactPath}\`\n` +
+          `This contains their full output — specifications, decisions, or a summary of changes made.`
         )
-      } else if (depExec.responseText.trim()) {
+      } else if (prevExec.responseText.trim()) {
         // Fallback: inline a preview if artifact wasn't written
-        const preview = depExec.responseText.length > 4000
-          ? depExec.responseText.slice(0, 4000) + '\n\n... (truncated)'
-          : depExec.responseText
-        contextParts.push(`## Output from previous task (${depExec.agentId})\n\n${preview}`)
+        const preview = prevExec.responseText.length > 4000
+          ? prevExec.responseText.slice(0, 4000) + '\n\n... (truncated)'
+          : prevExec.responseText
+        contextParts.push(`## Output from ${prevExec.agentId.replace(/-/g, ' ')}\n\n${preview}`)
       }
     }
 
     const contextPrefix = contextParts.length > 0
-      ? contextParts.join('\n\n---\n\n') + '\n\n---\n\nNow execute your task. Build on the work above.\n\n'
+      ? contextParts.join('\n\n---\n\n') + '\n\n---\n\nAbove are artifacts from all previous agents in this pipeline. Read the relevant ones before starting your task.\n\n'
       : ''
 
     // Resume Claude session if this role has one from a previous dispatch
