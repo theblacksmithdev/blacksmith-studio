@@ -18,11 +18,7 @@ export function FileViewer() {
 
   return (
     <Box css={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--studio-bg-main)' }}>
-      <TabBar
-        activeFilePath={activeTab}
-        language={currentTab.language}
-        content={currentTab.content}
-      />
+      <TabBar />
 
       {currentTab.content !== null ? (
         <CodeEditor content={currentTab.content} language={currentTab.language} />
