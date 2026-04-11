@@ -3,7 +3,8 @@ import { useNodesState, type Node, type NodeChange } from '@xyflow/react'
 import { useAgentStore } from '@/stores/agent-store'
 import { useSettings } from '@/hooks/use-settings'
 import type { AgentRole, AgentInfo } from '@/api/types'
-import type { AgentNodeData } from '../node'
+import { AGENT_TEAMS } from '@/api/types'
+import type { AgentNodeData, TeamNodeData } from '../node'
 import { buildNodes } from './layout'
 
 /**
@@ -46,6 +47,22 @@ export function useCanvasNodes(agents: AgentInfo[], conversationId?: string) {
   useEffect(() => {
     setNodes((nds) =>
       nds.map((node) => {
+        // Team nodes — compute active member count
+        if (node.type === 'team') {
+          const teamData = node.data as unknown as TeamNodeData
+          const teamDef = AGENT_TEAMS.find((t) => t.team === teamData.team)
+          const activeCount = teamDef?.roles.filter((r) => {
+            const a = activities.get(r)
+            return a && (a.status === 'thinking' || a.status === 'executing')
+          }).length ?? 0
+
+          return {
+            ...node,
+            data: { ...teamData, activeCount },
+          }
+        }
+
+        // Agent nodes
         const activity = activities.get(node.id as AgentRole)
         const data = node.data as unknown as AgentNodeData
         return {

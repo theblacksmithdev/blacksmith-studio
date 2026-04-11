@@ -146,6 +146,48 @@ export type AgentRole =
   | 'database-engineer' | 'ui-designer' | 'technical-writer'
   | 'code-reviewer' | 'architect' | 'product-manager'
 
+export type AgentTeam = 'product' | 'architecture' | 'engineering' | 'quality' | 'documentation'
+
+export interface AgentTeamDefinition {
+  team: AgentTeam
+  title: string
+  description: string
+  roles: AgentRole[]
+}
+
+export const AGENT_TEAMS: AgentTeamDefinition[] = [
+  {
+    team: 'product',
+    title: 'Product & Strategy',
+    description: 'The decision-maker and requirement owner. Drives priorities.',
+    roles: ['product-manager'],
+  },
+  {
+    team: 'architecture',
+    title: 'Architecture & Infrastructure',
+    description: 'System design, data layer, and deployment pipeline.',
+    roles: ['architect', 'database-engineer', 'devops-engineer'],
+  },
+  {
+    team: 'engineering',
+    title: 'Engineering',
+    description: 'The core builders — backend, frontend, design, and fullstack.',
+    roles: ['backend-engineer', 'frontend-engineer', 'fullstack-engineer', 'ui-designer'],
+  },
+  {
+    team: 'quality',
+    title: 'Quality & Assurance',
+    description: 'Reviews correctness, security, and test coverage.',
+    roles: ['qa-engineer', 'code-reviewer', 'security-engineer'],
+  },
+  {
+    team: 'documentation',
+    title: 'Documentation',
+    description: 'Technical docs, API references, and developer guides.',
+    roles: ['technical-writer'],
+  },
+]
+
 export type AgentStatus = 'idle' | 'thinking' | 'executing' | 'paused' | 'error' | 'done'
 
 export interface AgentInfo {

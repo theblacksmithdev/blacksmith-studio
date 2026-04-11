@@ -189,7 +189,7 @@ Semantic:
   --studio-error            Error red (#ef4444)
   --studio-warning          Warning amber (#f59e0b)
   --studio-link             Link blue
-  --studio-green            Connection status green only
+  --studio-green            Brand green accent (#10a37f)
 
 Utilities:
   --studio-shadow           Box shadow
@@ -199,7 +199,7 @@ Utilities:
 **Monochrome design language:**
 - Status indicators use `--studio-accent` (not green)
 - Active states use background changes, not color changes
-- `--studio-green` is reserved for connection status dot only
+- `--studio-green` is the brand accent — used for AI/agent indicators and highlights
 
 ## Typography
 

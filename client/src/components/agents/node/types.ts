@@ -1,4 +1,4 @@
-import type { AgentRole } from '@/api/types'
+import type { AgentRole, AgentTeam } from '@/api/types'
 
 export interface AgentNodeData {
   role: AgentRole
@@ -7,4 +7,11 @@ export interface AgentNodeData {
   activity: string | null
   selected: boolean
   isCenter: boolean
+}
+
+export interface TeamNodeData {
+  team: AgentTeam
+  title: string
+  memberCount: number
+  activeCount: number
 }

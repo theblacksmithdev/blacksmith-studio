@@ -1,102 +1,157 @@
 import type { Node } from '@xyflow/react'
 import type { AgentRole, AgentInfo } from '@/api/types'
-import type { AgentNodeData } from '../node'
+import { AGENT_TEAMS } from '@/api/types'
+import type { AgentNodeData, TeamNodeData } from '../node'
 
 /**
- * Real-world engineering team layout — top-down pipeline flow.
+ * Org-chart layout — hierarchical team structure.
  *
- *   Row 0  Strategy:    Product Manager
- *   Row 1  Planning:    Architect · UI Designer
- *   Row 2  Build:       Database · Backend · Frontend · Fullstack
- *   Row 3  Quality:     Security · QA · Code Reviewer
- *   Row 4  Ship:        DevOps · Technical Writer
+ *   Row 0  Leadership:    Product Manager (solo → agent node)
+ *   Row 1  Departments:   Architecture team · Engineering team · Quality team
+ *   Row 2  Members:       Arch members    · Eng members       · QA members
+ *   Row 3  Support:       Technical Writer (solo → agent node)
+ *
+ *   Teams with a single member render as an agent node directly.
+ *   Teams with multiple members render as a team node + member nodes below.
  */
 
-const ROW_Y = [0, 160, 320, 480, 640]
+const NODE_W = 152
+const TEAM_W = 180
+const GAP_X = 28
+const ROW_GAP = 160
 
-/** Positions — centered per tier, even spacing within each row */
-const POSITIONS: Record<AgentRole, { x: number; y: number; isCenter?: boolean }> = {
-  // ── Strategy ──
-  'product-manager':    { x: 420, y: ROW_Y[0], isCenter: true },
+/* ── Row Y positions ── */
+const ROW_Y = {
+  leadership: 0,
+  teams: ROW_GAP,
+  members: ROW_GAP * 2,
+  support: ROW_GAP * 3,
+}
 
-  // ── Planning ──
-  'architect':          { x: 240, y: ROW_Y[1] },
-  'ui-designer':        { x: 600, y: ROW_Y[1] },
+/* ── Team column centers (x midpoint for each multi-member team) ── */
+const TEAM_CENTERS = {
+  architecture: 160,
+  engineering: 520,
+  quality: 880,
+}
 
-  // ── Build ──
-  'database-engineer':  { x: 60,  y: ROW_Y[2] },
-  'backend-engineer':   { x: 300, y: ROW_Y[2] },
-  'frontend-engineer':  { x: 540, y: ROW_Y[2] },
-  'fullstack-engineer': { x: 780, y: ROW_Y[2] },
+/** Center N items around a midpoint */
+function spreadAround(center: number, count: number, itemW: number, gap: number): number[] {
+  const totalW = count * itemW + (count - 1) * gap
+  const startX = center - totalW / 2
+  return Array.from({ length: count }, (_, i) => startX + i * (itemW + gap))
+}
 
-  // ── Quality ──
-  'security-engineer':  { x: 160, y: ROW_Y[3] },
-  'qa-engineer':        { x: 420, y: ROW_Y[3] },
-  'code-reviewer':      { x: 680, y: ROW_Y[3] },
+/* ── Pre-computed member positions ── */
+const ARCH_ROLES: AgentRole[] = ['architect', 'database-engineer', 'devops-engineer']
+const ENG_ROLES: AgentRole[] = ['backend-engineer', 'frontend-engineer', 'fullstack-engineer', 'ui-designer']
+const QA_ROLES: AgentRole[] = ['qa-engineer', 'code-reviewer', 'security-engineer']
 
-  // ── Ship ──
-  'devops-engineer':    { x: 240, y: ROW_Y[4] },
-  'technical-writer':   { x: 600, y: ROW_Y[4] },
+const archX = spreadAround(TEAM_CENTERS.architecture, ARCH_ROLES.length, NODE_W, GAP_X)
+const engX = spreadAround(TEAM_CENTERS.engineering, ENG_ROLES.length, NODE_W, GAP_X)
+const qaX = spreadAround(TEAM_CENTERS.quality, QA_ROLES.length, NODE_W, GAP_X)
+
+const MEMBER_POSITIONS: Record<AgentRole, { x: number; y: number }> = {
+  // Architecture members
+  'architect':          { x: archX[0], y: ROW_Y.members },
+  'database-engineer':  { x: archX[1], y: ROW_Y.members },
+  'devops-engineer':    { x: archX[2], y: ROW_Y.members },
+
+  // Engineering members
+  'backend-engineer':   { x: engX[0], y: ROW_Y.members },
+  'frontend-engineer':  { x: engX[1], y: ROW_Y.members },
+  'fullstack-engineer': { x: engX[2], y: ROW_Y.members },
+  'ui-designer':        { x: engX[3], y: ROW_Y.members },
+
+  // Quality members
+  'qa-engineer':        { x: qaX[0], y: ROW_Y.members },
+  'code-reviewer':      { x: qaX[1], y: ROW_Y.members },
+  'security-engineer':  { x: qaX[2], y: ROW_Y.members },
+
+  // Solo roles (positioned directly in the hierarchy)
+  'product-manager':    { x: TEAM_CENTERS.engineering - NODE_W / 2, y: ROW_Y.leadership },
+  'technical-writer':   { x: TEAM_CENTERS.engineering - NODE_W / 2, y: ROW_Y.support },
 }
 
 /**
- * Edges model real workflow handoffs:
- *
- *  PM → planners:         requirements flow to architect & designer
- *  Planners → builders:   architecture/designs flow to engineers
- *  Builders → quality:    code flows to QA, security audits
- *  Quality → shipping:    approved work flows to devops & docs
+ * Connections model the org-chart hierarchy:
+ *   Leadership → Department teams
+ *   Team nodes → their members
+ *   Quality gate → Documentation
  */
 export const CONNECTIONS: [string, string][] = [
-  // PM delegates to planners
-  ['product-manager', 'architect'],
-  ['product-manager', 'ui-designer'],
+  // PM → department teams
+  ['product-manager', 'team:architecture'],
+  ['product-manager', 'team:engineering'],
+  ['product-manager', 'team:quality'],
 
-  // Architect distributes technical work
-  ['architect', 'database-engineer'],
-  ['architect', 'backend-engineer'],
-  ['architect', 'devops-engineer'],
+  // Architecture team → members
+  ['team:architecture', 'architect'],
+  ['team:architecture', 'database-engineer'],
+  ['team:architecture', 'devops-engineer'],
 
-  // Designer hands off to frontend
-  ['ui-designer', 'frontend-engineer'],
+  // Engineering team → members
+  ['team:engineering', 'backend-engineer'],
+  ['team:engineering', 'frontend-engineer'],
+  ['team:engineering', 'fullstack-engineer'],
+  ['team:engineering', 'ui-designer'],
 
-  // Build-phase handoffs
-  ['database-engineer', 'backend-engineer'],
-  ['backend-engineer', 'frontend-engineer'],
-  ['backend-engineer', 'fullstack-engineer'],
-  ['frontend-engineer', 'fullstack-engineer'],
+  // Quality team → members
+  ['team:quality', 'qa-engineer'],
+  ['team:quality', 'code-reviewer'],
+  ['team:quality', 'security-engineer'],
 
-  // Engineers hand off to quality
-  ['backend-engineer', 'qa-engineer'],
-  ['frontend-engineer', 'qa-engineer'],
-  ['fullstack-engineer', 'qa-engineer'],
-
-  // Quality pipeline
-  ['qa-engineer', 'code-reviewer'],
-  ['security-engineer', 'code-reviewer'],
-  ['devops-engineer', 'security-engineer'],
-
-  // Shipping
-  ['code-reviewer', 'technical-writer'],
+  // Quality gate → documentation
+  ['team:quality', 'technical-writer'],
 ]
 
 export function buildNodes(agents: AgentInfo[]): Node[] {
-  return agents
-    .filter((a) => POSITIONS[a.role])
-    .map((agent) => {
-      const pos = POSITIONS[agent.role]
-      return {
-        id: agent.role,
-        type: 'agent',
-        position: { x: pos.x, y: pos.y },
-        data: {
-          role: agent.role,
-          title: agent.title,
-          status: 'idle',
-          activity: null,
-          selected: false,
-          isCenter: pos.isCenter ?? false,
-        } satisfies AgentNodeData,
-      }
+  const agentRoles = new Set(agents.map((a) => a.role))
+  const nodes: Node[] = []
+
+  // Build agent nodes
+  for (const agent of agents) {
+    const pos = MEMBER_POSITIONS[agent.role]
+    if (!pos) continue
+
+    const isSolo = agent.role === 'product-manager' || agent.role === 'technical-writer'
+
+    nodes.push({
+      id: agent.role,
+      type: 'agent',
+      position: { x: pos.x, y: pos.y },
+      data: {
+        role: agent.role,
+        title: agent.title,
+        status: 'idle',
+        activity: null,
+        selected: false,
+        isCenter: agent.role === 'product-manager',
+      } satisfies AgentNodeData,
     })
+  }
+
+  // Build team nodes for multi-member teams
+  const multiTeams = AGENT_TEAMS.filter((t) => t.roles.length > 1)
+  for (const team of multiTeams) {
+    const center = TEAM_CENTERS[team.team as keyof typeof TEAM_CENTERS]
+    if (center === undefined) continue
+
+    const memberCount = team.roles.filter((r) => agentRoles.has(r)).length
+    if (memberCount === 0) continue
+
+    nodes.push({
+      id: `team:${team.team}`,
+      type: 'team',
+      position: { x: center - TEAM_W / 2, y: ROW_Y.teams },
+      data: {
+        team: team.team,
+        title: team.title,
+        memberCount,
+        activeCount: 0,
+      } satisfies TeamNodeData,
+    })
+  }
+
+  return nodes
 }

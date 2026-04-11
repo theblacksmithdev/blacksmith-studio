@@ -5,13 +5,16 @@ import styled from '@emotion/styled'
 import { Settings2 } from 'lucide-react'
 import type { AgentRole, AgentInfo } from '@/api/types'
 import { Tooltip } from '@/components/shared/tooltip'
-import { AgentNode } from '../node'
+import { AgentNode, TeamNode } from '../node'
 import { CanvasWrap } from './styles'
 import { useCanvasNodes } from './use-canvas-nodes'
 import { useCanvasEdges } from './use-canvas-edges'
 import { useCanvasSettings, CanvasSettingsDrawer } from './settings'
 
-const nodeTypes: NodeTypes = { agent: AgentNode as any }
+const nodeTypes: NodeTypes = {
+  agent: AgentNode as any,
+  team: TeamNode as any,
+}
 
 const SettingsBtn = styled.button`
   position: absolute;
