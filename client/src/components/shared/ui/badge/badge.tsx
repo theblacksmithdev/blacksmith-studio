@@ -57,11 +57,9 @@ export function Badge({
 }: BadgeProps) {
   const merged: SystemStyleObject = {
     display: 'inline-flex',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: '4px',
     fontWeight: 500,
-    whiteSpace: 'nowrap',
-    flexShrink: 0,
     lineHeight: 1.4,
     ...sizeStyles[size],
     ...variantStyles[variant],

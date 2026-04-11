@@ -88,7 +88,7 @@ export function setupProjectsIPC(getWindow: () => BrowserWindow | null, projectM
   })
 
   ipcMain.handle(PROJECTS_CREATE, (_e, data: {
-    name: string; parentPath: string;
+    name: string; parentPath: string; type?: string;
     backendPort?: number; frontendPort?: number; theme?: string; ai?: boolean
   }) => {
     if (!data.name || !data.parentPath) throw new Error('name and parentPath are required')
@@ -105,6 +105,7 @@ export function setupProjectsIPC(getWindow: () => BrowserWindow | null, projectM
 
     const args = [
       'init', data.name,
+      '--type', data.type || 'fullstack',
       '-b', String(data.backendPort || 8000),
       '-f', String(data.frontendPort || 5173),
       '-t', data.theme || 'default',
@@ -117,7 +118,7 @@ export function setupProjectsIPC(getWindow: () => BrowserWindow | null, projectM
 
     // Run blacksmith via npx to ensure it uses a compatible Node version.
     // CI=true disables interactive prompts (auto-accepts defaults).
-    const proc = spawn(nodeCmd('npx', nodePath), ['blacksmith-cli', ...args], {
+    const proc = spawn(nodeCmd('npx', nodePath), ['blacksmith-cli@0.1.10', ...args], {
       cwd: absParent,
       stdio: ['pipe', 'pipe', 'pipe'],
       env: nodeEnv(nodePath, { FORCE_COLOR: '0', CI: '1' }),

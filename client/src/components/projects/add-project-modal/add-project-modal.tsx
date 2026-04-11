@@ -39,7 +39,7 @@ export function AddProjectModal({ open, onClose }: AddProjectModalProps) {
       title={TITLES[step]}
       subtitle={SUBTITLES[step]}
       onClose={onClose}
-      width="500px"
+      width={step === 'create' ? '700px' : '500px'}
       headerExtra={step !== 'choose' ? (
         <IconButton variant="ghost" size="sm" onClick={() => setStep('choose')} aria-label="Back">
           <ArrowLeft />
