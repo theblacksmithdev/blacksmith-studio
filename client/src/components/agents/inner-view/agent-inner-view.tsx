@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import {
-  ArrowLeft, Brain, MessageSquare, Wrench, CheckCircle, AlertCircle,
+  ArrowLeft, Brain, Wrench, CheckCircle, AlertCircle,
   Activity, Layers, ChevronDown, ChevronRight, Users, Zap,
   ArrowUp, Loader2, Bot, Sparkles,
 } from 'lucide-react'

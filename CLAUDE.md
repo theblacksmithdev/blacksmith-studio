@@ -25,7 +25,7 @@ client/src/pages/  — Route pages
 - All colors use CSS custom properties: `var(--studio-bg-main)`, `var(--studio-text-primary)`, etc.
 - Theme defined in `client/src/theme.ts`
 - Monochrome design language (black/white accent, no green/blue for status)
-- Font: Inter for UI, SF Mono for code
+- Font: System native (SF Pro on macOS via -apple-system) for UI, SF Mono for code
 
 ### API Layer
 - All Electron IPC calls go through typed modules in `client/src/api/modules/`

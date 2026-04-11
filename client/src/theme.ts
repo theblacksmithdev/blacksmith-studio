@@ -12,21 +12,21 @@ const config = defineConfig({
     ':root': {
       /* ── Light mode (default) ── */
       '--studio-bg-main': '#ffffff',
-      '--studio-bg-sidebar': '#f5f5f5',
-      '--studio-bg-surface': '#f0f0f0',
-      '--studio-bg-hover': '#e8e8e8',
+      '--studio-bg-sidebar': '#f7f7f7',
+      '--studio-bg-surface': '#f2f2f2',
+      '--studio-bg-hover': '#eaeaea',
       '--studio-bg-hover-strong': '#e0e0e0',
       '--studio-bg-inset': '#fafafa',
 
-      '--studio-border': 'rgba(0,0,0,0.08)',
-      '--studio-border-hover': 'rgba(0,0,0,0.15)',
+      '--studio-border': 'rgba(0,0,0,0.12)',
+      '--studio-border-hover': 'rgba(0,0,0,0.22)',
 
-      '--studio-text-primary': '#0d0d0d',
-      '--studio-text-secondary': '#6e6e6e',
-      '--studio-text-tertiary': '#999999',
-      '--studio-text-muted': '#b0b0b0',
+      '--studio-text-primary': '#0a0a0a',
+      '--studio-text-secondary': '#525252',
+      '--studio-text-tertiary': '#7a7a7a',
+      '--studio-text-muted': '#a0a0a0',
 
-      '--studio-accent': '#0d0d0d',
+      '--studio-accent': '#0a0a0a',
       '--studio-accent-fg': '#ffffff',
       '--studio-green': '#10a37f',
       '--studio-green-subtle': 'rgba(16,163,127,0.1)',
@@ -35,35 +35,35 @@ const config = defineConfig({
       '--studio-warning': '#f59e0b',
       '--studio-link': '#2563eb',
 
-      '--studio-code-bg': '#f5f5f5',
+      '--studio-code-bg': '#f7f7f7',
       '--studio-code-border': 'rgba(0,0,0,0.06)',
 
-      '--studio-scrollbar': 'rgba(0,0,0,0.08)',
-      '--studio-scrollbar-hover': 'rgba(0,0,0,0.15)',
-      '--studio-selection': 'rgba(0,0,0,0.08)',
+      '--studio-scrollbar': 'rgba(0,0,0,0.1)',
+      '--studio-scrollbar-hover': 'rgba(0,0,0,0.18)',
+      '--studio-selection': 'rgba(0,0,0,0.1)',
 
-      '--studio-shadow': '0 2px 8px rgba(0,0,0,0.08)',
+      '--studio-shadow': '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)',
     },
 
     '.dark': {
       /* ── Dark mode ── */
-      '--studio-bg-main': '#212121',
-      '--studio-bg-sidebar': '#171717',
-      '--studio-bg-surface': '#2f2f2f',
-      '--studio-bg-hover': '#3a3a3a',
-      '--studio-bg-hover-strong': '#424242',
-      '--studio-bg-inset': '#1a1a1a',
+      '--studio-bg-main': '#1a1a1a',
+      '--studio-bg-sidebar': '#141414',
+      '--studio-bg-surface': '#262626',
+      '--studio-bg-hover': '#333333',
+      '--studio-bg-hover-strong': '#3d3d3d',
+      '--studio-bg-inset': '#111111',
 
-      '--studio-border': 'rgba(255,255,255,0.08)',
-      '--studio-border-hover': 'rgba(255,255,255,0.15)',
+      '--studio-border': 'rgba(255,255,255,0.1)',
+      '--studio-border-hover': 'rgba(255,255,255,0.2)',
 
-      '--studio-text-primary': '#ececec',
-      '--studio-text-secondary': '#b4b4b4',
-      '--studio-text-tertiary': '#8e8e8e',
-      '--studio-text-muted': '#676767',
+      '--studio-text-primary': '#f0f0f0',
+      '--studio-text-secondary': '#a8a8a8',
+      '--studio-text-tertiary': '#787878',
+      '--studio-text-muted': '#555555',
 
-      '--studio-accent': '#ececec',
-      '--studio-accent-fg': '#212121',
+      '--studio-accent': '#f0f0f0',
+      '--studio-accent-fg': '#1a1a1a',
       '--studio-green': '#10a37f',
       '--studio-green-subtle': 'rgba(16,163,127,0.15)',
 
@@ -71,24 +71,39 @@ const config = defineConfig({
       '--studio-warning': '#f59e0b',
       '--studio-link': '#7ab8f5',
 
-      '--studio-code-bg': '#171717',
+      '--studio-code-bg': '#141414',
       '--studio-code-border': 'rgba(255,255,255,0.06)',
 
       '--studio-scrollbar': 'rgba(255,255,255,0.1)',
-      '--studio-scrollbar-hover': 'rgba(255,255,255,0.18)',
+      '--studio-scrollbar-hover': 'rgba(255,255,255,0.2)',
       '--studio-selection': 'rgba(255,255,255,0.15)',
 
-      '--studio-shadow': '0 2px 8px rgba(0,0,0,0.3)',
+      '--studio-shadow': '0 1px 3px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.15)',
     },
 
     body: {
       bg: 'var(--studio-bg-main)',
       color: 'var(--studio-text-primary)',
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      letterSpacing: '-0.01em',
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+      fontSize: '13px',
+      lineHeight: '1.5',
+      letterSpacing: '-0.003em',
+      fontWeight: 400,
     },
     '*': {
       borderColor: 'var(--studio-border)',
+    },
+    'h1, h2, h3, h4, h5, h6': {
+      fontWeight: 600,
+      letterSpacing: '-0.02em',
+      lineHeight: 1.2,
+    },
+    'b, strong': {
+      fontWeight: 600,
+    },
+    'button, input, textarea, select': {
+      fontFamily: 'inherit',
+      letterSpacing: 'inherit',
     },
     '*::-webkit-scrollbar': { width: '6px', height: '6px' },
     '*::-webkit-scrollbar-track': { background: 'transparent' },
@@ -107,6 +122,7 @@ const config = defineConfig({
     '@keyframes cursorBlink': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0 } },
     '@keyframes shimmerBar': { '0%': { opacity: 0.3, transform: 'scaleX(0.5)' }, '50%': { opacity: 0.6, transform: 'scaleX(1)' }, '100%': { opacity: 0.3, transform: 'scaleX(0.5)' } },
     '@keyframes pulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.4 } },
+    '@keyframes spin': { from: { transform: 'rotate(0deg)' }, to: { transform: 'rotate(360deg)' } },
   },
 })
 
