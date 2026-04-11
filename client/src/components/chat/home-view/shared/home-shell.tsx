@@ -1,15 +1,11 @@
-import type { ReactNode } from 'react'
-import styled from '@emotion/styled'
-import { History } from 'lucide-react'
-import { HistoryPanel } from '../../history-panel'
-import { useUiStore } from '@/stores/ui-store'
-import { Tooltip } from '@/components/shared/tooltip'
-
-const Root = styled.div`
-  display: flex;
-  height: 100%;
-  overflow: hidden;
-`
+import type { ReactNode } from "react";
+import styled from "@emotion/styled";
+import { Box } from "@chakra-ui/react";
+import { History } from "lucide-react";
+import { HistoryPanel } from "../../history-panel";
+import { useUiStore } from "@/stores/ui-store";
+import { Tooltip } from "@/components/shared/tooltip";
+import { SplitPanel } from "@/components/shared/layout";
 
 const Page = styled.div`
   display: flex;
@@ -17,22 +13,24 @@ const Page = styled.div`
   flex: 1;
   height: 100%;
   min-height: 0;
-`
+`;
 
 const TopBar = styled.div`
   display: flex;
   align-items: center;
   padding: 8px 14px;
   flex-shrink: 0;
-`
+`;
 
 const TopBarBtn = styled.button<{ active: boolean }>`
   width: 30px;
   height: 30px;
   border-radius: 8px;
   border: none;
-  background: ${({ active }) => (active ? 'var(--studio-bg-hover)' : 'transparent')};
-  color: ${({ active }) => (active ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)')};
+  background: ${({ active }) =>
+    active ? "var(--studio-bg-hover)" : "transparent"};
+  color: ${({ active }) =>
+    active ? "var(--studio-text-primary)" : "var(--studio-text-muted)"};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -44,7 +42,7 @@ const TopBarBtn = styled.button<{ active: boolean }>`
     background: var(--studio-bg-hover);
     color: var(--studio-text-primary);
   }
-`
+`;
 
 const Content = styled.div`
   flex: 1;
@@ -53,7 +51,7 @@ const Content = styled.div`
   justify-content: center;
   overflow: auto;
   min-height: 0;
-`
+`;
 
 const Stack = styled.div`
   display: flex;
@@ -64,37 +62,65 @@ const Stack = styled.div`
   max-width: 640px;
   padding: 40px 24px;
   margin: 0 auto;
-`
+`;
 
 interface HomeShellProps {
-  children: ReactNode
+  children: ReactNode;
+}
+
+function MainContent({
+  children,
+  historyOpen,
+  toggleHistory,
+}: {
+  children: ReactNode;
+  historyOpen: boolean;
+  toggleHistory: () => void;
+}) {
+  return (
+    <Page>
+      <TopBar>
+        <Tooltip content={historyOpen ? "Close history" : "History"}>
+          <TopBarBtn active={historyOpen} onClick={toggleHistory}>
+            <History size={15} />
+          </TopBarBtn>
+        </Tooltip>
+      </TopBar>
+
+      <Content>
+        <Stack>{children}</Stack>
+      </Content>
+    </Page>
+  );
 }
 
 export function HomeShell({ children }: HomeShellProps) {
-  const historyOpen = useUiStore((s) => s.historyPanelOpen)
-  const toggleHistory = useUiStore((s) => s.toggleHistoryPanel)
+  const historyOpen = useUiStore((s) => s.historyPanelOpen);
+  const toggleHistory = useUiStore((s) => s.toggleHistoryPanel);
+
+  const mainContent = (
+    <MainContent historyOpen={historyOpen} toggleHistory={toggleHistory}>
+      {children}
+    </MainContent>
+  );
+
+  if (!historyOpen) {
+    return (
+      <Box css={{ height: "100%", overflow: "hidden" }}>{mainContent}</Box>
+    );
+  }
 
   return (
-    <Root>
-      {historyOpen && <HistoryPanel />}
-
-      <Page>
-        <TopBar>
-          <Tooltip content={historyOpen ? 'Close history' : 'Chat history'}>
-            <TopBarBtn active={historyOpen} onClick={toggleHistory}>
-              <History size={15} />
-            </TopBarBtn>
-          </Tooltip>
-        </TopBar>
-
-        <Content>
-          <Stack>
-            {children}
-          </Stack>
-        </Content>
-      </Page>
-    </Root>
-  )
+    <SplitPanel
+      left={<HistoryPanel />}
+      defaultWidth={260}
+      minWidth={200}
+      maxWidth={400}
+      storageKey="home.historyWidth"
+    >
+      {mainContent}
+    </SplitPanel>
+  );
 }
 
 /** Thin centered divider for separating sections */
@@ -103,4 +129,4 @@ export const SectionDivider = styled.div`
   height: 1px;
   background: var(--studio-border);
   margin: 4px 0;
-`
+`;

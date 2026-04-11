@@ -18,8 +18,10 @@ import { Flex, Box } from '@chakra-ui/react'
 export type SplitDirection = 'horizontal' | 'vertical'
 
 interface SplitPanelProps {
+  /** Left / top panel content */
   left: ReactNode
-  right: ReactNode
+  /** Right / bottom panel content (main area) */
+  children: ReactNode
   defaultWidth?: number
   minWidth?: number
   maxWidth?: number
@@ -29,7 +31,7 @@ interface SplitPanelProps {
 
 export function SplitPanel({
   left,
-  right,
+  children,
   defaultWidth = 260,
   minWidth = 160,
   maxWidth = 480,
@@ -148,7 +150,7 @@ export function SplitPanel({
           flexDirection: 'column',
         }}
       >
-        {right}
+        {children}
       </Box>
     </Flex>
   )

@@ -48,13 +48,12 @@ function groupByDate(items: HistoryItem[]) {
 /* ── Styled ── */
 
 const Panel = styled.div`
-  width: 260px;
+  width: 100%;
   height: 100%;
-  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   background: var(--studio-bg-sidebar);
-  border-right: 1px solid var(--studio-border);
+  /* border managed by SplitPanel handle */
   overflow: hidden;
 `
 
