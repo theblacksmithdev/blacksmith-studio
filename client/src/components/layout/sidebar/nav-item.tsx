@@ -4,7 +4,7 @@ export const NavButton = styled.button<{ active: boolean; expanded: boolean }>`
   display: flex;
   align-items: center;
   gap: ${({ expanded }) => (expanded ? '10px' : '0')};
-  width: 100%;
+  width: ${({ expanded }) => (expanded ? '100%' : '36px')};
   height: 36px;
   padding: ${({ expanded }) => (expanded ? '0 10px' : '0')};
   justify-content: ${({ expanded }) => (expanded ? 'flex-start' : 'center')};
@@ -21,6 +21,7 @@ export const NavButton = styled.button<{ active: boolean; expanded: boolean }>`
   flex-shrink: 0;
   overflow: hidden;
   white-space: nowrap;
+  margin: ${({ expanded }) => (expanded ? '0' : '0 auto')};
 
   &:hover {
     background: ${({ active }) => (active ? 'var(--studio-bg-hover)' : 'var(--studio-bg-surface)')};

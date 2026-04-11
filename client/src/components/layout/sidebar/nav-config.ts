@@ -1,33 +1,34 @@
 import {
-  MessageSquare,
-  FolderTree,
+  Files,
   Play,
   GitBranch,
-  Network,
+  Terminal,
+  Settings,
 } from 'lucide-react'
 import {
-  newChatPath,
   codePath,
   runPath,
   checkpointsPath,
-  agentsPath,
+  settingsPath,
 } from '@/router/paths'
 
 export interface NavEntry {
   id: string
-  icon: typeof MessageSquare
+  icon: typeof Files
   label: string
   path: (pid: string) => string
   match: string
 }
 
 export const projectNav: NavEntry[] = [
-  { id: 'chat', icon: MessageSquare, label: 'Chat', path: newChatPath, match: '/chat' },
-  { id: 'agents', icon: Network, label: 'Agents', path: agentsPath, match: '/agents' },
-  { id: 'code', icon: FolderTree, label: 'Files', path: codePath, match: '/code' },
+  { id: 'code', icon: Files, label: 'Files', path: codePath, match: '/code' },
   { id: 'git', icon: GitBranch, label: 'Source Control', path: checkpointsPath, match: '/checkpoints' },
 ]
 
 export const bottomNav: NavEntry[] = [
   { id: 'run', icon: Play, label: 'Dev Servers', path: runPath, match: '/run' },
 ]
+
+export const settingsNav: NavEntry = {
+  id: 'settings', icon: Settings, label: 'Settings', path: settingsPath, match: '/settings',
+}
