@@ -27,6 +27,7 @@
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.45.2",
     "fix-path": "^5.0.0",
+    "material-file-icons": "^2.4.0",
     "simple-git": "^3.35.2"
   },
   "devDependencies": {

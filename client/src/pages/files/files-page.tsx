@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { FileViewer } from './components/file-viewer/index'
 import { useFiles } from '@/hooks/use-files'
 import { useFileStore } from '@/stores/file-store'
-import { ExplorerPanel } from './components/file-browser/explorer-panel'
-import { EmptyViewer } from './components/file-browser/empty-viewer'
+import { ExplorerPanel } from './components/explorer'
+import { EmptyViewer } from './components/explorer'
 import { SplitPanel } from '@/components/shared/layout'
 
 export default function FilesPage() {

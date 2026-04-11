@@ -1,5 +1,6 @@
 import { Box, Text, HStack } from '@chakra-ui/react'
-import { Copy, Check, FileCode, Circle, X } from 'lucide-react'
+import { Copy, Check, Circle, X } from 'lucide-react'
+import { FileIcon } from '../explorer/utils/file-icon'
 import { useState } from 'react'
 import { Tooltip } from '@/components/shared/tooltip'
 import { useFileStore, type OpenTab } from '@/stores/file-store'
@@ -36,7 +37,7 @@ function TabItem({ tab, isActive }: { tab: OpenTab; isActive: boolean }) {
         },
       }}
     >
-      <FileCode size={12} />
+      <FileIcon name={getFileName(tab.path)} size={13} />
       <Text css={{ fontSize: '13px', fontWeight: isActive ? 500 : 400 }}>
         {getFileName(tab.path)}
       </Text>
