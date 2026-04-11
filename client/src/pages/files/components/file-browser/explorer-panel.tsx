@@ -1,6 +1,6 @@
 import { Box, Text, HStack } from '@chakra-ui/react'
 import { RefreshCw, Search, FolderTree } from 'lucide-react'
-import { FileTree } from '../file-tree'
+import { FileTree } from '../file-tree/file-tree'
 import { Tooltip } from '@/components/shared/tooltip'
 
 interface ExplorerPanelProps {

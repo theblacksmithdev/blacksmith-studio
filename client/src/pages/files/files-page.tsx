@@ -1,19 +1,18 @@
 import { useState } from 'react'
 import { Box } from '@chakra-ui/react'
-import { FileViewer } from '../file-viewer/index'
+import { FileViewer } from './components/file-viewer/index'
 import { useFiles } from '@/hooks/use-files'
 import { useFileStore } from '@/stores/file-store'
-import { ExplorerPanel } from './explorer-panel'
-import { EmptyViewer } from './empty-viewer'
+import { ExplorerPanel } from './components/file-browser/explorer-panel'
+import { EmptyViewer } from './components/file-browser/empty-viewer'
 
-export function FileBrowser() {
+export default function FilesPage() {
   const { tree, fetchFileTree, fetchFileContent } = useFiles()
   const { activeTab, openTabs, changedFiles } = useFileStore()
   const [searchQuery, setSearchQuery] = useState('')
 
   return (
     <Box css={{ height: '100%', display: 'flex', overflow: 'hidden' }}>
-      {/* Explorer panel */}
       <ExplorerPanel
         tree={tree}
         activeTab={activeTab}
@@ -24,7 +23,6 @@ export function FileBrowser() {
         onSelectFile={fetchFileContent}
       />
 
-      {/* Viewer panel */}
       <Box css={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         {openTabs.length > 0 && activeTab ? (
           <FileViewer />
