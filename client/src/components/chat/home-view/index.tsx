@@ -8,7 +8,6 @@ import { useProjectStore } from '@/stores/project-store'
 import { chatPath } from '@/router/paths'
 import { HomeHero } from './home-hero'
 import { QuickActions } from './quick-actions'
-import { TemplateSection } from './template-section'
 import { HomeShell, SectionDivider } from './shared/home-shell'
 import { RecentSection, type RecentEntry } from './shared/recent-section'
 
@@ -40,7 +39,6 @@ export function HomeView() {
       <HomeHero />
       <ChatInput onSend={handleSend} onCancel={() => {}} isStreaming={isStreaming} />
       <QuickActions mode="chat" onSend={handleSend} />
-      <TemplateSection onSend={handleSend} />
       {recentItems.length > 0 ? (
         <>
           <SectionDivider />

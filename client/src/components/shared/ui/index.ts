@@ -38,6 +38,9 @@ export { Modal, ModalPrimaryButton, ModalSecondaryButton, ModalDangerButton, Mod
 export { Drawer } from './drawer'
 export type { DrawerPlacement } from './drawer'
 
+export { ConfirmDialog } from './confirm-dialog'
+export type { ConfirmDialogVariant } from './confirm-dialog'
+
 // ── Forms ──
 export { Input } from './input'
 export type { InputSize } from './input'

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Network } from 'lucide-react'
 import { ChatInput } from '@/components/chat/chat-input'
@@ -10,6 +10,7 @@ import { HomeHero } from '@/components/chat/home-view/home-hero'
 import { QuickActions } from '@/components/chat/home-view/quick-actions'
 import { HomeShell, SectionDivider } from '@/components/chat/home-view/shared/home-shell'
 import { RecentSection, type RecentEntry } from '@/components/chat/home-view/shared/recent-section'
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 
 export function AgentsHomeView() {
   const { isStreaming } = useChatStore()
@@ -30,10 +31,14 @@ export function AgentsHomeView() {
     navigate(agentsNewPath(pid), { state: { initialPrompt: text } })
   }
 
-  const handleDelete = async (id: string) => {
-    await api.agents.deleteConversation(id)
-    setConvs((prev) => prev.filter((c) => c.id !== id))
-  }
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+
+  const confirmDelete = useCallback(async () => {
+    if (!deleteTarget) return
+    await api.agents.deleteConversation(deleteTarget)
+    setConvs((prev) => prev.filter((c) => c.id !== deleteTarget))
+    setDeleteTarget(null)
+  }, [deleteTarget])
 
   const recentItems: RecentEntry[] = convs.map((c) => ({
     id: c.id,
@@ -56,10 +61,20 @@ export function AgentsHomeView() {
             label="Recent conversations"
             items={recentItems}
             onSelect={(id) => pid && navigate(agentsConversationPath(pid, id))}
-            onDelete={handleDelete}
+            onDelete={(id) => setDeleteTarget(id)}
           />
         </>
       ) : null}
+
+      {deleteTarget && (
+        <ConfirmDialog
+          message="Delete this conversation?"
+          description="All messages and task history in this conversation will be permanently removed."
+          confirmLabel="Delete"
+          onConfirm={confirmDelete}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
     </HomeShell>
   )
 }
