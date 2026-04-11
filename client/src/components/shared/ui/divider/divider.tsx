@@ -38,7 +38,8 @@ export function Divider({
   ...rest
 }: DividerProps) {
   const merged: SystemStyleObject = {
-    flexShrink: 0,
+    flexShrink: variant === 'full' ? 1 : 0,
+    minWidth: 0,
     ...variantStyles[variant],
     ...(spacing ? { marginTop: spacing, marginBottom: spacing } : {}),
     ...(cssProp as SystemStyleObject ?? {}),

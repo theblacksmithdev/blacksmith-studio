@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { Flex, Box } from '@chakra-ui/react'
 import { X } from 'lucide-react'
@@ -9,18 +9,32 @@ import { IconButton } from '../icon-button'
 
 interface ModalProps {
   title: string
+  subtitle?: string
   children: ReactNode
   onClose: () => void
   width?: string
   footer?: ReactNode
+  /** Rendered before the title (e.g. back button) */
   headerExtra?: ReactNode
+  /** Close on Escape key (default: true) */
+  closeOnEscape?: boolean
+  /** Close when clicking the backdrop (default: true) */
+  closeOnBackdrop?: boolean
 }
 
-export function Modal({ title, children, onClose, width = '480px', footer, headerExtra }: ModalProps) {
+export function Modal({ title, subtitle, children, onClose, width = '480px', footer, headerExtra, closeOnEscape = true, closeOnBackdrop = true }: ModalProps) {
+  // Escape key
+  useEffect(() => {
+    if (!closeOnEscape) return
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [closeOnEscape, onClose])
   return createPortal(
     <Flex
       align="center"
       justify="center"
+      onClick={closeOnBackdrop ? onClose : undefined}
       css={{
         position: 'fixed',
         inset: 0,
@@ -32,16 +46,20 @@ export function Modal({ title, children, onClose, width = '480px', footer, heade
     >
       <Flex
         direction="column"
+        onClick={(e) => e.stopPropagation()}
         css={{
           width,
           maxHeight: '85vh',
-          background: 'var(--studio-glass)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
+          background: 'var(--studio-bg-main)',
           borderRadius: radii['3xl'],
-          border: '1px solid var(--studio-glass-border)',
+          border: '1px solid var(--studio-border)',
           boxShadow: shadows.lg,
           overflow: 'hidden',
+          '@keyframes modalEnter': {
+            from: { opacity: 0, transform: 'scale(0.97) translateY(4px)' },
+            to: { opacity: 1, transform: 'scale(1) translateY(0)' },
+          },
+          animation: 'modalEnter 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
         {/* Header */}
@@ -55,7 +73,10 @@ export function Modal({ title, children, onClose, width = '480px', footer, heade
           }}
         >
           {headerExtra}
-          <Text variant="subtitle" css={{ flex: 1 }}>{title}</Text>
+          <Box css={{ flex: 1 }}>
+            <Text variant="subtitle">{title}</Text>
+            {subtitle && <Text variant="caption" color="muted">{subtitle}</Text>}
+          </Box>
           <IconButton variant="ghost" size="sm" onClick={onClose} aria-label="Close">
             <X />
           </IconButton>
