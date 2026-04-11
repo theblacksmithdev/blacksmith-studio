@@ -21,10 +21,9 @@ import RunPage from '@/pages/run'
 import SkillsBrowserPage from '@/pages/skills'
 import McpBrowserPage from '@/pages/mcp'
 import CheckpointsPage from '@/pages/checkpoints'
-import AgentsListPage from '@/pages/agents'
+import AgentsHomePage from '@/pages/agents/home'
 import AgentsNewPage from '@/pages/agents/new'
 import AgentsConversationPage from '@/pages/agents/conversation'
-import ProjectHomePage from '@/pages/home'
 
 export const router = createHashRouter([
   {
@@ -39,7 +38,7 @@ export const router = createHashRouter([
     path: '/:projectId',
     element: <ProjectLayout />,
     children: [
-      { index: true, element: <ProjectHomePage /> },
+      { index: true, element: <Navigate to="chat/new" replace /> },
       { path: 'chat/new', element: <NewChatPage /> },
       { path: 'chat/:sessionId', element: <ChatPage /> },
       { path: 'code', element: <FilesPage /> },
@@ -47,7 +46,7 @@ export const router = createHashRouter([
       { path: 'skills', element: <SkillsBrowserPage /> },
       { path: 'mcp', element: <McpBrowserPage /> },
       { path: 'checkpoints', element: <CheckpointsPage /> },
-      { path: 'agents', element: <AgentsListPage /> },
+      { path: 'agents', element: <AgentsHomePage /> },
       { path: 'agents/new', element: <AgentsNewPage /> },
       { path: 'agents/:conversationId', element: <AgentsConversationPage /> },
 

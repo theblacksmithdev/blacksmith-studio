@@ -1,8 +1,10 @@
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { PanelLeft } from 'lucide-react'
 import { useProjectStore } from '@/stores/project-store'
-import { useUiStore } from '@/stores/ui-store'
+import { useUiStore, type WorkMode } from '@/stores/ui-store'
+import { newChatPath, agentsPath } from '@/router/paths'
 import { Tooltip } from '@/components/shared/tooltip'
+import { ModeToggle } from '@/components/chat/home-view/mode-toggle'
 import {
   TitleBarShell,
   NavBtn,
@@ -11,22 +13,40 @@ import {
   TitleSeparator,
 } from './title-bar-shell'
 
-function getPageName(pathname: string): string | null {
-  if (pathname.includes('/chat')) return 'Chat'
+function getPageName(pathname: string, projectId: string): string | null {
+  // Check for specific sub-pages (not the home routes)
+  if (pathname.includes('/chat/') && !pathname.endsWith('/chat/new')) return 'Chat'
   if (pathname.endsWith('/code')) return 'Code'
   if (pathname.endsWith('/run')) return 'Dev Servers'
-  if (pathname.endsWith('/templates')) return 'Templates'
-  if (pathname.endsWith('/activity')) return 'Activity'
   if (pathname.endsWith('/settings')) return 'Settings'
+  if (pathname.includes('/agents/') && !pathname.endsWith('/agents')) return 'Agents'
+  if (pathname.endsWith('/checkpoints')) return 'Source Control'
+  if (pathname.endsWith('/skills')) return 'Skills'
+  if (pathname.endsWith('/mcp')) return 'MCP'
   return null
+}
+
+function getCurrentMode(pathname: string): WorkMode {
+  if (pathname.includes('/agents')) return 'agents'
+  return 'chat'
 }
 
 export function ProjectTitleBar() {
   const location = useLocation()
+  const navigate = useNavigate()
   const activeProject = useProjectStore((s) => s.activeProject)
   const toggleSidebar = useUiStore((s) => s.toggleSidebar)
 
-  const pageName = getPageName(location.pathname)
+  const pid = activeProject?.id ?? ''
+  const pageName = pid ? getPageName(location.pathname, pid) : null
+  const isHome = !!pid && !pageName
+  const currentMode = getCurrentMode(location.pathname)
+
+  const handleModeChange = (mode: WorkMode) => {
+    if (!pid) return
+    if (mode === 'chat') navigate(newChatPath(pid))
+    else navigate(agentsPath(pid))
+  }
 
   return (
     <TitleBarShell
@@ -38,7 +58,9 @@ export function ProjectTitleBar() {
         </Tooltip>
       }
       center={
-        activeProject ? (
+        isHome ? (
+          <ModeToggle mode={currentMode} onChange={handleModeChange} />
+        ) : activeProject ? (
           <>
             <TitleTextBold>{activeProject.name}</TitleTextBold>
             {pageName && (

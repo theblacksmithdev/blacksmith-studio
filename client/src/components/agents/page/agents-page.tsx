@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useState, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useParams } from 'react-router-dom'
+import { useParams, useLocation } from 'react-router-dom'
 import { ReactFlowProvider } from '@xyflow/react'
 import { ListTodo, MessageSquare, X, Square } from 'lucide-react'
 import { api } from '@/api'
@@ -54,6 +54,17 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
 
   useAgentEvents()
   const { currentConvId, handleSend } = useConversation(conversationId)
+
+  // Auto-send initial prompt from route state (e.g. from home page mode toggle)
+  const location = useLocation()
+  const initialPromptSent = useRef(false)
+  useEffect(() => {
+    const state = location.state as { initialPrompt?: string } | null
+    if (state?.initialPrompt && !initialPromptSent.current) {
+      initialPromptSent.current = true
+      handleSend(state.initialPrompt)
+    }
+  }, [location.state, handleSend])
 
   // Track unread messages when chat is closed
   const prevCountRef = useRef(chatMessages.length)

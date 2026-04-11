@@ -1,10 +1,14 @@
 import { create } from 'zustand'
 
 export type ConnectionStatus = 'connected' | 'disconnected' | 'reconnecting'
+export type WorkMode = 'chat' | 'agents'
 
 interface UiState {
   connectionStatus: ConnectionStatus
   setConnectionStatus: (status: ConnectionStatus) => void
+
+  workMode: WorkMode
+  setWorkMode: (mode: WorkMode) => void
 
   runnerPanelOpen: boolean
   setRunnerPanelOpen: (open: boolean) => void
@@ -28,6 +32,9 @@ interface UiState {
 export const useUiStore = create<UiState>((set) => ({
   connectionStatus: 'disconnected',
   setConnectionStatus: (connectionStatus) => set({ connectionStatus }),
+
+  workMode: 'chat',
+  setWorkMode: (workMode) => set({ workMode }),
 
   runnerPanelOpen: false,
   setRunnerPanelOpen: (runnerPanelOpen) => set({ runnerPanelOpen }),
