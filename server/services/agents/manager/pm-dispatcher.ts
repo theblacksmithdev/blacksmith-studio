@@ -271,6 +271,128 @@ export async function dispatchWithPM(
   return parsePlan(fullText)
 }
 
+/* ── Two-Phase PM: Task Refinement ── */
+
+const REFINE_SYSTEM_PROMPT = `You are the lead project manager refining a task prompt. A previous planning phase produced a rough task assignment. Now that earlier agents have completed their work and produced artifacts, you must refine this task's prompt to be specific and grounded in what was actually produced.
+
+## Your Job
+1. Read the artifact summaries from previous agents.
+2. Rewrite the task prompt so it references the ACTUAL outputs — exact file paths, component names, field names, design tokens, and decisions from the artifacts.
+3. The agent executing this task will also receive the artifact file paths to read. Your refined prompt should tell them WHAT to focus on and HOW the artifacts relate to their task.
+
+## Rules
+- Keep the same role and goal — don't change what the task is, just make it more specific.
+- Reference concrete details from artifacts: exact field names, component names, file paths, API endpoints, design tokens, layout decisions.
+- If a design spec exists, tell the implementer to follow it exactly — name the specific components, states, and tokens from the spec.
+- If an architecture artifact exists, reference the module boundaries, data flow, and interface contracts it defined.
+- Be concise. Don't pad with generic advice the agent already knows.
+
+## Output
+Respond with ONLY the refined task prompt text. No JSON, no markdown fences, no explanation — just the prompt the agent should receive.`
+
+/**
+ * Two-phase PM refinement: refine a task's prompt using artifacts from completed tasks.
+ *
+ * Called before each task in the pipeline (when artifacts exist) to replace the
+ * PM's original speculative prompt with one grounded in actual agent output.
+ * This is a fast, lightweight call — no tools, short response.
+ */
+export async function refineTaskPrompt(
+  task: DispatchTask,
+  artifactSummaries: { role: string; artifactPath: string; title: string }[],
+  baseOptions: Omit<AgentExecuteOptions, 'prompt'>,
+  emit?: EmitFn,
+): Promise<string> {
+  // No artifacts to refine against — use original prompt
+  if (artifactSummaries.length === 0) return task.prompt
+
+  const claudeBin = baseOptions.claudeBin ?? 'claude'
+
+  const artifactContext = artifactSummaries
+    .map((a) => `- ${a.role} completed "${a.title}" → artifact at: ${a.artifactPath}`)
+    .join('\n')
+
+  const refinementPrompt = [
+    `Refine this task prompt for the ${task.role}:`,
+    '',
+    '## Original Task',
+    `Title: ${task.title}`,
+    `Role: ${task.role}`,
+    `Prompt: ${task.prompt}`,
+    '',
+    '## Completed Artifacts (from earlier agents)',
+    artifactContext,
+    '',
+    'Rewrite the task prompt to be specific and grounded in these artifacts.',
+  ].join('\n')
+
+  const args = [
+    '-p', refinementPrompt,
+    '--output-format', 'stream-json',
+    '--verbose',
+    '--tools', '',
+    '--append-system-prompt', REFINE_SYSTEM_PROMPT,
+  ]
+
+  const emitPM = (description: string) => {
+    if (!emit) return
+    emit({
+      type: 'activity' as AgentEvent['type'],
+      agentId: 'product-manager',
+      executionId: '',
+      timestamp: new Date().toISOString(),
+      data: { type: 'activity', description } as AgentEvent['data'],
+    })
+  }
+
+  emitPM(`Refining task "${task.title}" with ${artifactSummaries.length} artifact(s)...`)
+
+  try {
+    const fullText = await new Promise<string>((resolve, reject) => {
+      const proc = spawn(claudeBin, args, {
+        cwd: baseOptions.projectRoot,
+        stdio: ['ignore', 'pipe', 'pipe'],
+        env: nodeEnv(baseOptions.nodePath),
+      })
+
+      let text = ''
+      let stderr = ''
+
+      const parser = createNdjsonParser((chunk: any) => {
+        if (chunk.type === 'assistant') {
+          for (const b of (chunk.message?.content || [])) {
+            if (b.type === 'text') text += b.text
+          }
+        }
+      })
+
+      proc.stdout!.on('data', (d: Buffer) => parser.write(d.toString()))
+      proc.stderr!.on('data', (d: Buffer) => { stderr += d.toString() })
+
+      proc.on('close', (code: number | null) => {
+        parser.flush()
+        if (text.trim()) resolve(text.trim())
+        else if (code !== 0) reject(new Error(stderr.trim() || `Refinement exited with code ${code}`))
+        else resolve('')
+      })
+
+      proc.on('error', (err: Error) => reject(err))
+    })
+
+    if (fullText) {
+      console.log(`[pm-dispatcher] Refined task "${task.title}" (${fullText.length} chars)`)
+      emitPM(`Task "${task.title}" refined with artifact context`)
+      return fullText
+    }
+  } catch (err: any) {
+    console.warn(`[pm-dispatcher] Refinement failed for "${task.title}", using original prompt:`, err.message)
+    emitPM(`Refinement failed — using original prompt for "${task.title}"`)
+  }
+
+  // Fallback to original prompt if refinement fails
+  return task.prompt
+}
+
 function parsePlan(raw: string): DispatchPlan {
   const braceStart = raw.indexOf('{')
   const braceEnd = raw.lastIndexOf('}')

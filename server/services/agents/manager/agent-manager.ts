@@ -14,7 +14,7 @@ import type {
 import { createAgentRegistry } from '../roles/index.js'
 import { ArtifactManager } from '../artifacts.js'
 import { routePrompt, type RouteResult } from './router.js'
-import { dispatchWithPM, type DispatchPlan, type DispatchTask } from './pm-dispatcher.js'
+import { dispatchWithPM, refineTaskPrompt, type DispatchPlan, type DispatchTask } from './pm-dispatcher.js'
 import { needsQualityGate, runQualityGate } from './quality-gate.js'
 import { PIPELINE_TEMPLATES, type PipelineTemplate } from './pipelines.js'
 import { executeWorkflowSteps } from './workflow-engine.js'
@@ -327,8 +327,10 @@ export class AgentManager {
     const completed = new Map<string, AgentExecution>()
     /** Maps taskId → project-relative artifact path */
     const artifactPaths = new Map<string, string>()
+    /** Tracks which roles have already executed in THIS pipeline (for session continuity) */
+    const pipelineSessions = new Map<AgentRole, string>()
 
-    for (const task of tasks) {
+    for (let task of tasks) {
       // Check if execution was cancelled between tasks
       if (this._cancelled) {
         for (const remaining of tasks) {
@@ -380,7 +382,29 @@ export class AgentManager {
       this.emitTaskStatus(task.id, 'running', task.title, task.role)
 
       try {
-        const execution = await this.executeDispatchedTask(task, baseOptions, completed, artifactPaths)
+        // Two-phase PM: refine task prompts using artifacts from completed tasks.
+        // Only refine on the first task for a role — continuation tasks already
+        // have full context in the session and just need the task prompt.
+        const isFirstForRole = !pipelineSessions.has(task.role)
+        if (isFirstForRole && artifactPaths.size > 0 && !this._cancelled) {
+          const summaries = Array.from(artifactPaths.entries()).map(([taskId, path]) => {
+            const exec = completed.get(taskId)
+            return {
+              role: exec?.agentId ?? 'unknown',
+              artifactPath: path,
+              title: tasks.find((t) => t.id === taskId)?.title ?? taskId,
+            }
+          })
+
+          task = { ...task, prompt: await refineTaskPrompt(
+            task,
+            summaries,
+            baseOptions,
+            (event) => this.emitAgentEvent(event),
+          ) }
+        }
+
+        const execution = await this.executeDispatchedTask(task, baseOptions, completed, artifactPaths, pipelineSessions, tasks)
         executions.push(execution)
         completed.set(task.id, execution)
 
@@ -452,50 +476,75 @@ export class AgentManager {
 
   /**
    * Execute a single dispatched task.
-   * Passes artifact file paths from dependency outputs so the agent can
-   * read the full context from disk (no truncation).
+   *
+   * First run for a role: full context injection (artifacts + task roadmap).
+   * Continuation for a role: resume session, skip artifacts, just the task prompt.
    */
   private async executeDispatchedTask(
     task: DispatchTask,
     baseOptions: AgentExecuteOptions,
     completed: Map<string, AgentExecution>,
     artifactPaths: Map<string, string>,
+    pipelineSessions: Map<AgentRole, string>,
+    allTasks: DispatchTask[],
   ): Promise<AgentExecution> {
-    // Build context references — pass ALL previous artifacts so every agent
-    // has full visibility into the work done so far (architect's design,
-    // database schema, backend API shape, design specs, etc.)
-    const contextParts: string[] = []
+    const isFirstRunForRole = !pipelineSessions.has(task.role)
+    let contextPrefix = ''
 
-    for (const [prevTaskId, prevExec] of completed) {
-      // Skip failed tasks and the current task's own role (no self-reference)
-      if (prevExec.status !== 'done') continue
-      if (prevExec.agentId === task.role) continue
+    if (isFirstRunForRole) {
+      // ── First task for this role: inject full context ──
 
-      const artifactPath = artifactPaths.get(prevTaskId)
+      // 1. All artifacts from previous agents
+      const contextParts: string[] = []
+      for (const [prevTaskId, prevExec] of completed) {
+        if (prevExec.status !== 'done') continue
+        if (prevExec.agentId === task.role) continue
 
-      if (artifactPath) {
-        const roleName = prevExec.agentId.replace(/-/g, ' ')
-        contextParts.push(
-          `## Artifact from ${roleName}\n\n` +
-          `The ${roleName} has completed their work and produced an artifact.\n` +
-          `**Read this file for context:** \`${artifactPath}\`\n` +
-          `This contains their full output — specifications, decisions, or a summary of changes made.`
-        )
-      } else if (prevExec.responseText.trim()) {
-        // Fallback: inline a preview if artifact wasn't written
-        const preview = prevExec.responseText.length > 4000
-          ? prevExec.responseText.slice(0, 4000) + '\n\n... (truncated)'
-          : prevExec.responseText
-        contextParts.push(`## Output from ${prevExec.agentId.replace(/-/g, ' ')}\n\n${preview}`)
+        const artifactPath = artifactPaths.get(prevTaskId)
+        if (artifactPath) {
+          const roleName = prevExec.agentId.replace(/-/g, ' ')
+          contextParts.push(
+            `## Artifact from ${roleName}\n\n` +
+            `The ${roleName} has completed their work and produced an artifact.\n` +
+            `**Read this file for context:** \`${artifactPath}\`\n` +
+            `This contains their full output — specifications, decisions, or a summary of changes made.`
+          )
+        } else if (prevExec.responseText.trim()) {
+          const preview = prevExec.responseText.length > 4000
+            ? prevExec.responseText.slice(0, 4000) + '\n\n... (truncated)'
+            : prevExec.responseText
+          contextParts.push(`## Output from ${prevExec.agentId.replace(/-/g, ' ')}\n\n${preview}`)
+        }
       }
+
+      // 2. Roadmap of ALL tasks assigned to this role in the pipeline
+      const roleTasks = allTasks.filter((t) => t.role === task.role)
+      if (roleTasks.length > 1) {
+        const roadmap = roleTasks
+          .map((t, i) => `  ${t.id === task.id ? '→' : ' '} ${i + 1}. ${t.title}`)
+          .join('\n')
+        contextParts.push(
+          `## Your task roadmap\n\n` +
+          `You have ${roleTasks.length} tasks to complete in this session. ` +
+          `Work through them one at a time — I will tell you when to move to the next one.\n\n` +
+          `${roadmap}\n\n` +
+          `Starting with task 1 below.`
+        )
+      }
+
+      if (contextParts.length > 0) {
+        contextPrefix = contextParts.join('\n\n---\n\n') + '\n\n---\n\n'
+      }
+    } else {
+      // ── Continuation: same role already ran in this pipeline ──
+      // Just tell the agent to move on — artifacts are already in session context
+      const roleTasks = allTasks.filter((t) => t.role === task.role)
+      const taskNum = roleTasks.findIndex((t) => t.id === task.id) + 1
+      contextPrefix = `## Next task (${taskNum}/${roleTasks.length}): ${task.title}\n\nProceed to the next task. You already have the full context from the artifacts and previous work in this session.\n\n`
     }
 
-    const contextPrefix = contextParts.length > 0
-      ? contextParts.join('\n\n---\n\n') + '\n\n---\n\nAbove are artifacts from all previous agents in this pipeline. Read the relevant ones before starting your task.\n\n'
-      : ''
-
-    // Resume Claude session if this role has one from a previous dispatch
-    const existingSession = this.roleSessions.get(task.role)
+    // Use pipeline session if available, fall back to cross-dispatch session
+    const existingSession = pipelineSessions.get(task.role) ?? this.roleSessions.get(task.role)
     const isResume = !!existingSession
 
     // Map provider-agnostic tier to concrete model ID
@@ -518,8 +567,9 @@ export class AgentManager {
         : baseOptions.agentConfig,
     })
 
-    // Store session for future use by this role
+    // Store session for future use by this role (both pipeline-scoped and cross-dispatch)
     if (execution.sessionId) {
+      pipelineSessions.set(task.role, execution.sessionId)
       this.roleSessions.set(task.role, execution.sessionId)
     }
 
