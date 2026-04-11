@@ -47,7 +47,7 @@ export default function AddProjectPage() {
             border: 'none',
             background: 'transparent',
             color: 'var(--studio-text-secondary)',
-            fontSize: '13px',
+            fontSize: '14px',
             cursor: 'pointer',
             transition: 'all 0.12s ease',
             '&:hover': { background: 'var(--studio-bg-surface)', color: 'var(--studio-text-primary)' },
@@ -59,7 +59,7 @@ export default function AddProjectPage() {
         <Box css={{ flex: 1 }} />
         <HStack gap={2}>
           <Anvil size={16} style={{ color: 'var(--studio-text-muted)' }} />
-          <Text css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-text-secondary)' }}>
+          <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-secondary)' }}>
             Add Project
           </Text>
         </HStack>

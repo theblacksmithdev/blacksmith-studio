@@ -51,7 +51,7 @@ const IconWrap = styled.div`
 `
 
 const Title = styled.div`
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--studio-text-primary);
   letter-spacing: -0.01em;
@@ -61,7 +61,7 @@ const Title = styled.div`
 `
 
 const MemberCount = styled.div`
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 400;
   color: var(--studio-text-muted);
 `

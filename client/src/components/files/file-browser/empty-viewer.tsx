@@ -26,10 +26,10 @@ export function EmptyViewer() {
         >
           <Code2 size={22} />
         </Box>
-        <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-secondary)' }}>
+        <Text css={{ fontSize: '15px', fontWeight: 500, color: 'var(--studio-text-secondary)' }}>
           Select a file to view
         </Text>
-        <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)' }}>
+        <Text css={{ fontSize: '13px', color: 'var(--studio-text-muted)' }}>
           Browse the file tree on the left
         </Text>
       </VStack>

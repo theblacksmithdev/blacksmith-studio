@@ -30,10 +30,10 @@ export function SkillsSettings() {
       {/* Header */}
       <Flex align="flex-start" css={{ marginBottom: '16px' }}>
         <Box css={{ flex: 1 }}>
-          <Text css={{ fontSize: '15px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em', marginBottom: '4px' }}>
+          <Text css={{ fontSize: '16px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em', marginBottom: '4px' }}>
             Claude Skills
           </Text>
-          <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)' }}>
+          <Text css={{ fontSize: '14px', color: 'var(--studio-text-tertiary)' }}>
             Reusable instructions that teach Claude how to perform tasks in your project.
           </Text>
         </Box>
@@ -44,7 +44,7 @@ export function SkillsSettings() {
             display: 'flex', alignItems: 'center', gap: '5px',
             padding: '7px 14px', borderRadius: '8px', border: 'none',
             background: 'var(--studio-accent)', color: 'var(--studio-accent-fg)',
-            fontSize: '12px', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+            fontSize: '13px', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
             flexShrink: 0, marginTop: '2px', transition: 'opacity 0.12s ease',
             '&:hover': { opacity: 0.85 },
           }}
@@ -73,10 +73,10 @@ export function SkillsSettings() {
           }}>
             <Wand2 size={20} />
           </Box>
-          <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>
+          <Text css={{ fontSize: '15px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>
             No skills configured
           </Text>
-          <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', maxWidth: '300px' }}>
+          <Text css={{ fontSize: '14px', color: 'var(--studio-text-tertiary)', maxWidth: '300px' }}>
             Skills are reusable prompts that Claude can invoke with /skill-name.
           </Text>
           <Box
@@ -86,7 +86,7 @@ export function SkillsSettings() {
               display: 'flex', alignItems: 'center', gap: '5px',
               padding: '8px 16px', borderRadius: '8px',
               border: '1px solid var(--studio-border)', background: 'var(--studio-bg-main)',
-              color: 'var(--studio-text-secondary)', fontSize: '13px', fontWeight: 500,
+              color: 'var(--studio-text-secondary)', fontSize: '14px', fontWeight: 500,
               cursor: 'pointer', fontFamily: 'inherit', marginTop: '4px',
               '&:hover': { background: 'var(--studio-bg-surface)', borderColor: 'var(--studio-border-hover)', color: 'var(--studio-text-primary)' },
             }}
@@ -130,11 +130,11 @@ export function SkillsSettings() {
 
               <Box css={{ flex: 1, minWidth: 0 }}>
                 <Flex align="center" gap={2}>
-                  <Text css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>
+                  <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>
                     {skill.name}
                   </Text>
                   <Text css={{
-                    fontSize: '10px', fontWeight: 500, color: 'var(--studio-text-muted)',
+                    fontSize: '11px', fontWeight: 500, color: 'var(--studio-text-muted)',
                     padding: '1px 6px', borderRadius: '4px',
                     background: 'var(--studio-bg-surface)', border: '1px solid var(--studio-border)',
                     fontFamily: "'SF Mono', monospace",
@@ -142,7 +142,7 @@ export function SkillsSettings() {
                     /{skill.name}
                   </Text>
                 </Flex>
-                <Text css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)', marginTop: '2px' }}>
+                <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', marginTop: '2px' }}>
                   {skill.description}
                 </Text>
               </Box>
@@ -194,7 +194,7 @@ export function SkillsSettings() {
           border: 'none',
           background: 'transparent',
           color: 'var(--studio-text-muted)',
-          fontSize: '13px',
+          fontSize: '14px',
           cursor: 'pointer',
           fontFamily: 'inherit',
           transition: 'color 0.12s ease',

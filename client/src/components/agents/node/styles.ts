@@ -76,7 +76,7 @@ export const Title = styled.div<{ $isCenter: boolean }>`
 `
 
 export const Activity = styled.div<{ $status: string }>`
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 400;
   min-height: 14px;
   white-space: nowrap;

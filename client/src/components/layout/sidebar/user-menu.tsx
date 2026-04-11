@@ -23,7 +23,7 @@ const AvatarBtn = styled.button<{ expanded: boolean }>`
   border: none;
   background: transparent;
   color: var(--studio-text-tertiary);
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
   transition: all 0.12s ease;
   font-family: inherit;
@@ -86,7 +86,7 @@ const MenuItem = styled.button`
   border: none;
   background: transparent;
   color: var(--studio-text-secondary);
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
   transition: all 0.1s ease;
   font-family: inherit;

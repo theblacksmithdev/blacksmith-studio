@@ -16,7 +16,7 @@ const Btn = styled.button<{ expanded: boolean }>`
   border: 1px solid var(--studio-border);
   background: var(--studio-bg-main);
   color: var(--studio-text-secondary);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.12s ease;

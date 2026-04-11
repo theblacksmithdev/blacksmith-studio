@@ -10,12 +10,12 @@ interface FormFieldProps {
 export function FormField({ label, error, children }: FormFieldProps) {
   return (
     <Box css={{ width: '100%' }}>
-      <Text css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-text-primary)', marginBottom: '6px' }}>
+      <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)', marginBottom: '6px' }}>
         {label}
       </Text>
       {children}
       {error && (
-        <Text css={{ fontSize: '12px', color: 'var(--studio-error)', marginTop: '4px' }}>
+        <Text css={{ fontSize: '13px', color: 'var(--studio-error)', marginTop: '4px' }}>
           {error}
         </Text>
       )}
@@ -30,7 +30,7 @@ export const inputCss: React.CSSProperties = {
   border: '1px solid var(--studio-border)',
   background: 'var(--studio-bg-surface)',
   color: 'var(--studio-text-primary)',
-  fontSize: '14px',
+  fontSize: '15px',
   outline: 'none',
 }
 

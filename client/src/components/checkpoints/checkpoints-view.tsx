@@ -84,7 +84,7 @@ const HistorySection = styled.div`
 `
 
 const SectionLabel = styled.div`
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -100,7 +100,7 @@ const BranchBadge = styled.button`
   border-radius: 8px;
   background: var(--studio-bg-main);
   border: 1px solid var(--studio-border);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   font-family: 'SF Mono', 'Fira Code', monospace;
   color: var(--studio-text-secondary);
@@ -115,7 +115,7 @@ const BranchBadge = styled.button`
 `
 
 const ChangedBadge = styled.span`
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   padding: 2px 8px;
   border-radius: 10px;
@@ -198,7 +198,7 @@ export function CheckpointsView() {
     <Root>
       <TopBar>
         <Flex align="center" gap={3}>
-          <Text css={{ fontSize: '14px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
+          <Text css={{ fontSize: '15px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
             Source Control
           </Text>
           <BranchBadge onClick={() => setShowBranches(true)}>
@@ -233,7 +233,7 @@ export function CheckpointsView() {
             </FilesPanelHeader>
             <FilesPanelBody>
               {changedFiles.isLoading ? (
-                <Text css={{ fontSize: '13px', color: 'var(--studio-text-muted)', padding: '8px' }}>Loading...</Text>
+                <Text css={{ fontSize: '14px', color: 'var(--studio-text-muted)', padding: '8px' }}>Loading...</Text>
               ) : (
                 <ChangedFilesList
                   files={changedFiles.data ?? []}
@@ -251,7 +251,7 @@ export function CheckpointsView() {
         <HistorySection>
           <SectionLabel>Commit History</SectionLabel>
           {history.isLoading ? (
-            <Text css={{ fontSize: '13px', color: 'var(--studio-text-muted)', padding: '8px' }}>Loading...</Text>
+            <Text css={{ fontSize: '14px', color: 'var(--studio-text-muted)', padding: '8px' }}>Loading...</Text>
           ) : (
             <HistoryTimeline entries={history.data ?? []} onSelect={setSelectedCommit} />
           )}

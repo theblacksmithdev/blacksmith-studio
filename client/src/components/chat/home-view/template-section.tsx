@@ -19,7 +19,7 @@ const Header = styled.div`
 `
 
 const Label = styled.div`
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -33,7 +33,7 @@ const SeeAll = styled.button`
   border: none;
   background: transparent;
   color: var(--studio-text-muted);
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
   font-family: inherit;
   transition: color 0.12s ease;
@@ -74,7 +74,7 @@ const CardIcon = styled.div`
 `
 
 const CardTitle = styled.div`
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 450;
   color: var(--studio-text-secondary);
   overflow: hidden;

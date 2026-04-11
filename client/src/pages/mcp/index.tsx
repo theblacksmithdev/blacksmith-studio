@@ -86,7 +86,7 @@ export default function McpBrowserPage() {
               border: '1px solid var(--studio-border)',
               background: 'var(--studio-bg-surface)',
               color: 'var(--studio-text-secondary)',
-              fontSize: '13px',
+              fontSize: '14px',
               fontWeight: 500,
               '&:hover': {
                 background: 'var(--studio-bg-hover)',
@@ -108,26 +108,26 @@ export default function McpBrowserPage() {
           }}>
             <Blocks size={22} color="var(--studio-accent-fg)" />
           </Box>
-          <Text css={{ fontSize: '22px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.03em', marginBottom: '6px' }}>
+          <Text css={{ fontSize: '24px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.03em', marginBottom: '6px' }}>
             MCP Servers
           </Text>
-          <Text css={{ fontSize: '14px', color: 'var(--studio-text-tertiary)', maxWidth: '420px', lineHeight: 1.5 }}>
+          <Text css={{ fontSize: '15px', color: 'var(--studio-text-tertiary)', maxWidth: '420px', lineHeight: 1.5 }}>
             Connect Claude to external tools and data sources via the Model Context Protocol.
           </Text>
 
           <HStack gap={4} css={{ marginTop: '16px' }}>
             <Flex align="center" gap={2}>
-              <Text css={{ fontSize: '20px', fontWeight: 600, color: 'var(--studio-text-primary)' }}>
+              <Text css={{ fontSize: '22px', fontWeight: 600, color: 'var(--studio-text-primary)' }}>
                 {PRESETS.length}
               </Text>
-              <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)' }}>available</Text>
+              <Text css={{ fontSize: '13px', color: 'var(--studio-text-muted)' }}>available</Text>
             </Flex>
             <Box css={{ width: '1px', height: '16px', background: 'var(--studio-border)' }} />
             <Flex align="center" gap={2}>
-              <Text css={{ fontSize: '20px', fontWeight: 600, color: 'var(--studio-text-primary)' }}>
+              <Text css={{ fontSize: '22px', fontWeight: 600, color: 'var(--studio-text-primary)' }}>
                 {installedCount}
               </Text>
-              <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)' }}>installed</Text>
+              <Text css={{ fontSize: '13px', color: 'var(--studio-text-muted)' }}>installed</Text>
             </Flex>
           </HStack>
         </Flex>
@@ -153,13 +153,13 @@ export default function McpBrowserPage() {
               placeholder="Search servers..."
               css={{
                 border: 'none', outline: 'none', background: 'transparent',
-                fontSize: '14px', color: 'var(--studio-text-primary)',
+                fontSize: '15px', color: 'var(--studio-text-primary)',
                 '&:focus': { boxShadow: 'none' },
                 '&::placeholder': { color: 'var(--studio-text-muted)' },
               }}
             />
             {search && (
-              <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', flexShrink: 0 }}>
+              <Text css={{ fontSize: '13px', color: 'var(--studio-text-muted)', flexShrink: 0 }}>
                 {filtered.length} result{filtered.length !== 1 ? 's' : ''}
               </Text>
             )}
@@ -183,7 +183,7 @@ export default function McpBrowserPage() {
                   css={{
                     padding: '6px 14px',
                     borderRadius: '20px',
-                    fontSize: '13px',
+                    fontSize: '14px',
                     fontWeight: isActive ? 500 : 400,
                     background: isActive ? 'var(--studio-accent)' : 'transparent',
                     color: isActive ? 'var(--studio-accent-fg)' : 'var(--studio-text-muted)',
@@ -194,7 +194,7 @@ export default function McpBrowserPage() {
                   }}
                 >
                   {cat.label}
-                  <Text as="span" css={{ fontSize: '11px', marginLeft: '4px', opacity: 0.6 }}>
+                  <Text as="span" css={{ fontSize: '12px', marginLeft: '4px', opacity: 0.6 }}>
                     {count}
                   </Text>
                 </Button>
@@ -217,10 +217,10 @@ export default function McpBrowserPage() {
               <Search size={22} />
             </Box>
             <Box>
-              <Text css={{ fontSize: '15px', fontWeight: 500, color: 'var(--studio-text-primary)', marginBottom: '4px' }}>
+              <Text css={{ fontSize: '16px', fontWeight: 500, color: 'var(--studio-text-primary)', marginBottom: '4px' }}>
                 No servers found
               </Text>
-              <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)' }}>
+              <Text css={{ fontSize: '14px', color: 'var(--studio-text-tertiary)' }}>
                 Try a different search or add a custom server.
               </Text>
             </Box>
@@ -230,7 +230,7 @@ export default function McpBrowserPage() {
               css={{
                 padding: '8px 16px', borderRadius: '10px',
                 background: 'var(--studio-accent)', color: 'var(--studio-accent-fg)',
-                fontSize: '13px', fontWeight: 500, border: 'none',
+                fontSize: '14px', fontWeight: 500, border: 'none',
                 '&:hover': { opacity: 0.85 },
               }}
             >
@@ -278,7 +278,7 @@ export default function McpBrowserPage() {
                         padding: '3px 8px',
                         borderRadius: '6px',
                         background: 'var(--studio-bg-hover)',
-                        fontSize: '10px',
+                        fontSize: '11px',
                         fontWeight: 500,
                         color: 'var(--studio-text-muted)',
                       }}
@@ -300,14 +300,14 @@ export default function McpBrowserPage() {
                     </Box>
                     <Box>
                       <Text css={{
-                        fontSize: '14px', fontWeight: 600,
+                        fontSize: '15px', fontWeight: 600,
                         color: installed ? 'var(--studio-text-tertiary)' : 'var(--studio-text-primary)',
                         letterSpacing: '-0.01em',
                       }}>
                         {preset.label}
                       </Text>
                       <Text css={{
-                        fontSize: '11px', color: 'var(--studio-text-muted)',
+                        fontSize: '12px', color: 'var(--studio-text-muted)',
                         fontFamily: "'SF Mono', monospace", marginTop: '1px',
                       }}>
                         {preset.name}
@@ -316,7 +316,7 @@ export default function McpBrowserPage() {
                   </Flex>
 
                   <Text css={{
-                    fontSize: '13px',
+                    fontSize: '14px',
                     color: installed ? 'var(--studio-text-muted)' : 'var(--studio-text-tertiary)',
                     lineHeight: 1.6,
                     flex: 1,
@@ -326,7 +326,7 @@ export default function McpBrowserPage() {
 
                   {preset.envHint && !installed && (
                     <Text css={{
-                      fontSize: '11px', color: 'var(--studio-text-muted)',
+                      fontSize: '12px', color: 'var(--studio-text-muted)',
                       fontStyle: 'italic', marginTop: '6px',
                     }}>
                       {preset.envHint}
@@ -343,7 +343,7 @@ export default function McpBrowserPage() {
                     }}
                   >
                     <Text css={{
-                      fontSize: '11px', fontWeight: 500,
+                      fontSize: '12px', fontWeight: 500,
                       color: 'var(--studio-text-muted)',
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em',
@@ -352,7 +352,7 @@ export default function McpBrowserPage() {
                     </Text>
                     {!installed && (
                       <Text css={{
-                        fontSize: '11px', fontWeight: 500,
+                        fontSize: '12px', fontWeight: 500,
                         color: 'var(--studio-accent)',
                       }}>
                         Add to project →

@@ -12,7 +12,7 @@ export const NavButton = styled.button<{ active: boolean; expanded: boolean }>`
   border: none;
   background: ${({ active }) => (active ? 'var(--studio-bg-hover)' : 'transparent')};
   color: ${({ active }) => (active ? 'var(--studio-text-primary)' : 'var(--studio-text-tertiary)')};
-  font-size: 13px;
+  font-size: 14px;
   font-weight: ${({ active }) => (active ? 500 : 400)};
   cursor: pointer;
   transition: all 0.12s ease;

@@ -49,7 +49,7 @@ const LogoWrap = styled.div`
 `
 
 const Title = styled.h2`
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
   color: var(--studio-text-primary);
   letter-spacing: -0.02em;
@@ -57,7 +57,7 @@ const Title = styled.h2`
 `
 
 const Subtitle = styled.p`
-  font-size: 13px;
+  font-size: 14px;
   color: var(--studio-text-tertiary);
   text-align: center;
   line-height: 1.5;
@@ -85,19 +85,19 @@ const CheckInfo = styled.div`
 `
 
 const CheckLabel = styled.div`
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--studio-text-primary);
 `
 
 const CheckMeta = styled.div`
-  font-size: 11px;
+  font-size: 12px;
   color: var(--studio-text-muted);
   margin-top: 1px;
 `
 
 const CheckError = styled.div`
-  font-size: 11px;
+  font-size: 12px;
   color: var(--studio-error);
   margin-top: 2px;
 `
@@ -130,7 +130,7 @@ const PrimaryBtn = styled.button`
   border: none;
   background: var(--studio-accent);
   color: var(--studio-accent-fg);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
@@ -146,7 +146,7 @@ const SecondaryBtn = styled.button`
   border: 1px solid var(--studio-border);
   background: var(--studio-bg-main);
   color: var(--studio-text-secondary);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
@@ -165,7 +165,7 @@ const CodeBlock = styled.div`
   background: var(--studio-bg-surface);
   border: 1px solid var(--studio-border);
   font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Menlo, monospace;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--studio-text-primary);
   margin-top: 4px;
   user-select: all;

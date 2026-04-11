@@ -50,7 +50,7 @@ export function AgentDetail({ agent, onClose, onOpenInnerView }: AgentDetailProp
             <Icon size={18} />
           </IconBox>
           <Box css={{ flex: 1, minWidth: 0 }}>
-            <Text css={{ fontSize: '14px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
+            <Text css={{ fontSize: '15px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
               {agent.title}
             </Text>
           </Box>

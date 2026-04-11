@@ -139,8 +139,8 @@ const config = defineConfig({
     body: {
       bg: 'var(--studio-bg-main)',
       color: 'var(--studio-text-primary)',
-      fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-      fontSize: '13px',
+      fontFamily: "'Outfit', -apple-system, BlinkMacSystemFont, sans-serif",
+      fontSize: '14px',
       lineHeight: '1.5',
       letterSpacing: '-0.003em',
       fontWeight: 400,

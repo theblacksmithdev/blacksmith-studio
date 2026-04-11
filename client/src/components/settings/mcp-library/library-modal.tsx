@@ -79,7 +79,7 @@ export function McpLibraryModal({ existingNames, onAdd, onClose }: McpLibraryMod
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search servers..."
             autoFocus
-            css={{ fontSize: '13px', color: 'var(--studio-text-primary)', border: 'none', outline: 'none', background: 'transparent', '&:focus': { boxShadow: 'none' }, '&::placeholder': { color: 'var(--studio-text-muted)' } }}
+            css={{ fontSize: '14px', color: 'var(--studio-text-primary)', border: 'none', outline: 'none', background: 'transparent', '&:focus': { boxShadow: 'none' }, '&::placeholder': { color: 'var(--studio-text-muted)' } }}
           />
         </Flex>
 
@@ -97,7 +97,7 @@ export function McpLibraryModal({ existingNames, onAdd, onClose }: McpLibraryMod
               css={{
                 padding: '4px 12px',
                 borderRadius: '6px',
-                fontSize: '12px',
+                fontSize: '13px',
                 fontWeight: category === cat.id ? 500 : 400,
                 background: category === cat.id ? 'var(--studio-bg-hover)' : 'transparent',
                 color: category === cat.id ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)',
@@ -120,7 +120,7 @@ export function McpLibraryModal({ existingNames, onAdd, onClose }: McpLibraryMod
             />
           ))}
           {filtered.length === 0 && (
-            <Text css={{ padding: '24px', textAlign: 'center', fontSize: '12px', color: 'var(--studio-text-tertiary)' }}>
+            <Text css={{ padding: '24px', textAlign: 'center', fontSize: '13px', color: 'var(--studio-text-tertiary)' }}>
               No servers match your search.
             </Text>
           )}

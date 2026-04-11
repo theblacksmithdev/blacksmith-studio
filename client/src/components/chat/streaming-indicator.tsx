@@ -34,10 +34,10 @@ export function StreamingIndicator({ partialMessage }: StreamingIndicatorProps) 
         }}>
           <Sparkles size={11} style={{ color: 'var(--studio-green)' }} />
         </Box>
-        <Text css={{ fontSize: '12px', fontWeight: 600, color: 'var(--studio-text-secondary)', letterSpacing: '-0.01em' }}>
+        <Text css={{ fontSize: '13px', fontWeight: 600, color: 'var(--studio-text-secondary)', letterSpacing: '-0.01em' }}>
           Claude
         </Text>
-        <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)' }}>
+        <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)' }}>
           {timeLabel}
         </Text>
       </HStack>
@@ -70,7 +70,7 @@ export function StreamingIndicator({ partialMessage }: StreamingIndicatorProps) 
               animation: 'shimmerBar 1.5s ease infinite',
               opacity: 0.5,
             }} />
-            <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', flexShrink: 0 }}>
+            <Text css={{ fontSize: '13px', color: 'var(--studio-text-muted)', flexShrink: 0 }}>
               Thinking...
             </Text>
           </HStack>

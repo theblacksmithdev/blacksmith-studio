@@ -17,7 +17,7 @@ export function StatusBar({ lineCount, language, isChanged }: StatusBarProps) {
         padding: '4px 14px',
         borderTop: '1px solid var(--studio-border)',
         background: 'var(--studio-bg-sidebar)',
-        fontSize: '11px',
+        fontSize: '12px',
         color: 'var(--studio-text-muted)',
         flexShrink: 0,
       }}

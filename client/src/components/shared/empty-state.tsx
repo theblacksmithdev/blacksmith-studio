@@ -31,7 +31,7 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
         <Text
           css={{
             fontWeight: 600,
-            fontSize: '16px',
+            fontSize: '17px',
             color: 'var(--studio-text-secondary)',
             letterSpacing: '-0.01em',
           }}
@@ -41,7 +41,7 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
         {description && (
           <Text
             css={{
-              fontSize: '13px',
+              fontSize: '14px',
               textAlign: 'center',
               maxWidth: '320px',
               color: 'var(--studio-text-tertiary)',

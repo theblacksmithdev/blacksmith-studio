@@ -36,7 +36,7 @@ const inputCss = {
   border: '1px solid var(--studio-border)',
   background: 'var(--studio-bg-inset)',
   color: 'var(--studio-text-primary)',
-  fontSize: '13px',
+  fontSize: '14px',
   '&:focus': { borderColor: 'var(--studio-border-hover)', boxShadow: 'none' },
   '&::placeholder': { color: 'var(--studio-text-muted)' },
 }

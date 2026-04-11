@@ -64,7 +64,7 @@ export default function SettingsPage() {
           color: isActive
             ? isDanger ? 'var(--studio-error)' : 'var(--studio-text-primary)'
             : isDanger ? 'var(--studio-text-muted)' : 'var(--studio-text-tertiary)',
-          fontSize: '13px',
+          fontSize: '14px',
           fontWeight: isActive ? 500 : 400,
           cursor: 'pointer',
           textAlign: 'left',
@@ -101,11 +101,11 @@ export default function SettingsPage() {
         }}
       >
         <Box css={{ padding: '0 20px', marginBottom: '20px' }}>
-          <Text css={{ fontSize: '15px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
+          <Text css={{ fontSize: '16px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
             Settings
           </Text>
           {activeProject && (
-            <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <Text css={{ fontSize: '13px', color: 'var(--studio-text-muted)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {activeProject.name}
             </Text>
           )}
@@ -115,7 +115,7 @@ export default function SettingsPage() {
           {sidebarGroups.map((group) => (
             <Box key={group.label}>
               <Text css={{
-                fontSize: '10px', fontWeight: 600, textTransform: 'uppercase',
+                fontSize: '11px', fontWeight: 600, textTransform: 'uppercase',
                 letterSpacing: '0.08em', color: 'var(--studio-text-muted)',
                 padding: '0 12px', marginBottom: '4px',
               }}>

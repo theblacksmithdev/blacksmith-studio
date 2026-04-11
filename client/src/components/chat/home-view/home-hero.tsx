@@ -9,7 +9,7 @@ const Wrapper = styled.div`
 `
 
 const Greeting = styled.h1`
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 600;
   letter-spacing: -0.03em;
   color: var(--studio-text-primary);

@@ -47,7 +47,7 @@ export function MarkdownEditor({ value, onChange, placeholder, minHeight = '300p
           css={{
             padding: '4px 10px',
             borderRadius: '6px',
-            fontSize: '12px',
+            fontSize: '13px',
             fontWeight: mode === 'preview' ? 500 : 400,
             background: mode === 'preview' ? 'var(--studio-bg-hover)' : 'transparent',
             color: mode === 'preview' ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)',
@@ -64,7 +64,7 @@ export function MarkdownEditor({ value, onChange, placeholder, minHeight = '300p
           css={{
             padding: '4px 10px',
             borderRadius: '6px',
-            fontSize: '12px',
+            fontSize: '13px',
             fontWeight: mode === 'edit' ? 500 : 400,
             background: mode === 'edit' ? 'var(--studio-bg-hover)' : 'transparent',
             color: mode === 'edit' ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)',
@@ -122,7 +122,7 @@ export function MarkdownEditor({ value, onChange, placeholder, minHeight = '300p
           {value.trim() ? (
             <MarkdownRenderer content={value} />
           ) : (
-            <Box css={{ color: 'var(--studio-text-muted)', fontSize: '13px', fontStyle: 'italic' }}>
+            <Box css={{ color: 'var(--studio-text-muted)', fontSize: '14px', fontStyle: 'italic' }}>
               Nothing to preview
             </Box>
           )}

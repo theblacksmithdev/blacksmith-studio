@@ -40,7 +40,7 @@ export function DirList({ dirs, parentPath, loading, onNavigate, emptyMessage }:
       {showEmpty && (
         <VStack gap={2} css={{ padding: '32px 20px', alignItems: 'center', color: 'var(--studio-text-muted)' }}>
           <FolderSearch size={20} />
-          <Text css={{ fontSize: '13px' }}>{emptyMessage || 'No subdirectories'}</Text>
+          <Text css={{ fontSize: '14px' }}>{emptyMessage || 'No subdirectories'}</Text>
         </VStack>
       )}
       {dirs.map((dir) => (
@@ -77,7 +77,7 @@ function DirRow({ icon, name, muted, onClick }: {
         cursor: 'pointer',
         textAlign: 'left',
         color: muted ? 'var(--studio-text-secondary)' : 'var(--studio-text-primary)',
-        fontSize: '13px',
+        fontSize: '14px',
         transition: 'all 0.06s ease',
         '&:hover': {
           background: 'var(--studio-bg-hover)',
@@ -101,7 +101,7 @@ function DirRow({ icon, name, muted, onClick }: {
       >
         {icon}
       </Box>
-      <Text css={{ flex: 1, fontWeight: muted ? 400 : 500, fontSize: '13px' }}>{name}</Text>
+      <Text css={{ flex: 1, fontWeight: muted ? 400 : 500, fontSize: '14px' }}>{name}</Text>
       <Box
         className="dir-arrow"
         css={{

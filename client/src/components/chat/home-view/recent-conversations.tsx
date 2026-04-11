@@ -8,7 +8,7 @@ const Wrap = styled.div`
 `
 
 const Label = styled.div`
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -48,7 +48,7 @@ const Icon = styled.div`
 `
 
 const Title = styled.div`
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 450;
   color: var(--studio-text-primary);
   overflow: hidden;
@@ -59,7 +59,7 @@ const Title = styled.div`
 `
 
 const Time = styled.span`
-  font-size: 11px;
+  font-size: 12px;
   color: var(--studio-text-muted);
   flex-shrink: 0;
 `

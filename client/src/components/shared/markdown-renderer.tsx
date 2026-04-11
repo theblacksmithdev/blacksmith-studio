@@ -43,7 +43,7 @@ function CodeBlock({ className, children }: { className?: string; children: Reac
       >
         <Text
           css={{
-            fontSize: '11px',
+            fontSize: '12px',
             color: 'var(--studio-text-tertiary)',
             textTransform: 'uppercase',
             letterSpacing: '0.04em',
@@ -64,7 +64,7 @@ function CodeBlock({ className, children }: { className?: string; children: Reac
             background: 'transparent',
             border: 'none',
             color: copied ? 'var(--studio-green)' : 'var(--studio-text-tertiary)',
-            fontSize: '11px',
+            fontSize: '12px',
             cursor: 'pointer',
             transition: 'all 0.2s ease',
             '&:hover': {
@@ -85,7 +85,7 @@ function CodeBlock({ className, children }: { className?: string; children: Reac
           padding: '12px 16px',
           overflowX: 'auto',
           margin: 0,
-          fontSize: '13px',
+          fontSize: '14px',
           lineHeight: '20px',
           fontFamily: "'SF Mono', 'Fira Code', 'Fira Mono', Menlo, Consolas, monospace",
         }}
@@ -98,7 +98,7 @@ function CodeBlock({ className, children }: { className?: string; children: Reac
 
 export function MarkdownRenderer({ content }: MarkdownRendererProps) {
   return (
-    <Box className="markdown-body" css={{ fontSize: '14px', lineHeight: '1.7', color: 'var(--studio-text-primary)' }}>
+    <Box className="markdown-body" css={{ fontSize: '15px', lineHeight: '1.7', color: 'var(--studio-text-primary)' }}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeHighlight]}
@@ -107,7 +107,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
             <Heading
               as="h1"
               css={{
-                fontSize: '22px',
+                fontSize: '24px',
                 fontWeight: 600,
                 marginTop: '20px',
                 marginBottom: '10px',
@@ -122,7 +122,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
             <Heading
               as="h2"
               css={{
-                fontSize: '18px',
+                fontSize: '20px',
                 fontWeight: 600,
                 marginTop: '16px',
                 marginBottom: '8px',
@@ -137,7 +137,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
             <Heading
               as="h3"
               css={{
-                fontSize: '15px',
+                fontSize: '16px',
                 fontWeight: 600,
                 marginTop: '12px',
                 marginBottom: '6px',

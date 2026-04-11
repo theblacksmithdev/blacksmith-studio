@@ -106,7 +106,7 @@ export function FileTreeNode({ node, depth, selectedFile, changedFiles, onSelect
 
         <Text
           css={{
-            fontSize: '12px',
+            fontSize: '13px',
             color: isSelected ? 'var(--studio-text-primary)' : 'var(--studio-text-secondary)',
             overflow: 'hidden',
             textOverflow: 'ellipsis',

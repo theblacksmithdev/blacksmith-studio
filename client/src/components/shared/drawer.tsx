@@ -109,7 +109,7 @@ export function Drawer({ title, children, onClose, placement = 'right', size, fo
         >
           <Text
             css={{
-              fontSize: '15px',
+              fontSize: '16px',
               fontWeight: 600,
               color: 'var(--studio-text-primary)',
               flex: 1,

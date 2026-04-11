@@ -29,7 +29,7 @@ const SettingsBtn = styled.button`
   border: 1px solid var(--studio-border);
   background: var(--studio-bg-surface);
   color: var(--studio-text-muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;

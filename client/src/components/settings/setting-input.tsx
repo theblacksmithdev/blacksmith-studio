@@ -18,7 +18,7 @@ export function SettingInput({ value, type = 'text', placeholder, onChange }: Se
         border: '1px solid var(--studio-border)',
         background: 'var(--studio-bg-surface)',
         color: 'var(--studio-text-primary)',
-        fontSize: '13px',
+        fontSize: '14px',
         outline: 'none',
         width: type === 'number' ? '80px' : '200px',
       }}

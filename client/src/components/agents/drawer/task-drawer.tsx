@@ -32,7 +32,7 @@ export function TaskDrawer({ onClose }: TaskDrawerProps) {
       size="380px"
       headerExtra={
         total > 0 ? (
-          <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)', fontWeight: 500 }}>
+          <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', fontWeight: 500 }}>
             {done}/{total}
           </Text>
         ) : undefined
@@ -49,7 +49,7 @@ export function TaskDrawer({ onClose }: TaskDrawerProps) {
           <>
             {plan?.summary && (
               <SummaryCard>
-                <Text css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-text-primary)', lineHeight: 1.45, letterSpacing: '-0.01em' }}>
+                <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)', lineHeight: 1.45, letterSpacing: '-0.01em' }}>
                   {plan.summary}
                 </Text>
                 <ProgressTrack>
@@ -80,7 +80,7 @@ export function TaskDrawer({ onClose }: TaskDrawerProps) {
                       <Box css={{ flex: 1, minWidth: 0 }}>
                         <Flex align="center" gap="6px">
                           <Text css={{
-                            fontSize: '12px', fontWeight: 500, letterSpacing: '-0.01em',
+                            fontSize: '13px', fontWeight: 500, letterSpacing: '-0.01em',
                             color: status === 'skipped' ? 'var(--studio-text-muted)' : 'var(--studio-text-primary)',
                             textDecoration: status === 'skipped' ? 'line-through' : 'none',
                             flex: 1, minWidth: 0,
@@ -92,11 +92,11 @@ export function TaskDrawer({ onClose }: TaskDrawerProps) {
                           <RoleTag $active={isActive}>{roleLabel(task.role)}</RoleTag>
                         </Flex>
                         {task.description && (
-                          <Text css={{ fontSize: '10px', color: 'var(--studio-text-secondary)', marginTop: '2px', lineHeight: 1.4 }}>
+                          <Text css={{ fontSize: '11px', color: 'var(--studio-text-secondary)', marginTop: '2px', lineHeight: 1.4 }}>
                             {task.description}
                           </Text>
                         )}
-                        <Text css={{ fontSize: '10px', color: 'var(--studio-text-muted)', marginTop: '2px' }}>
+                        <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)', marginTop: '2px' }}>
                           {statusText(task.status)}
                           {agentSubtasks.length > 0 && ` · ${agentSubtasks.filter((s) => s.status === 'done').length}/${agentSubtasks.length} sub-tasks`}
                           {(task as any).error && status === 'error' && (
@@ -115,7 +115,7 @@ export function TaskDrawer({ onClose }: TaskDrawerProps) {
                               {getIcon(sub.status as any)}
                             </SubTaskIcon>
                             <Text css={{
-                              fontSize: '10px', color: 'var(--studio-text-secondary)',
+                              fontSize: '11px', color: 'var(--studio-text-secondary)',
                               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                               flex: 1, minWidth: 0,
                             }}>

@@ -19,7 +19,7 @@ export function SettingTextarea({ value, placeholder, onChange }: SettingTextare
         border: '1px solid var(--studio-border)',
         background: 'var(--studio-bg-surface)',
         color: 'var(--studio-text-primary)',
-        fontSize: '13px',
+        fontSize: '14px',
         outline: 'none',
         resize: 'vertical',
         fontFamily: 'inherit',

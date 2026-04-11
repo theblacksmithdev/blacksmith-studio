@@ -58,7 +58,7 @@ const Header = styled.div`
 `
 
 const Title = styled.span`
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--studio-text-secondary);
   flex: 1;
@@ -91,7 +91,7 @@ const Body = styled.div`
 `
 
 const GroupLabel = styled.div`
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -135,7 +135,7 @@ const ItemBody = styled.div`
 `
 
 const ItemTitle = styled.div`
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 450;
   color: var(--studio-text-primary);
   overflow: hidden;
@@ -144,7 +144,7 @@ const ItemTitle = styled.div`
 `
 
 const ItemMeta = styled.div`
-  font-size: 11px;
+  font-size: 12px;
   color: var(--studio-text-muted);
   margin-top: 2px;
 `
@@ -166,7 +166,7 @@ const Empty = styled.div`
   padding: 24px 16px;
   text-align: center;
   color: var(--studio-text-muted);
-  font-size: 12px;
+  font-size: 13px;
 `
 
 /* ── Component ── */

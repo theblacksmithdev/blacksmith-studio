@@ -30,7 +30,7 @@ const HeaderText = styled.div`
 `
 
 const Title = styled.div`
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--studio-text-primary);
   letter-spacing: -0.01em;
@@ -38,7 +38,7 @@ const Title = styled.div`
 `
 
 const Desc = styled.div`
-  font-size: 13px;
+  font-size: 14px;
   color: var(--studio-text-tertiary);
 `
 
@@ -51,7 +51,7 @@ const AddBtn = styled.button`
   border: none;
   background: var(--studio-accent);
   color: var(--studio-accent-fg);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
@@ -89,7 +89,7 @@ const ServerInfo = styled.div`
 `
 
 const ServerName = styled.div`
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--studio-text-primary);
   display: flex;
@@ -98,7 +98,7 @@ const ServerName = styled.div`
 `
 
 const TransportBadge = styled.span`
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--studio-text-muted);
   padding: 1px 6px;
@@ -110,7 +110,7 @@ const TransportBadge = styled.span`
 `
 
 const ServerMeta = styled.div`
-  font-size: 11px;
+  font-size: 12px;
   color: var(--studio-text-tertiary);
   font-family: ${MONO_FONT};
   margin-top: 2px;
@@ -120,7 +120,7 @@ const ServerMeta = styled.div`
 `
 
 const ServerError = styled.div`
-  font-size: 11px;
+  font-size: 12px;
   color: var(--studio-error);
   margin-top: 2px;
 `
@@ -205,13 +205,13 @@ const EmptyIcon = styled.div`
 `
 
 const EmptyTitle = styled.div`
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--studio-text-primary);
 `
 
 const EmptyDesc = styled.div`
-  font-size: 13px;
+  font-size: 14px;
   color: var(--studio-text-tertiary);
   max-width: 300px;
 `
@@ -225,7 +225,7 @@ const EmptyBtn = styled.button`
   border: 1px solid var(--studio-border);
   background: var(--studio-bg-main);
   color: var(--studio-text-secondary);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
@@ -252,7 +252,7 @@ const BrowseLink = styled.button`
   border: none;
   background: transparent;
   color: var(--studio-text-muted);
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
   font-family: inherit;
   transition: color 0.12s ease;
@@ -364,7 +364,7 @@ export function McpSettings() {
                     {testResults[entry.name].ok ? 'Connected successfully' : (testResults[entry.name].error || 'Connection failed')}
                     <span
                       onClick={() => setTestResults((prev) => { const next = { ...prev }; delete next[entry.name]; return next })}
-                      style={{ cursor: 'pointer', opacity: 0.6, fontSize: '10px' }}
+                      style={{ cursor: 'pointer', opacity: 0.6, fontSize: '11px' }}
                     >
                       ✕
                     </span>

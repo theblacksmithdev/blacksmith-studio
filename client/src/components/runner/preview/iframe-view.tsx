@@ -30,7 +30,7 @@ const UrlBar = styled.div`
 `
 
 const UrlText = styled.span`
-  font-size: 11px;
+  font-size: 12px;
   color: var(--studio-text-tertiary);
   font-family: ${MONO_FONT};
   flex: 1;

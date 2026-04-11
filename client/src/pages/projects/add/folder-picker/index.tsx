@@ -95,10 +95,10 @@ export function FolderPicker({ open, onClose, onSelect }: FolderPickerProps) {
               <FolderOpen size={16} />
             </Box>
             <Box css={{ flex: 1 }}>
-              <Text css={{ fontSize: '15px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
+              <Text css={{ fontSize: '16px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
                 Select a folder
               </Text>
-              <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', marginTop: '1px' }}>
+              <Text css={{ fontSize: '13px', color: 'var(--studio-text-muted)', marginTop: '1px' }}>
                 Navigate to your project directory
               </Text>
             </Box>
@@ -150,7 +150,7 @@ export function FolderPicker({ open, onClose, onSelect }: FolderPickerProps) {
                 border: 'none',
                 outline: 'none',
                 color: 'var(--studio-text-primary)',
-                fontSize: '13px',
+                fontSize: '14px',
               }}
             />
             {search && (
@@ -204,7 +204,7 @@ export function FolderPicker({ open, onClose, onSelect }: FolderPickerProps) {
                   display: 'flex', alignItems: 'center', gap: '5px',
                   padding: '3px 8px', borderRadius: '5px',
                   background: 'var(--studio-green-subtle)', border: '1px solid var(--studio-green-border)',
-                  fontSize: '11px', fontWeight: 500, color: 'var(--studio-green)',
+                  fontSize: '12px', fontWeight: 500, color: 'var(--studio-green)',
                 }}>
                   <Anvil size={11} /> Blacksmith
                 </Box>
@@ -214,12 +214,12 @@ export function FolderPicker({ open, onClose, onSelect }: FolderPickerProps) {
                   display: 'flex', alignItems: 'center', gap: '5px',
                   padding: '3px 8px', borderRadius: '5px',
                   background: 'var(--studio-bg-surface)', border: '1px solid var(--studio-border)',
-                  fontSize: '11px', fontWeight: 500, color: 'var(--studio-text-tertiary)',
+                  fontSize: '12px', fontWeight: 500, color: 'var(--studio-text-tertiary)',
                 }}>
                   <Package size={11} /> Project
                 </Box>
               )}
-              <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {data.dirs.length} folder{data.dirs.length !== 1 ? 's' : ''}
               </Text>
             </HStack>
@@ -233,7 +233,7 @@ export function FolderPicker({ open, onClose, onSelect }: FolderPickerProps) {
                 border: 'none',
                 background: 'var(--studio-accent)',
                 color: 'var(--studio-accent-fg)',
-                fontSize: '13px',
+                fontSize: '14px',
                 fontWeight: 500,
                 cursor: 'pointer',
                 transition: 'all 0.12s ease',

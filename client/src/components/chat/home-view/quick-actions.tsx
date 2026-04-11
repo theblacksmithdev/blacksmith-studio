@@ -36,7 +36,7 @@ const Chip = styled.button`
   border: 1px solid var(--studio-border);
   background: var(--studio-bg-main);
   color: var(--studio-text-secondary);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 450;
   cursor: pointer;
   transition: all 0.15s ease;

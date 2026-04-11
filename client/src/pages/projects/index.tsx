@@ -27,10 +27,10 @@ export default function ProjectsPage() {
       <PageContainer size="md">
         <HStack gap={0} justify="space-between" css={{ marginBottom: '28px' }}>
           <Box>
-            <Text css={{ fontSize: '22px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--studio-text-primary)', marginBottom: '4px' }}>
+            <Text css={{ fontSize: '24px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--studio-text-primary)', marginBottom: '4px' }}>
               Projects
             </Text>
-            <Text css={{ fontSize: '14px', color: 'var(--studio-text-tertiary)' }}>
+            <Text css={{ fontSize: '15px', color: 'var(--studio-text-tertiary)' }}>
               Manage your project workspaces.
             </Text>
           </Box>
@@ -46,7 +46,7 @@ export default function ProjectsPage() {
               border: '1px solid var(--studio-border)',
               background: 'var(--studio-bg-surface)',
               color: 'var(--studio-text-primary)',
-              fontSize: '13px',
+              fontSize: '14px',
               fontWeight: 500,
               cursor: 'pointer',
               transition: 'all 0.12s ease',
@@ -69,7 +69,7 @@ export default function ProjectsPage() {
               marginBottom: '20px',
             }}
           >
-            <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)', marginBottom: '12px' }}>
+            <Text css={{ fontSize: '15px', fontWeight: 500, color: 'var(--studio-text-primary)', marginBottom: '12px' }}>
               Register a project
             </Text>
             <VStack gap={3} align="stretch">
@@ -84,7 +84,7 @@ export default function ProjectsPage() {
                   border: '1px solid var(--studio-border)',
                   background: 'var(--studio-bg-surface)',
                   color: 'var(--studio-text-primary)',
-                  fontSize: '13px',
+                  fontSize: '14px',
                   outline: 'none',
                   width: '100%',
                 }}
@@ -100,7 +100,7 @@ export default function ProjectsPage() {
                   border: '1px solid var(--studio-border)',
                   background: 'var(--studio-bg-surface)',
                   color: 'var(--studio-text-primary)',
-                  fontSize: '13px',
+                  fontSize: '14px',
                   outline: 'none',
                   width: '100%',
                 }}
@@ -115,7 +115,7 @@ export default function ProjectsPage() {
                     border: 'none',
                     background: 'var(--studio-accent)',
                     color: 'var(--studio-accent-fg)',
-                    fontSize: '13px',
+                    fontSize: '14px',
                     fontWeight: 500,
                     cursor: 'pointer',
                     '&:hover': { opacity: 0.9 },
@@ -132,7 +132,7 @@ export default function ProjectsPage() {
                     border: 'none',
                     background: 'transparent',
                     color: 'var(--studio-text-tertiary)',
-                    fontSize: '13px',
+                    fontSize: '14px',
                     cursor: 'pointer',
                     '&:hover': { color: 'var(--studio-text-secondary)' },
                   }}
@@ -187,10 +187,10 @@ export default function ProjectsPage() {
                 >
                   <FolderOpen size={16} style={{ color: 'var(--studio-text-tertiary)', flexShrink: 0 }} />
                   <Box css={{ flex: 1, minWidth: 0 }}>
-                    <Text css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>
+                    <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>
                       {project.name}
                     </Text>
-                    <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {project.path}
                     </Text>
                   </Box>

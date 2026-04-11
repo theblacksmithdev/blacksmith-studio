@@ -317,7 +317,7 @@ export function AgentInnerView({ agent, onBack }: AgentInnerViewProps) {
                     padding: '10px 14px 4px',
                     background: 'transparent', border: 'none', outline: 'none',
                     color: 'var(--studio-text-primary)',
-                    fontSize: '13px', lineHeight: '1.5',
+                    fontSize: '14px', lineHeight: '1.5',
                     '&::placeholder': { color: 'var(--studio-text-tertiary)' },
                     '&:focus': { outline: 'none', boxShadow: 'none', borderColor: 'transparent' },
                   }}

@@ -7,7 +7,7 @@ export const Section = styled.div`
 `
 
 export const SectionTitle = styled.div`
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -23,7 +23,7 @@ export const Row = styled.div`
 `
 
 export const RowLabel = styled.span`
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 450;
   color: var(--studio-text-secondary);
 `
@@ -35,7 +35,7 @@ export const SliderWrap = styled.div`
 `
 
 export const SliderValue = styled.span`
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--studio-text-muted);
   min-width: 28px;
@@ -82,7 +82,7 @@ export const SegmentBtn = styled.button<{ $active: boolean }>`
   padding: 5px 8px;
   border: none;
   border-radius: 6px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
@@ -129,7 +129,7 @@ export const ResetBtn = styled.button`
   border: 1px solid var(--studio-border);
   background: var(--studio-bg-main);
   color: var(--studio-text-muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;

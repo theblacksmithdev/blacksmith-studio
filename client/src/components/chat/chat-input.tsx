@@ -51,7 +51,7 @@ const ModelTrigger = styled.button`
   border: none;
   background: transparent;
   color: var(--studio-text-muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.12s ease;
@@ -102,13 +102,13 @@ const ModelOption = styled.button<{ $active?: boolean }>`
 `
 
 const ModelLabel = styled.div`
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--studio-text-primary);
 `
 
 const ModelDesc = styled.div`
-  font-size: 10px;
+  font-size: 11px;
   color: var(--studio-text-muted);
 `
 
@@ -119,7 +119,7 @@ const Actions = styled.div`
 `
 
 const KeyHint = styled.span`
-  font-size: 11px;
+  font-size: 12px;
   color: var(--studio-text-muted);
   user-select: none;
 `
@@ -205,7 +205,7 @@ export function ChatInput({ onSend, onCancel, isStreaming, disabled }: ChatInput
             padding: '16px 56px 16px 18px',
             background: 'transparent', border: 'none', outline: 'none',
             color: 'var(--studio-text-primary)',
-            fontSize: '14px', lineHeight: '1.6',
+            fontSize: '15px', lineHeight: '1.6',
             '&::placeholder': { color: 'var(--studio-text-tertiary)' },
             '&:focus': { outline: 'none', boxShadow: 'none', borderColor: 'transparent' },
           }}

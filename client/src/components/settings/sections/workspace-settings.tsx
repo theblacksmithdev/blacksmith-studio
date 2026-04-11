@@ -129,7 +129,7 @@ function NodeVersionPicker({ value, onChange }: { value: string; onChange: (v: s
             border: '1px solid var(--studio-border)',
             background: 'var(--studio-bg-surface)',
             color: 'var(--studio-text-primary)',
-            fontSize: '13px',
+            fontSize: '14px',
             cursor: 'pointer',
             outline: 'none',
             appearance: 'none',
@@ -179,7 +179,7 @@ function NodeVersionPicker({ value, onChange }: { value: string; onChange: (v: s
             border: '1px solid var(--studio-border)',
             background: 'var(--studio-bg-surface)',
             color: 'var(--studio-text-primary)',
-            fontSize: '13px',
+            fontSize: '14px',
             fontFamily: 'SF Mono, monospace',
             outline: 'none',
             width: '100%',
@@ -198,7 +198,7 @@ function NodeVersionPicker({ value, onChange }: { value: string; onChange: (v: s
           border: '1px solid rgba(234, 179, 8, 0.2)',
         }}>
           <TriangleAlert size={13} style={{ flexShrink: 0, marginTop: 1, color: 'rgb(234, 179, 8)' }} />
-          <Text css={{ fontSize: '12px', color: 'var(--studio-text-secondary)', lineHeight: '1.4' }}>
+          <Text css={{ fontSize: '13px', color: 'var(--studio-text-secondary)', lineHeight: '1.4' }}>
             Node {selectedVersion} is below the minimum required version (v{MIN_NODE_MAJOR}). Your project may fail to install dependencies or start the dev server.
           </Text>
         </Box>

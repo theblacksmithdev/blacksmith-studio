@@ -104,10 +104,10 @@ export function AddProjectModal({ open, onClose }: AddProjectModalProps) {
             </Box>
           )}
           <Box css={{ flex: 1 }}>
-            <Text css={{ fontSize: '15px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
+            <Text css={{ fontSize: '16px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
               {title}
             </Text>
-            <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', marginTop: '1px' }}>
+            <Text css={{ fontSize: '13px', color: 'var(--studio-text-muted)', marginTop: '1px' }}>
               {step === 'choose' && 'Import, clone, or create a new project'}
               {step === 'import' && 'Select your project folder'}
               {step === 'clone' && 'Clone a repository from a Git URL'}
@@ -169,7 +169,7 @@ function ChooseStep({ onImport, onCreate, onClone }: { onImport: () => void; onC
       <Box>
         <HStack gap={2} css={{ paddingLeft: '4px', marginBottom: '8px' }}>
           <Box css={{ color: 'var(--studio-text-muted)', display: 'flex' }}><HardDrive size={11} /></Box>
-          <Text css={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--studio-text-muted)' }}>From your machine</Text>
+          <Text css={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--studio-text-muted)' }}>From your machine</Text>
         </HStack>
         <OptionCard
           icon={<FolderOpen size={20} />}
@@ -183,7 +183,7 @@ function ChooseStep({ onImport, onCreate, onClone }: { onImport: () => void; onC
       <Box>
         <HStack gap={2} css={{ paddingLeft: '4px', marginBottom: '8px' }}>
           <Box css={{ color: 'var(--studio-text-muted)', display: 'flex' }}><Globe size={11} /></Box>
-          <Text css={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--studio-text-muted)' }}>From the internet</Text>
+          <Text css={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--studio-text-muted)' }}>From the internet</Text>
         </HStack>
         <OptionCard
           icon={<GitBranch size={20} />}
@@ -196,7 +196,7 @@ function ChooseStep({ onImport, onCreate, onClone }: { onImport: () => void; onC
       {/* Separator */}
       <HStack gap={3} css={{ padding: '0 4px' }}>
         <Box css={{ flex: 1, height: '1px', background: 'var(--studio-border)' }} />
-        <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)', flexShrink: 0 }}>or</Text>
+        <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', flexShrink: 0 }}>or</Text>
         <Box css={{ flex: 1, height: '1px', background: 'var(--studio-border)' }} />
       </HStack>
 
@@ -242,10 +242,10 @@ function OptionCard({ icon, title, description, onClick }: {
         {icon}
       </Box>
       <Box css={{ flex: 1 }}>
-        <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)', marginBottom: '2px' }}>
+        <Text css={{ fontSize: '15px', fontWeight: 500, color: 'var(--studio-text-primary)', marginBottom: '2px' }}>
           {title}
         </Text>
-        <Text css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)', lineHeight: 1.4 }}>
+        <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', lineHeight: 1.4 }}>
           {description}
         </Text>
       </Box>
@@ -329,14 +329,14 @@ function ImportStep({ onClose }: { onClose: () => void }) {
           >
             <FolderOpen size={15} style={{ color: projectPath ? 'var(--studio-green)' : 'var(--studio-text-muted)', flexShrink: 0 }} />
             <Text css={{
-              flex: 1, fontSize: '13px',
+              flex: 1, fontSize: '14px',
               color: projectPath ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)',
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               fontFamily: projectPath ? "'SF Mono', Menlo, monospace" : 'inherit',
             }}>
               {projectPath || 'Choose a folder...'}
             </Text>
-            <Text css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)', flexShrink: 0 }}>Browse</Text>
+            <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', flexShrink: 0 }}>Browse</Text>
           </Box>
         </FormField>
 
@@ -344,21 +344,21 @@ function ImportStep({ onClose }: { onClose: () => void }) {
           <Box css={{ padding: '14px', borderRadius: '10px', border: '1px solid var(--studio-border)', background: 'var(--studio-bg-sidebar)' }}>
             <HStack gap={3} css={{ marginBottom: '12px' }}>
               {validation.isBlacksmithProject ? (
-                <HStack gap={2} css={{ fontSize: '12px', color: 'var(--studio-green)' }}>
+                <HStack gap={2} css={{ fontSize: '13px', color: 'var(--studio-green)' }}>
                   <Anvil size={13} /> <Text>Blacksmith project</Text>
                 </HStack>
               ) : (
-                <HStack gap={2} css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)' }}>
+                <HStack gap={2} css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)' }}>
                   <Folder size={13} /> <Text>Project folder</Text>
                 </HStack>
               )}
               {validation.hasPackageJson && (
-                <HStack gap={1} css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)' }}>
+                <HStack gap={1} css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)' }}>
                   <Package size={12} /> <Text>npm</Text>
                 </HStack>
               )}
               {validation.hasGit && (
-                <HStack gap={1} css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)' }}>
+                <HStack gap={1} css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)' }}>
                   <GitBranch size={12} /> <Text>git</Text>
                 </HStack>
               )}
@@ -378,7 +378,7 @@ function ImportStep({ onClose }: { onClose: () => void }) {
             width: '100%', padding: '11px', borderRadius: '10px', border: 'none',
             background: validation?.valid ? 'var(--studio-accent)' : 'var(--studio-bg-surface)',
             color: validation?.valid ? 'var(--studio-accent-fg)' : 'var(--studio-text-muted)',
-            fontSize: '14px', fontWeight: 500,
+            fontSize: '15px', fontWeight: 500,
             cursor: validation?.valid ? 'pointer' : 'default',
             transition: 'all 0.15s ease',
             '&:hover': validation?.valid ? { opacity: 0.9 } : {},
@@ -488,13 +488,13 @@ function CreateStep({ onClose }: { onClose: () => void }) {
                   color: state === 'success' ? 'var(--studio-green)' : 'var(--studio-text-tertiary)',
                   animation: state === 'creating' ? 'spin 1s linear infinite' : 'none',
                 }} />
-                <Text css={{ fontSize: '12px', fontWeight: 500, color: 'var(--studio-text-secondary)' }}>
+                <Text css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-text-secondary)' }}>
                   {state === 'success' ? 'Project created successfully' : `Creating ${name}...`}
                 </Text>
               </HStack>
               <Box css={{
                 padding: '12px', maxHeight: '240px', overflowY: 'auto',
-                fontFamily: "'SF Mono', 'Fira Code', Menlo, monospace", fontSize: '12px',
+                fontFamily: "'SF Mono', 'Fira Code', Menlo, monospace", fontSize: '13px',
                 lineHeight: '20px', color: 'var(--studio-text-secondary)',
               }}>
                 {outputLines.map((line, i) => (
@@ -510,7 +510,7 @@ function CreateStep({ onClose }: { onClose: () => void }) {
             {state === 'success' && (
               <HStack gap={2} css={{ padding: '10px 12px', borderRadius: '8px', background: 'var(--studio-green-subtle)', border: '1px solid var(--studio-green-border)' }}>
                 <Check size={14} style={{ color: 'var(--studio-green)', flexShrink: 0 }} />
-                <Text css={{ fontSize: '13px', color: 'var(--studio-green)', fontWeight: 500 }}>Project created! Redirecting...</Text>
+                <Text css={{ fontSize: '14px', color: 'var(--studio-green)', fontWeight: 500 }}>Project created! Redirecting...</Text>
               </HStack>
             )}
           </>
@@ -544,17 +544,17 @@ function CreateStep({ onClose }: { onClose: () => void }) {
               >
                 <FolderOpen size={15} style={{ color: parentPath ? 'var(--studio-green)' : 'var(--studio-text-muted)', flexShrink: 0 }} />
                 <Text css={{
-                  flex: 1, fontSize: '13px',
+                  flex: 1, fontSize: '14px',
                   color: parentPath ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)',
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   fontFamily: parentPath ? "'SF Mono', Menlo, monospace" : 'inherit',
                 }}>
                   {parentPath || 'Select a folder...'}
                 </Text>
-                <Text css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)', flexShrink: 0 }}>Browse</Text>
+                <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', flexShrink: 0 }}>Browse</Text>
               </Box>
               {parentPath && name && (
-                <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)', marginTop: '4px', fontFamily: "'SF Mono', Menlo, monospace" }}>
+                <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', marginTop: '4px', fontFamily: "'SF Mono', Menlo, monospace" }}>
                   {parentPath}/{name}
                 </Text>
               )}
@@ -578,8 +578,8 @@ function CreateStep({ onClose }: { onClose: () => void }) {
             <HStack gap={3} css={{ padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--studio-border)', background: 'var(--studio-bg-sidebar)' }}>
               <Anvil size={15} style={{ color: 'var(--studio-green)', flexShrink: 0 }} />
               <Box css={{ flex: 1 }}>
-                <Text css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>AI coding support</Text>
-                <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)' }}>CLAUDE.md generated automatically</Text>
+                <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>AI coding support</Text>
+                <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)' }}>CLAUDE.md generated automatically</Text>
               </Box>
               <Check size={14} style={{ color: 'var(--studio-green)', flexShrink: 0 }} />
             </HStack>
@@ -587,7 +587,7 @@ function CreateStep({ onClose }: { onClose: () => void }) {
             {state === 'error' && (
               <HStack gap={2} css={{ padding: '10px 12px', borderRadius: '8px', background: 'var(--studio-error-subtle)', border: '1px solid rgba(239,68,68,0.2)' }}>
                 <AlertCircle size={14} style={{ color: 'var(--studio-error)', flexShrink: 0 }} />
-                <Text css={{ fontSize: '12px', color: 'var(--studio-error)' }}>{serverError}</Text>
+                <Text css={{ fontSize: '13px', color: 'var(--studio-error)' }}>{serverError}</Text>
               </HStack>
             )}
 
@@ -598,7 +598,7 @@ function CreateStep({ onClose }: { onClose: () => void }) {
                 width: '100%', padding: '11px', borderRadius: '10px', border: 'none',
                 background: 'var(--studio-accent)',
                 color: 'var(--studio-accent-fg)',
-                fontSize: '14px', fontWeight: 500,
+                fontSize: '15px', fontWeight: 500,
                 cursor: 'pointer',
                 transition: 'all 0.15s ease',
                 '&:hover': { opacity: 0.9 },
@@ -707,13 +707,13 @@ function CloneStep({ onClose }: { onClose: () => void }) {
                   color: state === 'success' ? 'var(--studio-green)' : 'var(--studio-text-tertiary)',
                   animation: state === 'cloning' ? 'spin 1s linear infinite' : 'none',
                 }} />
-                <Text css={{ fontSize: '12px', fontWeight: 500, color: 'var(--studio-text-secondary)' }}>
+                <Text css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-text-secondary)' }}>
                   {state === 'success' ? 'Repository cloned successfully' : `Cloning ${derivedName}...`}
                 </Text>
               </HStack>
               <Box css={{
                 padding: '12px', maxHeight: '240px', overflowY: 'auto',
-                fontFamily: "'SF Mono', 'Fira Code', Menlo, monospace", fontSize: '12px',
+                fontFamily: "'SF Mono', 'Fira Code', Menlo, monospace", fontSize: '13px',
                 lineHeight: '20px', color: 'var(--studio-text-secondary)',
               }}>
                 {outputLines.map((line, i) => (
@@ -729,7 +729,7 @@ function CloneStep({ onClose }: { onClose: () => void }) {
             {state === 'success' && (
               <HStack gap={2} css={{ padding: '10px 12px', borderRadius: '8px', background: 'var(--studio-green-subtle)', border: '1px solid var(--studio-green-border)' }}>
                 <Check size={14} style={{ color: 'var(--studio-green)', flexShrink: 0 }} />
-                <Text css={{ fontSize: '13px', color: 'var(--studio-green)', fontWeight: 500 }}>Cloned! Redirecting...</Text>
+                <Text css={{ fontSize: '14px', color: 'var(--studio-green)', fontWeight: 500 }}>Cloned! Redirecting...</Text>
               </HStack>
             )}
           </>
@@ -763,14 +763,14 @@ function CloneStep({ onClose }: { onClose: () => void }) {
               >
                 <FolderOpen size={15} style={{ color: parentPath ? 'var(--studio-green)' : 'var(--studio-text-muted)', flexShrink: 0 }} />
                 <Text css={{
-                  flex: 1, fontSize: '13px',
+                  flex: 1, fontSize: '14px',
                   color: parentPath ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)',
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   fontFamily: parentPath ? "'SF Mono', Menlo, monospace" : 'inherit',
                 }}>
                   {parentPath || 'Select a folder...'}
                 </Text>
-                <Text css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)', flexShrink: 0 }}>Browse</Text>
+                <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', flexShrink: 0 }}>Browse</Text>
               </Box>
             </FormField>
 
@@ -785,7 +785,7 @@ function CloneStep({ onClose }: { onClose: () => void }) {
               }}>
                 <GitBranch size={14} style={{ color: 'var(--studio-text-muted)', flexShrink: 0 }} />
                 <Text css={{
-                  fontSize: '12px', fontFamily: "'SF Mono', Menlo, monospace",
+                  fontSize: '13px', fontFamily: "'SF Mono', Menlo, monospace",
                   color: 'var(--studio-text-secondary)',
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}>
@@ -797,7 +797,7 @@ function CloneStep({ onClose }: { onClose: () => void }) {
             {state === 'error' && (
               <HStack gap={2} css={{ padding: '10px 12px', borderRadius: '8px', background: 'var(--studio-error-subtle)', border: '1px solid rgba(239,68,68,0.2)' }}>
                 <AlertCircle size={14} style={{ color: 'var(--studio-error)', flexShrink: 0 }} />
-                <Text css={{ fontSize: '12px', color: 'var(--studio-error)' }}>{serverError}</Text>
+                <Text css={{ fontSize: '13px', color: 'var(--studio-error)' }}>{serverError}</Text>
               </HStack>
             )}
 
@@ -809,7 +809,7 @@ function CloneStep({ onClose }: { onClose: () => void }) {
                 width: '100%', padding: '11px', borderRadius: '10px', border: 'none',
                 background: (gitUrl && parentPath) ? 'var(--studio-accent)' : 'var(--studio-bg-surface)',
                 color: (gitUrl && parentPath) ? 'var(--studio-accent-fg)' : 'var(--studio-text-muted)',
-                fontSize: '14px', fontWeight: 500,
+                fontSize: '15px', fontWeight: 500,
                 cursor: (gitUrl && parentPath) ? 'pointer' : 'default',
                 transition: 'all 0.15s ease',
                 '&:hover': (gitUrl && parentPath) ? { opacity: 0.9 } : {},

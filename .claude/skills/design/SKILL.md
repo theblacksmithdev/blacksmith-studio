@@ -204,7 +204,7 @@ Utilities:
 ## Typography
 
 ```
-Font family:  -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif (native system font)
+Font family:  'Outfit', -apple-system, BlinkMacSystemFont, sans-serif
 Mono font:    'SF Mono', 'Fira Code', 'JetBrains Mono', Menlo, monospace
 
 Sizes:

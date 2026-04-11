@@ -107,10 +107,10 @@ export function CloneFromGit() {
   return (
     <VStack gap={6} css={{ maxWidth: '480px', width: '100%', padding: '0 24px' }}>
       <VStack gap={2}>
-        <Text css={{ fontSize: '22px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--studio-text-primary)', textAlign: 'center' }}>
+        <Text css={{ fontSize: '24px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--studio-text-primary)', textAlign: 'center' }}>
           Clone from Git
         </Text>
-        <Text css={{ fontSize: '14px', color: 'var(--studio-text-tertiary)', textAlign: 'center' }}>
+        <Text css={{ fontSize: '15px', color: 'var(--studio-text-tertiary)', textAlign: 'center' }}>
           Enter a repository URL and choose where to clone it.
         </Text>
       </VStack>
@@ -151,14 +151,14 @@ export function CloneFromGit() {
             >
               <FolderOpen size={16} style={{ color: parentPath ? 'var(--studio-green)' : 'var(--studio-text-muted)', flexShrink: 0 }} />
               <Text css={{
-                flex: 1, fontSize: '13px',
+                flex: 1, fontSize: '14px',
                 color: parentPath ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)',
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 fontFamily: parentPath ? "'SF Mono', 'Fira Code', Menlo, monospace" : 'inherit',
               }}>
                 {parentPath || 'Choose a folder...'}
               </Text>
-              <Text css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)', flexShrink: 0 }}>Browse</Text>
+              <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', flexShrink: 0 }}>Browse</Text>
             </Box>
           </FormField>
 
@@ -182,7 +182,7 @@ export function CloneFromGit() {
             }}>
               <GitBranch size={14} style={{ color: 'var(--studio-text-muted)', flexShrink: 0 }} />
               <Text css={{
-                fontSize: '12px',
+                fontSize: '13px',
                 fontFamily: "'SF Mono', 'Fira Code', monospace",
                 color: 'var(--studio-text-secondary)',
                 overflow: 'hidden',
@@ -206,7 +206,7 @@ export function CloneFromGit() {
                 background: 'var(--studio-bg-inset)',
                 border: '1px solid var(--studio-border)',
                 fontFamily: "'SF Mono', 'Fira Code', monospace",
-                fontSize: '11px',
+                fontSize: '12px',
                 lineHeight: '18px',
                 color: 'var(--studio-text-tertiary)',
               }}
@@ -224,7 +224,7 @@ export function CloneFromGit() {
 
           {/* Error */}
           {error && (
-            <Text css={{ fontSize: '13px', color: 'var(--studio-error)', padding: '8px 0' }}>
+            <Text css={{ fontSize: '14px', color: 'var(--studio-error)', padding: '8px 0' }}>
               {error}
             </Text>
           )}
@@ -238,7 +238,7 @@ export function CloneFromGit() {
               width: '100%', padding: '12px', borderRadius: '10px', border: 'none',
               background: (gitUrl && parentPath && !cloning) ? 'var(--studio-accent)' : 'var(--studio-bg-surface)',
               color: (gitUrl && parentPath && !cloning) ? 'var(--studio-accent-fg)' : 'var(--studio-text-muted)',
-              fontSize: '14px', fontWeight: 500,
+              fontSize: '15px', fontWeight: 500,
               cursor: (gitUrl && parentPath && !cloning) ? 'pointer' : 'default',
               transition: 'all 0.15s ease',
               '&:hover': (gitUrl && parentPath && !cloning) ? { opacity: 0.9 } : {},

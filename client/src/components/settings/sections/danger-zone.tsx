@@ -36,10 +36,10 @@ export function DangerZone() {
     <>
       <VStack gap={5} align="stretch">
         <Box>
-          <Text css={{ fontSize: '15px', fontWeight: 600, color: 'var(--studio-error)', marginBottom: '4px' }}>
+          <Text css={{ fontSize: '16px', fontWeight: 600, color: 'var(--studio-error)', marginBottom: '4px' }}>
             Danger Zone
           </Text>
-          <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)' }}>
+          <Text css={{ fontSize: '14px', color: 'var(--studio-text-tertiary)' }}>
             Irreversible actions that affect this project.
           </Text>
         </Box>
@@ -102,18 +102,18 @@ export function DangerZone() {
             >
               <HStack gap={2} css={{ marginBottom: '6px' }}>
                 <AlertTriangle size={14} style={{ color: 'var(--studio-error)' }} />
-                <Text css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-error)' }}>
+                <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-error)' }}>
                   This action cannot be undone
                 </Text>
               </HStack>
               {modalMode === 'hard' ? (
-                <Text css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)', lineHeight: 1.5 }}>
+                <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', lineHeight: 1.5 }}>
                   This will <strong>permanently delete</strong> the folder at{' '}
-                  <code style={{ fontSize: '11px', background: 'var(--studio-bg-surface)', padding: '1px 4px', borderRadius: '3px' }}>{activeProject?.path}</code>{' '}
+                  <code style={{ fontSize: '12px', background: 'var(--studio-bg-surface)', padding: '1px 4px', borderRadius: '3px' }}>{activeProject?.path}</code>{' '}
                   from your disk, along with all chat history and settings.
                 </Text>
               ) : (
-                <Text css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)', lineHeight: 1.5 }}>
+                <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', lineHeight: 1.5 }}>
                   Your project files will remain on disk. All chat history and settings stored in Studio will be permanently deleted.
                 </Text>
               )}
@@ -121,7 +121,7 @@ export function DangerZone() {
 
             {/* Confirmation input */}
             <Box>
-              <Text css={{ fontSize: '13px', color: 'var(--studio-text-secondary)', marginBottom: '8px' }}>
+              <Text css={{ fontSize: '14px', color: 'var(--studio-text-secondary)', marginBottom: '8px' }}>
                 Type <strong style={{ color: 'var(--studio-text-primary)' }}>{activeProject?.name}</strong> to confirm:
               </Text>
               <Input
@@ -132,7 +132,7 @@ export function DangerZone() {
                 css={{
                   padding: '9px 12px', borderRadius: '7px',
                   border: '1px solid var(--studio-border)', background: 'var(--studio-bg-surface)',
-                  color: 'var(--studio-text-primary)', fontSize: '14px',
+                  color: 'var(--studio-text-primary)', fontSize: '15px',
                   '&:focus': { borderColor: 'var(--studio-border-hover)', boxShadow: 'none' },
                 }}
               />
@@ -161,10 +161,10 @@ function DangerRow({ title, description, buttonLabel, onClick, destructive }: {
       }}
     >
       <Box css={{ flex: 1 }}>
-        <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)', marginBottom: '4px' }}>
+        <Text css={{ fontSize: '15px', fontWeight: 500, color: 'var(--studio-text-primary)', marginBottom: '4px' }}>
           {title}
         </Text>
-        <Text css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)', lineHeight: 1.5 }}>
+        <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', lineHeight: 1.5 }}>
           {description}
         </Text>
       </Box>
@@ -176,7 +176,7 @@ function DangerRow({ title, description, buttonLabel, onClick, destructive }: {
           border: destructive ? 'none' : '1px solid var(--studio-error)',
           background: destructive ? 'var(--studio-error)' : 'transparent',
           color: destructive ? '#fff' : 'var(--studio-error)',
-          fontSize: '13px', fontWeight: 500, cursor: 'pointer',
+          fontSize: '14px', fontWeight: 500, cursor: 'pointer',
           transition: 'all 0.12s ease',
           '&:hover': destructive ? { opacity: 0.9 } : { background: 'var(--studio-error-subtle)' },
         }}

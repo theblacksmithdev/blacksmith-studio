@@ -30,7 +30,7 @@ const Footer = styled.div`
 `
 
 const Hint = styled.span`
-  font-size: 9px;
+  font-size: 10px;
   color: var(--studio-text-muted);
   user-select: none;
   opacity: 0.6;
@@ -97,7 +97,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
             padding: '10px 14px 4px',
             background: 'transparent', border: 'none', outline: 'none',
             color: 'var(--studio-text-primary)',
-            fontSize: '12.5px', lineHeight: '1.5',
+            fontSize: '13.5px', lineHeight: '1.5',
             '&::placeholder': { color: 'var(--studio-text-tertiary)' },
             '&:focus': { outline: 'none', boxShadow: 'none', borderColor: 'transparent' },
           }}

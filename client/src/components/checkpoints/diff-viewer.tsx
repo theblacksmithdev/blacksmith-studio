@@ -20,7 +20,7 @@ const Header = styled.div`
   gap: 8px;
   padding: 10px 14px;
   border-bottom: 1px solid var(--studio-border);
-  font-size: 12px;
+  font-size: 13px;
   font-family: 'SF Mono', 'Fira Code', monospace;
   color: var(--studio-text-secondary);
 `
@@ -29,7 +29,7 @@ const Stats = styled.span`
   margin-left: auto;
   display: flex;
   gap: 8px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
 `
 
@@ -42,7 +42,7 @@ const DiffContent = styled.div`
 const DiffTable = styled.table`
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: 13px;
   font-family: 'SF Mono', 'Fira Code', monospace;
   line-height: 20px;
 `
@@ -62,7 +62,7 @@ const LineNum = styled.td`
   padding: 0 8px;
   text-align: right;
   color: var(--studio-text-muted);
-  font-size: 11px;
+  font-size: 12px;
   user-select: none;
   opacity: 0.6;
   vertical-align: top;
@@ -89,7 +89,7 @@ const Placeholder = styled.div`
   gap: 10px;
   height: 100%;
   color: var(--studio-text-muted);
-  font-size: 13px;
+  font-size: 14px;
 `
 
 function classifyLine(line: string): 'add' | 'remove' | 'context' {

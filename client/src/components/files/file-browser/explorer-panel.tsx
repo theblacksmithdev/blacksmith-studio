@@ -47,7 +47,7 @@ export function ExplorerPanel({
           <FolderTree size={14} style={{ color: 'var(--studio-text-tertiary)' }} />
           <Text
             css={{
-              fontSize: '11px',
+              fontSize: '12px',
               fontWeight: 600,
               textTransform: 'uppercase',
               letterSpacing: '0.06em',
@@ -110,7 +110,7 @@ export function ExplorerPanel({
               border: 'none',
               outline: 'none',
               color: 'var(--studio-text-primary)',
-              fontSize: '12px',
+              fontSize: '13px',
             }}
           />
         </Box>
@@ -135,7 +135,7 @@ export function ExplorerPanel({
           css={{
             padding: '8px 14px',
             borderTop: '1px solid var(--studio-border)',
-            fontSize: '11px',
+            fontSize: '12px',
             color: 'var(--studio-text-muted)',
           }}
         >

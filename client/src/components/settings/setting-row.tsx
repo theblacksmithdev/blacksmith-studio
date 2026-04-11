@@ -19,11 +19,11 @@ export function SettingRow({ label, description, fullWidth, children }: SettingR
           '&:last-child': { borderBottom: 'none' },
         }}
       >
-        <Text css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-text-primary)', marginBottom: '2px' }}>
+        <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)', marginBottom: '2px' }}>
           {label}
         </Text>
         {description && (
-          <Text css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)', marginBottom: '10px' }}>
+          <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', marginBottom: '10px' }}>
             {description}
           </Text>
         )}
@@ -42,11 +42,11 @@ export function SettingRow({ label, description, fullWidth, children }: SettingR
       }}
     >
       <Box css={{ flex: 1, minWidth: 0 }}>
-        <Text css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>
+        <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>
           {label}
         </Text>
         {description && (
-          <Text css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)', marginTop: '1px' }}>
+          <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', marginTop: '1px' }}>
             {description}
           </Text>
         )}

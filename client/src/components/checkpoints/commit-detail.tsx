@@ -10,7 +10,7 @@ const MetaRow = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--studio-text-tertiary);
 `
 
@@ -28,7 +28,7 @@ const HashBadge = styled.button`
   border-radius: 6px;
   border: 1px solid var(--studio-border);
   background: var(--studio-bg-inset);
-  font-size: 12px;
+  font-size: 13px;
   font-family: 'SF Mono', 'Fira Code', monospace;
   color: var(--studio-text-secondary);
   cursor: pointer;
@@ -46,7 +46,7 @@ const FileRow = styled.div`
   gap: 10px;
   padding: 7px 10px;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: 13px;
   font-family: 'SF Mono', 'Fira Code', monospace;
   transition: background 0.12s ease;
 
@@ -64,7 +64,7 @@ const FilePath = styled.span`
 `
 
 const StatBadge = styled.span<{ variant: 'add' | 'del' }>`
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   color: ${(p) => (p.variant === 'add' ? 'var(--studio-green)' : 'var(--studio-error)')};
 `
@@ -81,7 +81,7 @@ const DiffBlock = styled.div`
 const DiffTable = styled.table`
   width: 100%;
   border-collapse: collapse;
-  font-size: 11px;
+  font-size: 12px;
   font-family: 'SF Mono', 'Fira Code', monospace;
   line-height: 18px;
 `
@@ -102,7 +102,7 @@ const LineNum = styled.td`
   padding: 0 6px;
   text-align: right;
   color: var(--studio-text-muted);
-  font-size: 10px;
+  font-size: 11px;
   user-select: none;
   opacity: 0.5;
   vertical-align: top;
@@ -124,7 +124,7 @@ const LineContent = styled.td<{ type: 'add' | 'remove' | 'context' | 'hunk' }>`
 `
 
 const SectionLabel = styled.div`
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -137,7 +137,7 @@ const LoadingState = styled.div`
   align-items: center;
   justify-content: center;
   height: 200px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--studio-text-muted);
 `
 

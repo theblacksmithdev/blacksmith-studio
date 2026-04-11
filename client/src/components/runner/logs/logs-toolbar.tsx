@@ -19,7 +19,7 @@ const FilterBtn = styled.button<{ active: boolean }>`
   border: none;
   background: ${({ active }) => (active ? 'var(--studio-bg-hover)' : 'transparent')};
   color: ${({ active }) => (active ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)')};
-  font-size: 11px;
+  font-size: 12px;
   font-weight: ${({ active }) => (active ? 500 : 400)};
   cursor: pointer;
   transition: all 0.1s ease;
@@ -35,7 +35,7 @@ const Spacer = styled.div`
 `
 
 const LineCount = styled.span`
-  font-size: 10px;
+  font-size: 11px;
   color: var(--studio-text-muted);
   margin-right: 4px;
 `
@@ -73,7 +73,7 @@ const SearchInput = styled.input`
   border: none;
   background: transparent;
   color: var(--studio-text-primary);
-  font-size: 11px;
+  font-size: 12px;
   width: 120px;
   outline: none;
   font-family: inherit;

@@ -67,7 +67,7 @@ export const Center = styled.div`
 `
 
 export const TitleText = styled.span`
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--studio-text-tertiary);
   overflow: hidden;
@@ -76,7 +76,7 @@ export const TitleText = styled.span`
 `
 
 export const TitleTextBold = styled.span`
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--studio-text-primary);
   overflow: hidden;
@@ -86,7 +86,7 @@ export const TitleTextBold = styled.span`
 
 export const TitleSeparator = styled.span`
   color: var(--studio-text-muted);
-  font-size: 12px;
+  font-size: 13px;
 `
 
 const Actions = styled.div`

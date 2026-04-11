@@ -75,7 +75,7 @@ export function SkillsLibraryModal({ existingNames, onAdd, onClose }: SkillsLibr
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search skills..."
             autoFocus
-            css={{ fontSize: '13px', color: 'var(--studio-text-primary)', border: 'none', outline: 'none', background: 'transparent', '&:focus': { boxShadow: 'none' }, '&::placeholder': { color: 'var(--studio-text-muted)' } }}
+            css={{ fontSize: '14px', color: 'var(--studio-text-primary)', border: 'none', outline: 'none', background: 'transparent', '&:focus': { boxShadow: 'none' }, '&::placeholder': { color: 'var(--studio-text-muted)' } }}
           />
         </Flex>
 
@@ -92,7 +92,7 @@ export function SkillsLibraryModal({ existingNames, onAdd, onClose }: SkillsLibr
               css={{
                 padding: '4px 12px',
                 borderRadius: '6px',
-                fontSize: '12px',
+                fontSize: '13px',
                 fontWeight: category === cat.id ? 500 : 400,
                 background: category === cat.id ? 'var(--studio-bg-hover)' : 'transparent',
                 color: category === cat.id ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)',
@@ -139,15 +139,15 @@ export function SkillsLibraryModal({ existingNames, onAdd, onClose }: SkillsLibr
                   <Icon size={16} />
                 </Box>
                 <Box css={{ flex: 1, minWidth: 0 }}>
-                  <Text css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>
+                  <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>
                     {preset.label}
                   </Text>
-                  <Text css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)', marginTop: '1px' }}>
+                  <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', marginTop: '1px' }}>
                     {preset.description}
                   </Text>
                 </Box>
                 {added && (
-                  <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)', flexShrink: 0 }}>
+                  <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', flexShrink: 0 }}>
                     Added
                   </Text>
                 )}
@@ -155,7 +155,7 @@ export function SkillsLibraryModal({ existingNames, onAdd, onClose }: SkillsLibr
             )
           })}
           {filtered.length === 0 && (
-            <Text css={{ padding: '24px', textAlign: 'center', fontSize: '12px', color: 'var(--studio-text-tertiary)' }}>
+            <Text css={{ padding: '24px', textAlign: 'center', fontSize: '13px', color: 'var(--studio-text-tertiary)' }}>
               No skills match your search.
             </Text>
           )}

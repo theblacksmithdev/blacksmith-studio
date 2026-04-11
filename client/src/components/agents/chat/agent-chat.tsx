@@ -74,10 +74,10 @@ export function AgentChat({ onSend, onRespond, isProcessing, onClose }: AgentCha
       <Header>
         <BrandIcon><Network size={12} /></BrandIcon>
         <Box css={{ flex: 1 }}>
-          <Text css={{ fontSize: '13px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
+          <Text css={{ fontSize: '14px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
             Agent Team
           </Text>
-          <Text css={{ fontSize: '10px', color: 'var(--studio-text-muted)', marginTop: '1px' }}>
+          <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)', marginTop: '1px' }}>
             Describe what you need built
           </Text>
         </Box>

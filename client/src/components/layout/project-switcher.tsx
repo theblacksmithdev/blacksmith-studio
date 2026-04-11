@@ -29,7 +29,7 @@ export function ProjectSwitcher() {
           border: 'none',
           background: 'transparent',
           color: 'var(--studio-text-secondary)',
-          fontSize: '11px',
+          fontSize: '12px',
           cursor: 'pointer',
           transition: 'all 0.12s ease',
           width: '100%',
@@ -39,7 +39,7 @@ export function ProjectSwitcher() {
         }}
       >
         <FolderOpen size={13} style={{ flexShrink: 0 }} />
-        <Text css={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '11px' }}>
+        <Text css={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '12px' }}>
           {activeProject?.name || 'No project'}
         </Text>
         <ChevronDown size={12} style={{ flexShrink: 0, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
@@ -70,7 +70,7 @@ export function ProjectSwitcher() {
           >
             <Text
               css={{
-                fontSize: '10px',
+                fontSize: '11px',
                 fontWeight: 600,
                 textTransform: 'uppercase',
                 letterSpacing: '0.06em',
@@ -82,7 +82,7 @@ export function ProjectSwitcher() {
             </Text>
             <VStack gap={0} align="stretch">
               {projects.length === 0 && (
-                <Text css={{ padding: '8px', fontSize: '12px', color: 'var(--studio-text-muted)' }}>
+                <Text css={{ padding: '8px', fontSize: '13px', color: 'var(--studio-text-muted)' }}>
                   No projects yet
                 </Text>
               )}
@@ -102,7 +102,7 @@ export function ProjectSwitcher() {
                       border: 'none',
                       background: isActive ? 'var(--studio-bg-hover)' : 'transparent',
                       color: 'var(--studio-text-primary)',
-                      fontSize: '12px',
+                      fontSize: '13px',
                       cursor: 'pointer',
                       textAlign: 'left',
                       width: '100%',

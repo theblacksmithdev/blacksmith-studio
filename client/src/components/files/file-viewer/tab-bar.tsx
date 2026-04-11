@@ -37,7 +37,7 @@ function TabItem({ tab, isActive }: { tab: OpenTab; isActive: boolean }) {
       }}
     >
       <FileCode size={12} />
-      <Text css={{ fontSize: '12px', fontWeight: isActive ? 500 : 400 }}>
+      <Text css={{ fontSize: '13px', fontWeight: isActive ? 500 : 400 }}>
         {getFileName(tab.path)}
       </Text>
       {isChanged && (
@@ -114,7 +114,7 @@ export function TabBar({ activeFilePath, language, content }: TabBarProps) {
 
       {/* Actions */}
       <HStack gap={1} css={{ paddingRight: '10px', paddingLeft: '8px', flexShrink: 0 }}>
-        <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)', marginRight: '4px' }}>
+        <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', marginRight: '4px' }}>
           {pathParts.slice(0, -1).join(' / ')}
         </Text>
 
@@ -123,7 +123,7 @@ export function TabBar({ activeFilePath, language, content }: TabBarProps) {
             padding: '2px 7px',
             borderRadius: '4px',
             background: 'var(--studio-bg-surface)',
-            fontSize: '10px',
+            fontSize: '11px',
             fontWeight: 600,
             color: 'var(--studio-text-tertiary)',
             textTransform: 'uppercase',

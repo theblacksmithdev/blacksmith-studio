@@ -13,7 +13,7 @@ const DateGroup = styled.div`
 `
 
 const DateLabel = styled.div`
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--studio-text-muted);
   padding: 8px 0 6px;
@@ -51,7 +51,7 @@ const Dot = styled.div`
 `
 
 const Message = styled.span`
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 450;
   color: var(--studio-text-primary);
   flex: 1;
@@ -62,14 +62,14 @@ const Message = styled.span`
 `
 
 const Meta = styled.span`
-  font-size: 11px;
+  font-size: 12px;
   color: var(--studio-text-muted);
   flex-shrink: 0;
   white-space: nowrap;
 `
 
 const Hash = styled.span`
-  font-size: 11px;
+  font-size: 12px;
   font-family: 'SF Mono', 'Fira Code', monospace;
   color: var(--studio-text-muted);
   flex-shrink: 0;
@@ -79,7 +79,7 @@ const Hash = styled.span`
 const EmptyMessage = styled.div`
   padding: 20px 12px;
   text-align: center;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--studio-text-muted);
   line-height: 1.6;
 `

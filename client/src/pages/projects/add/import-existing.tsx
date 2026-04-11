@@ -72,10 +72,10 @@ export function ImportExisting() {
   return (
     <VStack gap={6} css={{ maxWidth: '480px', width: '100%', padding: '0 24px' }}>
       <VStack gap={2}>
-        <Text css={{ fontSize: '22px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--studio-text-primary)', textAlign: 'center' }}>
+        <Text css={{ fontSize: '24px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--studio-text-primary)', textAlign: 'center' }}>
           Import existing project
         </Text>
-        <Text css={{ fontSize: '14px', color: 'var(--studio-text-tertiary)', textAlign: 'center' }}>
+        <Text css={{ fontSize: '15px', color: 'var(--studio-text-tertiary)', textAlign: 'center' }}>
           Select your project folder to add it to Studio.
         </Text>
       </VStack>
@@ -105,14 +105,14 @@ export function ImportExisting() {
             >
               <FolderOpen size={16} style={{ color: projectPath ? 'var(--studio-green)' : 'var(--studio-text-muted)', flexShrink: 0 }} />
               <Text css={{
-                flex: 1, fontSize: '13px',
+                flex: 1, fontSize: '14px',
                 color: projectPath ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)',
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 fontFamily: projectPath ? "'SF Mono', 'Fira Code', Menlo, monospace" : 'inherit',
               }}>
                 {projectPath || 'Choose a folder...'}
               </Text>
-              <Text css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)', flexShrink: 0 }}>Browse</Text>
+              <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', flexShrink: 0 }}>Browse</Text>
             </Box>
           </FormField>
 
@@ -121,21 +121,21 @@ export function ImportExisting() {
             <Box css={{ padding: '16px', borderRadius: '10px', border: '1px solid var(--studio-border)', background: 'var(--studio-bg-sidebar)' }}>
               <HStack gap={3} css={{ marginBottom: '14px' }}>
                 {validation.isBlacksmithProject ? (
-                  <HStack gap={2} css={{ fontSize: '12px', color: 'var(--studio-green)' }}>
+                  <HStack gap={2} css={{ fontSize: '13px', color: 'var(--studio-green)' }}>
                     <Anvil size={14} /> <Text>Blacksmith project</Text>
                   </HStack>
                 ) : (
-                  <HStack gap={2} css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)' }}>
+                  <HStack gap={2} css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)' }}>
                     <Folder size={14} /> <Text>Project folder</Text>
                   </HStack>
                 )}
                 {validation.hasPackageJson && (
-                  <HStack gap={1} css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)' }}>
+                  <HStack gap={1} css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)' }}>
                     <Package size={12} /> <Text>npm</Text>
                   </HStack>
                 )}
                 {validation.hasGit && (
-                  <HStack gap={1} css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)' }}>
+                  <HStack gap={1} css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)' }}>
                     <GitBranch size={12} /> <Text>git</Text>
                   </HStack>
                 )}
@@ -156,7 +156,7 @@ export function ImportExisting() {
               width: '100%', padding: '12px', borderRadius: '10px', border: 'none',
               background: validation?.valid ? 'var(--studio-accent)' : 'var(--studio-bg-surface)',
               color: validation?.valid ? 'var(--studio-accent-fg)' : 'var(--studio-text-muted)',
-              fontSize: '14px', fontWeight: 500,
+              fontSize: '15px', fontWeight: 500,
               cursor: validation?.valid ? 'pointer' : 'default',
               transition: 'all 0.15s ease',
               '&:hover': validation?.valid ? { opacity: 0.9 } : {},

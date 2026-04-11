@@ -10,7 +10,7 @@ const inputCss = {
   border: '1px solid var(--studio-border)',
   borderRadius: '8px',
   color: 'var(--studio-text-primary)',
-  fontSize: '14px',
+  fontSize: '15px',
   '&:focus': { borderColor: 'var(--studio-border-hover)', boxShadow: 'none', outline: 'none' },
   '&::placeholder': { color: 'var(--studio-text-tertiary)' },
 }
@@ -62,7 +62,7 @@ export function TemplateModal({ template, isOpen, onClose, onSubmit }: TemplateM
         {template.fields.map((field) => (
           <Field.Root key={field.name} required={field.required}>
             <Field.Label
-              css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-text-secondary)', marginBottom: '4px' }}
+              css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-secondary)', marginBottom: '4px' }}
             >
               {field.label}
             </Field.Label>

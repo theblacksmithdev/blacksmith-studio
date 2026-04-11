@@ -49,10 +49,10 @@ export function KnowledgeSettings() {
       {/* Header */}
       <Flex align="flex-start" css={{ marginBottom: '16px' }}>
         <Box css={{ flex: 1 }}>
-          <Text css={{ fontSize: '15px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em', marginBottom: '4px' }}>
+          <Text css={{ fontSize: '16px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em', marginBottom: '4px' }}>
             Knowledge Base
           </Text>
-          <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)' }}>
+          <Text css={{ fontSize: '14px', color: 'var(--studio-text-tertiary)' }}>
             Markdown docs that Claude reads on every conversation to understand your project.
           </Text>
         </Box>
@@ -63,7 +63,7 @@ export function KnowledgeSettings() {
             display: 'flex', alignItems: 'center', gap: '5px',
             padding: '7px 14px', borderRadius: '8px', border: 'none',
             background: 'var(--studio-accent)', color: 'var(--studio-accent-fg)',
-            fontSize: '12px', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+            fontSize: '13px', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
             flexShrink: 0, marginTop: '2px', transition: 'opacity 0.12s ease',
             '&:hover': { opacity: 0.85 },
           }}
@@ -92,10 +92,10 @@ export function KnowledgeSettings() {
           }}>
             <BookOpen size={20} />
           </Box>
-          <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>
+          <Text css={{ fontSize: '15px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>
             No knowledge docs yet
           </Text>
-          <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', maxWidth: '300px' }}>
+          <Text css={{ fontSize: '14px', color: 'var(--studio-text-tertiary)', maxWidth: '300px' }}>
             Add markdown files that describe your project's requirements, architecture, and conventions.
           </Text>
           <Box
@@ -105,7 +105,7 @@ export function KnowledgeSettings() {
               display: 'flex', alignItems: 'center', gap: '5px',
               padding: '8px 16px', borderRadius: '8px',
               border: '1px solid var(--studio-border)', background: 'var(--studio-bg-main)',
-              color: 'var(--studio-text-secondary)', fontSize: '13px', fontWeight: 500,
+              color: 'var(--studio-text-secondary)', fontSize: '14px', fontWeight: 500,
               cursor: 'pointer', fontFamily: 'inherit', marginTop: '4px',
               '&:hover': { background: 'var(--studio-bg-surface)', borderColor: 'var(--studio-border-hover)', color: 'var(--studio-text-primary)' },
             }}
@@ -150,10 +150,10 @@ export function KnowledgeSettings() {
               </Box>
 
               <Box css={{ flex: 1, minWidth: 0 }}>
-                <Text css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>
+                <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>
                   {doc.name}
                 </Text>
-                <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)', marginTop: '2px' }}>
+                <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', marginTop: '2px' }}>
                   {(doc.size / 1024).toFixed(1)} KB · {formatDistanceToNow(new Date(doc.updatedAt), { addSuffix: true })}
                 </Text>
               </Box>
@@ -182,7 +182,7 @@ export function KnowledgeSettings() {
         </VStack>
       )}
 
-      <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)', marginTop: '10px' }}>
+      <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', marginTop: '10px' }}>
         Stored in .blacksmith/docs/ — editable with any text editor.
       </Text>
 
@@ -209,7 +209,7 @@ export function KnowledgeSettings() {
               css={{
                 padding: '8px 12px', borderRadius: '8px',
                 border: '1px solid var(--studio-border)', background: 'var(--studio-bg-inset)',
-                color: 'var(--studio-text-primary)', fontSize: '13px',
+                color: 'var(--studio-text-primary)', fontSize: '14px',
                 '&:focus': { borderColor: 'var(--studio-border-hover)', boxShadow: 'none' },
                 '&::placeholder': { color: 'var(--studio-text-muted)' },
               }}

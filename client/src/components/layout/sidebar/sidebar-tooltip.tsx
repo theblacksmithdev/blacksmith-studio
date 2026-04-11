@@ -15,7 +15,7 @@ const Tip = styled.div`
   border-radius: 8px;
   background: var(--studio-bg-hover-strong);
   color: var(--studio-text-primary);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
   pointer-events: none;

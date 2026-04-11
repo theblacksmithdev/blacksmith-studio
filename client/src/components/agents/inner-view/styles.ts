@@ -57,7 +57,7 @@ export const BackBtn = styled.button`
   border: 1px solid var(--studio-border);
   background: transparent;
   color: var(--studio-text-muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
@@ -108,14 +108,14 @@ export const AgentIcon = styled.div<{ $active: boolean }>`
 `
 
 export const AgentName = styled.div`
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--studio-text-primary);
   letter-spacing: -0.015em;
 `
 
 export const AgentStatusText = styled.div<{ $status: string }>`
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 450;
   margin-top: 1px;
   color: ${({ $status }) =>
@@ -145,7 +145,7 @@ export const StatPill = styled.div`
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--studio-text-muted);
 
@@ -185,7 +185,7 @@ export const StreamHeader = styled.div`
 `
 
 export const StreamTitle = styled.div`
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -239,7 +239,7 @@ export const EmptyState = styled.div`
   justify-content: center;
   gap: 10px;
   color: var(--studio-text-muted);
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: -0.005em;
   text-align: center;
   max-width: 260px;
@@ -282,7 +282,7 @@ export const UserBubble = styled.div`
   border-radius: 16px 16px 4px 16px;
   background: var(--studio-accent);
   color: var(--studio-accent-fg);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.55;
   word-break: break-word;
   white-space: pre-wrap;
@@ -324,7 +324,7 @@ export const AgentBubble = styled.div`
   overflow: hidden;
 
   .markdown-body {
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.6;
 
     > *:first-child { margin-top: 0; }
@@ -337,7 +337,7 @@ export const AgentBubble = styled.div`
 `
 
 export const AgentLabel = styled.span`
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--studio-green);
   letter-spacing: 0.03em;
@@ -349,7 +349,7 @@ export const AgentLabel = styled.span`
 /* ── Thinking ── */
 
 export const ThinkingLabel = styled.span`
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   color: #8b5cf6;
   letter-spacing: 0.03em;
@@ -370,7 +370,7 @@ export const ThinkingBubble = styled.div`
   overflow: hidden;
 
   .markdown-body {
-    font-size: 12.5px;
+    font-size: 13.5px;
     line-height: 1.6;
     color: var(--studio-text-secondary);
 
@@ -399,7 +399,7 @@ export const SystemBubble = styled.div<{ $error?: boolean }>`
   background: ${({ $error }) => $error ? 'var(--studio-error-subtle))' : 'var(--studio-bg-surface)'};
   border: 1px solid ${({ $error }) => $error ? 'var(--studio-error-subtle))' : 'var(--studio-border)'};
   color: ${({ $error }) => $error ? 'var(--studio-error)' : 'var(--studio-text-muted)'};
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 450;
   max-width: 85%;
   text-align: center;
@@ -454,7 +454,7 @@ export const ToolHeader = styled.div`
 `
 
 export const ToolName = styled.span`
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
   color: #3b82f6;
@@ -462,7 +462,7 @@ export const ToolName = styled.span`
 `
 
 export const ToolTime = styled.span`
-  font-size: 9px;
+  font-size: 10px;
   color: var(--studio-text-muted);
   font-variant-numeric: tabular-nums;
 `
@@ -477,7 +477,7 @@ export const ToolCodeWrap = styled.div`
   &::-webkit-scrollbar-thumb { background: var(--studio-scrollbar); border-radius: 2px; }
 
   .markdown-body {
-    font-size: 12px;
+    font-size: 13px;
     line-height: 1.5;
 
     > *:first-child { margin-top: 0; }
@@ -503,7 +503,7 @@ export const ToggleBtn = styled.button`
   border: none;
   background: none;
   padding: 3px 0;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--studio-text-muted);
   cursor: pointer;
@@ -550,7 +550,7 @@ export const InputFooter = styled.div`
 `
 
 export const InputHint = styled.span`
-  font-size: 9px;
+  font-size: 10px;
   color: var(--studio-text-muted);
   user-select: none;
   opacity: 0.5;
@@ -631,14 +631,14 @@ export const HeroIconWrap = styled.div<{ $active: boolean }>`
 `
 
 export const HeroTitle = styled.div`
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--studio-text-primary);
   letter-spacing: -0.02em;
 `
 
 export const HeroDesc = styled.div`
-  font-size: 11.5px;
+  font-size: 12.5px;
   color: var(--studio-text-muted);
   line-height: 1.6;
   max-width: 230px;
@@ -650,7 +650,7 @@ export const HeroBadge = styled.div<{ $status: string }>`
   gap: 5px;
   padding: 3px 10px;
   border-radius: 20px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   margin-top: 2px;
 
@@ -688,7 +688,7 @@ export const InfoSection = styled.div`
 `
 
 export const InfoSectionLabel = styled.div`
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -710,7 +710,7 @@ export const InfoMetric = styled.div`
 `
 
 export const MetricValue = styled.div`
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--studio-text-primary);
   letter-spacing: -0.02em;
@@ -718,7 +718,7 @@ export const MetricValue = styled.div`
 `
 
 export const MetricLabel = styled.div`
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 500;
   color: var(--studio-text-muted);
   text-transform: uppercase;
@@ -755,14 +755,14 @@ export const TeamIconWrap = styled.div`
 `
 
 export const TeamTitle = styled.div`
-  font-size: 11.5px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--studio-text-primary);
   letter-spacing: -0.01em;
 `
 
 export const TeamDesc = styled.div`
-  font-size: 10.5px;
+  font-size: 11.5px;
   color: var(--studio-text-muted);
   line-height: 1.5;
   margin-bottom: 10px;
@@ -780,7 +780,7 @@ export const TeamMember = styled.div<{ $isSelf: boolean }>`
   gap: 8px;
   padding: 5px 7px;
   border-radius: 6px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: ${({ $isSelf }) => $isSelf ? 600 : 450};
   color: ${({ $isSelf }) => $isSelf ? 'var(--studio-text-primary)' : 'var(--studio-text-secondary)'};
   background: ${({ $isSelf }) => $isSelf ? 'var(--studio-bg-surface)' : 'transparent'};
@@ -791,7 +791,7 @@ export const TeamMember = styled.div<{ $isSelf: boolean }>`
 `
 
 export const SelfTag = styled.span`
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;

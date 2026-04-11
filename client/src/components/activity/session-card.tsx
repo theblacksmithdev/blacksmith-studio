@@ -57,7 +57,7 @@ export function SessionCard({ session, isActive, onSelect, onDelete }: SessionCa
       <Box css={{ flex: 1, minWidth: 0 }}>
         <Text
           css={{
-            fontSize: '13px',
+            fontSize: '14px',
             fontWeight: 500,
             color: 'var(--studio-text-primary)',
             overflow: 'hidden',
@@ -69,10 +69,10 @@ export function SessionCard({ session, isActive, onSelect, onDelete }: SessionCa
           {session.lastPrompt ? truncate(session.lastPrompt, 50) : session.name}
         </Text>
         <HStack gap={2}>
-          <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)' }}>
+          <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)' }}>
             {session.messageCount} message{session.messageCount !== 1 ? 's' : ''}
           </Text>
-          <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)' }}>
+          <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)' }}>
             {formatDate(session.updatedAt)}
           </Text>
         </HStack>

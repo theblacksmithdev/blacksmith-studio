@@ -65,14 +65,14 @@ export const ProgressFill = styled.div<{ $percent: number; $hasError: boolean }>
 `
 
 export const StatChip = styled.span<{ $color: string }>`
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   color: ${({ $color }) => $color};
 `
 
 export const Separator = styled.span`
   color: var(--studio-text-muted);
-  font-size: 10px;
+  font-size: 11px;
 `
 
 /* ── Task Row ── */
@@ -112,7 +112,7 @@ export const StepIcon = styled.div<{ $status: string }>`
 `
 
 export const RoleTag = styled.span<{ $active: boolean }>`
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -127,7 +127,7 @@ export const RoleTag = styled.span<{ $active: boolean }>`
 `
 
 export const ModelTag = styled.span<{ $model: string }>`
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;

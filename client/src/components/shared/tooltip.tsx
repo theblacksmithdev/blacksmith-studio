@@ -17,7 +17,7 @@ export function Tooltip({ content, children }: TooltipProps) {
           css={{
             background: 'var(--studio-bg-hover-strong)',
             color: 'var(--studio-text-primary)',
-            fontSize: '12px',
+            fontSize: '13px',
             fontWeight: 500,
             padding: '6px 10px',
             borderRadius: '8px',

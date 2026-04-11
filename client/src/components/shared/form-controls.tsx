@@ -17,7 +17,7 @@ import { Trash2, Plus } from 'lucide-react'
 
 const fieldCss = {
   '& label': {
-    fontSize: '13px',
+    fontSize: '14px',
     fontWeight: 500,
     color: 'var(--studio-text-secondary)',
   },
@@ -29,7 +29,7 @@ const inputCss = {
   border: '1px solid var(--studio-border)',
   background: 'var(--studio-bg-inset)',
   color: 'var(--studio-text-primary)',
-  fontSize: '13px',
+  fontSize: '14px',
   '&:focus': {
     borderColor: 'var(--studio-border-hover)',
     boxShadow: 'none',
@@ -58,12 +58,12 @@ export function FormField({ label, hint, error, required, fill, children }: Form
       <ChakraField.Label>{label}</ChakraField.Label>
       {children}
       {hint && !error && (
-        <ChakraField.HelperText css={{ fontSize: '11px', color: 'var(--studio-text-muted)' }}>
+        <ChakraField.HelperText css={{ fontSize: '12px', color: 'var(--studio-text-muted)' }}>
           {hint}
         </ChakraField.HelperText>
       )}
       {error && (
-        <ChakraField.ErrorText css={{ fontSize: '11px', color: 'var(--studio-error)' }}>
+        <ChakraField.ErrorText css={{ fontSize: '12px', color: 'var(--studio-error)' }}>
           {error}
         </ChakraField.ErrorText>
       )}
@@ -154,7 +154,7 @@ export function Toggle({ checked, onChange, label }: ToggleProps) {
         <Switch.Thumb />
       </Switch.Control>
       {label && (
-        <Switch.Label css={{ fontSize: '13px', color: 'var(--studio-text-primary)' }}>
+        <Switch.Label css={{ fontSize: '14px', color: 'var(--studio-text-primary)' }}>
           {label}
         </Switch.Label>
       )}
@@ -192,7 +192,7 @@ export function SegmentedControl({ options, value, onChange }: SegmentedControlP
             border: 'none',
             background: value === opt.value ? 'var(--studio-accent)' : 'var(--studio-bg-surface)',
             color: value === opt.value ? 'var(--studio-accent-fg)' : 'var(--studio-text-secondary)',
-            fontSize: '12px',
+            fontSize: '13px',
             fontWeight: 500,
             transition: 'all 0.1s ease',
           }}
@@ -243,14 +243,14 @@ export function KvEditor({ pairs, onChange, keyPlaceholder = 'KEY', valuePlaceho
             value={pair.key}
             onChange={(e) => update(i, 'key', e.target.value)}
             placeholder={keyPlaceholder}
-            css={{ ...inputCss, flex: 1, padding: '6px 10px', fontSize: '12px' }}
+            css={{ ...inputCss, flex: 1, padding: '6px 10px', fontSize: '13px' }}
           />
           <Input
             size="sm"
             value={pair.value}
             onChange={(e) => update(i, 'value', e.target.value)}
             placeholder={valuePlaceholder}
-            css={{ ...inputCss, flex: 1, padding: '6px 10px', fontSize: '12px' }}
+            css={{ ...inputCss, flex: 1, padding: '6px 10px', fontSize: '13px' }}
           />
           <IconButton
             aria-label="Remove"
@@ -274,7 +274,7 @@ export function KvEditor({ pairs, onChange, keyPlaceholder = 'KEY', valuePlaceho
         css={{
           alignSelf: 'flex-start',
           color: 'var(--studio-text-muted)',
-          fontSize: '12px',
+          fontSize: '13px',
           padding: '4px 0',
           '&:hover': { color: 'var(--studio-text-primary)' },
         }}
@@ -297,7 +297,7 @@ export function CodeBlock({ children }: { children: ReactNode }) {
         borderRadius: '8px',
         background: 'var(--studio-bg-surface)',
         border: '1px solid var(--studio-border)',
-        fontSize: '12px',
+        fontSize: '13px',
         color: 'var(--studio-text-primary)',
         userSelect: 'all',
         whiteSpace: 'pre-wrap',
@@ -326,7 +326,7 @@ export function Badge({ children, variant = 'default' }: BadgeProps) {
   return (
     <ChakraBadge
       css={{
-        fontSize: '10px',
+        fontSize: '11px',
         fontWeight: 500,
         padding: '1px 6px',
         borderRadius: '4px',

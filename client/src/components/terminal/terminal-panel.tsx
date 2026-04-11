@@ -69,7 +69,7 @@ const HeaderLabel = styled.div`
   align-items: center;
   gap: 6px;
   margin-right: 8px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -98,7 +98,7 @@ const Tab = styled.button<{ active?: boolean }>`
   border: none;
   background: ${(p) => (p.active ? 'var(--studio-bg-hover)' : 'transparent')};
   color: ${(p) => (p.active ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)')};
-  font-size: 11px;
+  font-size: 12px;
   font-weight: ${(p) => (p.active ? 500 : 400)};
   cursor: pointer;
   transition: all 0.1s ease;

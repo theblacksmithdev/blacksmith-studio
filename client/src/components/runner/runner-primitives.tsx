@@ -16,7 +16,7 @@ export const StatusDot = styled.span<{ status: RunnerStatus; size?: number }>`
 /* ── Port label ── */
 
 export const PortLabel = styled.span`
-  font-size: 11px;
+  font-size: 12px;
   color: var(--studio-text-tertiary);
   font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Menlo, Consolas, monospace;
 `

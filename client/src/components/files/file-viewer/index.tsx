@@ -28,7 +28,7 @@ export function FileViewer() {
         <CodeEditor content={currentTab.content} language={currentTab.language} />
       ) : (
         <Box css={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Text css={{ fontSize: '13px', color: 'var(--studio-text-muted)' }}>Loading...</Text>
+          <Text css={{ fontSize: '14px', color: 'var(--studio-text-muted)' }}>Loading...</Text>
         </Box>
       )}
 

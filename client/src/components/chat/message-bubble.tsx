@@ -25,7 +25,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             }}
           >
             <Text css={{
-              fontSize: '14px', lineHeight: 1.6, whiteSpace: 'pre-wrap',
+              fontSize: '15px', lineHeight: 1.6, whiteSpace: 'pre-wrap',
               color: 'var(--studio-text-primary)',
             }}>
               {message.content}
@@ -46,7 +46,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
               <Sparkles size={11} style={{ color: 'var(--studio-green)' }} />
             </Box>
             <Text css={{
-              fontSize: '12px', fontWeight: 600, color: 'var(--studio-text-secondary)',
+              fontSize: '13px', fontWeight: 600, color: 'var(--studio-text-secondary)',
               letterSpacing: '-0.01em',
             }}>
               Claude

@@ -14,10 +14,10 @@ export function SettingsSection({ title, description, children, onReset }: Setti
     <VStack gap={0} align="stretch">
       <HStack css={{ marginBottom: '16px', alignItems: 'flex-start' }}>
         <Box css={{ flex: 1 }}>
-          <Text css={{ fontSize: '15px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em', marginBottom: '4px' }}>
+          <Text css={{ fontSize: '16px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em', marginBottom: '4px' }}>
             {title}
           </Text>
-          <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)' }}>
+          <Text css={{ fontSize: '14px', color: 'var(--studio-text-tertiary)' }}>
             {description}
           </Text>
         </Box>
@@ -34,7 +34,7 @@ export function SettingsSection({ title, description, children, onReset }: Setti
               border: 'none',
               background: 'transparent',
               color: 'var(--studio-text-muted)',
-              fontSize: '12px',
+              fontSize: '13px',
               cursor: 'pointer',
               transition: 'all 0.12s ease',
               flexShrink: 0,

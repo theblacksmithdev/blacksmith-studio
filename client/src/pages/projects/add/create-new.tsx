@@ -76,10 +76,10 @@ export function CreateNew() {
   return (
     <VStack gap={6} css={{ maxWidth: '480px', width: '100%', padding: '0 24px' }}>
       <VStack gap={2}>
-        <Text css={{ fontSize: '22px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--studio-text-primary)', textAlign: 'center' }}>
+        <Text css={{ fontSize: '24px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--studio-text-primary)', textAlign: 'center' }}>
           Create new project
         </Text>
-        <Text css={{ fontSize: '14px', color: 'var(--studio-text-tertiary)', textAlign: 'center' }}>
+        <Text css={{ fontSize: '15px', color: 'var(--studio-text-tertiary)', textAlign: 'center' }}>
           Scaffold a fullstack Django + React project.
         </Text>
       </VStack>
@@ -114,17 +114,17 @@ export function CreateNew() {
             >
               <FolderOpen size={15} style={{ color: parentPath ? 'var(--studio-green)' : 'var(--studio-text-muted)', flexShrink: 0 }} />
               <Text css={{
-                flex: 1, fontSize: '13px',
+                flex: 1, fontSize: '14px',
                 color: parentPath ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)',
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 fontFamily: parentPath ? "'SF Mono', Menlo, monospace" : 'inherit',
               }}>
                 {parentPath || 'Select a folder...'}
               </Text>
-              <Text css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)', flexShrink: 0 }}>Browse</Text>
+              <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', flexShrink: 0 }}>Browse</Text>
             </Box>
             {parentPath && name && (
-              <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)', marginTop: '4px', fontFamily: "'SF Mono', Menlo, monospace" }}>
+              <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', marginTop: '4px', fontFamily: "'SF Mono', Menlo, monospace" }}>
                 {parentPath}/{name}
               </Text>
             )}
@@ -148,8 +148,8 @@ export function CreateNew() {
           <HStack gap={3} css={{ padding: '12px 14px', borderRadius: '8px', border: '1px solid var(--studio-border)', background: 'var(--studio-bg-sidebar)' }}>
             <Anvil size={16} style={{ color: 'var(--studio-green)', flexShrink: 0 }} />
             <Box css={{ flex: 1 }}>
-              <Text css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>AI coding support included</Text>
-              <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)' }}>CLAUDE.md and AI skills generated automatically</Text>
+              <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>AI coding support included</Text>
+              <Text css={{ fontSize: '13px', color: 'var(--studio-text-muted)' }}>CLAUDE.md and AI skills generated automatically</Text>
             </Box>
             <Check size={14} style={{ color: 'var(--studio-green)', flexShrink: 0 }} />
           </HStack>
@@ -157,7 +157,7 @@ export function CreateNew() {
           {state === 'error' && (
             <HStack gap={2} css={{ padding: '10px 14px', borderRadius: '8px', background: 'var(--studio-error-subtle)', border: '1px solid rgba(239,68,68,0.2)' }}>
               <AlertCircle size={14} style={{ color: 'var(--studio-error)', flexShrink: 0 }} />
-              <Text css={{ fontSize: '13px', color: 'var(--studio-error)' }}>{serverError}</Text>
+              <Text css={{ fontSize: '14px', color: 'var(--studio-error)' }}>{serverError}</Text>
             </HStack>
           )}
 
@@ -169,7 +169,7 @@ export function CreateNew() {
               width: '100%', padding: '12px', borderRadius: '10px', border: 'none',
               background: isSubmitting ? 'var(--studio-bg-surface)' : 'var(--studio-accent)',
               color: isSubmitting ? 'var(--studio-text-muted)' : 'var(--studio-accent-fg)',
-              fontSize: '14px', fontWeight: 500,
+              fontSize: '15px', fontWeight: 500,
               cursor: isSubmitting ? 'default' : 'pointer',
               transition: 'all 0.15s ease',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',

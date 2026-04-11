@@ -41,14 +41,14 @@ const Logo = styled.div`
 `
 
 const Title = styled.h1`
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--studio-text-primary);
 `
 
 const Subtitle = styled.p`
-  font-size: 14px;
+  font-size: 15px;
   color: var(--studio-text-tertiary);
 `
 
@@ -60,7 +60,7 @@ const SectionHeader = styled.div`
 `
 
 const SectionLabel = styled.span`
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -76,7 +76,7 @@ const AddBtn = styled.button`
   border: 1px solid var(--studio-border);
   background: var(--studio-bg-surface);
   color: var(--studio-text-secondary);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
@@ -120,14 +120,14 @@ const EmptyIcon = styled.div`
 `
 
 const EmptyTitle = styled.div`
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--studio-text-secondary);
   margin-bottom: 4px;
 `
 
 const EmptyDesc = styled.div`
-  font-size: 12px;
+  font-size: 13px;
   color: var(--studio-text-muted);
 `
 

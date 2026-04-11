@@ -61,14 +61,14 @@ const IconCircle = styled.div<{ variant?: 'default' | 'error' | 'warning' }>`
 `
 
 const Title = styled.div`
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--studio-text-primary);
   letter-spacing: -0.01em;
 `
 
 const Desc = styled.div`
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.5;
   color: var(--studio-text-tertiary);
 `
@@ -92,7 +92,7 @@ const PrimaryBtn = styled.button`
   border: none;
   background: var(--studio-accent);
   color: var(--studio-accent-fg);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.12s ease;
@@ -113,7 +113,7 @@ const SecondaryBtn = styled.button`
   border: 1px solid var(--studio-border);
   background: var(--studio-bg-main);
   color: var(--studio-text-secondary);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.12s ease;
@@ -138,7 +138,7 @@ const LinkBtn = styled.a`
   border: none;
   background: var(--studio-accent);
   color: var(--studio-accent-fg);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.12s ease;
@@ -149,7 +149,7 @@ const LinkBtn = styled.a`
 `
 
 const CodeBlock = styled.div`
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.6;
   color: var(--studio-text-secondary);
   background: var(--studio-bg-surface);
@@ -202,7 +202,7 @@ const Spinner = styled.div`
 `
 
 const LoadingSubtext = styled.div`
-  font-size: 12px;
+  font-size: 13px;
   color: var(--studio-text-muted);
   font-family: ${MONO_FONT};
 `
@@ -270,7 +270,7 @@ const StatusBadge = styled.div`
   gap: 5px;
   padding: 3px 10px;
   border-radius: 6px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   font-family: ${MONO_FONT};
   background: var(--studio-error-subtle));

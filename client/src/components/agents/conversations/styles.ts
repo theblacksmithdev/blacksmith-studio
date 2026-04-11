@@ -53,7 +53,7 @@ export const HeroIcon = styled.div`
 `
 
 export const HeroTitle = styled.h1`
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 600;
   letter-spacing: -0.03em;
   color: var(--studio-text-primary);
@@ -62,7 +62,7 @@ export const HeroTitle = styled.h1`
 `
 
 export const HeroSub = styled.p`
-  font-size: 14px;
+  font-size: 15px;
   color: var(--studio-text-muted);
   text-align: center;
   line-height: 1.5;
@@ -87,7 +87,7 @@ export const RosterChip = styled.div`
   border-radius: 6px;
   background: var(--studio-bg-surface);
   border: 1px solid var(--studio-border);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--studio-text-tertiary);
 `
@@ -103,7 +103,7 @@ export const NewBtn = styled.button`
   border: none;
   background: var(--studio-accent);
   color: var(--studio-accent-fg);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
@@ -132,7 +132,7 @@ export const ActionChip = styled.button`
   border: 1px solid var(--studio-border);
   background: var(--studio-bg-main);
   color: var(--studio-text-secondary);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 450;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -166,7 +166,7 @@ export const Divider = styled.div`
 `
 
 export const SectionLabel = styled.div`
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -226,6 +226,6 @@ export const DeleteBtn = styled.button`
 `
 
 export const Sep = styled.span`
-  font-size: 9px;
+  font-size: 10px;
   color: var(--studio-border-hover);
 `

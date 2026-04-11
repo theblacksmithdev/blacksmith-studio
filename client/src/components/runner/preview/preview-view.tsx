@@ -35,7 +35,7 @@ const Tab = styled.button<{ active: boolean }>`
   border: none;
   background: transparent;
   color: ${({ active }) => (active ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)')};
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: color 0.12s ease;

@@ -66,7 +66,7 @@ export function ActivityLog() {
         <Box css={{ marginBottom: '28px' }}>
           <Text
             css={{
-              fontSize: '22px',
+              fontSize: '24px',
               fontWeight: 600,
               letterSpacing: '-0.02em',
               color: 'var(--studio-text-primary)',
@@ -78,7 +78,7 @@ export function ActivityLog() {
           <HStack gap={3}>
             <HStack gap={1}>
               <MessageSquare size={13} style={{ color: 'var(--studio-text-muted)' }} />
-              <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)' }}>
+              <Text css={{ fontSize: '14px', color: 'var(--studio-text-tertiary)' }}>
                 {sessions.length} conversation{sessions.length !== 1 ? 's' : ''}
               </Text>
             </HStack>
@@ -93,7 +93,7 @@ export function ActivityLog() {
                 <Clock size={12} style={{ color: 'var(--studio-text-muted)' }} />
                 <Text
                   css={{
-                    fontSize: '11px',
+                    fontSize: '12px',
                     fontWeight: 600,
                     textTransform: 'uppercase',
                     letterSpacing: '0.06em',

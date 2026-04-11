@@ -12,7 +12,7 @@ const Btn = styled.button<{ variant?: 'success' | 'error' }>`
   border-radius: 8px;
   border: 1px solid var(--studio-border);
   background: transparent;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -36,7 +36,7 @@ const Btn = styled.button<{ variant?: 'success' | 'error' }>`
 `
 
 const Badge = styled.span`
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--studio-text-muted);
   font-family: 'SF Mono', 'Fira Code', monospace;

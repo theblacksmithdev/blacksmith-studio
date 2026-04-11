@@ -38,7 +38,7 @@ export function Breadcrumb({ currentPath, onNavigate }: BreadcrumbProps) {
         {truncated && (
           <>
             <Sep />
-            <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', padding: '0 2px' }}>...</Text>
+            <Text css={{ fontSize: '13px', color: 'var(--studio-text-muted)', padding: '0 2px' }}>...</Text>
           </>
         )}
 
@@ -73,7 +73,7 @@ function Crumb({ children, onClick, isLast }: { children: React.ReactNode; onCli
         border: 'none',
         background: 'none',
         cursor: isLast ? 'default' : 'pointer',
-        fontSize: '12px',
+        fontSize: '13px',
         fontWeight: isLast ? 600 : 400,
         color: isLast ? 'var(--studio-text-primary)' : 'var(--studio-text-tertiary)',
         padding: '3px 5px',

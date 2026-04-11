@@ -46,7 +46,7 @@ const StopAllBtn = styled.button`
   border: none;
   background: var(--studio-accent);
   color: var(--studio-accent-fg);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.12s ease;

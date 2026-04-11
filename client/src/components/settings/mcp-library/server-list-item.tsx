@@ -40,26 +40,26 @@ const Info = styled.div`
 `
 
 const Name = styled.div`
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--studio-text-primary);
 `
 
 const Desc = styled.div`
-  font-size: 12px;
+  font-size: 13px;
   color: var(--studio-text-tertiary);
   margin-top: 1px;
 `
 
 const Hint = styled.div`
-  font-size: 11px;
+  font-size: 12px;
   color: var(--studio-text-muted);
   margin-top: 2px;
   font-style: italic;
 `
 
 const Badge = styled.span`
-  font-size: 11px;
+  font-size: 12px;
   color: var(--studio-text-muted);
   flex-shrink: 0;
 `

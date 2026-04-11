@@ -14,7 +14,7 @@ export function ChooseType({ onExisting, onNew, onClone }: ChooseTypeProps) {
         <Text css={{ fontSize: '24px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--studio-text-primary)', textAlign: 'center' }}>
           Add a project
         </Text>
-        <Text css={{ fontSize: '14px', color: 'var(--studio-text-tertiary)', textAlign: 'center' }}>
+        <Text css={{ fontSize: '15px', color: 'var(--studio-text-tertiary)', textAlign: 'center' }}>
           Open a local project, clone from a remote, or start fresh.
         </Text>
       </VStack>
@@ -45,7 +45,7 @@ export function ChooseType({ onExisting, onNew, onClone }: ChooseTypeProps) {
         {/* ── Separator ── */}
         <Flex align="center" gap={3} css={{ padding: '0 4px' }}>
           <Box css={{ flex: 1, height: '1px', background: 'var(--studio-border)' }} />
-          <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)', flexShrink: 0 }}>or</Text>
+          <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', flexShrink: 0 }}>or</Text>
           <Box css={{ flex: 1, height: '1px', background: 'var(--studio-border)' }} />
         </Flex>
 
@@ -66,7 +66,7 @@ function GroupLabel({ icon, label }: { icon: React.ReactNode; label: string }) {
     <Flex align="center" gap={2} css={{ paddingLeft: '4px', marginBottom: '8px' }}>
       <Box css={{ color: 'var(--studio-text-muted)', display: 'flex' }}>{icon}</Box>
       <Text css={{
-        fontSize: '11px',
+        fontSize: '12px',
         fontWeight: 600,
         textTransform: 'uppercase',
         letterSpacing: '0.06em',
@@ -123,10 +123,10 @@ function OptionCard({ icon, title, description, onClick }: {
         {icon}
       </Box>
       <Box css={{ flex: 1 }}>
-        <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)', marginBottom: '2px', letterSpacing: '-0.01em' }}>
+        <Text css={{ fontSize: '15px', fontWeight: 500, color: 'var(--studio-text-primary)', marginBottom: '2px', letterSpacing: '-0.01em' }}>
           {title}
         </Text>
-        <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', lineHeight: 1.4 }}>
+        <Text css={{ fontSize: '13px', color: 'var(--studio-text-muted)', lineHeight: 1.4 }}>
           {description}
         </Text>
       </Box>

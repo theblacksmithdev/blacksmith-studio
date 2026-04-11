@@ -51,7 +51,7 @@ export const HeroWrap = styled.div`
 `
 
 export const Greeting = styled.h1`
-  font-size: 30px;
+  font-size: 32px;
   font-weight: 600;
   letter-spacing: -0.035em;
   color: var(--studio-text-primary);
@@ -64,7 +64,7 @@ export const ProjectName = styled.span`
 `
 
 export const Subtitle = styled.p`
-  font-size: 14px;
+  font-size: 15px;
   color: var(--studio-text-muted);
   text-align: center;
   line-height: 1.6;
@@ -75,7 +75,7 @@ export const Subtitle = styled.p`
 /* ── Mode Selector Label ── */
 
 export const ModeLabel = styled.div`
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -193,7 +193,7 @@ export const CardTitleGroup = styled.div`
 `
 
 export const CardTitle = styled.h2`
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--studio-text-primary);
@@ -201,7 +201,7 @@ export const CardTitle = styled.h2`
 `
 
 export const CardBadge = styled.span<{ variant: 'chat' | 'team' }>`
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.02em;
   color: ${({ variant }) =>
@@ -214,7 +214,7 @@ export const CardBody = styled.div`
 `
 
 export const CardDesc = styled.p`
-  font-size: 13px;
+  font-size: 14px;
   color: var(--studio-text-secondary);
   line-height: 1.55;
   margin: 0;
@@ -234,7 +234,7 @@ export const Feature = styled.div`
   align-items: center;
   gap: 10px;
   padding: 7px 0;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 450;
   color: var(--studio-text-secondary);
   letter-spacing: -0.005em;
@@ -267,7 +267,7 @@ export const CardAction = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--studio-text-tertiary);
   transition: color 0.2s ease;
@@ -304,7 +304,7 @@ export const RecentSection = styled.div`
 `
 
 export const SectionLabel = styled.div`
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -360,7 +360,7 @@ export const RecentBody = styled.div`
 `
 
 export const RecentTitle = styled.div`
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--studio-text-primary);
   letter-spacing: -0.01em;
@@ -370,7 +370,7 @@ export const RecentTitle = styled.div`
 `
 
 export const RecentMeta = styled.div`
-  font-size: 11px;
+  font-size: 12px;
   color: var(--studio-text-muted);
   margin-top: 1px;
   display: flex;
@@ -388,12 +388,12 @@ export const RecentArrow = styled.div`
 `
 
 export const Sep = styled.span`
-  font-size: 9px;
+  font-size: 10px;
   color: var(--studio-border-hover);
 `
 
 export const TypeBadge = styled.span<{ variant: 'chat' | 'team' }>`
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   padding: 1px 6px;
   border-radius: 4px;

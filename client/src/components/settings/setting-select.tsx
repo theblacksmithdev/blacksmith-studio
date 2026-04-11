@@ -18,7 +18,7 @@ export function SettingSelect({ value, options, onChange }: SettingSelectProps) 
         border: '1px solid var(--studio-border)',
         background: 'var(--studio-bg-surface)',
         color: 'var(--studio-text-primary)',
-        fontSize: '13px',
+        fontSize: '14px',
         cursor: 'pointer',
         outline: 'none',
         appearance: 'none',

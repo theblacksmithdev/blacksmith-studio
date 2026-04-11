@@ -45,13 +45,13 @@ const Body = styled.div`
 `
 
 const Name = styled.div`
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--studio-text-primary);
 `
 
 const PathText = styled.div`
-  font-size: 11px;
+  font-size: 12px;
   color: var(--studio-text-muted);
   overflow: hidden;
   text-overflow: ellipsis;

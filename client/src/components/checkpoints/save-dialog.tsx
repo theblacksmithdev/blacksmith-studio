@@ -21,7 +21,7 @@ const FileItem = styled.label`
   gap: 10px;
   padding: 6px 8px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 13px;
   font-family: 'SF Mono', 'Fira Code', monospace;
   color: var(--studio-text-secondary);
   cursor: pointer;
@@ -37,7 +37,7 @@ const inputCss = {
   borderRadius: '8px',
   border: '1px solid var(--studio-border)',
   background: 'var(--studio-bg-inset)',
-  fontSize: '13px',
+  fontSize: '14px',
   color: 'var(--studio-text-primary)',
   '&:focus': { borderColor: 'var(--studio-border-hover)', boxShadow: 'none' },
   '&::placeholder': { color: 'var(--studio-text-muted)' },
@@ -104,7 +104,7 @@ export function CommitDialog({ files, onClose, onCommitted }: Props) {
     >
       {/* Commit message */}
       <Box css={{ marginBottom: '20px' }}>
-        <Text css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-text-secondary)', marginBottom: '8px' }}>
+        <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-secondary)', marginBottom: '8px' }}>
           Commit message
         </Text>
         <Input
@@ -121,7 +121,7 @@ export function CommitDialog({ files, onClose, onCommitted }: Props) {
             generateMessage.mutateAsync().then((msg) => { setMessage(msg); setGenerating(false) }).catch(() => setGenerating(false))
           }}
           disabled={generating}
-          css={{ marginTop: '8px', fontSize: '12px', padding: '4px 10px' }}
+          css={{ marginTop: '8px', fontSize: '13px', padding: '4px 10px' }}
         >
           <Sparkles size={12} />
           <Box as="span" css={{ marginLeft: '4px' }}>Generate message</Box>
@@ -131,12 +131,12 @@ export function CommitDialog({ files, onClose, onCommitted }: Props) {
       {/* Staged files */}
       <Box>
         <Flex align="center" justify="space-between" css={{ marginBottom: '6px' }}>
-          <Text css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-text-secondary)' }}>
+          <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-secondary)' }}>
             Staged files
           </Text>
           <GhostButton
             onClick={toggleAll}
-            css={{ fontSize: '11px', padding: '2px 8px' }}
+            css={{ fontSize: '12px', padding: '2px 8px' }}
           >
             {selected.size === files.length ? 'Deselect all' : 'Select all'}
           </GhostButton>

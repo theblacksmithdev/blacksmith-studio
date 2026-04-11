@@ -61,7 +61,7 @@ export function TemplateCard({ template, onClick }: TemplateCardProps) {
         <Text
           css={{
             fontWeight: 600,
-            fontSize: '14px',
+            fontSize: '15px',
             color: 'var(--studio-text-primary)',
             letterSpacing: '-0.01em',
             marginBottom: '4px',
@@ -71,7 +71,7 @@ export function TemplateCard({ template, onClick }: TemplateCardProps) {
         </Text>
         <Text
           css={{
-            fontSize: '13px',
+            fontSize: '14px',
             color: 'var(--studio-text-secondary)',
             lineHeight: 1.5,
           }}
@@ -100,7 +100,7 @@ export function TemplateCard({ template, onClick }: TemplateCardProps) {
         />
         <Text
           css={{
-            fontSize: '11px',
+            fontSize: '12px',
             color: 'var(--studio-text-tertiary)',
             textTransform: 'uppercase',
             letterSpacing: '0.04em',

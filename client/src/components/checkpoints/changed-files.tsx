@@ -16,7 +16,7 @@ const FileRow = styled.button<{ selected?: boolean }>`
   border-radius: 8px;
   background: ${(p) => (p.selected ? 'var(--studio-bg-hover)' : 'transparent')};
   color: var(--studio-text-primary);
-  font-size: 12px;
+  font-size: 13px;
   font-family: 'SF Mono', 'Fira Code', monospace;
   cursor: pointer;
   text-align: left;
@@ -31,7 +31,7 @@ const FileRow = styled.button<{ selected?: boolean }>`
 const StatusIndicator = styled.span<{ status: string }>`
   width: 14px;
   flex-shrink: 0;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   text-align: center;
   letter-spacing: 0.02em;
@@ -57,7 +57,7 @@ const FileName = styled.span`
 const EmptyMessage = styled.div`
   padding: 20px 12px;
   text-align: center;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--studio-text-muted);
   line-height: 1.6;
 `

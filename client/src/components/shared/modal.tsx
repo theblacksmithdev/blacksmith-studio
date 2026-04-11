@@ -54,7 +54,7 @@ function Modal({ title, children, onClose, width = '480px', footer, headerExtra 
           {headerExtra}
           <Text
             css={{
-              fontSize: '15px',
+              fontSize: '16px',
               fontWeight: 600,
               color: 'var(--studio-text-primary)',
               flex: 1,
@@ -120,7 +120,7 @@ function PrimaryButton({ children, ...props }: React.ComponentProps<typeof Butto
         borderRadius: '10px',
         background: 'var(--studio-accent)',
         color: 'var(--studio-accent-fg)',
-        fontSize: '13px',
+        fontSize: '14px',
         fontWeight: 500,
         border: 'none',
         '&:hover': { opacity: 0.85 },
@@ -144,7 +144,7 @@ function SecondaryButton({ children, ...props }: React.ComponentProps<typeof But
         border: '1px solid var(--studio-border)',
         background: 'var(--studio-bg-main)',
         color: 'var(--studio-text-secondary)',
-        fontSize: '13px',
+        fontSize: '14px',
         fontWeight: 500,
         '&:hover': {
           background: 'var(--studio-bg-surface)',
@@ -168,7 +168,7 @@ function GhostButton({ children, ...props }: React.ComponentProps<typeof Button>
         padding: '8px 16px',
         borderRadius: '10px',
         color: 'var(--studio-text-secondary)',
-        fontSize: '13px',
+        fontSize: '14px',
         fontWeight: 500,
         border: 'none',
         '&:hover': {
@@ -192,7 +192,7 @@ function DangerButton({ children, ...props }: React.ComponentProps<typeof Button
         borderRadius: '10px',
         background: 'var(--studio-error)',
         color: '#fff',
-        fontSize: '13px',
+        fontSize: '14px',
         fontWeight: 500,
         border: 'none',
         '&:hover': { opacity: 0.9 },

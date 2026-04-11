@@ -16,7 +16,7 @@ const Container = styled.div`
   overflow-y: auto;
   padding: 6px 0;
   font-family: ${MONO_FONT};
-  font-size: 12px;
+  font-size: 13px;
   line-height: 18px;
   background: var(--studio-bg-sidebar);
 `
@@ -26,7 +26,7 @@ const EmptyMsg = styled.div`
   color: var(--studio-text-muted);
   text-align: center;
   font-family: inherit;
-  font-size: 12px;
+  font-size: 13px;
 `
 
 export function RunnerLogs() {

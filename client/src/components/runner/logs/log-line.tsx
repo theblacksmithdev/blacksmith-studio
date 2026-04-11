@@ -16,7 +16,7 @@ const Timestamp = styled.span`
   width: 58px;
   flex-shrink: 0;
   color: var(--studio-text-muted);
-  font-size: 10px;
+  font-size: 11px;
   padding-top: 3px;
   font-family: ${MONO_FONT};
 `
@@ -27,7 +27,7 @@ const Source = styled.span`
   color: var(--studio-text-muted);
   font-weight: 600;
   text-transform: uppercase;
-  font-size: 10px;
+  font-size: 11px;
   padding-top: 3px;
   letter-spacing: 0.02em;
 `

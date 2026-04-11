@@ -92,7 +92,7 @@ export const StatusBadge = styled.div<{ $status: string }>`
   gap: 5px;
   padding: 3px 8px;
   border-radius: 6px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   margin-top: 10px;
 
@@ -146,7 +146,7 @@ export const Section = styled.div`
 `
 
 export const SectionLabel = styled.div`
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -155,7 +155,7 @@ export const SectionLabel = styled.div`
 `
 
 export const AboutText = styled.p`
-  font-size: 12px;
+  font-size: 13px;
   color: var(--studio-text-secondary);
   line-height: 1.65;
   letter-spacing: -0.005em;
@@ -221,7 +221,7 @@ export const TimelineContent = styled.div`
 `
 
 export const TimelineText = styled.div<{ $status: string; $isLatest: boolean }>`
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.45;
   color: ${({ $status }) =>
     $status === 'error' ? 'var(--studio-error)'
@@ -244,7 +244,7 @@ export const TimelineText = styled.div<{ $status: string; $isLatest: boolean }>`
 `
 
 export const TimelineTime = styled.span`
-  font-size: 9px;
+  font-size: 10px;
   color: var(--studio-text-muted);
   margin-top: 1px;
   display: block;
@@ -257,5 +257,5 @@ export const EmptyActivity = styled.div`
   gap: 6px;
   padding: 20px 0;
   color: var(--studio-text-muted);
-  font-size: 11px;
+  font-size: 12px;
 `

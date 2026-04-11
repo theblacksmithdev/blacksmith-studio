@@ -60,7 +60,7 @@ export function TemplateGrid() {
         </Text>
         <Text
           css={{
-            fontSize: '14px',
+            fontSize: '15px',
             color: 'var(--studio-text-tertiary)',
           }}
         >

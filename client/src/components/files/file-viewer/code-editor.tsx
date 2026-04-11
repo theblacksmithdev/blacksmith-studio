@@ -55,7 +55,7 @@ export function CodeEditor({ content, language }: CodeEditorProps) {
           keepCurrentModel={false}
           loading={
             <Box css={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-              <Text css={{ fontSize: '13px', color: 'var(--studio-text-muted)' }}>Loading editor...</Text>
+              <Text css={{ fontSize: '14px', color: 'var(--studio-text-muted)' }}>Loading editor...</Text>
             </Box>
           }
         />

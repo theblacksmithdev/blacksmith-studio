@@ -63,7 +63,7 @@ const Label = styled.div<{ variant: CardVariant }>`
 `
 
 const StatusText = styled.span`
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 450;
   color: var(--studio-text-tertiary);
   text-transform: capitalize;

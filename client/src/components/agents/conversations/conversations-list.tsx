@@ -79,16 +79,16 @@ export function ConversationsList() {
                     <ConvIcon><MessageSquare size={15} /></ConvIcon>
                     <Box css={{ flex: 1, minWidth: 0 }}>
                       <Text css={{
-                        fontSize: '13px', fontWeight: 500, color: 'var(--studio-text-primary)',
+                        fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)',
                         letterSpacing: '-0.01em',
                         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                       }}>
                         {c.title}
                       </Text>
                       <Flex gap="5px" mt="2px" align="center">
-                        <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)' }}>{c.messageCount} messages</Text>
+                        <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)' }}>{c.messageCount} messages</Text>
                         <Sep>·</Sep>
-                        <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)' }}>{timeAgo(c.updatedAt)}</Text>
+                        <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)' }}>{timeAgo(c.updatedAt)}</Text>
                       </Flex>
                     </Box>
                     <DeleteBtn onClick={(e) => handleDelete(e, c.id)}><Trash2 size={13} /></DeleteBtn>

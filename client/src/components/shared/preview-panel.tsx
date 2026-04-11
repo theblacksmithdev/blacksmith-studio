@@ -28,7 +28,7 @@ export function PreviewPanel({ onClose }: PreviewPanelProps) {
         <PanelRightClose size={13} style={{ color: 'var(--studio-text-muted)', flexShrink: 0 }} />
         <Text
           css={{
-            fontSize: '12px',
+            fontSize: '13px',
             fontWeight: 500,
             color: 'var(--studio-text-secondary)',
             flex: 1,

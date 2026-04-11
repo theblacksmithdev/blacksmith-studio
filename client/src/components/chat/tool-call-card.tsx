@@ -69,7 +69,7 @@ export function ToolCallCard({ toolCall, isActive }: ToolCallCardProps) {
 
         {/* Tool badge */}
         <Text css={{
-          fontSize: '10px', fontWeight: 600, textTransform: 'uppercase',
+          fontSize: '11px', fontWeight: 600, textTransform: 'uppercase',
           letterSpacing: '0.04em', color: config.color,
           padding: '1px 5px', borderRadius: '3px',
           background: `${config.color}12`, flexShrink: 0,
@@ -80,7 +80,7 @@ export function ToolCallCard({ toolCall, isActive }: ToolCallCardProps) {
         {/* Summary */}
         <Text css={{
           fontFamily: "'SF Mono', 'Fira Code', Menlo, monospace",
-          fontSize: '11px', color: 'var(--studio-text-secondary)',
+          fontSize: '12px', color: 'var(--studio-text-secondary)',
           overflow: 'hidden', textOverflow: 'ellipsis',
           whiteSpace: 'nowrap', flex: 1,
         }}>
@@ -98,7 +98,7 @@ export function ToolCallCard({ toolCall, isActive }: ToolCallCardProps) {
         }}>
           <Text css={{
             fontFamily: "'SF Mono', 'Fira Code', Menlo, monospace",
-            fontSize: '11px', color: 'var(--studio-text-secondary)',
+            fontSize: '12px', color: 'var(--studio-text-secondary)',
             whiteSpace: 'pre-wrap', wordBreak: 'break-all', lineHeight: '18px',
           }}>
             {toolCall.output || JSON.stringify(toolCall.input, null, 2)}

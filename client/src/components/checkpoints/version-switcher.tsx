@@ -14,7 +14,7 @@ const BranchRow = styled.button<{ active?: boolean }>`
   border-radius: 10px;
   background: ${(p) => (p.active ? 'var(--studio-bg-hover)' : 'transparent')};
   color: var(--studio-text-primary);
-  font-size: 13px;
+  font-size: 14px;
   cursor: ${(p) => (p.active ? 'default' : 'pointer')};
   text-align: left;
   width: 100%;
@@ -47,11 +47,11 @@ const BranchName = styled.span`
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: 'SF Mono', 'Fira Code', monospace;
-  font-size: 13px;
+  font-size: 14px;
 `
 
 const SubLabel = styled.span`
-  font-size: 11px;
+  font-size: 12px;
   color: var(--studio-text-muted);
   flex-shrink: 0;
 `
@@ -76,7 +76,7 @@ const inputCss = {
   borderRadius: '8px',
   border: '1px solid var(--studio-border)',
   background: 'var(--studio-bg-inset)',
-  fontSize: '13px',
+  fontSize: '14px',
   color: 'var(--studio-text-primary)',
   fontFamily: "'SF Mono', 'Fira Code', monospace",
   '&:focus': { borderColor: 'var(--studio-border-hover)', boxShadow: 'none' },
@@ -127,7 +127,7 @@ export function BranchSwitcher({ onClose }: Props) {
       headerExtra={<GitBranch size={16} style={{ color: 'var(--studio-text-muted)' }} />}
     >
       {isLoading ? (
-        <Text css={{ fontSize: '13px', color: 'var(--studio-text-muted)', padding: '12px' }}>Loading...</Text>
+        <Text css={{ fontSize: '14px', color: 'var(--studio-text-muted)', padding: '12px' }}>Loading...</Text>
       ) : (
         <Flex direction="column" gap={1}>
           {/* Current branch */}
@@ -146,7 +146,7 @@ export function BranchSwitcher({ onClose }: Props) {
               <BranchName>{b.name}</BranchName>
               <GhostButton
                 onClick={(e: React.MouseEvent) => { e.stopPropagation(); setMergeSource(b.name) }}
-                css={{ padding: '2px 8px', fontSize: '11px' }}
+                css={{ padding: '2px 8px', fontSize: '12px' }}
               >
                 Merge
               </GhostButton>
@@ -191,7 +191,7 @@ export function BranchSwitcher({ onClose }: Props) {
       {/* Merge confirmation */}
       {mergeSource && current && (
         <MergeBar>
-          <Text css={{ fontSize: '13px', color: 'var(--studio-text-secondary)', marginBottom: '12px', lineHeight: 1.5 }}>
+          <Text css={{ fontSize: '14px', color: 'var(--studio-text-secondary)', marginBottom: '12px', lineHeight: 1.5 }}>
             Merge <strong style={{ color: 'var(--studio-text-primary)' }}>{mergeSource}</strong> into <strong style={{ color: 'var(--studio-text-primary)' }}>{current.name}</strong>?
           </Text>
           <Flex gap={2}>

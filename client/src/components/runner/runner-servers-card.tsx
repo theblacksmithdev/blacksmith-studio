@@ -20,13 +20,13 @@ const Header = styled.div`
 `
 
 const Title = styled.div`
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--studio-text-primary);
 `
 
 const Desc = styled.div`
-  font-size: 12px;
+  font-size: 13px;
   color: var(--studio-text-tertiary);
 `
 
@@ -39,7 +39,7 @@ const ToggleAllBtn = styled.button`
   border: none;
   background: var(--studio-accent);
   color: var(--studio-accent-fg);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.12s ease;

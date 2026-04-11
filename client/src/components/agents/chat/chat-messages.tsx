@@ -78,7 +78,7 @@ const UserBubble = styled.div`
   border-radius: 12px 12px 4px 12px;
   background: var(--studio-accent);
   color: var(--studio-accent-fg);
-  font-size: 12.5px;
+  font-size: 13.5px;
   line-height: 1.5;
   word-break: break-word;
   white-space: pre-wrap;
@@ -91,14 +91,14 @@ const AgentBubble = styled.div`
   background: var(--studio-bg-main);
   color: var(--studio-text-primary);
   border: 1px solid var(--studio-border);
-  font-size: 12.5px;
+  font-size: 13.5px;
   line-height: 1.5;
   word-break: break-word;
   white-space: pre-wrap;
 `
 
 const AgentName = styled.span`
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--studio-green);
   letter-spacing: 0.03em;
@@ -116,7 +116,7 @@ const SystemBubble = styled.div`
   background: var(--studio-bg-surface);
   border: 1px solid var(--studio-border);
   color: var(--studio-text-muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 450;
   max-width: 90%;
   text-align: center;
@@ -137,7 +137,7 @@ const OptBtn = styled.button`
   border: 1px solid var(--studio-border);
   background: var(--studio-bg-surface);
   color: var(--studio-text-secondary);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.12s ease;
@@ -195,10 +195,10 @@ export function ChatMessages({ onRespond }: ChatMessagesProps) {
           <EmptyIcon>
             <Sparkles size={18} />
           </EmptyIcon>
-          <Text css={{ fontSize: '13px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
+          <Text css={{ fontSize: '14px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
             What would you like to build?
           </Text>
-          <Text css={{ fontSize: '11px', maxWidth: '200px', lineHeight: 1.55, color: 'var(--studio-text-muted)' }}>
+          <Text css={{ fontSize: '12px', maxWidth: '200px', lineHeight: 1.55, color: 'var(--studio-text-muted)' }}>
             Describe a feature and the PM will plan and assign tasks to the team.
           </Text>
         </Empty>
@@ -252,12 +252,12 @@ export function ChatMessages({ onRespond }: ChatMessagesProps) {
         <HumanCard key={r.id}>
           <Flex align="flex-start" gap={2} mb="6px">
             <AlertCircle size={12} style={{ color: 'var(--studio-warning)', flexShrink: 0, marginTop: 1 }} />
-            <Text css={{ fontSize: '11px', fontWeight: 500, color: 'var(--studio-text-primary)', lineHeight: 1.4 }}>
+            <Text css={{ fontSize: '12px', fontWeight: 500, color: 'var(--studio-text-primary)', lineHeight: 1.4 }}>
               {r.question}
             </Text>
           </Flex>
           {r.context && (
-            <Text css={{ fontSize: '10px', color: 'var(--studio-text-muted)', mb: '8px', lineHeight: 1.5, ml: '20px' }}>
+            <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)', mb: '8px', lineHeight: 1.5, ml: '20px' }}>
               {r.context.slice(0, 180)}
             </Text>
           )}

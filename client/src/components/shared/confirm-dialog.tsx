@@ -54,11 +54,11 @@ export function ConfirmDialog({
         >
           <AlertTriangle size={20} />
         </Box>
-        <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>
+        <Text css={{ fontSize: '15px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>
           {message}
         </Text>
         {description && (
-          <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', lineHeight: 1.5, maxWidth: '320px' }}>
+          <Text css={{ fontSize: '14px', color: 'var(--studio-text-tertiary)', lineHeight: 1.5, maxWidth: '320px' }}>
             {description}
           </Text>
         )}
