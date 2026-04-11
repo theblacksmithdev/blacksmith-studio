@@ -25,12 +25,11 @@ export function ExplorerPanel({
   return (
     <Box
       css={{
-        width: '280px',
+        width: '100%',
+        height: '100%',
         background: 'var(--studio-bg-sidebar)',
-        borderRight: '1px solid var(--studio-border)',
         display: 'flex',
         flexDirection: 'column',
-        flexShrink: 0,
       }}
     >
       {/* Explorer header */}
