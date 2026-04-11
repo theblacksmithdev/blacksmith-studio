@@ -3,6 +3,7 @@ import { REVIEWER_BOUNDARIES } from '../boundaries.js'
 
 export const DEFINITION: AgentRoleDefinition = {
   role: 'code-reviewer',
+  team: 'quality',
   title: 'Code Reviewer',
   label: 'Review',
   description: 'Senior engineer focused on code quality, correctness, security, and maintainability through rigorous review.',

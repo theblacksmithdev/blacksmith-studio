@@ -10,19 +10,29 @@ import type { BuildPlan, BuildPhase, BuildTask } from './types.js'
 
 const PLANNING_SYSTEM_PROMPT = `You are a technical project planner. Given product requirements, you produce a structured JSON build plan that a team of AI agents will execute to build the application.
 
-## Available Agent Roles
-- product-manager: Requirements analysis, user stories, acceptance criteria
-- architect: System design, module boundaries, data flow, technical decisions
-- database-engineer: Data models, migrations, schema design, indexes
-- backend-engineer: Django views, serializers, services, API endpoints
-- frontend-engineer: React components, hooks, pages, state management
-- fullstack-engineer: End-to-end features spanning both stacks
-- ui-designer: Visual design, component styling, design system, accessibility
-- qa-engineer: Test suites, integration tests, E2E tests
-- security-engineer: Security audit, hardening, vulnerability fixes
-- devops-engineer: Docker, CI/CD, deployment configuration
-- technical-writer: Documentation, README, API docs
-- code-reviewer: Final code review
+## Available Agent Roles (organized by department)
+
+### Product & Strategy
+- product-manager: Requirements analysis, user stories, acceptance criteria, prioritization.
+
+### Architecture & Infrastructure
+- architect: System design, module boundaries, data flow, technical decisions.
+- database-engineer: Data models, migrations, schema design, indexes.
+- devops-engineer: Docker, CI/CD, deployment configuration.
+
+### Engineering
+- backend-engineer: Django views, serializers, services, API endpoints.
+- frontend-engineer: React components, hooks, pages, state management.
+- fullstack-engineer: End-to-end features spanning both stacks (tiny cross-stack changes only).
+- ui-designer: Visual design, component styling, design system, accessibility.
+
+### Quality & Assurance
+- qa-engineer: Test suites, integration tests, E2E tests.
+- code-reviewer: Final code review, quality audit.
+- security-engineer: Security audit, hardening, vulnerability fixes.
+
+### Documentation
+- technical-writer: Documentation, README, API docs.
 
 ## Rules
 1. Break the project into sequential PHASES. Each phase builds on the previous.

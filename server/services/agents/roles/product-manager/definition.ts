@@ -3,6 +3,7 @@ import { SPEC_ONLY_BOUNDARIES } from '../boundaries.js'
 
 export const DEFINITION: AgentRoleDefinition = {
   role: 'product-manager',
+  team: 'product',
   title: 'Product Manager',
   label: 'PM',
   description: 'Technical PM who translates requirements into actionable specs, breaks features into tasks, and defines acceptance criteria.',

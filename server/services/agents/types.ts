@@ -1,5 +1,55 @@
 import type { ChildProcess } from 'node:child_process'
 
+/* ── Agent Teams (departments) ── */
+
+export type AgentTeam =
+  | 'product'
+  | 'architecture'
+  | 'engineering'
+  | 'quality'
+  | 'documentation'
+
+export interface AgentTeamDefinition {
+  team: AgentTeam
+  title: string
+  description: string
+  /** Roles belonging to this team, in display order */
+  roles: AgentRole[]
+}
+
+export const AGENT_TEAMS: AgentTeamDefinition[] = [
+  {
+    team: 'product',
+    title: 'Product & Strategy',
+    description: 'The decision-maker and requirement owner. Sits above all sub-teams and drives priorities.',
+    roles: ['product-manager'],
+  },
+  {
+    team: 'architecture',
+    title: 'Architecture & Infrastructure',
+    description: 'Owns the technical foundation — system design, data layer, and deployment pipeline. Works first, before any code is written.',
+    roles: ['architect', 'database-engineer', 'devops-engineer'],
+  },
+  {
+    team: 'engineering',
+    title: 'Engineering Core',
+    description: 'The core builders. UI/UX feeds into Frontend, while Backend and Fullstack bridge both worlds.',
+    roles: ['backend-engineer', 'frontend-engineer', 'fullstack-engineer', 'ui-designer'],
+  },
+  {
+    team: 'quality',
+    title: 'Quality & Assurance',
+    description: 'Acts as a gate before anything ships. Reviews correctness, security vulnerabilities, and test coverage.',
+    roles: ['qa-engineer', 'code-reviewer', 'security-engineer'],
+  },
+  {
+    team: 'documentation',
+    title: 'Documentation',
+    description: 'Maintains technical documentation, API references, and developer guides to keep the team aligned.',
+    roles: ['technical-writer'],
+  },
+]
+
 /* ── Agent Identity ── */
 
 /** Every agent role maps to a real tech discipline */
@@ -20,6 +70,8 @@ export type AgentRole =
 /** Static metadata that defines an agent role */
 export interface AgentRoleDefinition {
   role: AgentRole
+  /** Which team/department this role belongs to */
+  team: AgentTeam
   title: string
   /** Short display label for task badges (e.g. "Frontend", "Backend", "Design") */
   label: string

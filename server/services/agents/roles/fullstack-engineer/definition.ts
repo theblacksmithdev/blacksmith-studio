@@ -3,6 +3,7 @@ import { DEVELOPER_BOUNDARIES } from '../boundaries.js'
 
 export const DEFINITION: AgentRoleDefinition = {
   role: 'fullstack-engineer',
+  team: 'engineering',
   title: 'Fullstack Engineer',
   label: 'Fullstack',
   description: 'Senior fullstack engineer who works across the entire Django + React stack, coordinating frontend and backend changes together.',

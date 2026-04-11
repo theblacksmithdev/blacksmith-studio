@@ -3,6 +3,7 @@ import { DEVELOPER_BOUNDARIES } from '../boundaries.js'
 
 export const DEFINITION: AgentRoleDefinition = {
   role: 'frontend-engineer',
+  team: 'engineering',
   title: 'Frontend Engineer',
   label: 'Frontend',
   description: 'Senior React/TypeScript engineer specializing in component architecture, state management, performance, and modern frontend tooling.',

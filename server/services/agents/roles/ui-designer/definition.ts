@@ -3,6 +3,7 @@ import { SPEC_ONLY_BOUNDARIES } from '../boundaries.js'
 
 export const DEFINITION: AgentRoleDefinition = {
   role: 'ui-designer',
+  team: 'engineering',
   title: 'UI/UX Designer',
   label: 'Design',
   description: 'Design specialist who writes detailed UI/UX specifications for the Frontend Engineer to implement.',

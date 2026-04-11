@@ -3,6 +3,7 @@ import { QA_BOUNDARIES } from '../boundaries.js'
 
 export const DEFINITION: AgentRoleDefinition = {
   role: 'qa-engineer',
+  team: 'quality',
   title: 'QA Engineer',
   label: 'QA',
   description: 'Test engineer specializing in writing comprehensive test suites, identifying edge cases, and ensuring software reliability.',

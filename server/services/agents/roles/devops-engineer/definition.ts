@@ -3,6 +3,7 @@ import { DEVELOPER_BOUNDARIES } from '../boundaries.js'
 
 export const DEFINITION: AgentRoleDefinition = {
   role: 'devops-engineer',
+  team: 'architecture',
   title: 'DevOps Engineer',
   label: 'DevOps',
   description: 'Infrastructure and deployment engineer focused on CI/CD, containerization, monitoring, and operational reliability.',

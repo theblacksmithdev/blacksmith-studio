@@ -23,7 +23,8 @@ import { DevOpsEngineerAgent } from './devops-engineer/index.js'
 import { SecurityEngineerAgent } from './security-engineer/index.js'
 import { TechnicalWriterAgent } from './technical-writer/index.js'
 import { ProductManagerAgent } from './product-manager/index.js'
-import type { AgentRole } from '../types.js'
+import type { AgentRole, AgentTeam, AgentTeamDefinition } from '../types.js'
+import { AGENT_TEAMS } from '../types.js'
 import type { BaseAgent } from '../base/index.js'
 
 /** Registry of all available agent roles. Instantiates one agent per role. */
@@ -50,4 +51,14 @@ export function createAgentRegistry(): Map<AgentRole, BaseAgent> {
   }
 
   return registry
+}
+
+/** Get the team definition for a given role */
+export function getTeamForRole(role: AgentRole): AgentTeamDefinition | undefined {
+  return AGENT_TEAMS.find((t) => t.roles.includes(role))
+}
+
+/** Get all roles belonging to a team */
+export function getTeamRoles(team: AgentTeam): AgentRole[] {
+  return AGENT_TEAMS.find((t) => t.team === team)?.roles ?? []
 }
