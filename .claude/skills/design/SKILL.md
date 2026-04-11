@@ -9,14 +9,25 @@ Blacksmith Studio uses **Chakra UI v3** as its primary design system. Always use
 
 **MCP**: The `chakra-ui-docs` MCP server is configured — use it to look up Chakra UI component APIs, props, and patterns before building.
 
-## Core Principle: Chakra First
+## Core Principle: Design System First
+
+**Always use the design system components** from `@/components/shared/ui` before reaching for raw Chakra or Emotion styled. These components lock down our tokens and ensure visual consistency.
 
 ```tsx
-// GOOD — use Chakra components
-import { Box, Flex, Text, Button, Input, VStack, HStack } from '@chakra-ui/react'
+// BEST — use design system components
+import { Text, Button, Badge, Card, Input, Avatar, StatusDot, Chip, Divider, IconButton } from '@/components/shared/ui'
+
+<Card variant="interactive">
+  <Text variant="title">Panel Title</Text>
+  <Text variant="body" color="secondary">Description here</Text>
+  <Button variant="primary" size="md">Save</Button>
+</Card>
+
+// GOOD — use Chakra for layout
+import { Box, Flex, VStack, HStack } from '@chakra-ui/react'
 
 <VStack gap={4} align="stretch">
-  <Text fontSize="15px" fontWeight={600} color="var(--studio-text-primary)">Title</Text>
+  <Text variant="subtitle">Section</Text>
   <Input placeholder="Enter value..." />
   <Button>Save</Button>
 </VStack>
@@ -193,8 +204,109 @@ Semantic:
 
 Utilities:
   --studio-shadow           Box shadow
+  --studio-shadow-lg        Large elevated shadow
   --studio-scrollbar        Scrollbar color
+  --studio-glass            Glass surface background
+  --studio-glass-border     Glass surface border
+  --studio-backdrop         Overlay backdrop
+  --studio-ring-focus       Focus ring shadow
 ```
+
+## UI Components (`@/components/shared/ui`)
+
+All components use Chakra UI as base. Import from `@/components/shared/ui`.
+
+### Text
+`<Text variant="body" color="secondary">...</Text>`
+Variants: `display` (32px) | `heading` (24px) | `title` (17px) | `subtitle` (15px) | `body` (14px) | `bodySmall` (13px) | `label` (12px) | `caption` (11px) | `tiny` (10px) | `code` | `codeBlock` | `sectionLabel`
+Color: `primary` | `secondary` | `tertiary` | `muted` | `error` | `success` | `inherit`
+Props: `truncate`, `as`
+
+### Button
+`<Button variant="primary" size="md">Save</Button>`
+Variants: `primary` | `secondary` | `ghost` | `danger`
+Sizes: `sm` | `md` | `lg`
+
+### IconButton
+`<IconButton variant="ghost" size="sm"><X /></IconButton>`
+Variants: `default` | `ghost` | `danger`
+Sizes: `xs` | `sm` | `md`
+
+### Badge
+`<Badge variant="success" size="sm">Active</Badge>`
+Variants: `default` | `success` | `error` | `warning` | `info` | `outline`
+Sizes: `sm` | `md`
+
+### StatusDot
+`<StatusDot status="active" size="sm" />`
+Status: `idle` | `active` | `done` | `error`
+Sizes: `xs` | `sm` | `md`
+Props: `animated` (pulse on active, default true)
+
+### Card
+`<Card variant="interactive">...</Card>`
+Variants: `default` | `interactive` (hover) | `inset` | `glass` (blur)
+Props: `p` (override padding)
+
+### Divider
+`<Divider variant="fade" spacing="12px" />`
+Variants: `full` | `fade` (gradient) | `short` (centered 40px)
+Props: `spacing`
+
+### Input
+`<Input size="md" placeholder="Search..." />`
+Sizes: `sm` | `md`
+Focus ring and border states built in.
+
+### Avatar
+`<Avatar size="sm" variant="active" icon={<Server />} />`
+Variants: `default` | `active` (green) | `user` (accent)
+Sizes: `xs` | `sm` | `md` | `lg`
+
+### Chip
+`<Chip variant="default" onClick={fn}>Quick action</Chip>`
+Variants: `default` | `active` | `success`
+
+## Design Tokens (`@/components/shared/ui/tokens`)
+
+```tsx
+import { spacing, radii, sizes, shadows } from '@/components/shared/ui'
+
+// Spacing — named sizes (4px base unit)
+spacing.none   // '0'
+spacing['2xs'] // '2px'
+spacing.xs     // '4px'
+spacing.sm     // '8px'
+spacing.md     // '12px'
+spacing.lg     // '16px'
+spacing.xl     // '20px'
+spacing['2xl'] // '24px'
+spacing['3xl'] // '32px'
+spacing['4xl'] // '40px'
+
+// Border radius
+radii.xs   // '4px'   — badges, small elements
+radii.sm   // '6px'   — buttons, close buttons
+radii.md   // '8px'   — inputs, cards
+radii.lg   // '10px'  — panels, dropdowns
+radii.xl   // '12px'  — large cards
+radii['2xl'] // '14px' — modals
+radii['3xl'] // '16px' — hero cards
+radii.full // '9999px' — pills, chips
+
+// Component sizes
+sizes.icon.{xs|sm|md|lg}       — icon button / avatar
+sizes.control.{sm|md|lg}       — input / button heights
+sizes.panel.{sm|md|lg}         — panel widths
+sizes.content.{narrow|default|wide} — max-widths
+
+// Shadows
+shadows.sm    // var(--studio-shadow)
+shadows.lg    // var(--studio-shadow-lg)
+shadows.focus // var(--studio-ring-focus)
+```
+
+**Rule: Use tokens instead of magic numbers.** If you need `padding: '16px'`, write `padding: spacing.lg`. If you need `borderRadius: '10px'`, write `borderRadius: radii.lg`.
 
 **Monochrome design language:**
 - Status indicators use `--studio-accent` (not green)
