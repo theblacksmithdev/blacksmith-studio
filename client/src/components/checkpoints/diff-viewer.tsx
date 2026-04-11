@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import styled from '@emotion/styled'
 import { FileCode2 } from 'lucide-react'
-import { api } from '@/api'
+import { useGitDiff } from '@/hooks/use-git'
 
 const Container = styled.div`
   flex: 1;
@@ -103,17 +103,7 @@ interface Props {
 }
 
 export function DiffViewer({ filePath }: Props) {
-  const [diff, setDiff] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    if (!filePath) { setDiff(null); return }
-    setLoading(true)
-    api.git.diff({ path: filePath }).then((d) => {
-      setDiff(d)
-      setLoading(false)
-    }).catch(() => { setDiff(null); setLoading(false) })
-  }, [filePath])
+  const { data: diff, isLoading: loading } = useGitDiff(filePath)
 
   if (!filePath) {
     return (

@@ -149,3 +149,19 @@ export function useGitConflicts() {
     enabled: initialized,
   })
 }
+
+export function useGitCommitDetail(hash: string) {
+  return useQuery({
+    queryKey: queryKeys.gitCommitDetail(hash),
+    queryFn: () => api.git.commitDetail({ hash }),
+    enabled: !!hash,
+  })
+}
+
+export function useGitDiff(filePath?: string) {
+  return useQuery({
+    queryKey: queryKeys.gitDiff(filePath ?? ''),
+    queryFn: () => api.git.diff({ path: filePath! }),
+    enabled: !!filePath,
+  })
+}

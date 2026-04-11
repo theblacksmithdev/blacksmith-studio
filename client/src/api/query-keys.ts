@@ -21,7 +21,11 @@ export const queryKeys = {
   gitConflicts: ['git', 'conflicts'] as const,
   nodeInstallations: ['runner', 'nodeInstallations'] as const,
   agents: ['agents'] as const,
+  agentConversations: ['agents', 'conversations'] as const,
+  agentChat: (conversationId: string) => ['agents', 'conversations', conversationId, 'chat'] as const,
   agentHistory: ['agents', 'history'] as const,
   agentPipelines: ['agents', 'pipelines'] as const,
   agentBuildProgress: ['agents', 'buildProgress'] as const,
+  gitCommitDetail: (hash: string) => ['git', 'commitDetail', hash] as const,
+  gitDiff: (path: string) => ['git', 'diff', path] as const,
 }

@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import styled from '@emotion/styled'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { MessageSquare, Network, Trash2, X } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { useSessions } from '@/hooks/use-sessions'
+import { useAgentConversations } from '@/hooks/use-agent-conversations'
 import { useSessionStore } from '@/stores/session-store'
 import { useProjectStore } from '@/stores/project-store'
 import { useUiStore } from '@/stores/ui-store'
-import { api } from '@/api'
 import { chatPath, agentsConversationPath } from '@/router/paths'
 import { ConfirmDialog } from '@/components/shared/ui'
 
@@ -185,19 +185,13 @@ export function HistoryPanel() {
   const close = useUiStore((s) => s.setHistoryPanelOpen)
 
   const isAgents = location.pathname.includes('/agents')
-  const [agentConvs, setAgentConvs] = useState<any[]>([])
+  const { conversations: agentConvs, deleteConversation: deleteAgentConv } = useAgentConversations()
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (isAgents) {
-      api.agents.listConversations().then(setAgentConvs).catch(() => {})
-    }
-  }, [isAgents])
 
   const pid = activeProject?.id
 
   const items: HistoryItem[] = isAgents
-    ? agentConvs.map((c) => ({ id: c.id, title: c.title, updatedAt: c.updatedAt }))
+    ? agentConvs.map((c: any) => ({ id: c.id, title: c.title, updatedAt: c.updatedAt }))
     : sessions.map((s) => ({ id: s.id, title: s.lastPrompt || s.name, updatedAt: s.updatedAt }))
 
   const groups = groupByDate(items)
@@ -212,11 +206,10 @@ export function HistoryPanel() {
     }
   }
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = () => {
     if (!deleteTarget) return
     if (isAgents) {
-      await api.agents.deleteConversation(deleteTarget)
-      setAgentConvs((prev) => prev.filter((c) => c.id !== deleteTarget))
+      deleteAgentConv(deleteTarget)
     } else {
       deleteSession(deleteTarget)
     }

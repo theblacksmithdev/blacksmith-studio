@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import styled from '@emotion/styled'
-import { Flex, Text, Box } from '@chakra-ui/react'
+import { Flex, Box } from '@chakra-ui/react'
 import { GitCommitHorizontal, User, Calendar, Copy, Check } from 'lucide-react'
 import { Drawer } from '@/components/shared/drawer'
-import { api } from '@/api'
-import type { GitCommitDetail } from '@/api/types'
+import { useGitCommitDetail } from '@/hooks/use-git'
 
 const MetaRow = styled.div`
   display: flex;
@@ -164,17 +163,8 @@ interface Props {
 }
 
 export function CommitDetailDrawer({ hash, onClose }: Props) {
-  const [detail, setDetail] = useState<GitCommitDetail | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { data: detail, isLoading: loading } = useGitCommitDetail(hash)
   const [copied, setCopied] = useState(false)
-
-  useEffect(() => {
-    setLoading(true)
-    api.git.commitDetail({ hash }).then((d) => {
-      setDetail(d)
-      setLoading(false)
-    }).catch(() => setLoading(false))
-  }, [hash])
 
   const copyHash = () => {
     navigator.clipboard.writeText(hash)

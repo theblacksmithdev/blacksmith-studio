@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Box, Flex, Text, VStack } from '@chakra-ui/react'
 import { Network, Plus, MessageSquare, Trash2, ArrowRight } from 'lucide-react'
-import { api } from '@/api'
+import { useAgentConversations } from '@/hooks/use-agent-conversations'
 import { useProjectStore } from '@/stores/project-store'
 import { agentsNewPath, agentsConversationPath } from '@/router/paths'
 import { quickActions, roster, timeAgo } from './helpers'
@@ -18,23 +17,14 @@ import {
 export function ConversationsList() {
   const navigate = useNavigate()
   const project = useProjectStore((s) => s.activeProject)
-  const [convs, setConvs] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    api.agents.listConversations()
-      .then(setConvs)
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [])
+  const { conversations: convs, isLoading: loading, deleteConversation } = useAgentConversations()
 
   const goNew = () => { if (project) navigate(agentsNewPath(project.id)) }
   const goConv = (id: string) => { if (project) navigate(agentsConversationPath(project.id, id)) }
 
-  const handleDelete = async (e: React.MouseEvent, id: string) => {
+  const handleDelete = (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
-    await api.agents.deleteConversation(id)
-    setConvs((prev) => prev.filter((c) => c.id !== id))
+    deleteConversation(id)
   }
 
   return (

@@ -1,28 +1,23 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Network } from 'lucide-react'
 import { ChatInput } from '@/components/chat/chat-input'
 import { useChatStore } from '@/stores/chat-store'
 import { useProjectStore } from '@/stores/project-store'
-import { api } from '@/api'
+import { useAgentConversations } from '@/hooks/use-agent-conversations'
 import { agentsNewPath, agentsConversationPath } from '@/router/paths'
 import { HomeHero } from '@/components/chat/home-view/home-hero'
 import { QuickActions } from '@/components/chat/home-view/quick-actions'
 import { HomeShell, SectionDivider } from '@/components/chat/home-view/shared/home-shell'
 import { RecentSection, type RecentEntry } from '@/components/chat/home-view/shared/recent-section'
-import { ConfirmDialog } from '@/components/shared/confirm-dialog'
+import { ConfirmDialog } from '@/components/shared/ui'
 
 export function AgentsHomeView() {
   const { isStreaming } = useChatStore()
   const navigate = useNavigate()
   const activeProject = useProjectStore((s) => s.activeProject)
-  const [convs, setConvs] = useState<any[]>([])
-
-  useEffect(() => {
-    api.agents.listConversations()
-      .then(setConvs)
-      .catch(() => {})
-  }, [])
+  const { conversations, deleteConversation } = useAgentConversations({ limit: 4 })
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   const pid = activeProject?.id
 
@@ -31,16 +26,13 @@ export function AgentsHomeView() {
     navigate(agentsNewPath(pid), { state: { initialPrompt: text } })
   }
 
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
-
-  const confirmDelete = useCallback(async () => {
+  const confirmDelete = useCallback(() => {
     if (!deleteTarget) return
-    await api.agents.deleteConversation(deleteTarget)
-    setConvs((prev) => prev.filter((c) => c.id !== deleteTarget))
+    deleteConversation(deleteTarget)
     setDeleteTarget(null)
-  }, [deleteTarget])
+  }, [deleteTarget, deleteConversation])
 
-  const recentItems: RecentEntry[] = convs.map((c) => ({
+  const recentItems: RecentEntry[] = conversations.map((c: any) => ({
     id: c.id,
     title: c.title,
     type: 'agents',
@@ -54,7 +46,7 @@ export function AgentsHomeView() {
       <HomeHero />
       <ChatInput onSend={handleSend} onCancel={() => {}} isStreaming={isStreaming} />
       <QuickActions mode="agents" onSend={handleSend} />
-      {recentItems.length > 0 ? (
+      {recentItems.length > 0 && (
         <>
           <SectionDivider />
           <RecentSection
@@ -64,13 +56,12 @@ export function AgentsHomeView() {
             onDelete={(id) => setDeleteTarget(id)}
           />
         </>
-      ) : null}
+      )}
 
       {deleteTarget && (
         <ConfirmDialog
           message="Delete this conversation?"
           description="All messages and task history in this conversation will be permanently removed."
-          confirmLabel="Delete"
           onConfirm={confirmDelete}
           onCancel={() => setDeleteTarget(null)}
         />
