@@ -31,7 +31,7 @@ function resolveBaseOptions(
   return {
     projectRoot: project.path,
     claudeBin: claudeManager.getClaudeBin(),
-    nodePath: allSettings['runner.nodePath'] || undefined,
+    nodePath: settingsManager.resolve(project.id, 'runner.nodePath') || undefined,
     mcpConfigPath: mcpManager.getEnabledConfigPath(
       project.path,
       Array.isArray(allSettings['mcp.disabledServers']) ? allSettings['mcp.disabledServers'] : [],

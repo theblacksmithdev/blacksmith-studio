@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron'
 import type { SettingsManager } from '../../server/services/settings.js'
 import type { ProjectManager } from '../../server/services/projects.js'
-import { SETTINGS_GET_ALL, SETTINGS_UPDATE } from './channels.js'
+import { SETTINGS_GET_ALL, SETTINGS_UPDATE, SETTINGS_GET_ALL_GLOBAL, SETTINGS_UPDATE_GLOBAL } from './channels.js'
 
 function requireActiveProject(projectManager: ProjectManager): string {
   const project = projectManager.getActive()
@@ -10,6 +10,8 @@ function requireActiveProject(projectManager: ProjectManager): string {
 }
 
 export function setupSettingsIPC(settingsManager: SettingsManager, projectManager: ProjectManager) {
+  /* ── Project-scoped settings ── */
+
   ipcMain.handle(SETTINGS_GET_ALL, () => {
     const projectId = requireActiveProject(projectManager)
     return settingsManager.getAll(projectId)
@@ -20,5 +22,17 @@ export function setupSettingsIPC(settingsManager: SettingsManager, projectManage
     if (!data || typeof data !== 'object') throw new Error('Body must be a JSON object')
     settingsManager.setMany(projectId, data)
     return settingsManager.getAll(projectId)
+  })
+
+  /* ── Global settings (no active project required) ── */
+
+  ipcMain.handle(SETTINGS_GET_ALL_GLOBAL, () => {
+    return settingsManager.getAllGlobal()
+  })
+
+  ipcMain.handle(SETTINGS_UPDATE_GLOBAL, (_e, data: Record<string, any>) => {
+    if (!data || typeof data !== 'object') throw new Error('Body must be a JSON object')
+    settingsManager.setManyGlobal(data)
+    return settingsManager.getAllGlobal()
   })
 }

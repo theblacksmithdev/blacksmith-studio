@@ -1,6 +1,6 @@
 import { eq, and } from 'drizzle-orm'
 import { getDatabase } from '../db/index.js'
-import { settings } from '../db/schema.js'
+import { settings, globalSettings } from '../db/schema.js'
 
 const DEFAULTS: Record<string, any> = {
   'appearance.theme': 'system',
@@ -24,6 +24,10 @@ const DEFAULTS: Record<string, any> = {
   'agents.nodePositions': null,
 }
 
+const GLOBAL_DEFAULTS: Record<string, any> = {
+  'runner.nodePath': '',
+}
+
 export class SettingsManager {
   constructor() {
     getDatabase()
@@ -32,6 +36,8 @@ export class SettingsManager {
   private get db() {
     return getDatabase()
   }
+
+  /* ── Project-scoped settings ── */
 
   getAll(projectId: string): Record<string, any> {
     const rows = this.db.select().from(settings)
@@ -78,5 +84,73 @@ export class SettingsManager {
     for (const [key, value] of Object.entries(pairs)) {
       this.set(projectId, key, value)
     }
+  }
+
+  /* ── Global settings (app-level, no project scope) ── */
+
+  getAllGlobal(): Record<string, any> {
+    const rows = this.db.select().from(globalSettings).all()
+    const result = { ...GLOBAL_DEFAULTS }
+    for (const row of rows) {
+      try {
+        result[row.key] = JSON.parse(row.value)
+      } catch {
+        result[row.key] = row.value
+      }
+    }
+    return result
+  }
+
+  getGlobal(key: string): any {
+    const row = this.db.select().from(globalSettings)
+      .where(eq(globalSettings.key, key))
+      .get()
+    if (!row) return GLOBAL_DEFAULTS[key] ?? null
+    try {
+      return JSON.parse(row.value)
+    } catch {
+      return row.value
+    }
+  }
+
+  setGlobal(key: string, value: any): void {
+    const serialized = JSON.stringify(value)
+    const existing = this.db.select().from(globalSettings)
+      .where(eq(globalSettings.key, key))
+      .get()
+    if (existing) {
+      this.db.update(globalSettings).set({ value: serialized })
+        .where(eq(globalSettings.key, key))
+        .run()
+    } else {
+      this.db.insert(globalSettings).values({ key, value: serialized }).run()
+    }
+  }
+
+  setManyGlobal(pairs: Record<string, any>): void {
+    for (const [key, value] of Object.entries(pairs)) {
+      this.setGlobal(key, value)
+    }
+  }
+
+  /**
+   * Resolve a setting with project-override-global fallback.
+   * Returns the project-level value if set (non-empty), otherwise the global value.
+   */
+  resolve(projectId: string | null, key: string): any {
+    if (projectId) {
+      const projectVal = this.get(projectId, key)
+      // If the project has a non-empty value, use it
+      if (projectVal !== '' && projectVal !== null && projectVal !== undefined) {
+        return projectVal
+      }
+    }
+    // Fall back to global
+    const globalVal = this.getGlobal(key)
+    if (globalVal !== '' && globalVal !== null && globalVal !== undefined) {
+      return globalVal
+    }
+    // Fall back to project defaults, then global defaults
+    return DEFAULTS[key] ?? GLOBAL_DEFAULTS[key] ?? null
   }
 }

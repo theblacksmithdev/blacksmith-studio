@@ -114,7 +114,7 @@ export function setupProjectsIPC(getWindow: () => BrowserWindow | null, projectM
 
     const win = getWindow()
     const projectId = projectManager.getActiveId()
-    const nodePath = projectId ? (settingsManager.get(projectId, 'runner.nodePath') || undefined) : undefined
+    const nodePath = settingsManager.resolve(projectId, 'runner.nodePath') || undefined
 
     // Run blacksmith via npx to ensure it uses a compatible Node version.
     // CI=true disables interactive prompts (auto-accepts defaults).

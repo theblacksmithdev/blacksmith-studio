@@ -35,7 +35,7 @@ export function setupRunnerIPC(
     const projectPath = projectManager.getActivePath()
     if (!projectPath) throw new Error('No active project')
     const projectId = projectManager.getActiveId()
-    const nodePath = projectId ? settingsManager.get(projectId, 'runner.nodePath') : ''
+    const nodePath = settingsManager.resolve(projectId, 'runner.nodePath') || ''
 
     if (data.target === 'all') await runnerManager.startAll(projectPath, nodePath)
     else if (data.target === 'backend') await runnerManager.startBackend(projectPath, nodePath)

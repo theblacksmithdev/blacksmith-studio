@@ -129,9 +129,11 @@ interface TitleBarShellProps {
   leading?: ReactNode
   /** Center content (title / breadcrumb) */
   center: ReactNode
+  /** Extra buttons in the right actions area (before theme toggle) */
+  trailing?: ReactNode
 }
 
-export function TitleBarShell({ leading, center }: TitleBarShellProps) {
+export function TitleBarShell({ leading, center, trailing }: TitleBarShellProps) {
   const navigate = useNavigate()
   const { isFullscreen: fullscreen } = useWindowState()
   const connectionStatus = useUiStore((s) => s.connectionStatus)
@@ -155,7 +157,7 @@ export function TitleBarShell({ leading, center }: TitleBarShellProps) {
 
       <Center>{center}</Center>
 
-      <Actions>
+      <Actions>        {trailing}
         <Tooltip content={mode === 'dark' ? 'Light mode' : 'Dark mode'}>
           <ActionBtn onClick={toggleTheme}>
             {mode === 'dark' ? <Sun size={13} /> : <Moon size={13} />}

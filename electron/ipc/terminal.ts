@@ -24,7 +24,7 @@ export function setupTerminalIPC(
   ipcMain.handle(TERMINAL_SPAWN, async (_e, data?: { cwd?: string; cols?: number; rows?: number }) => {
     const cwd = data?.cwd || projectManager.getActivePath() || process.env.HOME || '/'
     const projectId = projectManager.getActiveId()
-    const nodePath = projectId ? (settingsManager.get(projectId, 'runner.nodePath') || undefined) : undefined
+    const nodePath = settingsManager.resolve(projectId, 'runner.nodePath') || undefined
     console.log('[terminal] spawning shell in', cwd)
     try {
       const id = await terminalManager.spawn(cwd, data?.cols, data?.rows, nodePath)

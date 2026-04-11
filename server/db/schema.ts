@@ -63,6 +63,15 @@ export const settings = sqliteTable('settings', {
 })
 
 /**
+ * Global settings — app-level key-value store, not scoped to any project.
+ * Project-level settings always override these when both exist.
+ */
+export const globalSettings = sqliteTable('global_settings', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
+})
+
+/**
  * Agent conversations — a conversation thread in the agents panel.
  */
 export const agentConversations = sqliteTable('agent_conversations', {

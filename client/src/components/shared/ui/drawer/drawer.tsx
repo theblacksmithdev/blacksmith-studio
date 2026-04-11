@@ -10,6 +10,7 @@ export type DrawerPlacement = 'bottom' | 'right'
 
 interface DrawerProps {
   title: string
+  subtitle?: string
   children: ReactNode
   onClose: () => void
   placement?: DrawerPlacement
@@ -62,7 +63,7 @@ const panelStyles: Record<DrawerPlacement, (size: string) => Record<string, any>
   }),
 }
 
-export function Drawer({ title, children, onClose, placement = 'right', size, footer, headerExtra }: DrawerProps) {
+export function Drawer({ title, subtitle, children, onClose, placement = 'right', size, footer, headerExtra }: DrawerProps) {
   const defaultSize = placement === 'right' ? '560px' : '70vh'
   const resolvedSize = size || defaultSize
 
@@ -109,7 +110,10 @@ export function Drawer({ title, children, onClose, placement = 'right', size, fo
             flexShrink: 0,
           }}
         >
-          <Text variant="subtitle" css={{ flex: 1 }}>{title}</Text>
+          <Box css={{ flex: 1 }}>
+            <Text variant="subtitle">{title}</Text>
+            {subtitle && <Text variant="caption" color="muted">{subtitle}</Text>}
+          </Box>
           {headerExtra}
           <IconButton variant="ghost" size="sm" onClick={onClose} aria-label="Close">
             <X />

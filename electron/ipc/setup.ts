@@ -19,8 +19,7 @@ export interface SetupStatus {
 
 function getNodePath(settingsManager: SettingsManager, projectManager: ProjectManager): string | undefined {
   const projectId = projectManager.getActiveId()
-  if (!projectId) return undefined
-  return settingsManager.get(projectId, 'runner.nodePath') || undefined
+  return settingsManager.resolve(projectId, 'runner.nodePath') || undefined
 }
 
 function checkNode(nodePath?: string): NodeStatus {
