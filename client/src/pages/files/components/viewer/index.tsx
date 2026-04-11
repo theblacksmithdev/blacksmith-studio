@@ -1,7 +1,8 @@
-import { Box, Text } from '@chakra-ui/react'
+import { Box, Flex } from '@chakra-ui/react'
 import { TabBar } from './tab-bar'
 import { CodeEditor } from './code-editor'
 import { StatusBar } from './status-bar'
+import { Text } from '@/components/shared/ui'
 import { useFileStore } from '@/stores/file-store'
 
 export function FileViewer() {
@@ -23,9 +24,9 @@ export function FileViewer() {
       {currentTab.content !== null ? (
         <CodeEditor content={currentTab.content} language={currentTab.language} />
       ) : (
-        <Box css={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Text css={{ fontSize: '14px', color: 'var(--studio-text-muted)' }}>Loading...</Text>
-        </Box>
+        <Flex align="center" justify="center" css={{ flex: 1 }}>
+          <Text variant="body" color="muted">Loading...</Text>
+        </Flex>
       )}
 
       <StatusBar

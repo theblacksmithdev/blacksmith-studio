@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FileViewer } from './components/file-viewer/index'
+import { FileViewer } from './components/viewer'
 import { useFiles } from '@/hooks/use-files'
 import { useFileStore } from '@/stores/file-store'
 import { ExplorerPanel } from './components/explorer'

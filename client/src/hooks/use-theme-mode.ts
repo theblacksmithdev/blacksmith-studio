@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useSyncExternalStore, useCallback } from 'react'
 
 type ThemeMode = 'light' | 'dark'
 
@@ -20,22 +20,37 @@ function applyMode(mode: ThemeMode) {
   }
 }
 
+// ── Shared singleton store ──────────────────────────────────
+let currentMode: ThemeMode = getInitialMode()
+const listeners = new Set<() => void>()
+
+function getSnapshot(): ThemeMode {
+  return currentMode
+}
+
+function subscribe(cb: () => void) {
+  listeners.add(cb)
+  return () => listeners.delete(cb)
+}
+
+function setMode(next: ThemeMode) {
+  if (next === currentMode) return
+  currentMode = next
+  applyMode(next)
+  localStorage.setItem(STORAGE_KEY, next)
+  listeners.forEach((cb) => cb())
+}
+
+// Apply on module load so the class is set before first paint
+applyMode(currentMode)
+
+// ── Hook ────────────────────────────────────────────────────
 export function useThemeMode() {
-  const [mode, setMode] = useState<ThemeMode>(getInitialMode)
-
-  useEffect(() => {
-    applyMode(mode)
-    localStorage.setItem(STORAGE_KEY, mode)
-  }, [mode])
-
-  // Apply on mount (before first paint ideally, but this is close enough)
-  useEffect(() => {
-    applyMode(getInitialMode())
-  }, [])
+  const mode = useSyncExternalStore(subscribe, getSnapshot)
 
   const toggle = useCallback(() => {
-    setMode((m) => (m === 'dark' ? 'light' : 'dark'))
-  }, [])
+    setMode(mode === 'dark' ? 'light' : 'dark')
+  }, [mode])
 
   return { mode, toggle, setMode }
 }
