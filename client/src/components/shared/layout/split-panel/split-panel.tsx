@@ -121,21 +121,15 @@ export function SplitPanel({
           position: 'relative',
           zIndex: 2,
           ...(isVertical
-            ? { width: '100%', height: '5px', cursor: 'row-resize' }
-            : { height: '100%', width: '5px', cursor: 'col-resize' }
+            ? { width: '100%', height: '1px', cursor: 'row-resize', padding: '2px 0', margin: '-2px 0' }
+            : { height: '100%', width: '1px', cursor: 'col-resize', padding: '0 2px', margin: '0 -2px' }
           ),
-          '&::after': {
-            content: '""',
-            position: 'absolute',
-            background: dragging ? 'var(--studio-border-hover)' : 'var(--studio-border)',
-            transition: 'background 0.15s ease',
-            ...(isVertical
-              ? { left: 0, right: 0, top: '2px', height: '1px' }
-              : { top: 0, bottom: 0, left: '2px', width: '1px' }
-            ),
-          },
-          '&:hover::after': {
+          background: dragging ? 'var(--studio-border-hover)' : 'var(--studio-border)',
+          backgroundClip: 'content-box',
+          transition: dragging ? 'none' : 'background 0.15s ease',
+          '&:hover': {
             background: 'var(--studio-border-hover)',
+            backgroundClip: 'content-box',
           },
         }}
       />
