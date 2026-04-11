@@ -13,7 +13,7 @@ import { RecentSection, type RecentEntry } from './shared/recent-section'
 
 export function HomeView() {
   const { sendPrompt } = useClaude()
-  const { sessions, createSession } = useSessions({ limit: 5 })
+  const { sessions, createSession } = useSessions({ limit: 4 })
   const { isStreaming } = useChatStore()
   const navigate = useNavigate()
   const activeProject = useProjectStore((s) => s.activeProject)

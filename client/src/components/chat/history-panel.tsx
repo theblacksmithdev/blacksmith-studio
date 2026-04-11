@@ -1,35 +1,45 @@
+import { useState, useEffect } from 'react'
 import styled from '@emotion/styled'
-import { useNavigate } from 'react-router-dom'
-import { MessageSquare, Trash2, X } from 'lucide-react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { MessageSquare, Network, Trash2, X } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { useSessions } from '@/hooks/use-sessions'
 import { useSessionStore } from '@/stores/session-store'
 import { useProjectStore } from '@/stores/project-store'
 import { useUiStore } from '@/stores/ui-store'
-import { chatPath } from '@/router/paths'
-import type { SessionSummary } from '@/types'
+import { api } from '@/api'
+import { chatPath, agentsConversationPath } from '@/router/paths'
+import { ConfirmDialog } from '@/components/shared/ui'
+
+/* ── Types ── */
+
+interface HistoryItem {
+  id: string
+  title: string
+  updatedAt: string
+}
 
 /* ── Helpers ── */
 
-function groupByDate(sessions: SessionSummary[]) {
+function groupByDate(items: HistoryItem[]) {
   const now = new Date()
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const yesterday = new Date(today.getTime() - 86400000)
   const weekAgo = new Date(today.getTime() - 7 * 86400000)
 
-  const groups: { label: string; items: SessionSummary[] }[] = [
+  const groups: { label: string; items: HistoryItem[] }[] = [
     { label: 'Today', items: [] },
     { label: 'Yesterday', items: [] },
     { label: 'This week', items: [] },
     { label: 'Older', items: [] },
   ]
 
-  for (const s of sessions) {
-    const d = new Date(s.updatedAt)
-    if (d >= today) groups[0].items.push(s)
-    else if (d >= yesterday) groups[1].items.push(s)
-    else if (d >= weekAgo) groups[2].items.push(s)
-    else groups[3].items.push(s)
+  for (const item of items) {
+    const d = new Date(item.updatedAt)
+    if (d >= today) groups[0].items.push(item)
+    else if (d >= yesterday) groups[1].items.push(item)
+    else if (d >= weekAgo) groups[2].items.push(item)
+    else groups[3].items.push(item)
   }
 
   return groups.filter((g) => g.items.length > 0)
@@ -116,15 +126,12 @@ const Item = styled.button<{ active: boolean }>`
 
   &:hover {
     background: var(--studio-bg-surface);
-
-    .delete-btn {
-      opacity: 1;
-    }
+    .delete-btn { opacity: 1; }
   }
 `
 
-const ItemIcon = styled.div`
-  color: var(--studio-text-muted);
+const ItemIcon = styled.div<{ $accent?: boolean }>`
+  color: ${({ $accent }) => $accent ? 'var(--studio-green)' : 'var(--studio-text-muted)'};
   flex-shrink: 0;
   margin-top: 2px;
 `
@@ -157,9 +164,7 @@ const DeleteBtn = styled.span`
   margin-top: 2px;
   transition: all 0.1s ease;
 
-  &:hover {
-    color: var(--studio-error);
-  }
+  &:hover { color: var(--studio-error); }
 `
 
 const Empty = styled.div`
@@ -172,56 +177,92 @@ const Empty = styled.div`
 /* ── Component ── */
 
 export function HistoryPanel() {
+  const location = useLocation()
+  const navigate = useNavigate()
   const { sessions, loadSession, deleteSession } = useSessions()
   const activeSessionId = useSessionStore((s) => s.activeSessionId)
   const activeProject = useProjectStore((s) => s.activeProject)
   const close = useUiStore((s) => s.setHistoryPanelOpen)
-  const navigate = useNavigate()
+
+  const isAgents = location.pathname.includes('/agents')
+  const [agentConvs, setAgentConvs] = useState<any[]>([])
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (isAgents) {
+      api.agents.listConversations().then(setAgentConvs).catch(() => {})
+    }
+  }, [isAgents])
+
+  const pid = activeProject?.id
+
+  const items: HistoryItem[] = isAgents
+    ? agentConvs.map((c) => ({ id: c.id, title: c.title, updatedAt: c.updatedAt }))
+    : sessions.map((s) => ({ id: s.id, title: s.lastPrompt || s.name, updatedAt: s.updatedAt }))
+
+  const groups = groupByDate(items)
 
   const handleSelect = async (id: string) => {
-    if (!activeProject) return
-    await loadSession(id)
-    navigate(chatPath(activeProject.id, id))
+    if (!pid) return
+    if (isAgents) {
+      navigate(agentsConversationPath(pid, id))
+    } else {
+      await loadSession(id)
+      navigate(chatPath(pid, id))
+    }
   }
 
-  const groups = groupByDate(sessions)
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return
+    if (isAgents) {
+      await api.agents.deleteConversation(deleteTarget)
+      setAgentConvs((prev) => prev.filter((c) => c.id !== deleteTarget))
+    } else {
+      deleteSession(deleteTarget)
+    }
+    setDeleteTarget(null)
+  }
+
+  const Icon = isAgents ? Network : MessageSquare
+  const label = isAgents ? 'Team History' : 'Chat History'
+  const emptyText = isAgents ? 'No team sessions yet' : 'No conversations yet'
 
   return (
     <Panel>
       <Header>
-        <Title>History</Title>
+        <Title>{label}</Title>
         <CloseBtn onClick={() => close(false)}>
           <X size={14} />
         </CloseBtn>
       </Header>
 
       <Body>
-        {sessions.length === 0 ? (
-          <Empty>No conversations yet</Empty>
+        {items.length === 0 ? (
+          <Empty>{emptyText}</Empty>
         ) : (
           groups.map((group) => (
             <div key={group.label}>
               <GroupLabel>{group.label}</GroupLabel>
-              {group.items.map((session) => (
+              {group.items.map((item) => (
                 <Item
-                  key={session.id}
-                  active={session.id === activeSessionId}
-                  onClick={() => handleSelect(session.id)}
+                  key={item.id}
+                  active={!isAgents && item.id === activeSessionId}
+                  onClick={() => handleSelect(item.id)}
                 >
-                  <ItemIcon>
-                    <MessageSquare size={13} />
+                  <ItemIcon $accent={isAgents}>
+                    <Icon size={13} />
                   </ItemIcon>
                   <ItemBody>
-                    <ItemTitle>{session.lastPrompt || session.name}</ItemTitle>
+                    <ItemTitle>{item.title}</ItemTitle>
                     <ItemMeta>
-                      {formatDistanceToNow(new Date(session.updatedAt), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(item.updatedAt), { addSuffix: true })}
                     </ItemMeta>
                   </ItemBody>
                   <DeleteBtn
                     className="delete-btn"
                     onClick={(e: React.MouseEvent) => {
                       e.stopPropagation()
-                      deleteSession(session.id)
+                      setDeleteTarget(item.id)
                     }}
                   >
                     <Trash2 size={12} />
@@ -232,6 +273,15 @@ export function HistoryPanel() {
           ))
         )}
       </Body>
+
+      {deleteTarget && (
+        <ConfirmDialog
+          message={`Delete this ${isAgents ? 'team session' : 'conversation'}?`}
+          description="This cannot be undone."
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
     </Panel>
   )
 }
