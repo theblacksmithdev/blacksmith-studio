@@ -206,15 +206,34 @@ Utilities:
 ```
 Font family:  'Outfit', -apple-system, BlinkMacSystemFont, sans-serif
 Mono font:    'SF Mono', 'Fira Code', 'JetBrains Mono', Menlo, monospace
+```
 
-Sizes:
-  22px  — Page titles (font-weight: 600, letter-spacing: -0.02em)
-  15px  — Section titles (font-weight: 600)
-  14px  — Body text, inputs
-  13px  — Labels, buttons, nav items (font-weight: 500)
-  12px  — Secondary text, descriptions
-  11px  — Section labels (uppercase, letter-spacing: 0.06-0.08em)
-  10px  — Badges, line counts
+**Typography** — use `<Text variant="...">` from `@/components/shared/ui/typography`:
+
+```tsx
+import { Text } from '@/components/shared/ui/typography'
+
+<Text variant="display">Hero</Text>           // 32px/700
+<Text variant="heading">Page Title</Text>     // 24px/600
+<Text variant="title">Panel Header</Text>     // 17px/600
+<Text variant="subtitle">Subheading</Text>    // 15px/600
+<Text variant="body">Body text</Text>         // 14px/400 (default)
+<Text variant="bodySmall">Small text</Text>   // 13px/400
+<Text variant="label">Label</Text>            // 12px/500
+<Text variant="caption">Timestamp</Text>      // 11px/450
+<Text variant="tiny">SECTION</Text>           // 10px/600 uppercase
+<Text variant="code">npm install</Text>       // 13px mono inline
+<Text variant="codeBlock">code here</Text>    // 13px mono block
+<Text variant="sectionLabel">Activity</Text>  // 10px/600 uppercase + margin
+
+// Color prop: 'primary' | 'secondary' | 'tertiary' | 'muted' | 'error' | 'success' | 'inherit'
+<Text variant="body" color="secondary">Muted description</Text>
+
+// Truncate prop for ellipsis
+<Text variant="label" truncate>Very long text here...</Text>
+
+// Custom element via as prop
+<Text variant="title" as="span">Inline title</Text>
 ```
 
 ## Spacing & Sizing
