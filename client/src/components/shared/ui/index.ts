@@ -62,3 +62,11 @@ export { ListItem } from './list-item'
 export { Tooltip } from './tooltip'
 
 export { KeyboardHint } from './keyboard-hint'
+
+// ── Brand ──
+export { Logo } from './logo'
+export type { LogoVariant } from './logo'
+
+// ── Illustrations ──
+export { ForgeBg } from './forge-bg'
+export type { ForgeBgVariant } from './forge-bg'

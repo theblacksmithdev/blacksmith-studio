@@ -1,6 +1,6 @@
 # Blacksmith Studio
 
-An Electron desktop IDE for building full-stack Django + React apps with Claude AI.
+An AI-native Electron desktop IDE for building any project — supports cloud and local LLMs.
 
 ## Architecture
 

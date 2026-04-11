@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FolderPlus, Sparkles } from 'lucide-react'
+import { FolderPlus } from 'lucide-react'
 import styled from '@emotion/styled'
 import { keyframes } from '@emotion/react'
-import { Text, Button, VStack, EmptyState, spacing } from '@/components/shared/ui'
+import { Text, Button, spacing, radii } from '@/components/shared/ui'
 import { AddProjectModal } from '@/components/projects/add-project-modal'
 import { useProjects } from '@/hooks/use-projects'
 import { useProjectStore } from '@/stores/project-store'
@@ -11,64 +11,76 @@ import { projectHome } from '@/router/paths'
 import { HeroSection } from './components/hero-section'
 import { ProjectCard } from './components/project-card'
 
-/* ── Animations ── */
-
-const fadeInLeft = keyframes`
-  from { opacity: 0; transform: translateX(-16px); }
-  to   { opacity: 1; transform: translateX(0); }
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 `
-
-const fadeInRight = keyframes`
-  from { opacity: 0; transform: translateX(16px); }
-  to   { opacity: 1; transform: translateX(0); }
-`
-
-/* ── Layout ── */
 
 const Page = styled.div`
   height: 100%;
   overflow-y: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: var(--studio-bg-main);
 `
 
-const SplitContainer = styled.div`
+const Content = styled.div`
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100%;
+  padding: ${spacing['6xl']} ${spacing['2xl']} ${spacing['4xl']};
+`
+
+const Inner = styled.div`
   width: 100%;
-  max-width: 900px;
-  min-width: 600px;
-  gap: ${spacing['4xl']};
-  padding: ${spacing['5xl']} ${spacing['3xl']};
-  margin: 0 auto;
-`
-
-const LeftPanel = styled.div`
-  flex: 0 0 42%;
+  max-width: 480px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  animation: ${fadeInLeft} 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  gap: ${spacing['3xl']};
+  animation: ${fadeIn} 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 `
 
-const RightPanel = styled.div`
-  flex: 1;
+const ProjectsBox = styled.div`
+  border: 1px solid var(--studio-border);
+  border-radius: ${radii['3xl']};
+  overflow: hidden;
+`
+
+const ProjectsList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${spacing.lg};
-  justify-content: center;
-  animation: ${fadeInRight} 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
 `
 
-const SectionHeader = styled.div`
+const AddRow = styled.button`
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: ${spacing.md};
+  justify-content: center;
+  gap: ${spacing.sm};
+  width: 100%;
+  padding: ${spacing.md};
+  border: none;
+  border-top: 1px solid var(--studio-border);
+  background: transparent;
+  color: var(--studio-text-tertiary);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.12s ease;
+
+  &:hover {
+    background: var(--studio-bg-surface);
+    color: var(--studio-text-primary);
+  }
 `
 
-/* ── Page ── */
+const EmptyBox = styled.div`
+  padding: ${spacing['4xl']} ${spacing['2xl']};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${spacing.lg};
+  text-align: center;
+`
 
 export default function DashboardPage() {
   const navigate = useNavigate()
@@ -81,49 +93,47 @@ export default function DashboardPage() {
     navigate(projectHome(projectId))
   }
 
+  const hasProjects = projects.length > 0
+
   return (
     <Page>
-      <SplitContainer>
-        {/* ── Left: Brand Hero ── */}
-        <LeftPanel>
+      <Content>
+        <Inner>
           <HeroSection />
-        </LeftPanel>
 
-        {/* ── Right: Projects ── */}
-        <RightPanel>
-          <SectionHeader>
-            <Text variant="tiny" color="muted">Your projects</Text>
-            <Button variant="secondary" size="sm" onClick={() => setAddModalOpen(true)}>
-              <FolderPlus size={13} />
-              Add project
-            </Button>
-          </SectionHeader>
-
-          {projects.length === 0 ? (
-            <EmptyState
-              icon={<Sparkles />}
-              title="No projects yet"
-              description="Add your first project to start building with Claude."
-            >
-              <Button variant="primary" size="md" onClick={() => setAddModalOpen(true)} css={{ marginTop: spacing.md }}>
-                <FolderPlus size={14} />
-                Add your first project
-              </Button>
-            </EmptyState>
-          ) : (
-            <VStack gap="sm">
-              {projects.map((project) => (
-                <ProjectCard
-                  key={project.id}
-                  project={project}
-                  isActive={project.id === activeProject?.id}
-                  onSelect={() => handleSelect(project.id)}
-                />
-              ))}
-            </VStack>
-          )}
-        </RightPanel>
-      </SplitContainer>
+          <ProjectsBox>
+            {hasProjects ? (
+              <>
+                <ProjectsList>
+                  {projects.map((project) => (
+                    <ProjectCard
+                      key={project.id}
+                      project={project}
+                      isActive={project.id === activeProject?.id}
+                      onSelect={() => handleSelect(project.id)}
+                    />
+                  ))}
+                </ProjectsList>
+                <AddRow onClick={() => setAddModalOpen(true)}>
+                  <FolderPlus size={14} />
+                  Add project
+                </AddRow>
+              </>
+            ) : (
+              <EmptyBox>
+                <Text variant="title">No projects yet</Text>
+                <Text variant="body" color="muted" css={{ maxWidth: '280px' }}>
+                  Add your first project to start building with Claude.
+                </Text>
+                <Button variant="primary" size="md" onClick={() => setAddModalOpen(true)}>
+                  <FolderPlus size={14} />
+                  Add your first project
+                </Button>
+              </EmptyBox>
+            )}
+          </ProjectsBox>
+        </Inner>
+      </Content>
 
       <AddProjectModal open={addModalOpen} onClose={() => setAddModalOpen(false)} />
     </Page>

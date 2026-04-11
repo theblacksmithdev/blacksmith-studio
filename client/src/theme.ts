@@ -23,9 +23,9 @@ const config = defineConfig({
       '--studio-bg-hover-strong': '#d6d6d6',
       '--studio-bg-inset': '#f8f8f8',
 
-      /* Borders — solid hex, always visible */
-      '--studio-border': '#d0d0d0',
-      '--studio-border-hover': '#a0a0a0',
+      /* Borders — calm and subtle */
+      '--studio-border': 'rgba(0,0,0,0.08)',
+      '--studio-border-hover': 'rgba(0,0,0,0.16)',
 
       /* Text — high contrast, sharp hierarchy */
       '--studio-text-primary': '#1a1a1a',
@@ -54,7 +54,7 @@ const config = defineConfig({
 
       /* Code */
       '--studio-code-bg': '#f5f5f5',
-      '--studio-code-border': '#d0d0d0',
+      '--studio-code-border': 'rgba(0,0,0,0.12)',
 
       /* Utilities */
       '--studio-scrollbar': 'rgba(0,0,0,0.2)',
@@ -85,9 +85,9 @@ const config = defineConfig({
       '--studio-bg-hover-strong': '#383838',
       '--studio-bg-inset': '#0d0d0d',
 
-      /* Borders — solid, visible on dark */
-      '--studio-border': '#333333',
-      '--studio-border-hover': '#4a4a4a',
+      /* Borders — calm and subtle */
+      '--studio-border': 'rgba(255,255,255,0.08)',
+      '--studio-border-hover': 'rgba(255,255,255,0.16)',
 
       /* Text — bright and sharp */
       '--studio-text-primary': '#f5f5f5',
