@@ -78,6 +78,11 @@ export function getDatabase() {
     CREATE INDEX IF NOT EXISTS idx_tool_calls_message_id ON tool_calls(message_id);
     CREATE INDEX IF NOT EXISTS idx_settings_project_id ON settings(project_id);
 
+    CREATE TABLE IF NOT EXISTS global_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS agent_conversations (
       id TEXT PRIMARY KEY,
       project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,

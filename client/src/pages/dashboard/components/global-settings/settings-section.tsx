@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import styled from '@emotion/styled'
-import { Text, VStack, spacing, radii } from '@/components/shared/ui'
+import { Text, spacing } from '@/components/shared/ui'
 
 const Section = styled.div`
   padding: ${spacing.xl};
