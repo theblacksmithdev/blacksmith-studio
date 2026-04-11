@@ -8,12 +8,28 @@ interface ActivityEntry {
   timestamp: string
 }
 
+/** A single logged event for the agent inner view */
+export interface AgentLogEntry {
+  id: string
+  type: 'thinking' | 'message' | 'tool_use' | 'tool_result' | 'activity' | 'error' | 'done'
+  content: string
+  timestamp: string
+  /** Tool name for tool_use/tool_result entries */
+  toolName?: string
+  /** Tool input for tool_use entries */
+  toolInput?: Record<string, unknown>
+  /** Whether a message is still streaming */
+  isPartial?: boolean
+}
+
 interface AgentActivity {
   role: AgentRole
   status: 'idle' | 'thinking' | 'executing' | 'done' | 'error'
   activity: string | null
   lastEvent: AgentEvent | null
   history: ActivityEntry[]
+  /** Full event stream for the inner view */
+  eventLog: AgentLogEntry[]
 }
 
 interface ChatMessage {
@@ -126,9 +142,10 @@ export const useAgentStore = create<AgentState>((set) => ({
       activity: null,
       lastEvent: null,
       history: [],
+      eventLog: [],
     }
 
-    const updated = { ...current, lastEvent: event, history: [...current.history] }
+    const updated = { ...current, lastEvent: event, history: [...current.history], eventLog: [...current.eventLog] }
     const ts = event.timestamp ?? new Date().toISOString()
 
     if (event.data.type === 'status') {
@@ -137,17 +154,40 @@ export const useAgentStore = create<AgentState>((set) => ({
         updated.activity = event.data.message
         updated.history.push({ id: crypto.randomUUID(), text: event.data.message, status: event.data.status, timestamp: ts })
       }
+    } else if (event.data.type === 'thinking') {
+      updated.eventLog.push({ id: crypto.randomUUID(), type: 'thinking', content: event.data.content, timestamp: ts })
+    } else if (event.data.type === 'message') {
+      // For partial messages, update the last message entry if it exists
+      if (event.data.isPartial && updated.eventLog.length > 0) {
+        const last = updated.eventLog[updated.eventLog.length - 1]
+        if (last.type === 'message' && last.isPartial) {
+          updated.eventLog[updated.eventLog.length - 1] = { ...last, content: last.content + event.data.content }
+          activities.set(agentId, updated)
+          return { activities }
+        }
+      }
+      updated.eventLog.push({ id: crypto.randomUUID(), type: 'message', content: event.data.content, timestamp: ts, isPartial: event.data.isPartial })
+    } else if (event.data.type === 'tool_use') {
+      updated.eventLog.push({
+        id: crypto.randomUUID(), type: 'tool_use', content: event.data.toolName,
+        toolName: event.data.toolName, toolInput: event.data.input, timestamp: ts,
+      })
+    } else if (event.data.type === 'tool_result') {
+      updated.eventLog.push({ id: crypto.randomUUID(), type: 'tool_result', content: event.data.output, timestamp: ts })
     } else if (event.data.type === 'activity') {
       updated.activity = event.data.description
       updated.history.push({ id: crypto.randomUUID(), text: event.data.description, status: updated.status as any ?? 'executing', timestamp: ts })
+      updated.eventLog.push({ id: crypto.randomUUID(), type: 'activity', content: event.data.description, timestamp: ts })
     } else if (event.data.type === 'done') {
       updated.status = 'done'
       updated.activity = event.data.summary ?? 'Done'
       updated.history.push({ id: crypto.randomUUID(), text: event.data.summary ?? 'Completed', status: 'done', timestamp: ts })
+      updated.eventLog.push({ id: crypto.randomUUID(), type: 'done', content: event.data.summary ?? 'Completed', timestamp: ts })
     } else if (event.data.type === 'error') {
       updated.status = 'error'
       updated.activity = event.data.error
       updated.history.push({ id: crypto.randomUUID(), text: event.data.error, status: 'error', timestamp: ts })
+      updated.eventLog.push({ id: crypto.randomUUID(), type: 'error', content: event.data.error, timestamp: ts })
     }
 
     activities.set(agentId, updated)

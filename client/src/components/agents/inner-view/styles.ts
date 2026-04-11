@@ -1,0 +1,590 @@
+import styled from '@emotion/styled'
+import { css, keyframes } from '@emotion/react'
+
+/* ── Animations ── */
+
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to   { opacity: 1; }
+`
+
+const slideUp = keyframes`
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+`
+
+const shimmer = keyframes`
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+`
+
+const pulse = keyframes`
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+`
+
+/* ── Layout ── */
+
+export const Root = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--studio-bg-main);
+  animation: ${fadeIn} 0.15s ease;
+`
+
+/* ── Top bar ── */
+
+export const TopBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 24px;
+  height: 52px;
+  border-bottom: 1px solid var(--studio-border);
+  flex-shrink: 0;
+  background: var(--studio-bg-sidebar);
+`
+
+export const BackBtn = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 7px;
+  border: 1px solid var(--studio-border);
+  background: transparent;
+  color: var(--studio-text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.12s ease;
+  flex-shrink: 0;
+
+  &:hover {
+    border-color: var(--studio-border-hover);
+    color: var(--studio-text-primary);
+    background: var(--studio-bg-hover);
+  }
+`
+
+export const TopBarDivider = styled.div`
+  width: 1px;
+  height: 20px;
+  background: var(--studio-border);
+  flex-shrink: 0;
+`
+
+export const AgentHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+`
+
+export const AgentIcon = styled.div<{ $active: boolean }>`
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  ${({ $active }) => $active ? `
+    background: linear-gradient(135deg, rgba(16, 163, 127, 0.15), rgba(16, 163, 127, 0.05));
+    border: 1px solid rgba(16, 163, 127, 0.18);
+    color: var(--studio-green);
+  ` : `
+    background: var(--studio-bg-surface);
+    border: 1px solid var(--studio-border);
+    color: var(--studio-text-tertiary);
+  `}
+`
+
+export const AgentName = styled.div`
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--studio-text-primary);
+  letter-spacing: -0.015em;
+`
+
+export const AgentStatusText = styled.div<{ $status: string }>`
+  font-size: 10px;
+  font-weight: 450;
+  margin-top: 1px;
+  color: ${({ $status }) =>
+    $status === 'executing' || $status === 'thinking' ? 'var(--studio-green)'
+    : $status === 'error' ? 'var(--studio-error)'
+    : $status === 'done' ? 'var(--studio-text-secondary)'
+    : 'var(--studio-text-muted)'
+  };
+
+  ${({ $status }) => ($status === 'executing' || $status === 'thinking') && css`
+    background: linear-gradient(90deg, var(--studio-green) 0%, var(--studio-text-secondary) 50%, var(--studio-green) 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: ${shimmer} 2.5s ease-in-out infinite;
+  `}
+`
+
+export const TopBarStats = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+`
+
+export const StatPill = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--studio-text-muted);
+
+  span {
+    font-variant-numeric: tabular-nums;
+    color: var(--studio-text-secondary);
+  }
+`
+
+/* ── Content area ── */
+
+export const ContentArea = styled.div`
+  flex: 1;
+  display: flex;
+  min-height: 0;
+`
+
+/* ── Stream column ── */
+
+export const StreamColumn = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+`
+
+export const StreamHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border-bottom: 1px solid var(--studio-border);
+  flex-shrink: 0;
+`
+
+export const StreamTitle = styled.div`
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--studio-text-muted);
+`
+
+export const LiveDot = styled.span<{ $active: boolean }>`
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: ${({ $active }) => $active ? 'var(--studio-green)' : 'var(--studio-border-hover)'};
+  flex-shrink: 0;
+
+  ${({ $active }) => $active && css`
+    animation: ${pulse} 1.5s ease-in-out infinite;
+    box-shadow: 0 0 4px rgba(16, 163, 127, 0.4);
+  `}
+`
+
+export const StreamBody = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+
+  &::-webkit-scrollbar { width: 5px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: var(--studio-scrollbar); border-radius: 3px; }
+`
+
+export const EmptyState = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--studio-text-muted);
+  font-size: 12px;
+  letter-spacing: -0.005em;
+
+  svg { opacity: 0.4; }
+`
+
+/* ── Event entries ── */
+
+export const EventEntry = styled.div<{ $type: string }>`
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  transition: background 0.1s ease;
+  animation: ${slideUp} 0.15s ease;
+  position: relative;
+
+  &:hover {
+    background: var(--studio-bg-surface);
+    .event-time { opacity: 1; }
+  }
+`
+
+export const EventStripe = styled.div<{ $type: string }>`
+  width: 2px;
+  border-radius: 1px;
+  flex-shrink: 0;
+  align-self: stretch;
+  background: ${({ $type }) =>
+    $type === 'thinking' ? 'rgba(139, 92, 246, 0.35)'
+    : $type === 'tool_use' ? 'rgba(59, 130, 246, 0.35)'
+    : $type === 'tool_result' ? 'rgba(34, 197, 94, 0.25)'
+    : $type === 'error' ? 'rgba(239, 68, 68, 0.35)'
+    : $type === 'done' ? 'var(--studio-border-hover)'
+    : 'var(--studio-border)'
+  };
+`
+
+export const EventContent = styled.div`
+  flex: 1;
+  min-width: 0;
+`
+
+export const EventTopRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+`
+
+export const EventLabel = styled.div<{ $type: string }>`
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: ${({ $type }) =>
+    $type === 'thinking' ? '#8b5cf6'
+    : $type === 'tool_use' ? '#3b82f6'
+    : $type === 'tool_result' ? '#22c55e'
+    : $type === 'error' ? 'var(--studio-error)'
+    : $type === 'done' ? 'var(--studio-text-primary)'
+    : 'var(--studio-text-muted)'
+  };
+`
+
+export const EventTime = styled.span`
+  font-size: 9px;
+  color: var(--studio-text-muted);
+  margin-left: auto;
+  flex-shrink: 0;
+  opacity: 0.5;
+  transition: opacity 0.12s ease;
+  font-variant-numeric: tabular-nums;
+`
+
+export const EventText = styled.div<{ $mono?: boolean }>`
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--studio-text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  letter-spacing: -0.005em;
+
+  ${({ $mono }) => $mono && `
+    font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Menlo, monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    background: var(--studio-code-bg);
+    border: 1px solid var(--studio-code-border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    max-height: 220px;
+    overflow-y: auto;
+  `}
+`
+
+export const ToolBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 500;
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+  background: rgba(59, 130, 246, 0.07);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.1);
+`
+
+export const CollapsibleContent = styled.div<{ $open: boolean }>`
+  max-height: ${({ $open }) => $open ? '500px' : '0'};
+  overflow: hidden;
+  transition: max-height 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-top: ${({ $open }) => $open ? '6px' : '0'};
+`
+
+export const ToggleBtn = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border: none;
+  background: none;
+  padding: 3px 0;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--studio-text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.12s ease;
+  margin-top: 4px;
+
+  &:hover { color: var(--studio-text-secondary); }
+`
+
+/* ── Info panel (right sidebar) ── */
+
+export const InfoPanel = styled.div`
+  width: 300px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--studio-border);
+  background: var(--studio-bg-sidebar);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: var(--studio-scrollbar); border-radius: 3px; }
+`
+
+export const InfoHero = styled.div`
+  padding: 24px 20px;
+  border-bottom: 1px solid var(--studio-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+`
+
+export const HeroIconWrap = styled.div<{ $active: boolean }>`
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+
+  ${({ $active }) => $active ? `
+    background: linear-gradient(135deg, rgba(16, 163, 127, 0.15), rgba(16, 163, 127, 0.04));
+    border: 1px solid rgba(16, 163, 127, 0.15);
+    color: var(--studio-green);
+  ` : `
+    background: var(--studio-bg-surface);
+    border: 1px solid var(--studio-border);
+    color: var(--studio-text-tertiary);
+  `}
+`
+
+export const HeroTitle = styled.div`
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--studio-text-primary);
+  letter-spacing: -0.02em;
+`
+
+export const HeroDesc = styled.div`
+  font-size: 12px;
+  color: var(--studio-text-muted);
+  line-height: 1.6;
+  max-width: 240px;
+`
+
+export const HeroBadge = styled.div<{ $status: string }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 500;
+
+  ${({ $status }) => {
+    switch ($status) {
+      case 'executing':
+      case 'thinking':
+        return `background: rgba(16, 163, 127, 0.08); color: var(--studio-green); border: 1px solid rgba(16, 163, 127, 0.12);`
+      case 'done':
+        return `background: var(--studio-bg-hover); color: var(--studio-text-primary); border: 1px solid var(--studio-border);`
+      case 'error':
+        return `background: rgba(239, 68, 68, 0.06); color: var(--studio-error); border: 1px solid rgba(239, 68, 68, 0.1);`
+      default:
+        return `background: var(--studio-bg-surface); color: var(--studio-text-muted); border: 1px solid var(--studio-border);`
+    }
+  }}
+`
+
+export const HeroDot = styled.span<{ $status: string }>`
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: ${({ $status }) =>
+    $status === 'executing' || $status === 'thinking' ? 'var(--studio-green)'
+    : $status === 'done' ? 'var(--studio-accent)'
+    : $status === 'error' ? 'var(--studio-error)'
+    : 'var(--studio-text-muted)'
+  };
+`
+
+export const InfoSection = styled.div`
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--studio-border);
+
+  &:last-child { border-bottom: none; }
+`
+
+export const InfoSectionLabel = styled.div`
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--studio-text-muted);
+  margin-bottom: 12px;
+`
+
+export const InfoGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+`
+
+export const InfoMetric = styled.div`
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--studio-bg-main);
+  border: 1px solid var(--studio-border);
+`
+
+export const MetricValue = styled.div`
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--studio-text-primary);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+`
+
+export const MetricLabel = styled.div`
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--studio-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+`
+
+export const TeamCard = styled.div`
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid var(--studio-border);
+  background: var(--studio-bg-main);
+`
+
+export const TeamHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+`
+
+export const TeamIconWrap = styled.div`
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--studio-green-subtle);
+  color: var(--studio-green);
+  flex-shrink: 0;
+`
+
+export const TeamTitle = styled.div`
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--studio-text-primary);
+  letter-spacing: -0.01em;
+`
+
+export const TeamDesc = styled.div`
+  font-size: 11px;
+  color: var(--studio-text-muted);
+  line-height: 1.5;
+  margin-bottom: 12px;
+`
+
+export const TeamMemberList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+`
+
+export const TeamMember = styled.div<{ $isSelf: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: ${({ $isSelf }) => $isSelf ? 600 : 450};
+  color: ${({ $isSelf }) => $isSelf ? 'var(--studio-text-primary)' : 'var(--studio-text-secondary)'};
+  background: ${({ $isSelf }) => $isSelf ? 'var(--studio-bg-surface)' : 'transparent'};
+  transition: background 0.1s ease;
+
+  ${({ $isSelf }) => !$isSelf && `
+    &:hover { background: var(--studio-bg-surface); }
+  `}
+
+  svg { flex-shrink: 0; color: var(--studio-text-muted); }
+`
+
+export const SelfTag = styled.span`
+  font-size: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--studio-green);
+  margin-left: 2px;
+`
+
+export const MemberStatusDot = styled.span<{ $status: string }>`
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin-left: auto;
+  flex-shrink: 0;
+  background: ${({ $status }) =>
+    $status === 'executing' || $status === 'thinking' ? 'var(--studio-green)'
+    : $status === 'done' ? 'var(--studio-accent)'
+    : $status === 'error' ? 'var(--studio-error)'
+    : 'transparent'
+  };
+
+  ${({ $status }) => ($status === 'executing' || $status === 'thinking') && css`
+    box-shadow: 0 0 4px rgba(16, 163, 127, 0.3);
+  `}
+`

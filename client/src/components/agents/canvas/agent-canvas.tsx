@@ -45,10 +45,11 @@ const SettingsBtn = styled.button`
 interface AgentCanvasProps {
   agents: AgentInfo[]
   onNodeClick: (role: AgentRole) => void
+  onNodeDoubleClick?: (role: AgentRole) => void
   conversationId?: string
 }
 
-export function AgentCanvas({ agents, onNodeClick, conversationId }: AgentCanvasProps) {
+export function AgentCanvas({ agents, onNodeClick, onNodeDoubleClick, conversationId }: AgentCanvasProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const { canvas, update, reset } = useCanvasSettings()
 
@@ -58,8 +59,14 @@ export function AgentCanvas({ agents, onNodeClick, conversationId }: AgentCanvas
   const { edges, onEdgesChange } = useCanvasEdges(nodeIds, canvas)
 
   const handleNodeClick = useCallback((_: any, node: Node) => {
+    if (node.type === 'team') return // team nodes don't have detail
     onNodeClick(node.id as AgentRole)
   }, [onNodeClick])
+
+  const handleNodeDoubleClick = useCallback((_: any, node: Node) => {
+    if (node.type === 'team') return
+    onNodeDoubleClick?.(node.id as AgentRole)
+  }, [onNodeDoubleClick])
 
   return (
     <CanvasWrap>
@@ -76,6 +83,7 @@ export function AgentCanvas({ agents, onNodeClick, conversationId }: AgentCanvas
         onNodesChange={handleNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={handleNodeClick}
+        onNodeDoubleClick={handleNodeDoubleClick}
         nodeTypes={nodeTypes}
         fitView
         fitViewOptions={{ padding: 0.3 }}

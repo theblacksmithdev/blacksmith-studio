@@ -10,6 +10,7 @@ import { Tooltip } from '@/components/shared/tooltip'
 import { AgentCanvas } from '../canvas'
 import { AgentChat } from '../chat'
 import { AgentDetail } from '../detail'
+import { AgentInnerView } from '../inner-view'
 import { TaskDrawer } from '../drawer'
 import { useAgentEvents } from './use-agent-events'
 import { useConversation } from './use-conversation'
@@ -30,6 +31,7 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
   const [chatOpen, setChatOpen] = useState(false)
   const [chatClosing, setChatClosing] = useState(false)
   const [hasUnread, setHasUnread] = useState(false)
+  const [innerViewRole, setInnerViewRole] = useState<AgentRole | null>(null)
   const chatOpenRef = useRef(chatOpen)
   chatOpenRef.current = chatOpen
 
@@ -85,17 +87,46 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
     selectAgent(selectedAgent === role ? null : role)
   }, [selectedAgent, selectAgent])
 
+  const handleNodeDoubleClick = useCallback((role: AgentRole) => {
+    selectAgent(null)
+    setInnerViewRole(role)
+  }, [selectAgent])
+
+  const openInnerView = useCallback((role: AgentRole) => {
+    selectAgent(null)
+    setInnerViewRole(role)
+  }, [selectAgent])
+
+  const closeInnerView = useCallback(() => {
+    setInnerViewRole(null)
+  }, [])
+
   const selectedAgentInfo = agents.find((a) => a.role === selectedAgent)
+  const innerViewAgent = innerViewRole ? agents.find((a) => a.role === innerViewRole) : null
   const isProcessing = agents.some((a) => a.isRunning) || buildActive
   const hasTasks = dispatchTasks.length > 0
   const completedCount = dispatchTasks.filter((t) => t.status === 'done').length
   const hasRunning = dispatchTasks.some((t) => t.status === 'running')
 
+  // When inner view is open, show that instead of the canvas
+  if (innerViewAgent) {
+    return (
+      <Layout>
+        <AgentInnerView agent={innerViewAgent} onBack={closeInnerView} />
+      </Layout>
+    )
+  }
+
   return (
     <Layout>
       <CanvasPanel>
         <ReactFlowProvider>
-          <AgentCanvas agents={agents} onNodeClick={handleNodeClick} conversationId={currentConvId} />
+          <AgentCanvas
+            agents={agents}
+            onNodeClick={handleNodeClick}
+            onNodeDoubleClick={handleNodeDoubleClick}
+            conversationId={currentConvId}
+          />
         </ReactFlowProvider>
 
         {/* Floating buttons */}
@@ -125,7 +156,11 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
         )}
         {/* Agent detail panel within the canvas */}
         {selectedAgentInfo && (
-          <AgentDetail agent={selectedAgentInfo} onClose={() => selectAgent(null)} />
+          <AgentDetail
+            agent={selectedAgentInfo}
+            onClose={() => selectAgent(null)}
+            onOpenInnerView={() => openInnerView(selectedAgentInfo.role)}
+          />
         )}
       </CanvasPanel>
 

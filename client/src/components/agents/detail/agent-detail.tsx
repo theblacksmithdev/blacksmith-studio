@@ -1,5 +1,5 @@
 import { Box, Text } from '@chakra-ui/react'
-import { Layers, X, Clock } from 'lucide-react'
+import { Layers, X, Clock, Maximize2 } from 'lucide-react'
 import { useAgentStore } from '@/stores/agent-store'
 import { ROLE_ICONS } from '../shared/role-icons'
 import type { AgentInfo } from '@/api/types'
@@ -14,6 +14,7 @@ import {
 interface AgentDetailProps {
   agent: AgentInfo
   onClose: () => void
+  onOpenInnerView?: () => void
 }
 
 function formatTime(ts: string): string {
@@ -32,7 +33,7 @@ function statusLabel(status: string): string {
   }
 }
 
-export function AgentDetail({ agent, onClose }: AgentDetailProps) {
+export function AgentDetail({ agent, onClose, onOpenInnerView }: AgentDetailProps) {
   const activity = useAgentStore((s) => s.activities.get(agent.role))
   const Icon = ROLE_ICONS[agent.role] ?? Layers
   const status = activity?.status ?? 'idle'
@@ -53,6 +54,11 @@ export function AgentDetail({ agent, onClose }: AgentDetailProps) {
               {agent.title}
             </Text>
           </Box>
+          {onOpenInnerView && (
+            <CloseBtn onClick={onOpenInnerView} title="Open full view">
+              <Maximize2 size={13} />
+            </CloseBtn>
+          )}
           <CloseBtn onClick={onClose}>
             <X size={14} />
           </CloseBtn>
