@@ -12,6 +12,7 @@ import type {
   WorkflowEventCallback,
 } from '../types.js'
 import { createAgentRegistry } from '../roles/index.js'
+import { ArtifactManager } from '../artifacts.js'
 import { routePrompt, type RouteResult } from './router.js'
 import { dispatchWithPM, type DispatchPlan, type DispatchTask } from './pm-dispatcher.js'
 import { needsQualityGate, runQualityGate } from './quality-gate.js'
@@ -165,8 +166,12 @@ export class AgentManager {
       return { plan, executions }
     }
 
+    // Set up artifact directory for inter-agent handoffs
+    const artifacts = new ArtifactManager(options.projectRoot)
+    artifacts.ensureGitignore()
+
     // Multi-task: execute all tasks, then quality gate with the full change set
-    const executions = await this.executeTaskPlan(plan.tasks, options)
+    const executions = await this.executeTaskPlan(plan.tasks, options, artifacts)
 
     const anyCodeProduced = plan.tasks.some((t) => needsQualityGate(t.role))
     const allSucceeded = executions.every((e) => e.status === 'done')
@@ -296,9 +301,12 @@ export class AgentManager {
   private async executeTaskPlan(
     tasks: DispatchTask[],
     baseOptions: AgentExecuteOptions,
+    artifacts: ArtifactManager,
   ): Promise<AgentExecution[]> {
     const executions: AgentExecution[] = []
     const completed = new Map<string, AgentExecution>()
+    /** Maps taskId → project-relative artifact path */
+    const artifactPaths = new Map<string, string>()
 
     for (const task of tasks) {
       // Check all dependencies are satisfied
@@ -335,11 +343,27 @@ export class AgentManager {
       this.emitTaskStatus(task.id, 'running', task.title, task.role)
 
       try {
-        const execution = await this.executeDispatchedTask(task, baseOptions, completed)
+        const execution = await this.executeDispatchedTask(task, baseOptions, completed, artifactPaths)
         executions.push(execution)
         completed.set(task.id, execution)
 
         if (execution.status === 'done') {
+          // Write agent output as an artifact for downstream tasks
+          if (execution.responseText.trim()) {
+            try {
+              const artifactPath = artifacts.writeArtifact(
+                task.role,
+                task.id,
+                task.title,
+                execution.responseText,
+              )
+              artifactPaths.set(task.id, artifactPath)
+              this.emitPM(`Artifact saved: ${artifactPath}`)
+            } catch (err: any) {
+              console.warn(`[agent-manager] Failed to write artifact for ${task.id}:`, err.message)
+            }
+          }
+
           // Agent reports back to PM — PM marks done and announces next
           this.emitTaskStatus(task.id, 'done', task.title, task.role)
           const cost = execution.costUsd > 0 ? ` ($${execution.costUsd.toFixed(4)})` : ''
@@ -391,26 +415,39 @@ export class AgentManager {
 
   /**
    * Execute a single dispatched task.
-   * Passes previous task output as context so agents build on each other.
+   * Passes artifact file paths from dependency outputs so the agent can
+   * read the full context from disk (no truncation).
    */
   private async executeDispatchedTask(
     task: DispatchTask,
     baseOptions: AgentExecuteOptions,
     completed: Map<string, AgentExecution>,
+    artifactPaths: Map<string, string>,
   ): Promise<AgentExecution> {
-    // Build context from dependency outputs — pass actual response text
+    // Build context references — point the agent to artifact files on disk
     const contextParts: string[] = []
 
     for (const depId of task.dependsOn) {
       const depExec = completed.get(depId)
       if (!depExec || depExec.status !== 'done') continue
 
-      const responsePreview = depExec.responseText.length > 4000
-        ? depExec.responseText.slice(0, 4000) + '\n\n... (truncated)'
-        : depExec.responseText
+      const artifactPath = artifactPaths.get(depId)
 
-      if (responsePreview.trim()) {
-        contextParts.push(`## Output from previous task: ${depId} (${depExec.agentId})\n\n${responsePreview}`)
+      if (artifactPath) {
+        // Point to the artifact file — agent reads it with its file tools (no truncation)
+        contextParts.push(
+          `## Artifact from previous task (${depExec.agentId})\n\n` +
+          `The ${depExec.agentId.replace(/-/g, ' ')} has completed their work and produced an artifact.\n` +
+          `**You MUST read this file before starting your work:** \`${artifactPath}\`\n` +
+          `This file contains the full output, specifications, or deliverables from the previous step. ` +
+          `Your task should build directly on what's described in this artifact.`
+        )
+      } else if (depExec.responseText.trim()) {
+        // Fallback: inline a preview if artifact wasn't written
+        const preview = depExec.responseText.length > 4000
+          ? depExec.responseText.slice(0, 4000) + '\n\n... (truncated)'
+          : depExec.responseText
+        contextParts.push(`## Output from previous task (${depExec.agentId})\n\n${preview}`)
       }
     }
 

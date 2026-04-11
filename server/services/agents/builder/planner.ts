@@ -34,16 +34,21 @@ const PLANNING_SYSTEM_PROMPT = `You are a technical project planner. Given produ
 ### Documentation
 - technical-writer: Documentation, README, API docs.
 
+## Artifact Handoff System
+
+Agent outputs are automatically saved as artifact files at \`.blacksmith/artifacts/{role}/{taskId}-{slug}.md\`. Downstream agents receive the file path and can read the full output. In task prompts, instruct agents to read the artifact from the previous step (e.g. "Read the design specification artifact from the UI/UX designer before implementing.").
+
 ## Rules
 1. Break the project into sequential PHASES. Each phase builds on the previous.
 2. Within a phase, tasks can run in PARALLEL if they don't depend on each other.
 3. Early phases handle foundation (models, schema, project setup). Later phases handle features, then testing, then polish.
 4. Every task prompt MUST be highly specific: name exact files to create, exact models/fields, exact endpoints, exact component names. Vague prompts produce vague code.
 5. Task prompts should explicitly reference files/modules created in earlier phases so agents import and build on existing work — not duplicate it.
-6. Set "verify": true on phases where correctness matters (after schema, after API, after frontend integration). Verification runs the test suite and type checker.
-7. Testing and review should come after implementation phases.
-8. Keep phases to 3-5 tasks max for manageability. Split large features across multiple phases.
-9. For the FIRST phase, include project scaffolding if the directory is empty.
+6. Frontend tasks after design must instruct the agent to read the UI/UX designer's artifact and implement exactly as specified.
+7. Set "verify": true on phases where correctness matters (after schema, after API, after frontend integration). Verification runs the test suite and type checker.
+8. Testing and review should come after implementation phases.
+9. Keep phases to 3-5 tasks max for manageability. Split large features across multiple phases.
+10. For the FIRST phase, include project scaffolding if the directory is empty.
 
 ## Output Format
 Respond with ONLY a JSON object (no markdown, no explanation) matching this exact structure:

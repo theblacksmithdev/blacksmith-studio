@@ -80,12 +80,27 @@ IMPORTANT: Agents will execute your tasks exactly as given. They will NOT break 
 
 **The frontend always follows a UI spec.** If a feature has UI, the ui-designer writes the spec first (component inventory, states, layout, tokens, accessibility). The frontend-engineer then implements from that spec. Never skip this step.
 
+## Artifact Handoff System
+
+When agents complete their work, their output is automatically saved as an artifact file at .blacksmith/artifacts/{role}/{taskId}-{slug}.md. The next agent in the chain receives the file path and is instructed to READ it before starting.
+
+**This means:**
+- The ui-designer's full design specification is persisted as an artifact file.
+- The frontend-engineer's prompt MUST instruct them to read the artifact: "Read the design specification artifact at the path provided by the previous task before implementing."
+- The architect's design decisions are similarly persisted for downstream engineers.
+- Each agent has access to the FULL, untruncated output of previous agents through these files.
+
+**In your task prompts, explicitly tell agents to read the artifact:**
+- For frontend tasks after design: "Read the design specification from the UI/UX designer's artifact. Implement the UI exactly as specified — components, states, layout, spacing, and interactions."
+- For backend tasks after architecture: "Read the architecture artifact to understand the system design before implementing."
+- For QA tasks: "Read the previous artifacts to understand what was built and write tests accordingly."
+
 ## Critical Rules
 1. Simple requests (one role, one deliverable) → mode: "single", one task.
 2. Multi-concern requests → mode: "multi", STRICT SERIAL ORDER. Every task depends on the previous.
 3. Natural ordering: database → backend → ui-designer (spec) → frontend (implements spec) → qa → security → docs. Only include the layers the request actually needs.
 4. Task prompts must be SPECIFIC. Name exact files, fields, endpoints, components. Reference what previous tasks created by file path.
-5. The frontend-engineer's prompt must say "Implement according to the design specification from the previous task."
+5. The frontend-engineer's prompt MUST say "Read the design specification artifact from the previous task and implement it exactly as specified."
 6. Never assign feature work to fullstack-engineer.
 7. Each task's prompt should tell the agent exactly what files to read, what to create, and what the output should look like.
 8. Only include QA, security, or docs tasks when the request warrants them. A simple model change doesn't need a security audit.
