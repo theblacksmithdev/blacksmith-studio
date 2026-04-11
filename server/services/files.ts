@@ -88,3 +88,84 @@ export function readFileContent(
 
   return { content, language: languageMap[ext] || ext || 'text', size: stat.size }
 }
+
+/* ── Content Search ── */
+
+const TEXT_EXTENSIONS = new Set([
+  '.ts', '.tsx', '.js', '.jsx', '.py', '.json', '.md', '.css', '.scss',
+  '.html', '.yml', '.yaml', '.toml', '.sql', '.sh', '.txt', '.hbs',
+  '.env', '.cfg', '.ini', '.xml', '.svg', '.go', '.rs', '.java', '.rb',
+  '.php', '.c', '.cpp', '.h', '.vue', '.svelte',
+])
+
+const MAX_FILE_SIZE = 256 * 1024 // 256KB — skip large files
+
+export interface SearchResult {
+  path: string
+  name: string
+  matches: { line: number; text: string }[]
+}
+
+/**
+ * Search file contents in the project for a query string.
+ * Returns matching file paths with line-level matches (max 3 per file).
+ */
+export function searchFileContents(
+  projectRoot: string,
+  query: string,
+  maxResults = 20,
+): SearchResult[] {
+  if (!query || query.length < 2) return []
+
+  const results: SearchResult[] = []
+  const q = query.toLowerCase()
+
+  function walk(dir: string) {
+    if (results.length >= maxResults) return
+
+    let entries: fs.Dirent[]
+    try { entries = fs.readdirSync(dir, { withFileTypes: true }) }
+    catch { return }
+
+    for (const entry of entries) {
+      if (results.length >= maxResults) return
+      if (DEFAULT_IGNORE.has(entry.name)) continue
+      if (entry.name.startsWith('.') && DEFAULT_IGNORE.has(entry.name)) continue
+
+      const fullPath = path.join(dir, entry.name)
+
+      if (entry.isDirectory()) {
+        walk(fullPath)
+      } else {
+        const ext = path.extname(entry.name).toLowerCase()
+        if (!TEXT_EXTENSIONS.has(ext)) continue
+
+        try {
+          const stat = fs.statSync(fullPath)
+          if (stat.size > MAX_FILE_SIZE) continue
+
+          const content = fs.readFileSync(fullPath, 'utf-8')
+          const lines = content.split('\n')
+          const matches: { line: number; text: string }[] = []
+
+          for (let i = 0; i < lines.length && matches.length < 3; i++) {
+            if (lines[i].toLowerCase().includes(q)) {
+              matches.push({ line: i + 1, text: lines[i].trim().slice(0, 120) })
+            }
+          }
+
+          if (matches.length > 0) {
+            results.push({
+              path: path.relative(projectRoot, fullPath),
+              name: entry.name,
+              matches,
+            })
+          }
+        } catch { /* skip unreadable files */ }
+      }
+    }
+  }
+
+  walk(projectRoot)
+  return results
+}
