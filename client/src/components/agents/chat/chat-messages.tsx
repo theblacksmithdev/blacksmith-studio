@@ -168,8 +168,8 @@ const EmptyIcon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(16, 163, 127, 0.1), rgba(16, 163, 127, 0.03));
-  border: 1px solid rgba(16, 163, 127, 0.12);
+  background: linear-gradient(135deg, var(--studio-green-subtle), var(--studio-green-subtle));
+  border: 1px solid var(--studio-green-border);
   color: var(--studio-green);
 `
 

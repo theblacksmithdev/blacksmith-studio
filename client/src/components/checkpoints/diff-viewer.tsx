@@ -50,8 +50,8 @@ const DiffTable = styled.table`
 const DiffRow = styled.tr<{ type: 'add' | 'remove' | 'context' }>`
   background: ${(p) => {
     switch (p.type) {
-      case 'add': return 'rgba(16, 163, 127, 0.06)'
-      case 'remove': return 'rgba(239, 68, 68, 0.06)'
+      case 'add': return 'var(--studio-green-subtle)'
+      case 'remove': return 'var(--studio-error-subtle))'
       default: return 'transparent'
     }
   }};

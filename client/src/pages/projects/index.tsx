@@ -211,7 +211,7 @@ export default function ProjectsPage() {
                         color: 'var(--studio-text-muted)',
                         transition: 'all 0.1s ease',
                         flexShrink: 0,
-                        '&:hover': { color: 'var(--studio-error)', background: 'rgba(239,68,68,0.1)' },
+                        '&:hover': { color: 'var(--studio-error)', background: 'var(--studio-error-subtle)' },
                       }}
                     >
                       <Trash2 size={13} />

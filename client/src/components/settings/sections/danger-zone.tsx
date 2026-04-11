@@ -73,7 +73,7 @@ export function DangerZone() {
           headerExtra={
             <Box css={{
               width: '28px', height: '28px', borderRadius: '8px',
-              background: 'rgba(239,68,68,0.1)', display: 'flex',
+              background: 'var(--studio-error-subtle)', display: 'flex',
               alignItems: 'center', justifyContent: 'center', flexShrink: 0,
             }}>
               {modalMode === 'hard'
@@ -178,7 +178,7 @@ function DangerRow({ title, description, buttonLabel, onClick, destructive }: {
           color: destructive ? '#fff' : 'var(--studio-error)',
           fontSize: '13px', fontWeight: 500, cursor: 'pointer',
           transition: 'all 0.12s ease',
-          '&:hover': destructive ? { opacity: 0.9 } : { background: 'rgba(239,68,68,0.1)' },
+          '&:hover': destructive ? { opacity: 0.9 } : { background: 'var(--studio-error-subtle)' },
         }}
       >
         {buttonLabel}

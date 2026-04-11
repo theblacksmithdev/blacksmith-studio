@@ -155,7 +155,7 @@ export function CreateNew() {
           </HStack>
 
           {state === 'error' && (
-            <HStack gap={2} css={{ padding: '10px 14px', borderRadius: '8px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>
+            <HStack gap={2} css={{ padding: '10px 14px', borderRadius: '8px', background: 'var(--studio-error-subtle)', border: '1px solid rgba(239,68,68,0.2)' }}>
               <AlertCircle size={14} style={{ color: 'var(--studio-error)', flexShrink: 0 }} />
               <Text css={{ fontSize: '13px', color: 'var(--studio-error)' }}>{serverError}</Text>
             </HStack>

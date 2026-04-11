@@ -22,8 +22,8 @@ function Modal({ title, children, onClose, width = '480px', footer, headerExtra 
         position: 'fixed',
         inset: 0,
         zIndex: 400,
-        background: 'rgba(0, 0, 0, 0.6)',
-        backdropFilter: 'blur(6px)',
+        background: 'var(--studio-backdrop)',
+        backdropFilter: 'blur(12px)',
         animation: 'fadeIn 0.15s ease',
       }}
     >
@@ -32,10 +32,12 @@ function Modal({ title, children, onClose, width = '480px', footer, headerExtra 
         css={{
           width,
           maxHeight: '85vh',
-          background: 'var(--studio-bg-surface)',
+          background: 'var(--studio-glass)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
           borderRadius: '16px',
-          border: '1px solid var(--studio-border)',
-          boxShadow: '0 24px 80px rgba(0, 0, 0, 0.4)',
+          border: '1px solid var(--studio-glass-border)',
+          boxShadow: 'var(--studio-shadow-lg)',
           overflow: 'hidden',
         }}
       >

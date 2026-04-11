@@ -260,7 +260,7 @@ export function KvEditor({ pairs, onChange, keyPlaceholder = 'KEY', valuePlaceho
             css={{
               color: 'var(--studio-text-muted)',
               borderRadius: '4px',
-              '&:hover': { color: 'var(--studio-error)', background: 'rgba(239,68,68,0.08)' },
+              '&:hover': { color: 'var(--studio-error)', background: 'var(--studio-error-subtle)' },
             }}
           >
             <Trash2 size={12} />
@@ -318,7 +318,7 @@ interface BadgeProps {
 export function Badge({ children, variant = 'default' }: BadgeProps) {
   const colors = {
     default: { bg: 'var(--studio-bg-surface)', color: 'var(--studio-text-muted)', border: 'var(--studio-border)' },
-    error: { bg: 'rgba(239,68,68,0.08)', color: 'var(--studio-error)', border: 'rgba(239,68,68,0.12)' },
+    error: { bg: 'var(--studio-error-subtle)', color: 'var(--studio-error)', border: 'var(--studio-error-subtle)' },
     warning: { bg: 'rgba(245,158,11,0.08)', color: 'var(--studio-warning)', border: 'rgba(245,158,11,0.12)' },
   }
   const c = colors[variant]

@@ -46,8 +46,8 @@ export const HeroIcon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(16, 163, 127, 0.15), rgba(16, 163, 127, 0.04));
-  border: 1px solid rgba(16, 163, 127, 0.15);
+  background: linear-gradient(135deg, var(--studio-green-border), var(--studio-green-subtle));
+  border: 1px solid var(--studio-green-border);
   color: var(--studio-green);
   margin-bottom: 4px;
 `
@@ -222,7 +222,7 @@ export const DeleteBtn = styled.button`
   opacity: 0;
 
   .conv-card:hover & { opacity: 1; }
-  &:hover { background: rgba(239, 68, 68, 0.08); color: var(--studio-error); }
+  &:hover { background: var(--studio-error-subtle)); color: var(--studio-error); }
 `
 
 export const Sep = styled.span`

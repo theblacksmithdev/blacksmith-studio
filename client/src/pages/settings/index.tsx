@@ -59,7 +59,7 @@ export default function SettingsPage() {
           borderRadius: '7px',
           border: 'none',
           background: isActive
-            ? isDanger ? 'rgba(239,68,68,0.08)' : 'var(--studio-bg-hover)'
+            ? isDanger ? 'var(--studio-error-subtle)' : 'var(--studio-bg-hover)'
             : 'transparent',
           color: isActive
             ? isDanger ? 'var(--studio-error)' : 'var(--studio-text-primary)'
@@ -72,7 +72,7 @@ export default function SettingsPage() {
           transition: 'all 0.1s ease',
           '&:hover': {
             background: isActive
-              ? isDanger ? 'rgba(239,68,68,0.08)' : 'var(--studio-bg-hover)'
+              ? isDanger ? 'var(--studio-error-subtle)' : 'var(--studio-bg-hover)'
               : 'var(--studio-bg-surface)',
             color: isDanger
               ? isActive ? 'var(--studio-error)' : 'var(--studio-text-tertiary)'

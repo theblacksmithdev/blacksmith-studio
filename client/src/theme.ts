@@ -1,84 +1,139 @@
 import { createSystem, defaultConfig, defineConfig } from '@chakra-ui/react'
 
 /**
- * Blacksmith Studio — Light & Dark theme via CSS custom properties.
+ * Blacksmith Studio — Sharp, high-contrast theme with glassy surfaces.
  *
- * All colors are referenced as var(--studio-*) across components.
+ * Design language: Material Design 3 + glassmorphism.
+ * Solid hex borders, clear surface hierarchy, translucent overlays.
+ *
+ * All colors referenced as var(--studio-*) across components.
  * Toggle by adding/removing `class="dark"` on <html>.
  */
 
 const config = defineConfig({
   globalCss: {
     ':root': {
-      /* ── Light mode (default) ── */
+      /* ── Light mode ── */
+
+      /* Backgrounds — pure white base, cool-tinted surfaces */
       '--studio-bg-main': '#ffffff',
-      '--studio-bg-sidebar': '#f7f7f7',
-      '--studio-bg-surface': '#f2f2f2',
-      '--studio-bg-hover': '#eaeaea',
-      '--studio-bg-hover-strong': '#e0e0e0',
-      '--studio-bg-inset': '#fafafa',
+      '--studio-bg-sidebar': '#f5f5f5',
+      '--studio-bg-surface': '#eeeeee',
+      '--studio-bg-hover': '#e0e0e0',
+      '--studio-bg-hover-strong': '#d6d6d6',
+      '--studio-bg-inset': '#f8f8f8',
 
-      '--studio-border': 'rgba(0,0,0,0.12)',
-      '--studio-border-hover': 'rgba(0,0,0,0.22)',
+      /* Borders — solid hex, always visible */
+      '--studio-border': '#d0d0d0',
+      '--studio-border-hover': '#a0a0a0',
 
-      '--studio-text-primary': '#0a0a0a',
-      '--studio-text-secondary': '#525252',
-      '--studio-text-tertiary': '#7a7a7a',
-      '--studio-text-muted': '#a0a0a0',
+      /* Text — high contrast, sharp hierarchy */
+      '--studio-text-primary': '#1a1a1a',
+      '--studio-text-secondary': '#424242',
+      '--studio-text-tertiary': '#616161',
+      '--studio-text-muted': '#9e9e9e',
 
-      '--studio-accent': '#0a0a0a',
+      /* Accent */
+      '--studio-accent': '#1a1a1a',
       '--studio-accent-fg': '#ffffff',
+
+      /* Brand */
       '--studio-green': '#10a37f',
       '--studio-green-subtle': 'rgba(16,163,127,0.1)',
+      '--studio-green-border': 'rgba(16,163,127,0.25)',
 
-      '--studio-error': '#ef4444',
-      '--studio-warning': '#f59e0b',
-      '--studio-link': '#2563eb',
+      /* Semantic */
+      '--studio-error': '#d32f2f',
+      '--studio-error-subtle': 'rgba(211,47,47,0.08)',
+      '--studio-warning': '#f57c00',
+      '--studio-link': '#1565c0',
 
-      '--studio-code-bg': '#f7f7f7',
-      '--studio-code-border': 'rgba(0,0,0,0.06)',
+      /* Semantic accents for tool/thinking indicators */
+      '--studio-purple-subtle': 'rgba(139,92,246,0.06)',
+      '--studio-blue-subtle': 'rgba(59,130,246,0.06)',
 
-      '--studio-scrollbar': 'rgba(0,0,0,0.1)',
-      '--studio-scrollbar-hover': 'rgba(0,0,0,0.18)',
-      '--studio-selection': 'rgba(0,0,0,0.1)',
+      /* Code */
+      '--studio-code-bg': '#f5f5f5',
+      '--studio-code-border': '#d0d0d0',
 
-      '--studio-shadow': '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)',
+      /* Utilities */
+      '--studio-scrollbar': 'rgba(0,0,0,0.2)',
+      '--studio-scrollbar-hover': 'rgba(0,0,0,0.35)',
+      '--studio-selection': 'rgba(26,26,26,0.12)',
+
+      /* Shadows — layered, directional */
+      '--studio-shadow': '0 1px 3px rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.06)',
+      '--studio-shadow-lg': '0 8px 30px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
+
+      /* Glass surfaces */
+      '--studio-backdrop': 'rgba(0,0,0,0.45)',
+      '--studio-glass': 'rgba(255,255,255,0.72)',
+      '--studio-glass-border': 'rgba(255,255,255,0.4)',
+
+      /* Focus */
+      '--studio-ring-focus': '0 0 0 3px rgba(0,0,0,0.08)',
     },
 
     '.dark': {
-      /* ── Dark mode ── */
-      '--studio-bg-main': '#1a1a1a',
-      '--studio-bg-sidebar': '#141414',
-      '--studio-bg-surface': '#262626',
-      '--studio-bg-hover': '#333333',
-      '--studio-bg-hover-strong': '#3d3d3d',
-      '--studio-bg-inset': '#111111',
+      /* ── Dark mode — deep blacks, glassy elevated surfaces ── */
 
-      '--studio-border': 'rgba(255,255,255,0.1)',
-      '--studio-border-hover': 'rgba(255,255,255,0.2)',
+      /* Backgrounds */
+      '--studio-bg-main': '#121212',
+      '--studio-bg-sidebar': '#0a0a0a',
+      '--studio-bg-surface': '#1e1e1e',
+      '--studio-bg-hover': '#2c2c2c',
+      '--studio-bg-hover-strong': '#383838',
+      '--studio-bg-inset': '#0d0d0d',
 
-      '--studio-text-primary': '#f0f0f0',
-      '--studio-text-secondary': '#a8a8a8',
-      '--studio-text-tertiary': '#787878',
-      '--studio-text-muted': '#555555',
+      /* Borders — solid, visible on dark */
+      '--studio-border': '#333333',
+      '--studio-border-hover': '#4a4a4a',
 
-      '--studio-accent': '#f0f0f0',
-      '--studio-accent-fg': '#1a1a1a',
-      '--studio-green': '#10a37f',
-      '--studio-green-subtle': 'rgba(16,163,127,0.15)',
+      /* Text — bright and sharp */
+      '--studio-text-primary': '#f5f5f5',
+      '--studio-text-secondary': '#bdbdbd',
+      '--studio-text-tertiary': '#8a8a8a',
+      '--studio-text-muted': '#666666',
 
-      '--studio-error': '#ef4444',
-      '--studio-warning': '#f59e0b',
-      '--studio-link': '#7ab8f5',
+      /* Accent */
+      '--studio-accent': '#f5f5f5',
+      '--studio-accent-fg': '#121212',
 
-      '--studio-code-bg': '#141414',
-      '--studio-code-border': 'rgba(255,255,255,0.06)',
+      /* Brand */
+      '--studio-green': '#2dd4a8',
+      '--studio-green-subtle': 'rgba(45,212,168,0.12)',
+      '--studio-green-border': 'rgba(45,212,168,0.3)',
 
-      '--studio-scrollbar': 'rgba(255,255,255,0.1)',
-      '--studio-scrollbar-hover': 'rgba(255,255,255,0.2)',
-      '--studio-selection': 'rgba(255,255,255,0.15)',
+      /* Semantic */
+      '--studio-error': '#ef5350',
+      '--studio-error-subtle': 'rgba(239,83,80,0.1)',
+      '--studio-warning': '#ffa726',
+      '--studio-link': '#64b5f6',
 
-      '--studio-shadow': '0 1px 3px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.15)',
+      /* Semantic accents */
+      '--studio-purple-subtle': 'rgba(139,92,246,0.1)',
+      '--studio-blue-subtle': 'rgba(59,130,246,0.1)',
+
+      /* Code */
+      '--studio-code-bg': '#0d0d0d',
+      '--studio-code-border': '#333333',
+
+      /* Utilities */
+      '--studio-scrollbar': 'rgba(255,255,255,0.18)',
+      '--studio-scrollbar-hover': 'rgba(255,255,255,0.32)',
+      '--studio-selection': 'rgba(138,180,248,0.2)',
+
+      /* Shadows */
+      '--studio-shadow': '0 1px 3px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.25)',
+      '--studio-shadow-lg': '0 8px 30px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)',
+
+      /* Glass surfaces */
+      '--studio-backdrop': 'rgba(0,0,0,0.6)',
+      '--studio-glass': 'rgba(30,30,30,0.78)',
+      '--studio-glass-border': 'rgba(255,255,255,0.08)',
+
+      /* Focus */
+      '--studio-ring-focus': '0 0 0 3px rgba(255,255,255,0.06)',
     },
 
     body: {
@@ -105,9 +160,9 @@ const config = defineConfig({
       fontFamily: 'inherit',
       letterSpacing: 'inherit',
     },
-    '*::-webkit-scrollbar': { width: '6px', height: '6px' },
+    '*::-webkit-scrollbar': { width: '7px', height: '7px' },
     '*::-webkit-scrollbar-track': { background: 'transparent' },
-    '*::-webkit-scrollbar-thumb': { background: 'var(--studio-scrollbar)', borderRadius: '3px' },
+    '*::-webkit-scrollbar-thumb': { background: 'var(--studio-scrollbar)', borderRadius: '4px' },
     '*::-webkit-scrollbar-thumb:hover': { background: 'var(--studio-scrollbar-hover)' },
     '::selection': { background: 'var(--studio-selection)', color: 'var(--studio-text-primary)' },
 

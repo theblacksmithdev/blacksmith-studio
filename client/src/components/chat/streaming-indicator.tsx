@@ -27,8 +27,8 @@ export function StreamingIndicator({ partialMessage }: StreamingIndicatorProps) 
       <HStack gap={2} css={{ marginBottom: '8px' }}>
         <Box css={{
           width: '22px', height: '22px', borderRadius: '6px',
-          background: 'linear-gradient(135deg, rgba(16,163,127,0.15), rgba(16,163,127,0.05))',
-          border: '1px solid rgba(16,163,127,0.2)',
+          background: 'linear-gradient(135deg, var(--studio-green-border), var(--studio-green-subtle))',
+          border: '1px solid var(--studio-green-border)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0,
         }}>

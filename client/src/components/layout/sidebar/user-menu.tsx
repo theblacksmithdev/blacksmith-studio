@@ -108,7 +108,7 @@ const DangerItem = styled(MenuItem)`
   color: var(--studio-error);
 
   &:hover {
-    background: rgba(239, 68, 68, 0.08);
+    background: var(--studio-error-subtle));
     color: var(--studio-error);
   }
 `

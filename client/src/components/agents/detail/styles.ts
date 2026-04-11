@@ -55,8 +55,8 @@ export const IconBox = styled.div<{ $active: boolean }>`
   transition: all 0.2s ease;
 
   ${({ $active }) => $active ? `
-    background: linear-gradient(135deg, rgba(16, 163, 127, 0.15), rgba(16, 163, 127, 0.05));
-    border: 1px solid rgba(16, 163, 127, 0.2);
+    background: linear-gradient(135deg, var(--studio-green-border), var(--studio-green-subtle));
+    border: 1px solid var(--studio-green-border);
     color: var(--studio-green);
   ` : `
     background: var(--studio-bg-hover);
@@ -100,11 +100,11 @@ export const StatusBadge = styled.div<{ $status: string }>`
     switch ($status) {
       case 'executing':
       case 'thinking':
-        return `background: rgba(16, 163, 127, 0.08); color: var(--studio-green);`
+        return `background: var(--studio-green-subtle); color: var(--studio-green);`
       case 'done':
         return `background: var(--studio-bg-hover); color: var(--studio-text-primary);`
       case 'error':
-        return `background: rgba(239, 68, 68, 0.06); color: var(--studio-error);`
+        return `background: var(--studio-error-subtle)); color: var(--studio-error);`
       default:
         return `background: var(--studio-bg-surface); color: var(--studio-text-muted);`
     }

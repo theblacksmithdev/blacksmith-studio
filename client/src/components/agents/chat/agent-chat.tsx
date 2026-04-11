@@ -27,8 +27,8 @@ const BrandIcon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(16, 163, 127, 0.15), rgba(16, 163, 127, 0.04));
-  border: 1px solid rgba(16, 163, 127, 0.15);
+  background: linear-gradient(135deg, var(--studio-green-border), var(--studio-green-subtle));
+  border: 1px solid var(--studio-green-border);
   color: var(--studio-green);
   flex-shrink: 0;
 `

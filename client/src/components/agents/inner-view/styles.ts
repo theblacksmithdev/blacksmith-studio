@@ -97,8 +97,8 @@ export const AgentIcon = styled.div<{ $active: boolean }>`
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 
   ${({ $active }) => $active ? `
-    background: linear-gradient(135deg, rgba(16, 163, 127, 0.15), rgba(16, 163, 127, 0.05));
-    border: 1px solid rgba(16, 163, 127, 0.18);
+    background: linear-gradient(135deg, var(--studio-green-border), var(--studio-green-subtle));
+    border: 1px solid var(--studio-green-border);
     color: var(--studio-green);
   ` : `
     background: var(--studio-bg-surface);
@@ -254,8 +254,8 @@ export const EmptyIcon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(16, 163, 127, 0.1), rgba(16, 163, 127, 0.03));
-  border: 1px solid rgba(16, 163, 127, 0.1);
+  background: linear-gradient(135deg, var(--studio-green-subtle), var(--studio-green-subtle));
+  border: 1px solid var(--studio-green-subtle);
   color: var(--studio-green);
   margin-bottom: 4px;
 `
@@ -361,9 +361,9 @@ export const ThinkingBubble = styled.div`
   max-width: calc(100% - 36px);
   padding: 9px 14px;
   border-radius: 4px 16px 16px 16px;
-  background: rgba(139, 92, 246, 0.03);
+  background: var(--studio-purple-subtle);
   color: var(--studio-text-secondary);
-  border: 1px solid rgba(139, 92, 246, 0.08);
+  border: 1px solid var(--studio-purple-subtle);
   word-break: break-word;
   font-style: italic;
   letter-spacing: -0.005em;
@@ -396,8 +396,8 @@ export const SystemBubble = styled.div<{ $error?: boolean }>`
   gap: 5px;
   padding: 4px 12px;
   border-radius: 10px;
-  background: ${({ $error }) => $error ? 'rgba(239, 68, 68, 0.05)' : 'var(--studio-bg-surface)'};
-  border: 1px solid ${({ $error }) => $error ? 'rgba(239, 68, 68, 0.12)' : 'var(--studio-border)'};
+  background: ${({ $error }) => $error ? 'var(--studio-error-subtle))' : 'var(--studio-bg-surface)'};
+  border: 1px solid ${({ $error }) => $error ? 'var(--studio-error-subtle))' : 'var(--studio-border)'};
   color: ${({ $error }) => $error ? 'var(--studio-error)' : 'var(--studio-text-muted)'};
   font-size: 10px;
   font-weight: 450;
@@ -429,9 +429,9 @@ export const ToolIcon = styled.div<{ $result?: boolean }>`
   justify-content: center;
   flex-shrink: 0;
   margin-top: 1px;
-  background: ${({ $result }) => $result ? 'rgba(34, 197, 94, 0.05)' : 'rgba(59, 130, 246, 0.05)'};
+  background: ${({ $result }) => $result ? 'rgba(34, 197, 94, 0.05)' : 'var(--studio-blue-subtle)'};
   color: ${({ $result }) => $result ? '#22c55e' : '#3b82f6'};
-  border: 1px solid ${({ $result }) => $result ? 'rgba(34, 197, 94, 0.1)' : 'rgba(59, 130, 246, 0.1)'};
+  border: 1px solid ${({ $result }) => $result ? 'rgba(34, 197, 94, 0.1)' : 'var(--studio-blue-subtle)'};
 `
 
 export const ToolCard = styled.div`
@@ -620,8 +620,8 @@ export const HeroIconWrap = styled.div<{ $active: boolean }>`
   transition: all 0.2s ease;
 
   ${({ $active }) => $active ? `
-    background: linear-gradient(135deg, rgba(16, 163, 127, 0.15), rgba(16, 163, 127, 0.04));
-    border: 1px solid rgba(16, 163, 127, 0.15);
+    background: linear-gradient(135deg, var(--studio-green-border), var(--studio-green-subtle));
+    border: 1px solid var(--studio-green-border);
     color: var(--studio-green);
   ` : `
     background: var(--studio-bg-surface);
@@ -658,11 +658,11 @@ export const HeroBadge = styled.div<{ $status: string }>`
     switch ($status) {
       case 'executing':
       case 'thinking':
-        return `background: rgba(16, 163, 127, 0.08); color: var(--studio-green); border: 1px solid rgba(16, 163, 127, 0.12);`
+        return `background: var(--studio-green-subtle); color: var(--studio-green); border: 1px solid var(--studio-green-border);`
       case 'done':
         return `background: var(--studio-bg-hover); color: var(--studio-text-primary); border: 1px solid var(--studio-border);`
       case 'error':
-        return `background: rgba(239, 68, 68, 0.06); color: var(--studio-error); border: 1px solid rgba(239, 68, 68, 0.1);`
+        return `background: var(--studio-error-subtle)); color: var(--studio-error); border: 1px solid var(--studio-error-subtle);`
       default:
         return `background: var(--studio-bg-surface); color: var(--studio-text-muted); border: 1px solid var(--studio-border);`
     }
@@ -813,6 +813,6 @@ export const MemberStatusDot = styled.span<{ $status: string }>`
   };
 
   ${({ $status }) => ($status === 'executing' || $status === 'thinking') && css`
-    box-shadow: 0 0 4px rgba(16, 163, 127, 0.3);
+    box-shadow: 0 0 4px var(--studio-green-border);
   `}
 `

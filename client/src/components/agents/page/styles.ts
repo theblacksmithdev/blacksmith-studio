@@ -24,7 +24,7 @@ const FloatingBase = styled.button<{ $active?: boolean }>`
   gap: 6px;
   padding: 8px 14px;
   border-radius: 10px;
-  border: 1px solid ${({ $active }) => $active ? 'rgba(16, 163, 127, 0.3)' : 'var(--studio-border)'};
+  border: 1px solid ${({ $active }) => $active ? 'var(--studio-green-border)' : 'var(--studio-border)'};
   background: var(--studio-bg-surface);
   color: ${({ $active }) => $active ? 'var(--studio-green)' : 'var(--studio-text-secondary)'};
   font-size: 11px;
@@ -55,7 +55,7 @@ export const StopBtn = styled.button`
   padding: 8px 14px;
   border-radius: 10px;
   border: 1px solid rgba(239, 68, 68, 0.3);
-  background: rgba(239, 68, 68, 0.06);
+  background: var(--studio-error-subtle));
   color: var(--studio-error);
   font-size: 11px;
   font-weight: 500;
@@ -65,7 +65,7 @@ export const StopBtn = styled.button`
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
   &:hover {
-    background: rgba(239, 68, 68, 0.1);
+    background: var(--studio-error-subtle);
     border-color: rgba(239, 68, 68, 0.4);
   }
 `

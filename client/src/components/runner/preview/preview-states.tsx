@@ -42,7 +42,7 @@ const IconCircle = styled.div<{ variant?: 'default' | 'error' | 'warning' }>`
   justify-content: center;
   background: ${({ variant }) =>
     variant === 'error'
-      ? 'rgba(239,68,68,0.08)'
+      ? 'var(--studio-error-subtle)'
       : variant === 'warning'
         ? 'rgba(245,158,11,0.08)'
         : 'var(--studio-bg-surface)'};
@@ -54,7 +54,7 @@ const IconCircle = styled.div<{ variant?: 'default' | 'error' | 'warning' }>`
         : 'var(--studio-text-muted)'};
   border: 1px solid ${({ variant }) =>
     variant === 'error'
-      ? 'rgba(239,68,68,0.12)'
+      ? 'var(--studio-error-subtle)'
       : variant === 'warning'
         ? 'rgba(245,158,11,0.12)'
         : 'var(--studio-border)'};
@@ -273,9 +273,9 @@ const StatusBadge = styled.div`
   font-size: 11px;
   font-weight: 600;
   font-family: ${MONO_FONT};
-  background: rgba(239, 68, 68, 0.08);
+  background: var(--studio-error-subtle));
   color: var(--studio-error);
-  border: 1px solid rgba(239, 68, 68, 0.12);
+  border: 1px solid var(--studio-error-subtle));
 `
 
 interface PreviewErrorProps {

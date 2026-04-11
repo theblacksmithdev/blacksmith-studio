@@ -94,7 +94,7 @@ export function SessionCard({ session, isActive, onSelect, onDelete }: SessionCa
               color: 'var(--studio-text-muted)',
               cursor: 'pointer',
               transition: 'all 0.12s ease',
-              '&:hover': { color: 'var(--studio-error)', background: 'rgba(239,68,68,0.1)' },
+              '&:hover': { color: 'var(--studio-error)', background: 'var(--studio-error-subtle)' },
             }}
           >
             <Trash2 size={13} />

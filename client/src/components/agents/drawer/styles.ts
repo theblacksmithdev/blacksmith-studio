@@ -122,7 +122,7 @@ export const RoleTag = styled.span<{ $active: boolean }>`
   white-space: nowrap;
   margin-top: 2px;
 
-  background: ${({ $active }) => $active ? 'rgba(16, 163, 127, 0.08)' : 'var(--studio-bg-hover)'};
+  background: ${({ $active }) => $active ? 'var(--studio-green-subtle)' : 'var(--studio-bg-hover)'};
   color: ${({ $active }) => $active ? 'var(--studio-green)' : 'var(--studio-text-muted)'};
 `
 
@@ -139,7 +139,7 @@ export const ModelTag = styled.span<{ $model: string }>`
 
   background: ${({ $model }) =>
     $model === 'premium' ? 'rgba(168, 85, 247, 0.08)'
-    : $model === 'fast' ? 'rgba(59, 130, 246, 0.08)'
+    : $model === 'fast' ? 'var(--studio-blue-subtle)'
     : 'var(--studio-bg-hover)'
   };
   color: ${({ $model }) =>

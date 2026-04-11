@@ -23,11 +23,9 @@ const Strip = styled.div`
   gap: 6px;
   padding: 6px 8px;
   border-radius: 14px;
-  background: var(--studio-bg-sidebar);
-  border: 1px solid var(--studio-border-hover);
-  box-shadow:
-    var(--studio-shadow),
-    0 8px 32px rgba(0, 0, 0, 0.12);
+  background: var(--studio-glass);
+  border: 1px solid var(--studio-glass-border);
+  box-shadow: var(--studio-shadow-lg);
   backdrop-filter: blur(20px);
   animation: ${panelIn} 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 `

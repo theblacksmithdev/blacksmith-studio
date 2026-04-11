@@ -203,7 +203,7 @@ export function FolderPicker({ open, onClose, onSelect }: FolderPickerProps) {
                 <Box css={{
                   display: 'flex', alignItems: 'center', gap: '5px',
                   padding: '3px 8px', borderRadius: '5px',
-                  background: 'rgba(16,163,127,0.08)', border: '1px solid rgba(16,163,127,0.15)',
+                  background: 'var(--studio-green-subtle)', border: '1px solid var(--studio-green-border)',
                   fontSize: '11px', fontWeight: 500, color: 'var(--studio-green)',
                 }}>
                   <Anvil size={11} /> Blacksmith

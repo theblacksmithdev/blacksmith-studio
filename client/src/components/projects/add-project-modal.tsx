@@ -508,7 +508,7 @@ function CreateStep({ onClose }: { onClose: () => void }) {
             </Box>
 
             {state === 'success' && (
-              <HStack gap={2} css={{ padding: '10px 12px', borderRadius: '8px', background: 'rgba(16,163,127,0.1)', border: '1px solid rgba(16,163,127,0.2)' }}>
+              <HStack gap={2} css={{ padding: '10px 12px', borderRadius: '8px', background: 'var(--studio-green-subtle)', border: '1px solid var(--studio-green-border)' }}>
                 <Check size={14} style={{ color: 'var(--studio-green)', flexShrink: 0 }} />
                 <Text css={{ fontSize: '13px', color: 'var(--studio-green)', fontWeight: 500 }}>Project created! Redirecting...</Text>
               </HStack>
@@ -585,7 +585,7 @@ function CreateStep({ onClose }: { onClose: () => void }) {
             </HStack>
 
             {state === 'error' && (
-              <HStack gap={2} css={{ padding: '10px 12px', borderRadius: '8px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>
+              <HStack gap={2} css={{ padding: '10px 12px', borderRadius: '8px', background: 'var(--studio-error-subtle)', border: '1px solid rgba(239,68,68,0.2)' }}>
                 <AlertCircle size={14} style={{ color: 'var(--studio-error)', flexShrink: 0 }} />
                 <Text css={{ fontSize: '12px', color: 'var(--studio-error)' }}>{serverError}</Text>
               </HStack>
@@ -727,7 +727,7 @@ function CloneStep({ onClose }: { onClose: () => void }) {
             </Box>
 
             {state === 'success' && (
-              <HStack gap={2} css={{ padding: '10px 12px', borderRadius: '8px', background: 'rgba(16,163,127,0.1)', border: '1px solid rgba(16,163,127,0.2)' }}>
+              <HStack gap={2} css={{ padding: '10px 12px', borderRadius: '8px', background: 'var(--studio-green-subtle)', border: '1px solid var(--studio-green-border)' }}>
                 <Check size={14} style={{ color: 'var(--studio-green)', flexShrink: 0 }} />
                 <Text css={{ fontSize: '13px', color: 'var(--studio-green)', fontWeight: 500 }}>Cloned! Redirecting...</Text>
               </HStack>
@@ -795,7 +795,7 @@ function CloneStep({ onClose }: { onClose: () => void }) {
             )}
 
             {state === 'error' && (
-              <HStack gap={2} css={{ padding: '10px 12px', borderRadius: '8px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>
+              <HStack gap={2} css={{ padding: '10px 12px', borderRadius: '8px', background: 'var(--studio-error-subtle)', border: '1px solid rgba(239,68,68,0.2)' }}>
                 <AlertCircle size={14} style={{ color: 'var(--studio-error)', flexShrink: 0 }} />
                 <Text css={{ fontSize: '12px', color: 'var(--studio-error)' }}>{serverError}</Text>
               </HStack>

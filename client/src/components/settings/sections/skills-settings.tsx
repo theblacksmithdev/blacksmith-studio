@@ -171,7 +171,7 @@ export function SkillsSettings() {
                   onClick={() => setModal({ type: 'delete', name: skill.name })}
                   css={{
                     color: 'var(--studio-text-muted)', borderRadius: '6px',
-                    '&:hover': { background: 'rgba(239,68,68,0.08)', color: 'var(--studio-error)' },
+                    '&:hover': { background: 'var(--studio-error-subtle)', color: 'var(--studio-error)' },
                   }}
                 >
                   <Trash2 size={13} />

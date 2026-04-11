@@ -150,7 +150,7 @@ const IconBtn = styled.button<{ danger?: boolean; disabled?: boolean }>`
 
   &:hover {
     ${({ disabled, danger }) => !disabled && `
-      background: ${danger ? 'rgba(239,68,68,0.08)' : 'var(--studio-bg-hover)'};
+      background: ${danger ? 'var(--studio-error-subtle)' : 'var(--studio-bg-hover)'};
       color: ${danger ? 'var(--studio-error)' : 'var(--studio-text-primary)'};
     `}
   }

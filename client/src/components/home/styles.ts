@@ -173,11 +173,11 @@ export const CardIcon = styled.div<{ variant: 'chat' | 'team' }>`
   background: ${({ variant }) =>
     variant === 'chat'
       ? 'var(--studio-bg-surface)'
-      : 'linear-gradient(135deg, rgba(16,163,127,0.15), rgba(16,163,127,0.05))'};
+      : 'linear-gradient(135deg, var(--studio-green-border), var(--studio-green-subtle))'};
   border: 1px solid ${({ variant }) =>
     variant === 'chat'
       ? 'var(--studio-border)'
-      : 'rgba(16,163,127,0.12)'};
+      : 'var(--studio-green-border)'};
   color: ${({ variant }) =>
     variant === 'chat'
       ? 'var(--studio-text-primary)'
@@ -347,7 +347,7 @@ export const RecentIcon = styled.div<{ variant: 'chat' | 'team' }>`
   justify-content: center;
   background: ${({ variant }) =>
     variant === 'team'
-      ? 'linear-gradient(135deg, rgba(16,163,127,0.1), rgba(16,163,127,0.04))'
+      ? 'linear-gradient(135deg, var(--studio-green-subtle), var(--studio-green-subtle))'
       : 'var(--studio-bg-surface)'};
   color: ${({ variant }) =>
     variant === 'team' ? 'var(--studio-green)' : 'var(--studio-text-tertiary)'};
@@ -398,7 +398,7 @@ export const TypeBadge = styled.span<{ variant: 'chat' | 'team' }>`
   padding: 1px 6px;
   border-radius: 4px;
   background: ${({ variant }) =>
-    variant === 'team' ? 'rgba(16,163,127,0.1)' : 'var(--studio-bg-surface)'};
+    variant === 'team' ? 'var(--studio-green-subtle)' : 'var(--studio-bg-surface)'};
   color: ${({ variant }) =>
     variant === 'team' ? 'var(--studio-green)' : 'var(--studio-text-tertiary)'};
 `

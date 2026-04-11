@@ -2,7 +2,7 @@ import styled from '@emotion/styled'
 import { css, keyframes } from '@emotion/react'
 
 const glow = keyframes`
-  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 163, 127, 0.2); }
+  0%, 100% { box-shadow: 0 0 0 0 var(--studio-green-border); }
   50% { box-shadow: 0 0 0 6px rgba(16, 163, 127, 0); }
 `
 
@@ -18,7 +18,7 @@ export const NodeWrapper = styled.div<{ $status: string; $selected: boolean; $is
   background: var(--studio-bg-surface);
   border: 1px solid ${({ $status, $selected }) =>
     $selected ? 'var(--studio-border-hover)'
-    : $status === 'executing' || $status === 'thinking' ? 'rgba(16, 163, 127, 0.3)'
+    : $status === 'executing' || $status === 'thinking' ? 'var(--studio-green-border)'
     : $status === 'done' ? 'var(--studio-border-hover)'
     : $status === 'error' ? 'rgba(239, 68, 68, 0.3)'
     : 'var(--studio-border)'
@@ -54,8 +54,8 @@ export const IconWrap = styled.div<{ $active: boolean; $isCenter: boolean }>`
   transition: all 0.15s ease;
 
   ${({ $active }) => $active ? `
-    background: linear-gradient(135deg, rgba(16, 163, 127, 0.15), rgba(16, 163, 127, 0.05));
-    border: 1px solid rgba(16, 163, 127, 0.2);
+    background: linear-gradient(135deg, var(--studio-green-border), var(--studio-green-subtle));
+    border: 1px solid var(--studio-green-border);
     color: var(--studio-green);
   ` : `
     background: var(--studio-bg-hover);
