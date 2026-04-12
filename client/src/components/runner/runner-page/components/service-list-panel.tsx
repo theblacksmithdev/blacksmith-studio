@@ -1,34 +1,20 @@
 import { useMemo } from 'react'
 import { Flex } from '@chakra-ui/react'
-import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { Play, Square, Plus } from 'lucide-react'
 import { useRunnerStore, selectServices, selectIsAnyActive, isServiceActive, type RunnerService } from '@/stores/runner-store'
 import { useRunnerConfigs } from '@/hooks/use-runner-configs'
-import { runLogsPath, runServicePath } from '@/router/paths'
 import { getServiceIcon, StatusDot } from '../../runner-primitives'
 import { RunnerConfigDrawer } from '../../config-drawer'
 import { DiagnoseDrawer } from '../../logs/components'
-import { useServiceActions } from '../hooks'
+import { useActiveService, useServiceActions } from '../hooks'
 import { ServiceMenu } from './service-menu'
 import { Text, IconButton, Tooltip, Badge, Skeleton, ConfirmDialog, spacing, radii } from '@/components/shared/ui'
 
 export function ServiceListPanel() {
-  const navigate = useNavigate()
-  const { projectId = '' } = useParams<{ projectId: string }>()
-  const location = useLocation()
-
-  // Extract configId from URL: /:projectId/run/logs/:configId
-  const segments = location.pathname.split('/')
-  const logsIdx = segments.indexOf('logs')
-  const selectedId = logsIdx !== -1 && segments[logsIdx + 1] ? segments[logsIdx + 1] : null
-
+  const { activeId, selectService, isSelected } = useActiveService()
   const { configs, isLoading: configsLoading } = useRunnerConfigs()
   const liveServices = useRunnerStore(selectServices)
   const anyActive = useRunnerStore(selectIsAnyActive)
-
-  const selectService = (id: string | null) => {
-    navigate(id ? runServicePath(projectId, id) : runLogsPath(projectId))
-  }
 
   const {
     modalConfig, setModalConfig,
@@ -36,7 +22,7 @@ export function ServiceListPanel() {
     diagnoseDrawer, setDiagnoseDrawer,
     handleSave, handleDelete, handleDiagnose,
     start, stop, startAll, stopAll,
-  } = useServiceActions(selectedId)
+  } = useServiceActions()
 
   const services: RunnerService[] = useMemo(() =>
     configs.map((cfg) => {
@@ -52,6 +38,8 @@ export function ServiceListPanel() {
     }),
     [configs, liveServices],
   )
+
+  const isAllSelected = activeId === null
 
   return (
     <Flex direction="column" css={{ height: '100%', background: 'var(--studio-bg-sidebar)' }}>
@@ -91,7 +79,7 @@ export function ServiceListPanel() {
             padding: `${spacing.sm} ${spacing.sm}`,
             borderRadius: radii.md,
             border: 'none',
-            background: selectedId === null ? 'var(--studio-bg-hover)' : 'transparent',
+            background: isAllSelected ? 'var(--studio-bg-hover)' : 'transparent',
             cursor: 'pointer',
             fontFamily: 'inherit',
             textAlign: 'left',
@@ -100,7 +88,7 @@ export function ServiceListPanel() {
             '&:hover': { background: 'var(--studio-bg-surface)' },
           }}
         >
-          <Text variant="bodySmall" css={{ fontWeight: selectedId === null ? 500 : 400, flex: 1 }}>All Logs</Text>
+          <Text variant="bodySmall" css={{ fontWeight: isAllSelected ? 500 : 400, flex: 1 }}>All Logs</Text>
           {services.length > 0 && <Badge variant="default" size="sm">{services.length}</Badge>}
         </Flex>
 
@@ -108,7 +96,7 @@ export function ServiceListPanel() {
         {services.map((svc) => {
           const Icon = getServiceIcon(svc.icon)
           const active = isServiceActive(svc.status)
-          const isSelected = selectedId === svc.id
+          const selected = isSelected(svc.id)
           const config = configs.find((c) => c.id === svc.id)
 
           return (
@@ -120,13 +108,13 @@ export function ServiceListPanel() {
               css={{
                 padding: `${spacing.sm} ${spacing.sm}`,
                 borderRadius: radii.md,
-                background: isSelected ? 'var(--studio-bg-hover)' : 'transparent',
+                background: selected ? 'var(--studio-bg-hover)' : 'transparent',
                 cursor: 'pointer',
                 textAlign: 'left',
                 width: '100%',
                 transition: 'background 0.1s ease',
                 '&:hover': {
-                  background: isSelected ? 'var(--studio-bg-hover)' : 'var(--studio-bg-surface)',
+                  background: selected ? 'var(--studio-bg-hover)' : 'var(--studio-bg-surface)',
                   '& .svc-actions': { opacity: 1 },
                 },
               }}
@@ -135,7 +123,7 @@ export function ServiceListPanel() {
               <Icon size={13} style={{ color: 'var(--studio-text-muted)', flexShrink: 0 }} />
 
               <Flex direction="column" css={{ flex: 1, minWidth: 0 }}>
-                <Text variant="bodySmall" css={{ fontWeight: isSelected ? 500 : 400 }}>
+                <Text variant="bodySmall" css={{ fontWeight: selected ? 500 : 400 }}>
                   {svc.name}
                 </Text>
                 <Text variant="tiny" color="muted">

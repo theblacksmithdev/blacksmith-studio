@@ -2,8 +2,6 @@ import { useState } from 'react'
 import styled from '@emotion/styled'
 import { Trash2, ArrowDown, Search, Clock, X } from 'lucide-react'
 
-export type LogFilter = 'all' | string
-
 const Bar = styled.div`
   display: flex;
   align-items: center;
@@ -98,8 +96,8 @@ const ClearSearchBtn = styled.button`
 `
 
 interface LogsToolbarProps {
-  filter: LogFilter
-  onFilterChange: (filter: LogFilter) => void
+  activeConfigId: string | null
+  onSelectService: (id: string | null) => void
   serviceNames: { id: string; name: string }[]
   count: number
   autoScroll: boolean
@@ -114,7 +112,8 @@ interface LogsToolbarProps {
 }
 
 export function LogsToolbar({
-  filter, onFilterChange, serviceNames, count, autoScroll, onScrollToBottom, onClear,
+  activeConfigId, onSelectService, serviceNames,
+  count, autoScroll, onScrollToBottom, onClear,
   searchTerm, onSearchChange, showTimestamps, onToggleTimestamps, trailing,
 }: LogsToolbarProps) {
   const [searchOpen, setSearchOpen] = useState(!!searchTerm)
@@ -126,12 +125,12 @@ export function LogsToolbar({
 
   return (
     <Bar>
-      <FilterBtn active={filter === 'all'} onClick={() => onFilterChange('all')}>All</FilterBtn>
+      <FilterBtn active={activeConfigId === null} onClick={() => onSelectService(null)}>All</FilterBtn>
       {serviceNames.map((svc) => (
         <FilterBtn
           key={svc.id}
-          active={filter === svc.id}
-          onClick={() => onFilterChange(svc.id)}
+          active={activeConfigId === svc.id}
+          onClick={() => onSelectService(svc.id)}
         >
           {svc.name}
         </FilterBtn>

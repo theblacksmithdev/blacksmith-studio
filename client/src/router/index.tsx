@@ -46,9 +46,8 @@ export const router = createHashRouter([
         path: 'run',
         element: <RunnerPage />,
         children: [
-          { index: true, element: <Navigate to="logs" replace /> },
-          { path: 'logs', element: <RunnerLogsPage /> },
-          { path: 'logs/:configId', element: <RunnerLogsPage /> },
+          { index: true, element: <Navigate to="all" replace /> },
+          { path: ':configId', element: <RunnerLogsPage /> },
         ],
       },
       { path: 'skills', element: <SkillsBrowserPage /> },

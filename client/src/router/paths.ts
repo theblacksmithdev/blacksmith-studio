@@ -10,8 +10,7 @@ export const Path = {
   Chat: '/:projectId/chat/:sessionId',
   Code: '/:projectId/code',
   Run: '/:projectId/run',
-  RunLogs: '/:projectId/run/logs',
-  RunService: '/:projectId/run/logs/:configId',
+  RunService: '/:projectId/run/:configId',
   Templates: '/:projectId/templates',
   Activity: '/:projectId/activity',
   Settings: '/:projectId/settings',
@@ -45,12 +44,8 @@ export function runPath(projectId: string) {
   return `/${projectId}/run`
 }
 
-export function runLogsPath(projectId: string) {
-  return `/${projectId}/run/logs`
-}
-
 export function runServicePath(projectId: string, configId: string) {
-  return `/${projectId}/run/logs/${configId}`
+  return `/${projectId}/run/${configId}`
 }
 
 export function templatesPath(projectId: string) {

@@ -1,11 +1,10 @@
 import { useState, useCallback } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
 import { useRunnerStore } from '@/stores/runner-store'
 import { useRunnerConfigs, useAddRunnerConfig, useUpdateRunnerConfig, useRemoveRunnerConfig } from '@/hooks/use-runner-configs'
 import { useRunner } from '@/hooks/use-runner'
 import { useSessions } from '@/hooks/use-sessions'
-import { runLogsPath } from '@/router/paths'
 import type { RunnerConfigData } from '@/api/types'
+import { useActiveService } from './use-active-service'
 
 export interface DiagnoseState {
   sessionId: string
@@ -13,9 +12,8 @@ export interface DiagnoseState {
   title: string
 }
 
-export function useServiceActions(selectedId: string | null) {
-  const navigate = useNavigate()
-  const { projectId = '' } = useParams<{ projectId: string }>()
+export function useServiceActions() {
+  const { activeId, selectService } = useActiveService()
   const { configs } = useRunnerConfigs()
   const addConfig = useAddRunnerConfig()
   const updateConfig = useUpdateRunnerConfig()
@@ -40,11 +38,9 @@ export function useServiceActions(selectedId: string | null) {
     if (!deleteTarget) return
     stop(deleteTarget.id)
     removeConfig.mutate(deleteTarget.id)
-    if (selectedId === deleteTarget.id) {
-      navigate(runLogsPath(projectId))
-    }
+    if (activeId === deleteTarget.id) selectService(null)
     setDeleteTarget(null)
-  }, [deleteTarget, stop, removeConfig, selectedId, navigate])
+  }, [deleteTarget, stop, removeConfig, activeId, selectService])
 
   const handleDiagnose = useCallback(async (svcId: string) => {
     const config = configs.find((c) => c.id === svcId)
@@ -79,9 +75,7 @@ export function useServiceActions(selectedId: string | null) {
     modalConfig, setModalConfig,
     deleteTarget, setDeleteTarget,
     diagnoseDrawer, setDiagnoseDrawer,
-    handleSave,
-    handleDelete,
-    handleDiagnose,
+    handleSave, handleDelete, handleDiagnose,
     start, stop, startAll, stopAll,
   }
 }

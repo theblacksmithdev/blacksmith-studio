@@ -1,23 +1,31 @@
+import { useMemo } from 'react'
 import { Flex, Box } from '@chakra-ui/react'
-import { useRunnerStore } from '@/stores/runner-store'
+import { useRunnerStore, selectServices } from '@/stores/runner-store'
 import { spacing } from '@/components/shared/ui'
 import { MONO_FONT } from '../runner-primitives'
 import { LogLine, LogsToolbar, LogsEmpty } from './components'
 import { useFilteredLogs, useAutoScroll } from './hooks'
 
 interface RunnerLogsProps {
-  externalFilter?: string | null
+  activeConfigId: string | null
+  onSelectService: (id: string | null) => void
   toolbarTrailing?: React.ReactNode
 }
 
-export function RunnerLogs({ externalFilter, toolbarTrailing }: RunnerLogsProps) {
+export function RunnerLogs({ activeConfigId, onSelectService, toolbarTrailing }: RunnerLogsProps) {
   const clearLogs = useRunnerStore((s) => s.clearLogs)
+  const services = useRunnerStore(selectServices)
+
+  const serviceNames = useMemo(
+    () => services.map((svc) => ({ id: svc.id, name: svc.name })),
+    [services],
+  )
 
   const {
     logs, filteredLogs,
-    filter, setFilter, searchTerm, setSearchTerm,
-    showTimestamps, toggleTimestamps, serviceNames,
-  } = useFilteredLogs(externalFilter)
+    searchTerm, setSearchTerm,
+    showTimestamps, toggleTimestamps,
+  } = useFilteredLogs(activeConfigId)
 
   const { bottomRef, containerRef, autoScroll, handleScroll, scrollToBottom } =
     useAutoScroll([filteredLogs])
@@ -25,8 +33,8 @@ export function RunnerLogs({ externalFilter, toolbarTrailing }: RunnerLogsProps)
   return (
     <Flex direction="column" css={{ height: '100%' }}>
       <LogsToolbar
-        filter={filter}
-        onFilterChange={setFilter}
+        activeConfigId={activeConfigId}
+        onSelectService={onSelectService}
         serviceNames={serviceNames}
         count={filteredLogs.length}
         autoScroll={autoScroll}
@@ -63,7 +71,6 @@ export function RunnerLogs({ externalFilter, toolbarTrailing }: RunnerLogsProps)
         )}
         <div ref={bottomRef} />
       </Box>
-
     </Flex>
   )
 }

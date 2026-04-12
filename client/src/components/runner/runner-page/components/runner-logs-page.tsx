@@ -1,13 +1,20 @@
-import { useParams, useOutletContext } from 'react-router-dom'
+import { useOutletContext } from 'react-router-dom'
 import { RunnerLogs } from '../../logs'
+import { useActiveService } from '../hooks'
 
-interface RunnerLogsContext {
+interface RunnerOutletContext {
   previewToggle: React.ReactNode
 }
 
 export function RunnerLogsPage() {
-  const { configId } = useParams<{ configId: string }>()
-  const { previewToggle } = useOutletContext<RunnerLogsContext>()
+  const { activeId, selectService } = useActiveService()
+  const { previewToggle } = useOutletContext<RunnerOutletContext>()
 
-  return <RunnerLogs externalFilter={configId ?? null} toolbarTrailing={previewToggle} />
+  return (
+    <RunnerLogs
+      activeConfigId={activeId}
+      onSelectService={selectService}
+      toolbarTrailing={previewToggle}
+    />
+  )
 }
