@@ -23,7 +23,6 @@ export function ServiceListPanel({ selectedId, onSelect }: ServiceListPanelProps
   const {
     modalConfig, setModalConfig,
     deleteTarget, setDeleteTarget,
-    menuOpen, setMenuOpen,
     diagnoseDrawer, setDiagnoseDrawer,
     handleSave, handleDelete, handleDiagnose,
     start, stop, startAll, stopAll,
@@ -147,21 +146,9 @@ export function ServiceListPanel({ selectedId, onSelect }: ServiceListPanelProps
                 </Tooltip>
 
                 <ServiceMenu
-                  isOpen={menuOpen === svc.id}
-                  onToggle={() => setMenuOpen(menuOpen === svc.id ? null : svc.id)}
-                  onClose={() => setMenuOpen(null)}
-                  onViewDetails={() => {
-                    setMenuOpen(null)
-                    if (config) setModalConfig(config as any)
-                  }}
-                  onDiagnose={() => {
-                    setMenuOpen(null)
-                    handleDiagnose(svc.id)
-                  }}
-                  onDelete={() => {
-                    setMenuOpen(null)
-                    setDeleteTarget({ id: svc.id, name: svc.name })
-                  }}
+                  onViewDetails={() => { if (config) setModalConfig(config as any) }}
+                  onDiagnose={() => handleDiagnose(svc.id)}
+                  onDelete={() => setDeleteTarget({ id: svc.id, name: svc.name })}
                 />
               </Flex>
             </Flex>

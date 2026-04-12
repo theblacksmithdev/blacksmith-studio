@@ -26,7 +26,6 @@ export function useServiceActions(
 
   const [modalConfig, setModalConfig] = useState<RunnerConfigData | null | 'new'>(null)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
-  const [menuOpen, setMenuOpen] = useState<string | null>(null)
   const [diagnoseDrawer, setDiagnoseDrawer] = useState<DiagnoseState | null>(null)
 
   const handleSave = useCallback((data: Partial<RunnerConfigData>) => {
@@ -77,7 +76,6 @@ export function useServiceActions(
   return {
     modalConfig, setModalConfig,
     deleteTarget, setDeleteTarget,
-    menuOpen, setMenuOpen,
     diagnoseDrawer, setDiagnoseDrawer,
     handleSave,
     handleDelete,

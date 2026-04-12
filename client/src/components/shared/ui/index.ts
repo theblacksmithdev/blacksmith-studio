@@ -68,6 +68,10 @@ export type { SkeletonVariant } from './skeleton'
 export { InfiniteScrollList } from './infinite-scroll-list'
 export type { InfiniteScrollListProps } from './infinite-scroll-list'
 
+// ── Menus ──
+export { Menu } from './menu'
+export type { MenuProps, MenuOption } from './menu'
+
 // ── Composite ──
 export { EmptyState } from './empty-state'
 
