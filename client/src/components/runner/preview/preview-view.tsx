@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import styled from '@emotion/styled'
-import { Globe, Server } from 'lucide-react'
+import { Globe, Server, X } from 'lucide-react'
 import { useRunnerStore } from '@/stores/runner-store'
 import { useSettings } from '@/hooks/use-settings'
 import { StatusDot } from '../runner-primitives'
@@ -58,6 +58,27 @@ const Tab = styled.button<{ active: boolean }>`
   }
 `
 
+const CloseBtn = styled.button`
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  border: none;
+  background: transparent;
+  color: var(--studio-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: auto;
+  transition: all 0.12s ease;
+
+  &:hover {
+    background: var(--studio-bg-hover);
+    color: var(--studio-text-primary);
+  }
+`
+
 const Body = styled.div`
   flex: 1;
   min-height: 0;
@@ -67,7 +88,11 @@ const Body = styled.div`
 
 /* ── Component ── */
 
-export function PreviewView() {
+interface PreviewViewProps {
+  onClose?: () => void
+}
+
+export function PreviewView({ onClose }: PreviewViewProps) {
   const [tab, setTab] = useState<PreviewTab>('frontend')
   const [reloadKeys, setReloadKeys] = useState({ frontend: 0, backend: 0 })
 
@@ -95,6 +120,11 @@ export function PreviewView() {
           API
           <StatusDot status={backendStatus} size={5} />
         </Tab>
+        {onClose && (
+          <CloseBtn onClick={onClose} title="Close preview">
+            <X size={14} />
+          </CloseBtn>
+        )}
       </TabBar>
 
       <Body>

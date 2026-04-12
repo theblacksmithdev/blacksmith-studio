@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import styled from '@emotion/styled'
+import { Flex, Box } from '@chakra-ui/react'
 import { useParams } from 'react-router-dom'
 import { PanelRight, History } from 'lucide-react'
 import { MessageList } from './message-list'
@@ -12,60 +12,7 @@ import { useSessionStore } from '@/stores/session-store'
 import { useUiStore } from '@/stores/ui-store'
 import { PreviewPanel } from '@/components/shared/preview-panel'
 import { SplitPanel } from '@/components/shared/layout'
-import { Tooltip } from '@/components/shared/tooltip'
-
-const Root = styled.div`
-  display: flex;
-  height: 100%;
-  overflow: hidden;
-`
-
-const ChatColumn = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  height: 100%;
-`
-
-const TopBar = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 14px;
-  flex-shrink: 0;
-`
-
-const Spacer = styled.div`
-  flex: 1;
-`
-
-const TopBarBtn = styled.button<{ active: boolean }>`
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  border: none;
-  background: ${({ active }) => (active ? 'var(--studio-bg-hover)' : 'transparent')};
-  color: ${({ active }) => (active ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)')};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.12s ease;
-  flex-shrink: 0;
-
-  &:hover {
-    background: var(--studio-bg-hover);
-    color: var(--studio-text-primary);
-  }
-`
-
-const InputWrap = styled.div`
-  padding: 0 24px 20px;
-  max-width: 760px;
-  margin: 0 auto;
-  width: 100%;
-`
+import { IconButton, Tooltip, spacing } from '@/components/shared/ui'
 
 export function ChatView() {
   const { sessionId } = useParams<{ sessionId: string }>()
@@ -85,7 +32,7 @@ export function ChatView() {
     }
   }, [sessionId, activeSessionId, loadSession])
 
-  const handleSend = async (text: string) => {
+  const handleSend = (text: string) => {
     if (!sessionId) return
     sendPrompt(text, sessionId)
   }
@@ -95,36 +42,49 @@ export function ChatView() {
   }
 
   const chatContent = (
-    <ChatColumn>
-      <TopBar>
+    <Flex direction="column" css={{ flex: 1, minWidth: 0, height: '100%' }}>
+      {/* Top bar */}
+      <Flex align="center" css={{ padding: spacing.sm, flexShrink: 0 }}>
         <Tooltip content={historyOpen ? 'Close history' : 'Chat history'}>
-          <TopBarBtn active={historyOpen} onClick={toggleHistory}>
-            <History size={15} />
-          </TopBarBtn>
+          <IconButton
+            variant={historyOpen ? 'default' : 'ghost'}
+            size="sm"
+            onClick={toggleHistory}
+            aria-label="Toggle history"
+          >
+            <History />
+          </IconButton>
         </Tooltip>
 
-        <Spacer />
+        <Box css={{ flex: 1 }} />
 
         <Tooltip content={previewOpen ? 'Close preview' : 'Open preview'}>
-          <TopBarBtn active={previewOpen} onClick={() => setPreviewOpen(!previewOpen)}>
-            <PanelRight size={15} />
-          </TopBarBtn>
+          <IconButton
+            variant={previewOpen ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setPreviewOpen(!previewOpen)}
+            aria-label="Toggle preview"
+          >
+            <PanelRight />
+          </IconButton>
         </Tooltip>
-      </TopBar>
+      </Flex>
 
+      {/* Messages */}
       <MessageList
         messages={messages}
         isStreaming={isStreaming}
         partialMessage={partialMessage}
       />
 
-      <InputWrap>
+      {/* Input */}
+      <Box css={{ padding: `0 ${spacing.xl} ${spacing.lg}`, maxWidth: '760px', margin: '0 auto', width: '100%' }}>
         <ChatInput onSend={handleSend} onCancel={handleCancel} isStreaming={isStreaming} />
-      </InputWrap>
-    </ChatColumn>
+      </Box>
+    </Flex>
   )
 
-  // Chat + optional preview (preview is the resizable left panel, chat fills remaining)
+  // Chat + optional preview
   const mainContent = previewOpen ? (
     <SplitPanel
       left={chatContent}
@@ -139,11 +99,11 @@ export function ChatView() {
 
   // Optional history panel wrapping everything
   if (!historyOpen) {
-    return <Root>{mainContent}</Root>
+    return <Flex css={{ height: '100%', overflow: 'hidden' }}>{mainContent}</Flex>
   }
 
   return (
-    <Root>
+    <Flex css={{ height: '100%', overflow: 'hidden' }}>
       <SplitPanel
         left={<HistoryPanel />}
         defaultWidth={260}
@@ -153,6 +113,6 @@ export function ChatView() {
       >
         {mainContent}
       </SplitPanel>
-    </Root>
+    </Flex>
   )
 }

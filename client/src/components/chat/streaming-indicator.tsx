@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Box, Text, HStack } from '@chakra-ui/react'
-import { Sparkles } from 'lucide-react'
+import { Flex, Box } from '@chakra-ui/react'
 import { MarkdownRenderer } from '@/components/shared/markdown-renderer'
+import { Text, Skeleton, spacing } from '@/components/shared/ui'
 import { ToolCallCard } from './tool-call-card'
+import { ClaudeHeader } from './claude-header'
 import { useChatStore } from '@/stores/chat-store'
 
 interface StreamingIndicatorProps {
@@ -22,58 +23,42 @@ export function StreamingIndicator({ partialMessage }: StreamingIndicatorProps) 
   const timeLabel = elapsed < 60 ? `${elapsed}s` : `${Math.floor(elapsed / 60)}m ${elapsed % 60}s`
 
   return (
-    <Box css={{ animation: 'fadeIn 0.2s ease', padding: '2px 0' }}>
-      {/* Claude header */}
-      <HStack gap={2} css={{ marginBottom: '8px' }}>
-        <Box css={{
-          width: '22px', height: '22px', borderRadius: '6px',
-          background: 'linear-gradient(135deg, var(--studio-green-border), var(--studio-green-subtle))',
-          border: '1px solid var(--studio-green-border)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0,
-        }}>
-          <Sparkles size={11} style={{ color: 'var(--studio-green)' }} />
-        </Box>
-        <Text css={{ fontSize: '13px', fontWeight: 600, color: 'var(--studio-text-secondary)', letterSpacing: '-0.01em' }}>
-          Claude
-        </Text>
-        <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)' }}>
-          {timeLabel}
-        </Text>
-      </HStack>
+    <Box css={{ animation: 'bubbleIn 0.2s ease' }}>
+      <ClaudeHeader
+        extra={
+          <Text variant="caption" color="muted">{timeLabel}</Text>
+        }
+      />
 
-      <Box css={{ paddingLeft: '30px' }}>
-        {/* Tool calls in progress */}
+      <Box css={{ paddingLeft: '30px', marginTop: spacing.sm }}>
+        {/* Active tool calls */}
         {currentToolCalls.length > 0 && (
-          <Box css={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '8px' }}>
+          <Flex direction="column" gap={spacing.xs} css={{ marginBottom: spacing.sm }}>
             {currentToolCalls.map((tc) => (
               <ToolCallCard key={tc.toolId} toolCall={tc} isActive />
             ))}
-          </Box>
+          </Flex>
         )}
 
+        {/* Streaming text or thinking state */}
         {partialMessage ? (
           <Box css={{ position: 'relative' }}>
             <MarkdownRenderer content={partialMessage} />
             <Box as="span" css={{
-              display: 'inline-block', width: '2px', height: '16px',
-              background: 'var(--studio-green)', marginLeft: '2px',
+              display: 'inline-block',
+              width: '2px',
+              height: '16px',
+              background: 'var(--studio-accent)',
+              marginLeft: '2px',
               verticalAlign: 'text-bottom',
               animation: 'cursorBlink 1s step-end infinite',
             }} />
           </Box>
         ) : currentToolCalls.length === 0 ? (
-          <HStack gap={2} css={{ padding: '4px 0' }}>
-            <Box css={{
-              width: '100%', maxWidth: '120px', height: '3px', borderRadius: '2px',
-              background: 'linear-gradient(90deg, var(--studio-green), transparent)',
-              animation: 'shimmerBar 1.5s ease infinite',
-              opacity: 0.5,
-            }} />
-            <Text css={{ fontSize: '13px', color: 'var(--studio-text-muted)', flexShrink: 0 }}>
-              Thinking...
-            </Text>
-          </HStack>
+          <Flex align="center" gap={spacing.sm}>
+            <Skeleton variant="text" width="100px" height="3px" />
+            <Text variant="caption" color="muted">Thinking...</Text>
+          </Flex>
         ) : null}
       </Box>
     </Box>

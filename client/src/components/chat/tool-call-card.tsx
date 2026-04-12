@@ -1,60 +1,64 @@
-import { useState } from 'react'
-import { Box, Text, HStack } from '@chakra-ui/react'
+import { useState, memo } from 'react'
+import { Flex, Box } from '@chakra-ui/react'
 import { FileEdit, Terminal, Eye, FileSearch, Globe, ChevronRight, ChevronDown } from 'lucide-react'
+import { Text, Badge, spacing, radii } from '@/components/shared/ui'
 import type { ToolCall } from '@/types'
 
 const TOOL_CONFIG: Record<string, { icon: typeof FileEdit; color: string; label: string }> = {
-  Edit:  { icon: FileEdit,   color: '#60a5fa', label: 'Edit' },
-  Write: { icon: FileEdit,   color: '#60a5fa', label: 'Write' },
-  Bash:  { icon: Terminal,   color: '#f59e0b', label: 'Bash' },
-  Read:  { icon: Eye,        color: '#34d399', label: 'Read' },
-  Grep:  { icon: FileSearch, color: '#a78bfa', label: 'Grep' },
-  Glob:  { icon: FileSearch, color: '#a78bfa', label: 'Glob' },
-  WebFetch: { icon: Globe,   color: '#38bdf8', label: 'Fetch' },
+  Edit:     { icon: FileEdit,   color: '#60a5fa', label: 'Edit' },
+  Write:    { icon: FileEdit,   color: '#60a5fa', label: 'Write' },
+  Bash:     { icon: Terminal,   color: '#f59e0b', label: 'Bash' },
+  Read:     { icon: Eye,        color: '#34d399', label: 'Read' },
+  Grep:     { icon: FileSearch, color: '#a78bfa', label: 'Grep' },
+  Glob:     { icon: FileSearch, color: '#a78bfa', label: 'Glob' },
+  WebFetch: { icon: Globe,      color: '#38bdf8', label: 'Fetch' },
 }
 
 const DEFAULT_CONFIG = { icon: Terminal, color: 'var(--studio-text-muted)', label: 'Tool' }
+
+function getSummary(toolCall: ToolCall): string {
+  const input = toolCall.input as Record<string, any>
+  if (['Edit', 'Write', 'Read'].includes(toolCall.toolName)) return input.file_path || input.path || ''
+  if (toolCall.toolName === 'Bash') return input.command || ''
+  if (['Grep', 'Glob'].includes(toolCall.toolName)) return input.pattern || ''
+  return JSON.stringify(input).slice(0, 80)
+}
 
 interface ToolCallCardProps {
   toolCall: ToolCall
   isActive?: boolean
 }
 
-export function ToolCallCard({ toolCall, isActive }: ToolCallCardProps) {
+export const ToolCallCard = memo(function ToolCallCard({ toolCall, isActive }: ToolCallCardProps) {
   const [expanded, setExpanded] = useState(false)
   const config = TOOL_CONFIG[toolCall.toolName] || DEFAULT_CONFIG
   const Icon = config.icon
-
-  const summary = (() => {
-    const input = toolCall.input as Record<string, any>
-    if (toolCall.toolName === 'Edit' || toolCall.toolName === 'Write' || toolCall.toolName === 'Read') {
-      return input.file_path || input.path || ''
-    }
-    if (toolCall.toolName === 'Bash') return input.command || ''
-    if (toolCall.toolName === 'Grep' || toolCall.toolName === 'Glob') return input.pattern || ''
-    return JSON.stringify(input).slice(0, 80)
-  })()
+  const summary = getSummary(toolCall)
 
   return (
-    <Box
-      css={{
-        borderRadius: '8px',
-        overflow: 'hidden',
-        border: '1px solid var(--studio-border)',
-        background: 'var(--studio-bg-surface)',
-        transition: 'all 0.15s ease',
-        '&:hover': { borderColor: 'var(--studio-border-hover)' },
-      }}
-    >
-      <Box
+    <Box css={{
+      borderRadius: radii.md,
+      overflow: 'hidden',
+      border: '1px solid var(--studio-border)',
+      background: 'var(--studio-bg-surface)',
+      transition: 'border-color 0.12s ease',
+      '&:hover': { borderColor: 'var(--studio-border-hover)' },
+    }}>
+      {/* Header row */}
+      <Flex
         as="button"
+        align="center"
+        gap={spacing.sm}
         onClick={() => setExpanded(!expanded)}
         css={{
-          display: 'flex', alignItems: 'center', gap: '8px',
-          width: '100%', padding: '7px 10px',
-          background: 'transparent', border: 'none',
-          cursor: 'pointer', textAlign: 'left',
+          width: '100%',
+          padding: `${spacing.xs} ${spacing.sm}`,
+          background: 'transparent',
+          border: 'none',
           borderLeft: `2px solid ${config.color}`,
+          cursor: 'pointer',
+          textAlign: 'left',
+          fontFamily: 'inherit',
         }}
       >
         {/* Status dot */}
@@ -67,39 +71,50 @@ export function ToolCallCard({ toolCall, isActive }: ToolCallCardProps) {
 
         <Icon size={12} style={{ color: config.color, flexShrink: 0 }} />
 
-        {/* Tool badge */}
-        <Text css={{
-          fontSize: '11px', fontWeight: 600, textTransform: 'uppercase',
-          letterSpacing: '0.04em', color: config.color,
-          padding: '1px 5px', borderRadius: '3px',
-          background: `${config.color}12`, flexShrink: 0,
+        <Badge variant="default" size="sm" css={{
+          color: config.color,
+          background: `${config.color}12`,
+          textTransform: 'uppercase',
+          letterSpacing: '0.04em',
+          fontSize: '10px',
+          fontWeight: 600,
         }}>
           {config.label}
-        </Text>
+        </Badge>
 
-        {/* Summary */}
-        <Text css={{
-          fontFamily: "'SF Mono', 'Fira Code', Menlo, monospace",
-          fontSize: '12px', color: 'var(--studio-text-secondary)',
-          overflow: 'hidden', textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap', flex: 1,
+        <Text variant="caption" css={{
+          fontFamily: "'SF Mono', 'Fira Code', monospace",
+          flex: 1,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          color: 'var(--studio-text-secondary)',
         }}>
           {summary}
         </Text>
 
-        {expanded ? <ChevronDown size={11} style={{ color: 'var(--studio-text-muted)', flexShrink: 0 }} />
-                   : <ChevronRight size={11} style={{ color: 'var(--studio-text-muted)', flexShrink: 0 }} />}
-      </Box>
+        {expanded
+          ? <ChevronDown size={11} style={{ color: 'var(--studio-text-muted)', flexShrink: 0 }} />
+          : <ChevronRight size={11} style={{ color: 'var(--studio-text-muted)', flexShrink: 0 }} />
+        }
+      </Flex>
 
+      {/* Expandable output */}
       {expanded && (
         <Box css={{
-          padding: '8px 10px 8px 20px', borderTop: '1px solid var(--studio-border)',
-          maxHeight: '200px', overflowY: 'auto',
+          padding: `${spacing.sm} ${spacing.sm} ${spacing.sm} ${spacing.xl}`,
+          borderTop: '1px solid var(--studio-border)',
+          maxHeight: '240px',
+          overflowY: 'auto',
+          '&::-webkit-scrollbar': { width: '4px' },
+          '&::-webkit-scrollbar-thumb': { background: 'rgba(128,128,128,0.15)', borderRadius: '2px' },
         }}>
-          <Text css={{
-            fontFamily: "'SF Mono', 'Fira Code', Menlo, monospace",
-            fontSize: '12px', color: 'var(--studio-text-secondary)',
-            whiteSpace: 'pre-wrap', wordBreak: 'break-all', lineHeight: '18px',
+          <Text variant="caption" css={{
+            fontFamily: "'SF Mono', 'Fira Code', monospace",
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-all',
+            lineHeight: '18px',
+            color: 'var(--studio-text-secondary)',
           }}>
             {toolCall.output || JSON.stringify(toolCall.input, null, 2)}
           </Text>
@@ -107,4 +122,4 @@ export function ToolCallCard({ toolCall, isActive }: ToolCallCardProps) {
       )}
     </Box>
   )
-}
+})

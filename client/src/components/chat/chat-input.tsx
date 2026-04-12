@@ -1,161 +1,15 @@
-import { useState, useRef } from 'react'
-import styled from '@emotion/styled'
-import { Textarea } from '@chakra-ui/react'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
+import { Flex, Box } from '@chakra-ui/react'
 import { ArrowUp, Square, ChevronDown, Check, Zap, Sparkles, Brain } from 'lucide-react'
-import { Tooltip } from '@/components/shared/tooltip'
+import { Text, IconButton, Tooltip, KeyboardHint, spacing, radii, shadows } from '@/components/shared/ui'
 import { useSettings } from '@/hooks/use-settings'
 
 const MODELS = [
-  { id: 'sonnet', label: 'Claude Sonnet', description: 'Fast & capable', icon: Zap },
-  { id: 'opus', label: 'Claude Opus', description: 'Most intelligent', icon: Brain },
-  { id: 'haiku', label: 'Claude Haiku', description: 'Fastest responses', icon: Sparkles },
+  { id: 'sonnet', label: 'Sonnet', description: 'Fast & capable', icon: Zap },
+  { id: 'opus', label: 'Opus', description: 'Most intelligent', icon: Brain },
+  { id: 'haiku', label: 'Haiku', description: 'Fastest responses', icon: Sparkles },
 ] as const
-
-// ─── Styled Components ───
-
-const Container = styled.div`
-  width: 100%;
-`
-
-const InputCard = styled.div`
-  position: relative;
-  background: var(--studio-bg-surface);
-  border-radius: 16px;
-  border: 1px solid var(--studio-border);
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
-
-  &:focus-within {
-    border-color: var(--studio-border-hover);
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  }
-`
-
-const BottomBar = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 12px 10px 14px;
-`
-
-const ModelSelectorWrap = styled.div`
-  position: relative;
-`
-
-const ModelTrigger = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  border: none;
-  background: transparent;
-  color: var(--studio-text-muted);
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.12s ease;
-
-  &:hover {
-    background: var(--studio-bg-hover);
-    color: var(--studio-text-secondary);
-  }
-`
-
-const Backdrop = styled.div`
-  position: fixed;
-  inset: 0;
-  z-index: 99;
-`
-
-const Dropdown = styled.div`
-  position: absolute;
-  bottom: 100%;
-  left: 0;
-  margin-bottom: 6px;
-  width: 200px;
-  background: var(--studio-bg-surface);
-  border: 1px solid var(--studio-border-hover);
-  border-radius: 10px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-  z-index: 100;
-  overflow: hidden;
-  padding: 4px;
-`
-
-const ModelOption = styled.button<{ $active?: boolean }>`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 7px;
-  border: none;
-  background: ${(p) => (p.$active ? 'var(--studio-bg-hover)' : 'transparent')};
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.1s ease;
-
-  &:hover {
-    background: var(--studio-bg-hover);
-  }
-`
-
-const ModelLabel = styled.div`
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--studio-text-primary);
-`
-
-const ModelDesc = styled.div`
-  font-size: 11px;
-  color: var(--studio-text-muted);
-`
-
-const Actions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`
-
-const KeyHint = styled.span`
-  font-size: 12px;
-  color: var(--studio-text-muted);
-  user-select: none;
-`
-
-const ActionBtn = styled.button<{ $variant?: 'send' | 'cancel'; $active?: boolean }>`
-  width: 30px;
-  height: 30px;
-  border-radius: 10px;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.15s ease;
-
-  background: ${(p) => {
-    if (p.$variant === 'cancel') return 'var(--studio-error)'
-    if (p.$active) return 'var(--studio-accent)'
-    return 'var(--studio-bg-hover)'
-  }};
-
-  color: ${(p) => {
-    if (p.$variant === 'cancel') return '#fff'
-    if (p.$active) return 'var(--studio-accent-fg)'
-    return 'var(--studio-text-muted)'
-  }};
-
-  cursor: ${(p) => (p.$variant === 'cancel' || p.$active) ? 'pointer' : 'default'};
-
-  &:hover {
-    ${(p) => (p.$variant === 'cancel' || p.$active) ? 'transform: scale(1.05);' : ''}
-    ${(p) => p.$variant === 'cancel' ? 'opacity: 0.85;' : ''}
-  }
-`
-
-// ─── Component ───
 
 interface ChatInputProps {
   onSend: (text: string) => void
@@ -168,13 +22,32 @@ export function ChatInput({ onSend, onCancel, isStreaming, disabled }: ChatInput
   const [value, setValue] = useState('')
   const [modelMenuOpen, setModelMenuOpen] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const triggerRef = useRef<HTMLDivElement>(null)
   const { model, set } = useSettings()
+
+  const MAX_HEIGHT = 450
+
+  const autoResize = useCallback(() => {
+    const el = textareaRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${Math.min(el.scrollHeight, MAX_HEIGHT)}px`
+    el.style.overflowY = el.scrollHeight > MAX_HEIGHT ? 'auto' : 'hidden'
+  }, [])
+
+  useEffect(() => { autoResize() }, [value, autoResize])
 
   const handleSend = () => {
     const trimmed = value.trim()
     if (!trimmed || isStreaming) return
     onSend(trimmed)
     setValue('')
+    // Reset height after sending
+    requestAnimationFrame(() => {
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto'
+      }
+    })
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -189,85 +62,173 @@ export function ChatInput({ onSend, onCancel, isStreaming, disabled }: ChatInput
   const canSend = !!value.trim() && !disabled
 
   return (
-    <Container>
-      <InputCard>
-        <Textarea
+    <Box css={{ width: '100%' }}>
+      <Box css={{
+        position: 'relative',
+        background: 'var(--studio-bg-surface)',
+        borderRadius: radii['2xl'],
+        border: '1px solid var(--studio-border)',
+        transition: 'all 0.2s ease',
+        boxShadow: shadows.sm,
+        '&:focus-within': {
+          borderColor: 'var(--studio-border-hover)',
+          boxShadow: shadows.lg,
+        },
+      }}>
+        {/* Textarea */}
+        <textarea
           ref={textareaRef}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Ask Claude to build something..."
-          resize="none"
-          rows={2}
           disabled={disabled}
-          css={{
-            minHeight: '56px', maxHeight: '200px',
-            padding: '16px 56px 16px 18px',
-            background: 'transparent', border: 'none', outline: 'none',
+          rows={1}
+          style={{
+            width: '100%',
+            minHeight: '44px',
+            padding: `${spacing.md} ${spacing.xl}`,
+            background: 'transparent',
+            border: 'none',
+            outline: 'none',
+            resize: 'none',
+            overflowY: 'hidden',
             color: 'var(--studio-text-primary)',
-            fontSize: '15px', lineHeight: '1.6',
-            '&::placeholder': { color: 'var(--studio-text-tertiary)' },
-            '&:focus': { outline: 'none', boxShadow: 'none', borderColor: 'transparent' },
+            fontSize: '15px',
+            lineHeight: '1.6',
+            fontFamily: 'inherit',
           }}
         />
 
-        <BottomBar>
-          <ModelSelectorWrap>
-            <ModelTrigger onClick={() => setModelMenuOpen(!modelMenuOpen)}>
+        {/* Bottom bar */}
+        <Flex align="center" justify="space-between" css={{ padding: `0 ${spacing.sm} ${spacing.sm}` }}>
+          {/* Model selector */}
+          <Box css={{ position: 'relative' }}>
+            <Flex
+              as="button"
+              ref={triggerRef}
+              align="center"
+              gap={spacing.xs}
+              onClick={() => setModelMenuOpen(!modelMenuOpen)}
+              css={{
+                padding: `${spacing.xs} ${spacing.sm}`,
+                borderRadius: radii.md,
+                border: 'none',
+                background: 'transparent',
+                color: 'var(--studio-text-muted)',
+                fontSize: '12px',
+                fontWeight: 500,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                transition: 'all 0.12s ease',
+                '&:hover': { background: 'var(--studio-bg-hover)', color: 'var(--studio-text-secondary)' },
+              }}
+            >
               <ActiveIcon size={12} />
               {activeModel.label}
               <ChevronDown size={10} style={{
                 transform: modelMenuOpen ? 'rotate(180deg)' : 'none',
                 transition: 'transform 0.15s',
               }} />
-            </ModelTrigger>
+            </Flex>
 
-            {modelMenuOpen && (
+            {modelMenuOpen && createPortal(
               <>
-                <Backdrop onClick={() => setModelMenuOpen(false)} />
-                <Dropdown>
+                <Box onClick={() => setModelMenuOpen(false)} css={{ position: 'fixed', inset: 0, zIndex: 99 }} />
+                <Box css={{
+                  position: 'fixed',
+                  bottom: triggerRef.current ? window.innerHeight - triggerRef.current.getBoundingClientRect().top + 6 : 0,
+                  left: triggerRef.current?.getBoundingClientRect().left ?? 0,
+                  width: '200px',
+                  background: 'var(--studio-bg-surface)',
+                  border: '1px solid var(--studio-border-hover)',
+                  borderRadius: radii.lg,
+                  boxShadow: '0 8px 30px rgba(0, 0, 0, 0.18)',
+                  zIndex: 100,
+                  padding: spacing.xs,
+                  animation: 'fadeIn 0.1s ease',
+                }}>
                   {MODELS.map((m) => {
                     const Icon = m.icon
                     const isActive = m.id === model
                     return (
-                      <ModelOption
+                      <Flex
+                        as="button"
                         key={m.id}
-                        $active={isActive}
+                        align="center"
+                        gap={spacing.sm}
                         onClick={() => { set('ai.model', m.id); setModelMenuOpen(false) }}
+                        css={{
+                          width: '100%',
+                          padding: `${spacing.sm} ${spacing.sm}`,
+                          borderRadius: radii.md,
+                          border: 'none',
+                          background: isActive ? 'var(--studio-bg-hover)' : 'transparent',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          fontFamily: 'inherit',
+                          transition: 'all 0.1s ease',
+                          '&:hover': { background: 'var(--studio-bg-hover)' },
+                        }}
                       >
-                        <Icon size={14} style={{ color: isActive ? 'var(--studio-green)' : 'var(--studio-text-muted)', flexShrink: 0 }} />
-                        <div style={{ flex: 1 }}>
-                          <ModelLabel>{m.label}</ModelLabel>
-                          <ModelDesc>{m.description}</ModelDesc>
-                        </div>
-                        {isActive && <Check size={13} style={{ color: 'var(--studio-green)', flexShrink: 0 }} />}
-                      </ModelOption>
+                        <Icon size={14} style={{ color: isActive ? 'var(--studio-accent)' : 'var(--studio-text-muted)', flexShrink: 0 }} />
+                        <Box css={{ flex: 1 }}>
+                          <Text variant="bodySmall" css={{ fontWeight: 500 }}>{m.label}</Text>
+                          <Text variant="caption" color="muted">{m.description}</Text>
+                        </Box>
+                        {isActive && <Check size={13} style={{ color: 'var(--studio-accent)', flexShrink: 0 }} />}
+                      </Flex>
                     )
                   })}
-                </Dropdown>
-              </>
+                </Box>
+              </>,
+              document.body,
             )}
-          </ModelSelectorWrap>
+          </Box>
 
-          <Actions>
-            <KeyHint>{'\u2318'}Enter</KeyHint>
+          {/* Actions */}
+          <Flex align="center" gap={spacing.sm}>
+            <KeyboardHint keys={'\u2318+Enter'} />
 
             {isStreaming ? (
               <Tooltip content="Stop generation">
-                <ActionBtn $variant="cancel" onClick={onCancel}>
+                <IconButton
+                  variant="danger"
+                  size="sm"
+                  onClick={onCancel}
+                  aria-label="Stop"
+                  css={{ borderRadius: radii.lg }}
+                >
                   <Square size={10} fill="currentColor" />
-                </ActionBtn>
+                </IconButton>
               </Tooltip>
             ) : (
               <Tooltip content="Send (Cmd+Enter)">
-                <ActionBtn $active={canSend} onClick={handleSend}>
+                <Box
+                  as="button"
+                  onClick={canSend ? handleSend : undefined}
+                  css={{
+                    width: '30px',
+                    height: '30px',
+                    borderRadius: radii.lg,
+                    border: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: canSend ? 'pointer' : 'default',
+                    transition: 'all 0.15s ease',
+                    background: canSend ? 'var(--studio-accent)' : 'var(--studio-bg-hover)',
+                    color: canSend ? 'var(--studio-accent-fg)' : 'var(--studio-text-muted)',
+                    '&:hover': canSend ? { transform: 'scale(1.05)' } : {},
+                  }}
+                >
                   <ArrowUp size={15} />
-                </ActionBtn>
+                </Box>
               </Tooltip>
             )}
-          </Actions>
-        </BottomBar>
-      </InputCard>
-    </Container>
+          </Flex>
+        </Flex>
+      </Box>
+    </Box>
   )
 }

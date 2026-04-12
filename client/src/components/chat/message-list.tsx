@@ -1,7 +1,9 @@
 import { useRef, useEffect } from 'react'
-import { Box } from '@chakra-ui/react'
+import { Flex, Box } from '@chakra-ui/react'
+import { MessageSquare } from 'lucide-react'
 import { MessageBubble } from './message-bubble'
 import { StreamingIndicator } from './streaming-indicator'
+import { EmptyState, spacing } from '@/components/shared/ui'
 import type { Message } from '@/types'
 
 interface MessageListProps {
@@ -17,12 +19,23 @@ export function MessageList({ messages, isStreaming, partialMessage }: MessageLi
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, partialMessage])
 
+  if (messages.length === 0 && !isStreaming) {
+    return (
+      <Flex css={{ flex: 1 }}>
+        <EmptyState compact icon={<MessageSquare />} description="Send a message to start the conversation" />
+      </Flex>
+    )
+  }
+
   return (
     <Box flex={1} overflowY="auto">
       <Box css={{
-        maxWidth: '760px', marginLeft: 'auto', marginRight: 'auto',
-        padding: '32px 24px 16px',
-        display: 'flex', flexDirection: 'column', gap: '20px',
+        maxWidth: '760px',
+        margin: '0 auto',
+        padding: `${spacing['3xl']} ${spacing.xl} ${spacing.md}`,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: spacing.xl,
       }}>
         {messages.map((msg, i) => {
           const prevMsg = messages[i - 1]
@@ -33,8 +46,8 @@ export function MessageList({ messages, isStreaming, partialMessage }: MessageLi
                 <Box css={{
                   height: '1px',
                   background: 'var(--studio-border)',
-                  margin: '4px 0 20px',
-                  opacity: 0.6,
+                  margin: `${spacing.xs} 0 ${spacing.xl}`,
+                  opacity: 0.5,
                 }} />
               )}
               <MessageBubble message={msg} />
@@ -42,7 +55,7 @@ export function MessageList({ messages, isStreaming, partialMessage }: MessageLi
           )
         })}
         {isStreaming && <StreamingIndicator partialMessage={partialMessage} />}
-        <Box ref={bottomRef} css={{ height: '24px' }} />
+        <Box ref={bottomRef} css={{ height: spacing.xl }} />
       </Box>
     </Box>
   )
