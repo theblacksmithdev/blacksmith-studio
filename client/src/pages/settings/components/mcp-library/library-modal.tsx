@@ -3,7 +3,7 @@ import { Box, Flex, HStack, Input, Button, Text } from '@chakra-ui/react'
 import { Search, Plus } from 'lucide-react'
 import type { McpServerConfig, McpServerEntry } from '@/api/modules/mcp'
 import { Modal, SecondaryButton } from '@/components/shared/modal'
-import { McpServerModal } from '../mcp-server-modal'
+import { McpServerModal } from '@/pages/mcp/components/mcp-server-modal'
 import { PRESETS, CATEGORIES } from './presets'
 import { ServerListItem } from './server-list-item'
 

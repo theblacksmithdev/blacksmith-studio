@@ -198,27 +198,20 @@ export class McpManager {
           resolve({ ok, error })
         }
 
-        // Collect stderr for error reporting
         proc.stderr.on('data', (chunk: Buffer) => { stderr += chunk.toString() })
 
-        // If we get any stdout, the server started successfully
-        proc.stdout.on('data', () => done(true))
-
-        // If it exits quickly with non-zero, it failed
+        // If the process crashes immediately, it failed
         proc.on('close', (code) => {
           if (!resolved) {
-            if (code === 0) {
-              done(true)
-            } else {
-              const lastLine = stderr.trim().split('\n').pop() || `Exit code ${code}`
-              done(false, lastLine)
-            }
+            const lastLine = stderr.trim().split('\n').pop() || `Exit code ${code}`
+            done(code === 0, code !== 0 ? lastLine : undefined)
           }
         })
 
         proc.on('error', (err) => done(false, err.message))
 
-        setTimeout(() => done(false, 'Server did not respond within 10s'), 10000)
+        // If the process is still alive after 2s, the server started successfully
+        setTimeout(() => done(true), 2000)
       } catch (e: any) {
         const err = e.message || 'Failed to spawn process'
         this.errors.set(name, err)
