@@ -32,12 +32,9 @@ export default function McpBrowserPage() {
     setEditor(null)
   }
 
-  if (editor) {
-    const server: McpServerEntry | undefined = editor.preset
-      ? { name: editor.preset.name, transport: 'command' in editor.preset.config ? 'stdio' : 'http', config: editor.preset.config, enabled: true, status: 'unknown' }
-      : undefined
-    return <McpServerModal server={server} onSave={handleAdd} onClose={() => setEditor(null)} />
-  }
+  const editorServer: McpServerEntry | undefined = editor?.preset
+    ? { name: editor.preset.name, transport: 'command' in editor.preset.config ? 'stdio' : 'http', config: editor.preset.config, enabled: true, status: 'unknown' }
+    : undefined
 
   return (
     <Flex direction="column" css={{ height: '100%', background: 'var(--studio-bg-main)' }}>
@@ -80,6 +77,10 @@ export default function McpBrowserPage() {
           </SimpleGrid>
         )}
       </Flex>
+
+      {editor && (
+        <McpServerModal server={editorServer} onSave={handleAdd} onClose={() => setEditor(null)} />
+      )}
     </Flex>
   )
 }
