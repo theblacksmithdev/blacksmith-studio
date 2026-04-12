@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import styled from '@emotion/styled'
 import { Play, Square, RotateCw, Copy, Check, Server } from 'lucide-react'
-import { isServiceActive, type RunnerStatus } from '@/stores/runner-store'
+import { isServiceActive, RunnerStatus } from '@/stores/runner-store'
 import { StatusDot, MONO_FONT } from './runner-primitives'
 
 type CardVariant = 'default' | 'compact' | 'inline'
@@ -170,12 +170,12 @@ export function ServiceCard({
           {variant === 'default' && <StatusText>{status}</StatusText>}
         </Label>
         <Meta variant={variant}>
-          {port && status === 'running'
+          {port && status === RunnerStatus.Running
             ? `localhost:${port}`
-            : status === 'starting'
+            : status === RunnerStatus.Starting
               ? 'Starting...'
               : 'Stopped'}
-          {url && status === 'running' && (
+          {url && status === RunnerStatus.Running && (
             <CopyBtn onClick={handleCopy} title="Copy URL">
               {copied ? <Check size={10} /> : <Copy size={10} />}
             </CopyBtn>

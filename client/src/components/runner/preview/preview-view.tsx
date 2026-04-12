@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import styled from '@emotion/styled'
 import { X } from 'lucide-react'
-import { useRunnerStore, selectPreviewServices } from '@/stores/runner-store'
+import { useRunnerStore, useServices, RunnerStatus } from '@/stores/runner-store'
 import { getServiceIcon, StatusDot } from '../runner-primitives'
 import { PreviewStopped } from './preview-states'
 import { IframeView } from './iframe-view'
@@ -91,7 +91,8 @@ interface PreviewViewProps {
 
 export function PreviewView({ onClose }: PreviewViewProps) {
   const services = useRunnerStore((s) => s.services)
-  const previewServices = useRunnerStore(selectPreviewServices)
+  const runningServices = useServices(RunnerStatus.Running)
+  const previewServices = runningServices.filter((svc) => svc.previewUrl)
   const [activeTabId, setActiveTabId] = useState<string | null>(null)
   const [reloadKeys, setReloadKeys] = useState<Record<string, number>>({})
 
@@ -146,7 +147,7 @@ export function PreviewView({ onClose }: PreviewViewProps) {
           <PreviewStopped
             serviceId=""
             serviceName="Server"
-            status="stopped"
+            status={RunnerStatus.Stopped}
             icon={getServiceIcon('server')}
           />
         )}

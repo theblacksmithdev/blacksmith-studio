@@ -1,6 +1,6 @@
 import styled from '@emotion/styled'
 import { Globe, Server, Terminal, Container, Box, Cpu, type LucideIcon } from 'lucide-react'
-import { type RunnerStatus, statusColor } from '@/stores/runner-store'
+import { RunnerStatus, statusColor } from '@/stores/runner-store'
 
 /* ── Icon lookup for dynamic service icons ── */
 
@@ -26,7 +26,7 @@ export const StatusDot = styled.span<{ status: RunnerStatus; size?: number }>`
   flex-shrink: 0;
   background: ${({ status }) => statusColor(status)};
   ${({ status }) =>
-    status === 'starting' ? 'animation: pulse 1.5s ease-in-out infinite;' : ''}
+    status === RunnerStatus.Starting ? 'animation: pulse 1.5s ease-in-out infinite;' : ''}
 `
 
 /* ── Port label ── */

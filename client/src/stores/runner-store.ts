@@ -1,6 +1,11 @@
 import { create } from 'zustand'
+import { useShallow } from 'zustand/react/shallow'
 
-export type RunnerStatus = 'stopped' | 'starting' | 'running'
+export enum RunnerStatus {
+  Stopped = 'stopped',
+  Starting = 'starting',
+  Running = 'running',
+}
 
 export interface RunnerService {
   id: string
@@ -55,28 +60,33 @@ export const useRunnerStore = create<RunnerState>((set) => ({
 export const selectServices = (s: RunnerState) => s.services
 
 export const selectIsAnyActive = (s: RunnerState) =>
-  s.services.some((svc) => svc.status === 'running' || svc.status === 'starting')
-
-export const selectIsAnyRunning = (s: RunnerState) =>
-  s.services.some((svc) => svc.status === 'running')
-
-export const selectIsAnyStarting = (s: RunnerState) =>
-  s.services.some((svc) => svc.status === 'starting')
+  s.services.some((svc) => svc.status === RunnerStatus.Running || svc.status === RunnerStatus.Starting)
 
 export const selectRunningCount = (s: RunnerState) =>
-  s.services.filter((svc) => svc.status === 'running' || svc.status === 'starting').length
+  s.services.filter((svc) => svc.status === RunnerStatus.Running || svc.status === RunnerStatus.Starting).length
 
-export const selectPreviewServices = (s: RunnerState) =>
-  s.services.filter((svc) => svc.previewUrl && svc.status === 'running')
+/* ── Hook ── */
+
+/**
+ * Returns services filtered by status. Uses shallow comparison to avoid
+ * infinite re-render loops from `.filter()` creating new array references.
+ */
+export function useServices(status?: RunnerStatus) {
+  return useRunnerStore(
+    useShallow((s) =>
+      status ? s.services.filter((svc) => svc.status === status) : s.services,
+    ),
+  )
+}
 
 /* ── Helpers ── */
 
 export function statusColor(status: RunnerStatus): string {
-  if (status === 'running') return 'var(--studio-accent)'
-  if (status === 'starting') return 'var(--studio-text-tertiary)'
+  if (status === RunnerStatus.Running) return 'var(--studio-accent)'
+  if (status === RunnerStatus.Starting) return 'var(--studio-text-tertiary)'
   return 'var(--studio-text-muted)'
 }
 
 export function isServiceActive(status: RunnerStatus): boolean {
-  return status === 'running' || status === 'starting'
+  return status === RunnerStatus.Running || status === RunnerStatus.Starting
 }

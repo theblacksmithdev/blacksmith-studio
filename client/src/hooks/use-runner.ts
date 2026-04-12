@@ -1,7 +1,7 @@
 import { useEffect, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api'
-import { useRunnerStore, type RunnerService } from '@/stores/runner-store'
+import { useRunnerStore, RunnerStatus, type RunnerService } from '@/stores/runner-store'
 import { useProjectKeys } from './use-project-keys'
 
 /**
@@ -60,7 +60,7 @@ export function useRunner() {
     api.runner.stop(configId)
     const unsub = api.runner.onStatus((services: any[]) => {
       const svc = services.find((s: any) => s.id === configId)
-      if (svc?.status === 'stopped') {
+      if (svc?.status === RunnerStatus.Stopped) {
         unsub()
         api.runner.start(configId)
       }

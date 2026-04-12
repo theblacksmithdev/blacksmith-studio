@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Flex, Box } from '@chakra-ui/react'
 import { Outlet } from 'react-router-dom'
 import { PanelRight } from 'lucide-react'
@@ -24,9 +25,11 @@ export function RunnerPage() {
     </Tooltip>
   )
 
+  const outletContext = useMemo(() => ({ previewToggle }), [previewOpen])
+
   const mainContent = (
     <Box css={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Outlet context={{ previewToggle }} />
+      <Outlet context={outletContext} />
     </Box>
   )
 

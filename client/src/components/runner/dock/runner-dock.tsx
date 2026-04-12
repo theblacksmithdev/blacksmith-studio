@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router-dom'
-import { useRunnerStore, selectIsAnyActive, selectIsAnyStarting, selectRunningCount } from '@/stores/runner-store'
+import { useRunnerStore, useServices, selectIsAnyActive, selectRunningCount, RunnerStatus } from '@/stores/runner-store'
 import { useUiStore } from '@/stores/ui-store'
 import { DockFab } from './dock-fab'
 import { DockPanel } from './dock-panel'
@@ -10,16 +10,16 @@ export function RunnerDock() {
   const location = useLocation()
 
   const anyActive = useRunnerStore(selectIsAnyActive)
-  const anyStarting = useRunnerStore(selectIsAnyStarting)
+  const starting = useServices(RunnerStatus.Starting)
   const activeCount = useRunnerStore(selectRunningCount)
 
-  const isOnRunPage = location.pathname.endsWith('/run')
+  const isOnRunPage = location.pathname.includes('/run')
   if (isOnRunPage || !anyActive) return null
 
   if (!open) {
     return (
       <DockFab
-        starting={anyStarting}
+        starting={starting.length > 0}
         title={`${activeCount} server${activeCount > 1 ? 's' : ''} running`}
         onClick={() => setOpen(true)}
       />

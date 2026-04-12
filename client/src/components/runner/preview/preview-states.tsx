@@ -10,7 +10,7 @@ import {
   ShieldAlert,
   type LucideIcon,
 } from 'lucide-react'
-import { useRunnerStore, selectIsAnyActive, type RunnerStatus } from '@/stores/runner-store'
+import { useRunnerStore, selectIsAnyActive, RunnerStatus } from '@/stores/runner-store'
 import { useRunner } from '@/hooks/use-runner'
 import { StatusDot, MONO_FONT } from '../runner-primitives'
 
@@ -334,7 +334,7 @@ export function PreviewStopped({ serviceId, serviceName, status, icon: Icon }: {
   const { start } = useRunner()
   const anyActive = useRunnerStore(selectIsAnyActive)
 
-  if (status === 'starting') {
+  if (status === RunnerStatus.Starting) {
     return (
       <Center>
         <Card>
@@ -369,7 +369,7 @@ export function PreviewStopped({ serviceId, serviceName, status, icon: Icon }: {
           </PrimaryBtn>
           {!anyActive && (
             <SecondaryBtn onClick={() => start()}>
-              <StatusDot status="stopped" size={5} />
+              <StatusDot status={RunnerStatus.Stopped} size={5} />
               Start All Servers
             </SecondaryBtn>
           )}

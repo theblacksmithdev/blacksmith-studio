@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Flex } from '@chakra-ui/react'
 import { Play, Square, Plus } from 'lucide-react'
-import { useRunnerStore, selectServices, selectIsAnyActive, isServiceActive, type RunnerService } from '@/stores/runner-store'
+import { useRunnerStore, selectServices, selectIsAnyActive, isServiceActive, RunnerStatus, type RunnerService } from '@/stores/runner-store'
 import { useRunnerConfigs } from '@/hooks/use-runner-configs'
 import { getServiceIcon, StatusDot } from '../../runner-primitives'
 import { RunnerConfigDrawer } from '../../config-drawer'
@@ -30,7 +30,7 @@ export function ServiceListPanel() {
       return {
         id: cfg.id,
         name: cfg.name,
-        status: live?.status ?? 'stopped',
+        status: live?.status ?? RunnerStatus.Stopped,
         port: live?.port ?? null,
         previewUrl: live?.previewUrl ?? null,
         icon: cfg.icon ?? 'terminal',
@@ -127,7 +127,7 @@ export function ServiceListPanel() {
                   {svc.name}
                 </Text>
                 <Text variant="tiny" color="muted">
-                  {svc.status === 'running' && svc.port ? `localhost:${svc.port}` : svc.status}
+                  {svc.status === RunnerStatus.Running && svc.port ? `localhost:${svc.port}` : svc.status}
                 </Text>
               </Flex>
 

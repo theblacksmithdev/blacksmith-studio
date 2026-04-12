@@ -1,5 +1,5 @@
 import styled from '@emotion/styled'
-import { useRunnerStore, selectIsAnyRunning, selectIsAnyStarting } from '@/stores/runner-store'
+import { useServices, RunnerStatus } from '@/stores/runner-store'
 
 const Badge = styled.span`
   position: absolute;
@@ -21,9 +21,9 @@ const BadgePulse = styled(Badge)`
 `
 
 export function RunnerBadge() {
-  const anyRunning = useRunnerStore(selectIsAnyRunning)
-  const anyStarting = useRunnerStore(selectIsAnyStarting)
+  const running = useServices(RunnerStatus.Running)
+  const starting = useServices(RunnerStatus.Starting)
 
-  if (!anyRunning && !anyStarting) return null
-  return anyStarting ? <BadgePulse /> : <Badge />
+  if (running.length === 0 && starting.length === 0) return null
+  return starting.length > 0 ? <BadgePulse /> : <Badge />
 }

@@ -9,6 +9,7 @@ import { mcpBrowserPath } from '@/router/paths'
 import { McpServerModal } from '../mcp-server-modal'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { StatusDot } from '@/components/runner/runner-primitives'
+import { RunnerStatus } from '@/stores/runner-store'
 import { MONO_FONT } from '@/components/runner/runner-primitives'
 import type { McpServerConfig, McpServerEntry } from '@/api/modules/mcp'
 
@@ -267,10 +268,10 @@ function getServerMeta(entry: McpServerEntry): string {
   return [cfg.command, ...(cfg.args || [])].join(' ')
 }
 
-function getStatusForDot(entry: McpServerEntry): 'running' | 'starting' | 'stopped' {
-  if (!entry.enabled) return 'stopped'
-  if (entry.status === 'error') return 'stopped'
-  return 'running'
+function getStatusForDot(entry: McpServerEntry): RunnerStatus {
+  if (!entry.enabled) return RunnerStatus.Stopped
+  if (entry.status === 'error') return RunnerStatus.Stopped
+  return RunnerStatus.Running
 }
 
 /* ── Component ── */
