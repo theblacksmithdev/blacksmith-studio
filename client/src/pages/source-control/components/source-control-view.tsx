@@ -153,7 +153,7 @@ const InitRoot = styled.div`
   animation: fadeIn 0.15s ease;
 `
 
-export function CheckpointsView() {
+export function SourceControlView() {
   const [selectedFile, setSelectedFile] = useState<string>()
   const [showCommitDialog, setShowCommitDialog] = useState(false)
   const [showBranches, setShowBranches] = useState(false)

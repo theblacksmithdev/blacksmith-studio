@@ -20,7 +20,7 @@ function getPageName(pathname: string, projectId: string): string | null {
   if (pathname.endsWith('/run')) return 'Dev Servers'
   if (pathname.endsWith('/settings')) return 'Settings'
   if (pathname.includes('/agents/') && !pathname.endsWith('/agents')) return 'Agents'
-  if (pathname.endsWith('/checkpoints')) return 'Source Control'
+  if (pathname.endsWith('/source-control')) return 'Source Control'
   if (pathname.endsWith('/skills')) return 'Skills'
   if (pathname.endsWith('/mcp')) return 'MCP'
   return null

@@ -20,7 +20,7 @@ import FilesPage from '@/pages/files'
 import RunPage from '@/pages/run'
 import SkillsBrowserPage from '@/pages/skills'
 import McpBrowserPage from '@/pages/mcp'
-import CheckpointsPage from '@/pages/checkpoints'
+import SourceControlPage from '@/pages/source-control'
 import AgentsHomePage from '@/pages/agents/home'
 import AgentsNewPage from '@/pages/agents/new'
 import AgentsConversationPage from '@/pages/agents/conversation'
@@ -45,7 +45,7 @@ export const router = createHashRouter([
       { path: 'run', element: <RunPage /> },
       { path: 'skills', element: <SkillsBrowserPage /> },
       { path: 'mcp', element: <McpBrowserPage /> },
-      { path: 'checkpoints', element: <CheckpointsPage /> },
+      { path: 'source-control', element: <SourceControlPage /> },
       { path: 'agents', element: <AgentsHomePage /> },
       { path: 'agents/new', element: <AgentsNewPage /> },
       { path: 'agents/:conversationId', element: <AgentsConversationPage /> },

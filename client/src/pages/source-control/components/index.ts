@@ -1,4 +1,4 @@
-export { CheckpointsView } from './checkpoints-view'
+export { SourceControlView } from './source-control-view'
 export { ChangedFilesList } from './changed-files'
 export { DiffViewer } from './diff-viewer'
 export { CommitDialog } from './save-dialog'

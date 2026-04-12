@@ -8,7 +8,7 @@ import {
 import {
   codePath,
   runPath,
-  checkpointsPath,
+  sourceControlPath,
   settingsPath,
 } from '@/router/paths'
 
@@ -22,7 +22,7 @@ export interface NavEntry {
 
 export const projectNav: NavEntry[] = [
   { id: 'code', icon: Files, label: 'Files', path: codePath, match: '/code' },
-  { id: 'git', icon: GitBranch, label: 'Source Control', path: checkpointsPath, match: '/checkpoints' },
+  { id: 'git', icon: GitBranch, label: 'Source Control', path: sourceControlPath, match: '/source-control' },
 ]
 
 export const bottomNav: NavEntry[] = [

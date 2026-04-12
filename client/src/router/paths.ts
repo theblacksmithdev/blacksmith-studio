@@ -15,7 +15,7 @@ export const Path = {
   Settings: '/:projectId/settings',
   SkillsBrowser: '/:projectId/skills',
   McpBrowser: '/:projectId/mcp',
-  Checkpoints: '/:projectId/checkpoints',
+  Checkpoints: '/:projectId/source-control',
   Agents: '/:projectId/agents',
   AgentsNew: '/:projectId/agents/new',
   AgentsConversation: '/:projectId/agents/:conversationId',
@@ -63,9 +63,12 @@ export function mcpBrowserPath(projectId: string) {
   return `/${projectId}/mcp`
 }
 
-export function checkpointsPath(projectId: string) {
-  return `/${projectId}/checkpoints`
+export function sourceControlPath(projectId: string) {
+  return `/${projectId}/source-control`
 }
+
+/** @deprecated Use sourceControlPath instead */
+export const checkpointsPath = sourceControlPath
 
 export function agentsPath(projectId: string) {
   return `/${projectId}/agents`
