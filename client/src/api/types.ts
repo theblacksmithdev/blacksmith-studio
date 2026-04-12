@@ -7,6 +7,19 @@ import type {
   HealthStatus,
 } from '@/types'
 
+/* ── Pagination ── */
+
+export interface PaginationInput {
+  limit?: number
+  offset?: number
+}
+
+export interface PaginatedResult<T> {
+  items: T[]
+  total: number
+  hasMore: boolean
+}
+
 /* ── Projects ── */
 
 export interface ProjectRegisterInput { path: string; name?: string }

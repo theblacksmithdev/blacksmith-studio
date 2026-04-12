@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Box, Flex } from '@chakra-ui/react'
-import { GitBranch, GitMerge, Plus, AlertTriangle } from 'lucide-react'
+import { GitBranch, GitMerge, Plus } from 'lucide-react'
 import { Modal, ModalFooterSpacer, Text, Input, Badge, Button, Alert, spacing, radii } from '@/components/shared/ui'
 import { useBranchActions } from './hooks'
 
@@ -14,30 +14,23 @@ export function BranchSwitcher({ onClose }: Props) {
   const [showCreate, setShowCreate] = useState(false)
   const [newName, setNewName] = useState('')
   const [mergeSource, setMergeSource] = useState<string | null>(null)
-  const [mergeConflicts, setMergeConflicts] = useState<string[] | null>(null)
 
   const filtered = branches.others.filter((b) =>
     !search || b.name.toLowerCase().includes(search.toLowerCase())
   )
 
-  const handleCreate = async () => {
+  const handleCreate = () => {
     const trimmed = newName.trim()
     if (!trimmed) return
-    await actions.create(trimmed)
+    actions.create(trimmed)
   }
 
-  const handleCheckout = async (name: string) => {
-    await actions.checkout(name)
+  const handleCheckout = (name: string) => {
+    actions.checkout(name)
   }
 
-  const handleMerge = async (source: string) => {
-    const result = await actions.mergeInto(source)
-    if (result && !result.success) {
-      setMergeConflicts(result.conflicts)
-    } else {
-      setMergeSource(null)
-      setMergeConflicts(null)
-    }
+  const handleMerge = (source: string) => {
+    actions.mergeInto(source)
   }
 
   return (
@@ -244,28 +237,8 @@ export function BranchSwitcher({ onClose }: Props) {
             ?
           </Text>
 
-          {mergeConflicts && mergeConflicts.length > 0 && (
-            <Box css={{ marginBottom: spacing.md }}>
-              <Flex align="center" gap={spacing.xs} css={{ marginBottom: spacing.xs }}>
-                <AlertTriangle size={12} style={{ color: 'var(--studio-error)' }} />
-                <Text variant="caption" css={{ color: 'var(--studio-error)', fontWeight: 500 }}>
-                  Merge conflicts in {mergeConflicts.length} file{mergeConflicts.length > 1 ? 's' : ''}
-                </Text>
-              </Flex>
-              {mergeConflicts.map((f) => (
-                <Text key={f} variant="caption" css={{
-                  fontFamily: "'SF Mono', monospace",
-                  padding: `2px 0 2px ${spacing.lg}`,
-                  color: 'var(--studio-text-muted)',
-                }}>
-                  {f}
-                </Text>
-              ))}
-            </Box>
-          )}
-
           <Flex gap={spacing.sm} justify="flex-end">
-            <Button variant="ghost" size="sm" onClick={() => { setMergeSource(null); setMergeConflicts(null) }}>
+            <Button variant="ghost" size="sm" onClick={() => setMergeSource(null)}>
               Cancel
             </Button>
             <Button

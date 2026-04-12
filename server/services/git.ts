@@ -1,6 +1,7 @@
 import simpleGit, { type SimpleGit, type StatusResult, type DefaultLogFields, type ListLogLine } from 'simple-git'
 import { watch, type FSWatcher } from 'node:fs'
 import path from 'node:path'
+import { paginate, type PaginationInput, type PaginatedResult } from '../types.js'
 
 /* ── Types ── */
 
@@ -87,28 +88,39 @@ export class GitManager {
     }
   }
 
-  async getChangedFiles(projectPath: string): Promise<ChangedFile[]> {
+  async getChangedFiles(projectPath: string, pagination?: PaginationInput): Promise<PaginatedResult<ChangedFile>> {
     const git = this.git(projectPath)
     const status = await git.status()
 
-    return status.files.map((f) => ({
+    const all = status.files.map((f) => ({
       path: f.path,
       status: this.mapFileStatus(f.working_dir, f.index),
       staged: f.index !== ' ' && f.index !== '?',
     }))
+
+    return paginate(all, pagination)
   }
+
+  /** Max diff size in characters to prevent freezing the renderer */
+  private static MAX_DIFF_SIZE = 500_000 // ~500KB
 
   async getDiff(projectPath: string, filePath: string): Promise<string> {
     const git = this.git(projectPath)
-    const status = await git.status()
-    const file = status.files.find((f) => f.path === filePath)
 
-    if (!file) return ''
+    // Try staged diff first, then unstaged, then untracked
+    let diff = await git.diff(['--cached', '--', filePath])
 
-    // Untracked files — show full content as diff
-    if (file.working_dir === '?' || file.index === '?') {
+    if (!diff) {
+      diff = await git.diff(['--', filePath])
+    }
+
+    if (!diff) {
+      // Possibly untracked — show full content as additions
       try {
         const { readFile } = await import('node:fs/promises')
+        const { stat } = await import('node:fs/promises')
+        const fileStat = await stat(path.join(projectPath, filePath)).catch(() => null)
+        if (!fileStat || fileStat.size > GitManager.MAX_DIFF_SIZE) return ''
         const content = await readFile(path.join(projectPath, filePath), 'utf-8')
         return content.split('\n').map((l) => `+${l}`).join('\n')
       } catch {
@@ -116,13 +128,12 @@ export class GitManager {
       }
     }
 
-    // Staged changes
-    if (file.index !== ' ') {
-      return git.diff(['--cached', '--', filePath])
+    // Cap diff size to prevent renderer freeze
+    if (diff.length > GitManager.MAX_DIFF_SIZE) {
+      return diff.slice(0, GitManager.MAX_DIFF_SIZE) + '\n\n... diff truncated (file too large to display)'
     }
 
-    // Unstaged changes
-    return git.diff(['--', filePath])
+    return diff
   }
 
   /* ── Commits ── */
@@ -161,14 +172,14 @@ export class GitManager {
     const git = this.git(projectPath)
 
     try {
-      const log = await git.log({ maxCount: limit, '--stat': null } as any)
+      const log = await git.log({ maxCount: limit })
 
       return log.all.map((entry: DefaultLogFields & ListLogLine) => ({
         hash: entry.hash,
         message: entry.message,
         author: entry.author_name,
         date: entry.date,
-        filesChanged: (entry as any).diff?.files?.length ?? 0,
+        filesChanged: 0,
       }))
     } catch {
       return []
@@ -179,10 +190,8 @@ export class GitManager {
     const git = this.git(projectPath)
     const EMPTY_TREE = '4b825dc642cb6eb9a060e54bf899d15f3f462b21'
 
-    // Get commit metadata via git show
-    const logRaw = await git.raw([
-      'log', '-1', '--format=%H%n%s%n%an%n%aI', hash,
-    ])
+    // Get commit metadata
+    const logRaw = await git.raw(['log', '-1', '--format=%H%n%s%n%an%n%aI', hash])
     const [fullHash, message, author, date] = logRaw.trim().split('\n')
     if (!fullHash) throw new Error(`Commit ${hash} not found`)
 
@@ -190,11 +199,17 @@ export class GitManager {
     const parentRaw = await git.raw(['rev-parse', `${hash}^`]).catch(() => '')
     const parent = parentRaw.trim() || EMPTY_TREE
 
-    // Get the diff
-    const diff = await git.raw(['diff', parent, hash])
+    // Fetch diff and file stats in parallel
+    const [rawDiff, numstatRaw] = await Promise.all([
+      git.raw(['diff', parent, hash]),
+      git.raw(['diff', '--numstat', parent, hash]),
+    ])
 
-    // Get file stats
-    const numstatRaw = await git.raw(['diff', '--numstat', parent, hash])
+    // Cap diff size
+    const diff = rawDiff.length > GitManager.MAX_DIFF_SIZE
+      ? rawDiff.slice(0, GitManager.MAX_DIFF_SIZE) + '\n\n... diff truncated (too large to display)'
+      : rawDiff
+
     const files = numstatRaw.trim().split('\n').filter(Boolean).map((line) => {
       const [ins, del, ...pathParts] = line.split('\t')
       return {
@@ -276,9 +291,8 @@ export class GitManager {
       const remotes = await git.getRemotes()
       if (remotes.length === 0) return { ahead: 0, behind: 0, hasRemote: false }
 
-      // Fetch to get up-to-date remote info (silently)
-      try { await git.fetch() } catch { /* ignore fetch errors */ }
-
+      // Use cached tracking info — don't call git fetch here as it's a network call
+      // that can block for seconds. Fetching happens during explicit sync instead.
       const status = await git.status()
       return {
         ahead: status.ahead,
@@ -331,12 +345,16 @@ export class GitManager {
   startWatching(projectPath: string) {
     if (this.watchers.has(projectPath)) return
 
+    let watchDebounce: ReturnType<typeof setTimeout> | null = null
+
     try {
       const watcher = watch(projectPath, { recursive: true }, (_event, filename) => {
         if (!filename) return
-        // Ignore .git directory changes and node_modules
-        if (filename.startsWith('.git') || filename.includes('node_modules')) return
-        this.emitStatusChange(projectPath)
+        // Ignore .git directory changes, node_modules, and build artifacts
+        if (filename.startsWith('.git') || filename.includes('node_modules') || filename.includes('dist/')) return
+        // Debounce: batch rapid file changes into a single status update
+        if (watchDebounce) clearTimeout(watchDebounce)
+        watchDebounce = setTimeout(() => this.emitStatusChange(projectPath), 1000)
       })
 
       this.watchers.set(projectPath, watcher)

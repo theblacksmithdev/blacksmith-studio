@@ -61,6 +61,10 @@ export type { DividerVariant } from './divider'
 export { Alert } from './alert'
 export type { AlertVariant } from './alert'
 
+// ── Data ──
+export { VirtualList } from './virtual-list'
+export type { VirtualListProps } from './virtual-list'
+
 // ── Composite ──
 export { EmptyState } from './empty-state'
 

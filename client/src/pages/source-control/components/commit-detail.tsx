@@ -1,9 +1,8 @@
-import { useState } from 'react'
+import { useState, useMemo, memo, useCallback } from 'react'
 import { Flex, Box } from '@chakra-ui/react'
 import { GitCommitHorizontal, User, Calendar, Copy, Check } from 'lucide-react'
 import { useGitCommitDetail } from '@/hooks/use-git'
-import { Drawer } from '@/components/shared/ui'
-import { Text, Badge, spacing, radii } from '@/components/shared/ui'
+import { Drawer, Text, Badge, VirtualList, spacing, radii } from '@/components/shared/ui'
 import { FileIcon } from '@/pages/files/components/explorer/utils/file-icon'
 
 function formatDate(dateStr: string): string {
@@ -46,12 +45,43 @@ export function CommitDetailDrawer({ hash, onClose }: Props) {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const totalAdded = detail?.files.reduce((n, f) => n + f.insertions, 0) ?? 0
-  const totalDeleted = detail?.files.reduce((n, f) => n + f.deletions, 0) ?? 0
+  const { totalAdded, totalDeleted, diffLines } = useMemo(() => {
+    if (!detail) return { totalAdded: 0, totalDeleted: 0, diffLines: [] as string[] }
+    return {
+      totalAdded: detail.files.reduce((n, f) => n + f.insertions, 0),
+      totalDeleted: detail.files.reduce((n, f) => n + f.deletions, 0),
+      diffLines: detail.diff.split('\n').filter((l) =>
+        !l.startsWith('diff --git') && !l.startsWith('index ') && !l.startsWith('---') && !l.startsWith('+++')
+      ),
+    }
+  }, [detail])
 
-  const diffLines = (detail?.diff ?? '').split('\n').filter((l) =>
-    !l.startsWith('diff --git') && !l.startsWith('index ') && !l.startsWith('---') && !l.startsWith('+++')
-  )
+  const renderDiffLine = useCallback((line: string, i: number) => {
+    const type = classifyLine(line)
+    const colors = diffLineColors[type]
+    return (
+      <Flex css={{
+        background: colors.bg,
+        fontFamily: "'SF Mono', 'Fira Code', monospace",
+        fontSize: '12px',
+        lineHeight: '18px',
+      }}>
+        <Box css={{
+          width: '40px', minWidth: '40px', padding: '0 6px', textAlign: 'right',
+          color: 'var(--studio-text-muted)', fontSize: '11px',
+          userSelect: 'none', opacity: 0.5,
+        }}>
+          {i + 1}
+        </Box>
+        <Box css={{
+          flex: 1, padding: '0 10px 0 6px', whiteSpace: 'pre-wrap', wordBreak: 'break-all',
+          color: colors.text, fontWeight: type === 'hunk' ? 600 : 400,
+        }}>
+          {line || ' '}
+        </Box>
+      </Flex>
+    )
+  }, [])
 
   return (
     <Drawer
@@ -144,47 +174,17 @@ export function CommitDetailDrawer({ hash, onClose }: Props) {
             <Box css={{
               flex: 1,
               minHeight: 0,
-              overflow: 'auto',
               borderRadius: radii.lg,
               border: '1px solid var(--studio-border)',
               background: 'var(--studio-bg-sidebar)',
-              '&::-webkit-scrollbar': { width: '6px', height: '6px' },
-              '&::-webkit-scrollbar-thumb': { background: 'rgba(128,128,128,0.2)', borderRadius: '3px' },
+              overflow: 'hidden',
             }}>
-              <Box
-                as="table"
-                css={{
-                  width: '100%',
-                  borderCollapse: 'collapse',
-                  fontFamily: "'SF Mono', 'Fira Code', monospace",
-                  fontSize: '12px',
-                  lineHeight: '18px',
-                }}
-              >
-                <tbody>
-                  {diffLines.map((line, i) => {
-                    const type = classifyLine(line)
-                    const colors = diffLineColors[type]
-                    return (
-                      <tr key={i} style={{ background: colors.bg }}>
-                        <td style={{
-                          width: '40px', padding: '0 6px', textAlign: 'right',
-                          color: 'var(--studio-text-muted)', fontSize: '11px',
-                          userSelect: 'none', opacity: 0.5, verticalAlign: 'top',
-                        }}>
-                          {i + 1}
-                        </td>
-                        <td style={{
-                          padding: '0 10px 0 6px', whiteSpace: 'pre-wrap', wordBreak: 'break-all',
-                          color: colors.text, fontWeight: type === 'hunk' ? 600 : 400,
-                        }}>
-                          {line || ' '}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </Box>
+              <VirtualList
+                items={diffLines}
+                estimateSize={18}
+                overscan={40}
+                renderItem={renderDiffLine}
+              />
             </Box>
           </Box>
         </Flex>

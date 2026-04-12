@@ -17,12 +17,14 @@ import type {
   GitResolveConflictInput,
   GitCommitDetail,
   GitCommitDetailInput,
+  PaginationInput,
+  PaginatedResult,
 } from '../types'
 
 export const git = {
   // Status
   status: () => raw.invoke<GitStatusResult>('git:status'),
-  changedFiles: () => raw.invoke<GitChangedFile[]>('git:changedFiles'),
+  changedFiles: (input?: PaginationInput) => raw.invoke<PaginatedResult<GitChangedFile>>('git:changedFiles', input),
   diff: (input: GitDiffInput) => raw.invoke<string>('git:diff', input),
 
   // Commits

@@ -111,7 +111,7 @@ export function SourceControlView() {
             variant="primary"
             size="sm"
             onClick={() => setShowCommitDialog(true)}
-            disabled={!changedFiles.data?.length}
+            disabled={changedFiles.total === 0}
           >
             <GitCommitHorizontal size={13} />
             Commit
@@ -130,20 +130,22 @@ export function SourceControlView() {
                 <Flex direction="column" css={{ height: '100%', background: 'var(--studio-bg-sidebar)' }}>
                   <Flex align="center" justify="space-between" css={{ padding: `${spacing.sm} ${spacing.md}`, flexShrink: 0 }}>
                     <Text variant="tiny" color="muted">Changes</Text>
-                    {changedFiles.data && changedFiles.data.length > 0 && (
-                      <Badge variant="default" size="sm">{changedFiles.data.length}</Badge>
+                    {changedFiles.total > 0 && (
+                      <Badge variant="default" size="sm">{changedFiles.total}</Badge>
                     )}
                   </Flex>
-                  <Box css={{ flex: 1, overflowY: 'auto', padding: `0 ${spacing.xs} ${spacing.sm}` }}>
+                  <Box css={{ flex: 1, minHeight: 0, padding: `0 ${spacing.xs} ${spacing.sm}` }}>
                     {changedFiles.isLoading ? (
                       <Flex align="center" justify="center" css={{ height: '80px' }}>
                         <Text variant="caption" color="muted">Loading...</Text>
                       </Flex>
                     ) : (
                       <ChangedFilesList
-                        files={changedFiles.data ?? []}
+                        files={changedFiles.data}
                         selectedPath={selectedFile}
                         onSelect={setSelectedFile}
+                        onLoadMore={changedFiles.hasNextPage ? () => changedFiles.fetchNextPage() : undefined}
+                        isLoadingMore={changedFiles.isFetchingNextPage}
                       />
                     )}
                   </Box>
@@ -184,7 +186,7 @@ export function SourceControlView() {
       </Box>
 
       {/* ── Dialogs ── */}
-      {showCommitDialog && changedFiles.data && (
+      {showCommitDialog && changedFiles.total > 0 && (
         <CommitDialog
           files={changedFiles.data}
           onClose={() => setShowCommitDialog(false)}

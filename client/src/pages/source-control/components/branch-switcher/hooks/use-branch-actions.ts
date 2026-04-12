@@ -10,40 +10,36 @@ export function useBranchActions(onClose: () => void) {
   const current = branches?.find((b) => b.current) ?? null
   const others = branches?.filter((b) => !b.current) ?? []
 
-  const checkout = async (name: string) => {
+  const checkout = (name: string) => {
     setError(null)
-    try {
-      await switchBranch.mutateAsync({ name })
-      onClose()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to switch branch')
-    }
+    // Close modal immediately so the UI stays responsive during the git operation
+    onClose()
+    switchBranch.mutate({ name }, {
+      onError: (err) => setError(err instanceof Error ? err.message : 'Failed to switch branch'),
+    })
   }
 
-  const create = async (name: string) => {
+  const create = (name: string) => {
     setError(null)
-    try {
-      await createBranch.mutateAsync({ name })
-      onClose()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create branch')
-    }
+    onClose()
+    createBranch.mutate({ name }, {
+      onError: (err) => setError(err instanceof Error ? err.message : 'Failed to create branch'),
+    })
   }
 
-  const mergeInto = async (source: string) => {
-    if (!current) return null
+  const mergeInto = (source: string) => {
+    if (!current) return
     setError(null)
-    try {
-      const result = await merge.mutateAsync({ source, target: current.name })
-      if (result.success) {
-        invalidateAll()
-        return { success: true, conflicts: [] as string[] }
-      }
-      return { success: false, conflicts: result.conflicts }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Merge failed')
-      return null
-    }
+    merge.mutate({ source, target: current.name }, {
+      onSuccess: (result) => {
+        if (result.success) {
+          onClose()
+        } else {
+          setError(`Merge conflicts in: ${result.conflicts.join(', ')}`)
+        }
+      },
+      onError: (err) => setError(err instanceof Error ? err.message : 'Merge failed'),
+    })
   }
 
   return {

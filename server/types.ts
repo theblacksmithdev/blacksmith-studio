@@ -1,3 +1,30 @@
+/* ── Pagination ── */
+
+export interface PaginationInput {
+  limit?: number
+  offset?: number
+}
+
+export interface PaginatedResult<T> {
+  items: T[]
+  total: number
+  hasMore: boolean
+}
+
+/** Helper to paginate an in-memory array */
+export function paginate<T>(items: T[], input?: PaginationInput): PaginatedResult<T> {
+  const offset = input?.offset ?? 0
+  const limit = input?.limit ?? 50
+  const sliced = items.slice(offset, offset + limit)
+  return {
+    items: sliced,
+    total: items.length,
+    hasMore: offset + limit < items.length,
+  }
+}
+
+/* ── Sessions ── */
+
 export interface Session {
   id: string
   name: string

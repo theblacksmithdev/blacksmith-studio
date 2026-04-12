@@ -6,21 +6,27 @@ const DEFAULT_IGNORE = new Set([
   'node_modules', '.git', '__pycache__', 'venv', 'dist', '.env',
   '.blacksmith-studio', '.claude', '.vscode', '.idea',
   'htmlcov', '.pytest_cache', '.mypy_cache',
+  '.next', '.nuxt', '.output', 'build', 'coverage',
+  '.turbo', '.cache', '.parcel-cache', 'target',
 ])
 
 const IGNORE_EXTENSIONS = new Set(['.pyc', '.pyo', '.egg-info'])
+
+/** Max total nodes to prevent memory bloat on huge repos */
+const MAX_NODES = 5000
 
 export function buildFileTree(
   projectRoot: string,
   dir?: string,
   depth = 0,
   maxDepth = 6,
+  counter = { count: 0 },
 ): FileNode {
   const currentDir = dir || projectRoot
   const name = dir ? path.basename(currentDir) : path.basename(projectRoot)
   const relativePath = path.relative(projectRoot, currentDir)
 
-  if (depth >= maxDepth) {
+  if (depth >= maxDepth || counter.count >= MAX_NODES) {
     return { name, path: relativePath || '.', type: 'directory', children: [] }
   }
 
@@ -39,6 +45,7 @@ export function buildFileTree(
     if (!a.isDirectory() && b.isDirectory()) return 1
     return a.name.localeCompare(b.name)
   })) {
+    if (counter.count >= MAX_NODES) break
     if (entry.name.startsWith('.') && DEFAULT_IGNORE.has(entry.name)) continue
     if (DEFAULT_IGNORE.has(entry.name)) continue
     if (IGNORE_EXTENSIONS.has(path.extname(entry.name))) continue
@@ -46,8 +53,10 @@ export function buildFileTree(
     const fullPath = path.join(currentDir, entry.name)
     const relPath = path.relative(projectRoot, fullPath)
 
+    counter.count++
+
     if (entry.isDirectory()) {
-      children.push(buildFileTree(projectRoot, fullPath, depth + 1, maxDepth))
+      children.push(buildFileTree(projectRoot, fullPath, depth + 1, maxDepth, counter))
     } else {
       children.push({ name: entry.name, path: relPath, type: 'file' })
     }
@@ -125,6 +134,9 @@ export interface SearchResult {
  * Search file contents in the project for a query string.
  * Returns matching file paths with line-level matches (max 3 per file).
  */
+/** Max files to scan during content search to avoid blocking the main process */
+const MAX_FILES_SCANNED = 500
+
 export function searchFileContents(
   projectRoot: string,
   query: string,
@@ -134,16 +146,17 @@ export function searchFileContents(
 
   const results: SearchResult[] = []
   const q = query.toLowerCase()
+  let filesScanned = 0
 
   function walk(dir: string) {
-    if (results.length >= maxResults) return
+    if (results.length >= maxResults || filesScanned >= MAX_FILES_SCANNED) return
 
     let entries: fs.Dirent[]
     try { entries = fs.readdirSync(dir, { withFileTypes: true }) }
     catch { return }
 
     for (const entry of entries) {
-      if (results.length >= maxResults) return
+      if (results.length >= maxResults || filesScanned >= MAX_FILES_SCANNED) return
       if (DEFAULT_IGNORE.has(entry.name)) continue
       if (entry.name.startsWith('.') && DEFAULT_IGNORE.has(entry.name)) continue
 
@@ -156,6 +169,7 @@ export function searchFileContents(
         if (!TEXT_EXTENSIONS.has(ext)) continue
 
         try {
+          filesScanned++
           const stat = fs.statSync(fullPath)
           if (stat.size > MAX_FILE_SIZE) continue
 

@@ -50,9 +50,9 @@ export function setupGitIPC(
     return gitManager.getStatus(getPath())
   })
 
-  ipcMain.handle(GIT_CHANGED_FILES, async () => {
+  ipcMain.handle(GIT_CHANGED_FILES, async (_e, data?: { limit?: number; offset?: number }) => {
     const p = await requireRepo()
-    return gitManager.getChangedFiles(p)
+    return gitManager.getChangedFiles(p, data)
   })
 
   ipcMain.handle(GIT_DIFF, async (_e, data: { path: string }) => {

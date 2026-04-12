@@ -16,6 +16,7 @@ export function useFiles() {
   const treeQuery = useQuery({
     queryKey: queryKeys.files,
     queryFn: () => api.files.tree(),
+    staleTime: 30_000, // 30s — avoid re-scanning the entire project on every mount
   })
 
   const fetchFileContent = async (filePath: string) => {

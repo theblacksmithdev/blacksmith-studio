@@ -1,5 +1,6 @@
+import { useMemo, memo, useCallback } from 'react'
 import { Flex, Box } from '@chakra-ui/react'
-import { Text, spacing, radii } from '@/components/shared/ui'
+import { Text, VirtualList, spacing } from '@/components/shared/ui'
 import type { GitCommitEntry } from '@/api/types'
 
 function formatRelative(dateStr: string): string {
@@ -18,24 +19,81 @@ function formatRelative(dateStr: string): string {
   return date.toLocaleDateString()
 }
 
-function groupByDate(entries: GitCommitEntry[]): Map<string, GitCommitEntry[]> {
-  const groups = new Map<string, GitCommitEntry[]>()
-  for (const entry of entries) {
-    const date = new Date(entry.date)
-    const now = new Date()
-    const diffDays = Math.floor((now.getTime() - date.getTime()) / 86400000)
+function getDateKey(dateStr: string): string {
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diffDays = Math.floor((now.getTime() - date.getTime()) / 86400000)
 
-    let key: string
-    if (diffDays === 0) key = 'Today'
-    else if (diffDays === 1) key = 'Yesterday'
-    else if (diffDays < 7) key = date.toLocaleDateString(undefined, { weekday: 'long' })
-    else key = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-
-    if (!groups.has(key)) groups.set(key, [])
-    groups.get(key)!.push(entry)
-  }
-  return groups
+  if (diffDays === 0) return 'Today'
+  if (diffDays === 1) return 'Yesterday'
+  if (diffDays < 7) return date.toLocaleDateString(undefined, { weekday: 'long' })
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
 }
+
+type FlatItem =
+  | { type: 'header'; label: string }
+  | { type: 'entry'; entry: GitCommitEntry }
+
+function flattenWithHeaders(entries: GitCommitEntry[]): FlatItem[] {
+  const items: FlatItem[] = []
+  let lastKey = ''
+  for (const entry of entries) {
+    const key = getDateKey(entry.date)
+    if (key !== lastKey) {
+      items.push({ type: 'header', label: key })
+      lastKey = key
+    }
+    items.push({ type: 'entry', entry })
+  }
+  return items
+}
+
+const CommitRow = memo(function CommitRow({
+  entry,
+  onSelect,
+}: {
+  entry: GitCommitEntry
+  onSelect?: (hash: string) => void
+}) {
+  return (
+    <Flex
+      as="button"
+      align="center"
+      gap={spacing.sm}
+      onClick={() => onSelect?.(entry.hash)}
+      css={{
+        width: '100%',
+        padding: `6px ${spacing.sm}`,
+        marginLeft: '5px',
+        border: 'none',
+        borderLeft: '1px solid var(--studio-border)',
+        background: 'transparent',
+        textAlign: 'left',
+        cursor: 'pointer',
+        fontFamily: 'inherit',
+        transition: 'all 0.1s ease',
+        '&:hover': {
+          background: 'var(--studio-bg-surface)',
+          borderLeftColor: 'var(--studio-text-muted)',
+        },
+      }}
+    >
+      <Box css={{
+        width: '7px', height: '7px', borderRadius: '50%',
+        background: 'var(--studio-border-hover)', flexShrink: 0, marginLeft: '-4px',
+      }} />
+      <Text variant="caption" css={{ fontFamily: "'SF Mono', monospace", color: 'var(--studio-text-muted)', flexShrink: 0, opacity: 0.7 }}>
+        {entry.hash.slice(0, 7)}
+      </Text>
+      <Text variant="bodySmall" css={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--studio-text-primary)', fontWeight: 450 }}>
+        {entry.message}
+      </Text>
+      <Text variant="caption" color="muted" css={{ flexShrink: 0 }}>
+        {formatRelative(entry.date)}
+      </Text>
+    </Flex>
+  )
+})
 
 interface Props {
   entries: GitCommitEntry[]
@@ -43,6 +101,8 @@ interface Props {
 }
 
 export function HistoryTimeline({ entries, onSelect }: Props) {
+  const flatItems = useMemo(() => flattenWithHeaders(entries), [entries])
+
   if (entries.length === 0) {
     return (
       <Flex align="center" justify="center" css={{ padding: `${spacing.xl} 0` }}>
@@ -51,82 +111,23 @@ export function HistoryTimeline({ entries, onSelect }: Props) {
     )
   }
 
-  const groups = groupByDate(entries)
+  const renderItem = useCallback((item: FlatItem) => {
+    if (item.type === 'header') {
+      return (
+        <Text variant="tiny" color="muted" css={{ padding: `${spacing.sm} 0 ${spacing.xs}`, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          {item.label}
+        </Text>
+      )
+    }
+    return <CommitRow entry={item.entry} onSelect={onSelect} />
+  }, [onSelect])
 
   return (
-    <Flex direction="column">
-      {Array.from(groups.entries()).map(([date, items]) => (
-        <Box key={date}>
-          <Text variant="tiny" color="muted" css={{ padding: `${spacing.sm} 0 ${spacing.xs}`, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            {date}
-          </Text>
-
-          <Box css={{ marginLeft: '6px', borderLeft: '1px solid var(--studio-border)', paddingLeft: 0 }}>
-            {items.map((entry) => (
-              <Flex
-                as="button"
-                key={entry.hash}
-                align="center"
-                gap={spacing.sm}
-                onClick={() => onSelect?.(entry.hash)}
-                css={{
-                  width: '100%',
-                  padding: `6px ${spacing.sm}`,
-                  marginLeft: '-1px',
-                  border: 'none',
-                  borderLeft: '1px solid transparent',
-                  background: 'transparent',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  transition: 'all 0.1s ease',
-                  '&:hover': {
-                    background: 'var(--studio-bg-surface)',
-                    borderLeftColor: 'var(--studio-text-muted)',
-                  },
-                }}
-              >
-                {/* Dot */}
-                <Box css={{
-                  width: '7px',
-                  height: '7px',
-                  borderRadius: '50%',
-                  background: 'var(--studio-border-hover)',
-                  flexShrink: 0,
-                  marginLeft: '-4px',
-                }} />
-
-                {/* Hash */}
-                <Text variant="caption" css={{
-                  fontFamily: "'SF Mono', monospace",
-                  color: 'var(--studio-text-muted)',
-                  flexShrink: 0,
-                  opacity: 0.7,
-                }}>
-                  {entry.hash.slice(0, 7)}
-                </Text>
-
-                {/* Message */}
-                <Text variant="bodySmall" css={{
-                  flex: 1,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  color: 'var(--studio-text-primary)',
-                  fontWeight: 450,
-                }}>
-                  {entry.message}
-                </Text>
-
-                {/* Time */}
-                <Text variant="caption" color="muted" css={{ flexShrink: 0 }}>
-                  {formatRelative(entry.date)}
-                </Text>
-              </Flex>
-            ))}
-          </Box>
-        </Box>
-      ))}
-    </Flex>
+    <VirtualList
+      items={flatItems}
+      estimateSize={32}
+      renderItem={renderItem}
+      overscan={20}
+    />
   )
 }

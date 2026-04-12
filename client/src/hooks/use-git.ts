@@ -1,5 +1,5 @@
-import { useEffect, useCallback } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useEffect, useCallback, useMemo } from 'react'
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api'
 import { queryKeys } from '@/api/query-keys'
 import { useGitStore } from '@/stores/git-store'
@@ -14,7 +14,7 @@ export function useGitListener() {
   useEffect(() => {
     api.git.status().then((status) => {
       store.getState().setStatus(status as any)
-    })
+    }).catch(() => {})
 
     const unsub = api.git.onStatusChange((data) => {
       store.getState().setStatus(data as any)
@@ -42,7 +42,7 @@ export function useGit() {
     mutationFn: api.git.commit,
     onSuccess: () => {
       invalidateAll()
-      api.git.status().then((s) => useGitStore.getState().setStatus(s as any))
+      api.git.status().then((s) => useGitStore.getState().setStatus(s as any)).catch(() => {})
     },
   })
 
@@ -97,6 +97,7 @@ export function useGit() {
 }
 
 /* ── Standalone query hooks ── */
+/* All use the default staleTime (30s) from query-client unless overridden */
 
 export function useGitStatus() {
   return useQuery({
@@ -105,13 +106,34 @@ export function useGitStatus() {
   })
 }
 
+const CHANGED_FILES_PAGE_SIZE = 100
+
 export function useGitChangedFiles() {
   const initialized = useGitStore((s) => s.initialized)
-  return useQuery({
+
+  const query = useInfiniteQuery({
     queryKey: queryKeys.gitChangedFiles,
-    queryFn: () => api.git.changedFiles(),
+    queryFn: ({ pageParam = 0 }) => api.git.changedFiles({ limit: CHANGED_FILES_PAGE_SIZE, offset: pageParam }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, _allPages, lastPageParam) =>
+      lastPage.hasMore ? lastPageParam + CHANGED_FILES_PAGE_SIZE : undefined,
     enabled: initialized,
   })
+
+  const files = useMemo(
+    () => query.data?.pages.flatMap((p) => p.items) ?? [],
+    [query.data],
+  )
+  const total = query.data?.pages[0]?.total ?? 0
+
+  return {
+    data: files,
+    total,
+    isLoading: query.isLoading,
+    isFetchingNextPage: query.isFetchingNextPage,
+    hasNextPage: query.hasNextPage,
+    fetchNextPage: query.fetchNextPage,
+  }
 }
 
 export function useGitHistory(limit?: number) {
@@ -138,6 +160,7 @@ export function useGitSyncStatus() {
     queryKey: queryKeys.gitSyncStatus,
     queryFn: () => api.git.syncStatus(),
     enabled: initialized,
+    staleTime: 60_000, // 1min — avoid frequent checks
   })
 }
 
@@ -155,6 +178,7 @@ export function useGitCommitDetail(hash: string) {
     queryKey: queryKeys.gitCommitDetail(hash),
     queryFn: () => api.git.commitDetail({ hash }),
     enabled: !!hash,
+    staleTime: Infinity,
   })
 }
 
@@ -163,5 +187,6 @@ export function useGitDiff(filePath?: string) {
     queryKey: queryKeys.gitDiff(filePath ?? ''),
     queryFn: () => api.git.diff({ path: filePath! }),
     enabled: !!filePath,
+    staleTime: 5_000,
   })
 }
