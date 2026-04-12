@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 import styled from '@emotion/styled'
 import { useParams } from 'react-router-dom'
 import { PanelRight, History } from 'lucide-react'
-import { Splitter } from '@chakra-ui/react'
 import { MessageList } from './message-list'
 import { ChatInput } from './chat-input'
 import { HistoryPanel } from './history-panel'
@@ -11,8 +10,8 @@ import { useSessions } from '@/hooks/use-sessions'
 import { useChatStore } from '@/stores/chat-store'
 import { useSessionStore } from '@/stores/session-store'
 import { useUiStore } from '@/stores/ui-store'
-import { useSettings } from '@/hooks/use-settings'
 import { PreviewPanel } from '@/components/shared/preview-panel'
+import { SplitPanel } from '@/components/shared/layout'
 import { Tooltip } from '@/components/shared/tooltip'
 
 const Root = styled.div`
@@ -68,23 +67,6 @@ const InputWrap = styled.div`
   width: 100%;
 `
 
-const resizeTriggerCss = {
-  width: '6px',
-  background: 'transparent',
-  borderInlineStart: '1px solid var(--studio-border)',
-  cursor: 'col-resize',
-  transition: 'border-color 0.15s ease',
-  _hover: {
-    borderInlineStartWidth: '3px',
-    borderColor: 'var(--studio-border-hover)',
-  },
-}
-
-const PANELS = [
-  { id: 'chat', minSize: 30 },
-  { id: 'preview', minSize: 20 },
-]
-
 export function ChatView() {
   const { sessionId } = useParams<{ sessionId: string }>()
   const { sendPrompt, cancelPrompt } = useClaude()
@@ -96,7 +78,6 @@ export function ChatView() {
   const setPreviewOpen = useUiStore((s) => s.setPreviewOpen)
   const historyOpen = useUiStore((s) => s.historyPanelOpen)
   const toggleHistory = useUiStore((s) => s.toggleHistoryPanel)
-  const { chatSplit, set: setSetting } = useSettings()
 
   useEffect(() => {
     if (sessionId && sessionId !== activeSessionId) {
@@ -111,13 +92,6 @@ export function ChatView() {
 
   const handleCancel = () => {
     if (sessionId) cancelPrompt(sessionId)
-  }
-
-  const handleResizeEnd = (details: { size: number[] }) => {
-    const left = Math.round(details.size[0])
-    if (left !== chatSplit) {
-      setSetting('preview.chatSplit', left)
-    }
   }
 
   const chatContent = (
@@ -150,32 +124,35 @@ export function ChatView() {
     </ChatColumn>
   )
 
+  // Chat + optional preview (preview is the resizable left panel, chat fills remaining)
   const mainContent = previewOpen ? (
-    <Splitter.Root
-      panels={PANELS}
-      defaultSize={[chatSplit, 100 - chatSplit]}
-      orientation="horizontal"
-      onResizeEnd={handleResizeEnd}
-      css={{ height: '100%', display: 'flex', flex: 1, minWidth: 0 }}
+    <SplitPanel
+      left={chatContent}
+      defaultWidth={600}
+      minWidth={360}
+      maxWidth={900}
+      storageKey="chat.previewSplit"
     >
-      <Splitter.Panel id="chat">
-        {chatContent}
-      </Splitter.Panel>
+      <PreviewPanel onClose={() => setPreviewOpen(false)} />
+    </SplitPanel>
+  ) : chatContent
 
-      <Splitter.ResizeTrigger id="chat:preview" css={resizeTriggerCss} />
-
-      <Splitter.Panel id="preview">
-        <PreviewPanel onClose={() => setPreviewOpen(false)} />
-      </Splitter.Panel>
-    </Splitter.Root>
-  ) : (
-    chatContent
-  )
+  // Optional history panel wrapping everything
+  if (!historyOpen) {
+    return <Root>{mainContent}</Root>
+  }
 
   return (
     <Root>
-      {historyOpen && <HistoryPanel />}
-      {mainContent}
+      <SplitPanel
+        left={<HistoryPanel />}
+        defaultWidth={260}
+        minWidth={200}
+        maxWidth={400}
+        storageKey="chat.historyWidth"
+      >
+        {mainContent}
+      </SplitPanel>
     </Root>
   )
 }
