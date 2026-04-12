@@ -16,10 +16,12 @@ interface ChatInputProps {
   onCancel: () => void
   isStreaming: boolean
   disabled?: boolean
+  /** Pre-fill the input with this text on mount */
+  initialValue?: string
 }
 
-export function ChatInput({ onSend, onCancel, isStreaming, disabled }: ChatInputProps) {
-  const [value, setValue] = useState('')
+export function ChatInput({ onSend, onCancel, isStreaming, disabled, initialValue }: ChatInputProps) {
+  const [value, setValue] = useState(initialValue ?? '')
   const [modelMenuOpen, setModelMenuOpen] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const triggerRef = useRef<HTMLDivElement>(null)

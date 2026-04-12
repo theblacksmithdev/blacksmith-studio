@@ -15,6 +15,8 @@ export const runner = {
   updateConfig: (id: string, updates: Partial<RunnerConfigData>) => raw.invoke<RunnerConfigData>('runner:updateConfig', { id, updates }),
   removeConfig: (id: string) => raw.invoke<void>('runner:removeConfig', { id }),
 
+  // Diagnosis
+
   // Detection
   detectRunners: () => raw.invoke<RunnerConfigData[]>('runner:detectRunners'),
   detectNode: () => raw.invoke<NodeInstallation[]>('runner:detectNode'),

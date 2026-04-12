@@ -1,13 +1,15 @@
 import { useState, useMemo } from 'react'
 import { Flex, Box } from '@chakra-ui/react'
-import { Play, Square, PanelRight, Plus, MoreVertical, Eye, Trash2 } from 'lucide-react'
+import { Play, Square, PanelRight, Plus, MoreVertical, Eye, Trash2, BotMessageSquare } from 'lucide-react'
 import { useRunnerStore, selectServices, selectIsAnyActive, isServiceActive, type RunnerService } from '@/stores/runner-store'
 import { useRunnerConfigs, useAddRunnerConfig, useUpdateRunnerConfig, useRemoveRunnerConfig } from '@/hooks/use-runner-configs'
 import { useRunner } from '@/hooks/use-runner'
 import { useUiStore } from '@/stores/ui-store'
 import { getServiceIcon, StatusDot } from './runner-primitives'
 import { RunnerLogs } from './logs'
+import { DiagnoseDrawer } from './logs/components'
 import { RunnerConfigDrawer } from './config-drawer'
+import { useSessions } from '@/hooks/use-sessions'
 import { PreviewPanel } from '@/components/shared/preview-panel'
 import { SplitPanel } from '@/components/shared/layout'
 import { Text, IconButton, Tooltip, Badge, Skeleton, ConfirmDialog, spacing, radii } from '@/components/shared/ui'
@@ -27,10 +29,13 @@ function ServiceListPanel({
   const updateConfig = useUpdateRunnerConfig()
   const removeConfig = useRemoveRunnerConfig()
   const { start, stop, startAll, stopAll } = useRunner()
+  const { createSession } = useSessions()
+  const storeLogs = useRunnerStore((s) => s.logs)
 
   const [modalConfig, setModalConfig] = useState<RunnerConfigData | null | 'new'>(null)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
   const [menuOpen, setMenuOpen] = useState<string | null>(null)
+  const [diagnoseDrawer, setDiagnoseDrawer] = useState<{ sessionId: string; prompt: string; title: string } | null>(null)
 
   const services: RunnerService[] = useMemo(() =>
     configs.map((cfg) => {
@@ -63,6 +68,35 @@ function ServiceListPanel({
     removeConfig.mutate(deleteTarget.id)
     if (selectedId === deleteTarget.id) onSelect(null)
     setDeleteTarget(null)
+  }
+
+  const handleDiagnose = async (svcId: string) => {
+    const config = configs.find((c) => c.id === svcId)
+    const recentLogs = storeLogs.filter((l) => l.configId === svcId).slice(-80).map((l) => l.line)
+
+    const prompt = [
+      `My dev service "${config?.name ?? 'Unknown'}" has issues. Please diagnose the error from the logs below and fix it.`,
+      '',
+      config ? [
+        '## Service Configuration',
+        `- Command: \`${config.command}\``,
+        `- Working directory: \`${config.cwd}\``,
+        config.port ? `- Port: ${config.port}` : null,
+        Object.keys(config.env || {}).length > 0 ? `- Environment: ${JSON.stringify(config.env)}` : null,
+      ].filter(Boolean).join('\n') : '',
+      '',
+      recentLogs.length > 0 ? `## Recent Logs\n\`\`\`\n${recentLogs.join('\n')}\n\`\`\`` : '## Logs\nNo log output available.',
+      '',
+      'Please:',
+      '1. Identify the root cause of the error',
+      '2. Fix any code or configuration issues in the project',
+      '3. Explain what you changed and why',
+    ].join('\n')
+
+    const session = await createSession(`Fix: ${config?.name ?? 'service'} error`)
+    if (session?.id) {
+      setDiagnoseDrawer({ sessionId: session.id, prompt, title: `Fix: ${config?.name ?? 'Service'} Error` })
+    }
   }
 
   return (
@@ -232,6 +266,31 @@ function ServiceListPanel({
                           onClick={(e: React.MouseEvent) => {
                             e.stopPropagation()
                             setMenuOpen(null)
+                            handleDiagnose(svc.id)
+                          }}
+                          css={{
+                            padding: `${spacing.xs} ${spacing.sm}`,
+                            borderRadius: radii.md,
+                            border: 'none',
+                            background: 'transparent',
+                            color: 'var(--studio-text-secondary)',
+                            fontSize: '13px',
+                            cursor: 'pointer',
+                            fontFamily: 'inherit',
+                            textAlign: 'left',
+                            width: '100%',
+                            '&:hover': { background: 'var(--studio-bg-hover)', color: 'var(--studio-text-primary)' },
+                          }}
+                        >
+                          <BotMessageSquare size={13} /> Diagnose with AI
+                        </Flex>
+                        <Flex
+                          as="button"
+                          align="center"
+                          gap={spacing.sm}
+                          onClick={(e: React.MouseEvent) => {
+                            e.stopPropagation()
+                            setMenuOpen(null)
                             setDeleteTarget({ id: svc.id, name: svc.name })
                           }}
                           css={{
@@ -310,6 +369,16 @@ function ServiceListPanel({
           variant="danger"
           onConfirm={handleDelete}
           onCancel={() => setDeleteTarget(null)}
+        />
+      )}
+
+      {/* AI Diagnose drawer */}
+      {diagnoseDrawer && (
+        <DiagnoseDrawer
+          sessionId={diagnoseDrawer.sessionId}
+          initialPrompt={diagnoseDrawer.prompt}
+          title={diagnoseDrawer.title}
+          onClose={() => setDiagnoseDrawer(null)}
         />
       )}
     </Flex>

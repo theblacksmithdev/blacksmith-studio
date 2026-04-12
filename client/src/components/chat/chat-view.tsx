@@ -1,6 +1,6 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Flex, Box } from '@chakra-ui/react'
-import { useParams } from 'react-router-dom'
+import { useParams, useLocation } from 'react-router-dom'
 import { PanelRight, History } from 'lucide-react'
 import { MessageList } from './message-list'
 import { ChatInput } from './chat-input'
@@ -16,6 +16,7 @@ import { IconButton, Tooltip, spacing } from '@/components/shared/ui'
 
 export function ChatView() {
   const { sessionId } = useParams<{ sessionId: string }>()
+  const location = useLocation()
   const { sendPrompt, cancelPrompt } = useClaude()
   const { loadSession } = useSessions()
   const { messages, isStreaming, partialMessage } = useChatStore()
@@ -31,6 +32,16 @@ export function ChatView() {
       loadSession(sessionId)
     }
   }, [sessionId, activeSessionId, loadSession])
+
+  // Auto-send initialPrompt from route state (e.g. from "Diagnose with AI")
+  const initialPromptSent = useRef(false)
+  useEffect(() => {
+    const state = location.state as { initialPrompt?: string } | null
+    if (state?.initialPrompt && sessionId && !initialPromptSent.current && !isStreaming) {
+      initialPromptSent.current = true
+      sendPrompt(state.initialPrompt, sessionId)
+    }
+  }, [sessionId, location.state])
 
   const handleSend = (text: string) => {
     if (!sessionId) return

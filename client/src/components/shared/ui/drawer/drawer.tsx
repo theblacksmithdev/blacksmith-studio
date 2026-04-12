@@ -47,6 +47,7 @@ export function Drawer({
       onOpenChange={(e) => { if (!e.open) onClose() }}
       placement={placement}
       size={size}
+      trapFocus={false}
     >
       <Portal>
         <ChakraDrawer.Backdrop

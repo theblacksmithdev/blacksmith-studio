@@ -25,7 +25,7 @@ export function useRunnerListener() {
     }).catch(() => {})
 
     const unsubs = [
-      // Live status pushes — update Zustand (runtime state only)
+      // Live status pushes
       api.runner.onStatus((data) => {
         store.getState().setServices(data as RunnerService[])
       }),

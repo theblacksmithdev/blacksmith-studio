@@ -47,6 +47,7 @@ export const useRunnerStore = create<RunnerState>((set) => ({
   })),
 
   clearLogs: () => set({ logs: [] }),
+
 }))
 
 /* ── Derived selectors ── */
