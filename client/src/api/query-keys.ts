@@ -35,6 +35,7 @@ function projectKeys(projectId: string) {
     agentHistory: [...p, 'agents', 'history'] as const,
     agentPipelines: [...p, 'agents', 'pipelines'] as const,
     agentBuildProgress: [...p, 'agents', 'buildProgress'] as const,
+    runnerConfigs: [...p, 'runner', 'configs'] as const,
   }
 }
 

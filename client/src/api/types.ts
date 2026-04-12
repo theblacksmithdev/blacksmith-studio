@@ -97,7 +97,7 @@ export interface RunnerConfigData {
 export interface NodeInstallation { label: string; path: string; version: string }
 
 // Subscribe events
-export interface RunnerOutputEvent { configId: string; line: string }
+export interface RunnerOutputEvent { configId: string; name: string; line: string }
 
 /* ── Claude ── */
 

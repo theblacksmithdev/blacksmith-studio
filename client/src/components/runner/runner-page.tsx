@@ -1,14 +1,15 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Flex, Box } from '@chakra-ui/react'
 import { Play, Square, PanelRight } from 'lucide-react'
-import { useRunnerStore, selectServices, selectIsAnyActive, isServiceActive } from '@/stores/runner-store'
+import { useRunnerStore, selectServices, selectIsAnyActive, isServiceActive, type RunnerService } from '@/stores/runner-store'
+import { useRunnerConfigs } from '@/hooks/use-runner-configs'
 import { useRunner } from '@/hooks/use-runner'
 import { useUiStore } from '@/stores/ui-store'
 import { getServiceIcon, StatusDot } from './runner-primitives'
 import { RunnerLogs } from './logs'
 import { PreviewPanel } from '@/components/shared/preview-panel'
 import { SplitPanel } from '@/components/shared/layout'
-import { Text, IconButton, Tooltip, Badge, spacing, radii } from '@/components/shared/ui'
+import { Text, IconButton, Tooltip, Badge, Skeleton, spacing, radii } from '@/components/shared/ui'
 
 function ServiceListPanel({
   selectedId,
@@ -17,8 +18,25 @@ function ServiceListPanel({
   selectedId: string | null
   onSelect: (id: string | null) => void
 }) {
-  const services = useRunnerStore(selectServices)
+  const { configs, isLoading: configsLoading } = useRunnerConfigs()
+  const liveServices = useRunnerStore(selectServices)
   const anyActive = useRunnerStore(selectIsAnyActive)
+
+  // Merge DB configs with live runtime status from Zustand
+  const services: RunnerService[] = useMemo(() =>
+    configs.map((cfg) => {
+      const live = liveServices.find((s) => s.id === cfg.id)
+      return {
+        id: cfg.id,
+        name: cfg.name,
+        status: live?.status ?? 'stopped',
+        port: live?.port ?? null,
+        previewUrl: live?.previewUrl ?? null,
+        icon: cfg.icon ?? 'terminal',
+      }
+    }),
+    [configs, liveServices],
+  )
   const { start, stop, startAll, stopAll } = useRunner()
 
   return (
@@ -120,11 +138,17 @@ function ServiceListPanel({
           )
         })}
 
-        {services.length === 0 && (
+        {configsLoading ? (
+          <Flex direction="column" gap={spacing.sm} css={{ padding: spacing.md }}>
+            <Skeleton variant="text" width="80%" />
+            <Skeleton variant="text" width="60%" />
+            <Skeleton variant="text" width="70%" />
+          </Flex>
+        ) : services.length === 0 ? (
           <Flex align="center" justify="center" css={{ padding: spacing['3xl'] }}>
             <Text variant="caption" color="muted">No services detected</Text>
           </Flex>
-        )}
+        ) : null}
       </Flex>
     </Flex>
   )
@@ -135,24 +159,23 @@ export function RunnerPage() {
   const previewOpen = useUiStore((s) => s.previewOpen)
   const setPreviewOpen = useUiStore((s) => s.setPreviewOpen)
 
+  const previewToggle = (
+    <Tooltip content={previewOpen ? 'Close preview' : 'Open preview'}>
+      <IconButton
+        variant={previewOpen ? 'default' : 'ghost'}
+        size="xs"
+        onClick={() => setPreviewOpen(!previewOpen)}
+        aria-label="Toggle preview"
+      >
+        <PanelRight />
+      </IconButton>
+    </Tooltip>
+  )
+
   const mainContent = (
-    <Flex direction="column" css={{ height: '100%' }}>
-      <Flex align="center" justify="flex-end" css={{ padding: spacing.sm, flexShrink: 0 }}>
-        <Tooltip content={previewOpen ? 'Close preview' : 'Open preview'}>
-          <IconButton
-            variant={previewOpen ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setPreviewOpen(!previewOpen)}
-            aria-label="Toggle preview"
-          >
-            <PanelRight />
-          </IconButton>
-        </Tooltip>
-      </Flex>
-      <Box css={{ flex: 1, minHeight: 0 }}>
-        <RunnerLogs externalFilter={selectedService} />
-      </Box>
-    </Flex>
+    <Box css={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <RunnerLogs externalFilter={selectedService} toolbarTrailing={previewToggle} />
+    </Box>
   )
 
   const rightContent = previewOpen ? (

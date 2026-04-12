@@ -22,7 +22,7 @@ export function resetProjectStores() {
     changedFiles: new Set(),
   })
 
-  useRunnerStore.setState({ logs: [] })
+  useRunnerStore.setState({ services: [], logs: [] })
 
   useGitStore.setState({
     initialized: false,

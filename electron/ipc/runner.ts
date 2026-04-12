@@ -24,8 +24,8 @@ export function setupRunnerIPC(
   }
 
   // Push callbacks
-  runnerManager.onOutput((configId, line) => {
-    getWindow()?.webContents.send(RUNNER_ON_OUTPUT, { configId, line })
+  runnerManager.onOutput((configId, name, line) => {
+    getWindow()?.webContents.send(RUNNER_ON_OUTPUT, { configId, name, line })
   })
 
   runnerManager.onStatusChange((services) => {

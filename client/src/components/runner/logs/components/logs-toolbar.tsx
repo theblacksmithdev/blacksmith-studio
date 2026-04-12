@@ -109,11 +109,13 @@ interface LogsToolbarProps {
   onSearchChange: (term: string) => void
   showTimestamps: boolean
   onToggleTimestamps: () => void
+  /** Extra actions rendered at the end of the toolbar */
+  trailing?: React.ReactNode
 }
 
 export function LogsToolbar({
   filter, onFilterChange, serviceNames, count, autoScroll, onScrollToBottom, onClear,
-  searchTerm, onSearchChange, showTimestamps, onToggleTimestamps,
+  searchTerm, onSearchChange, showTimestamps, onToggleTimestamps, trailing,
 }: LogsToolbarProps) {
   const [searchOpen, setSearchOpen] = useState(!!searchTerm)
 
@@ -171,6 +173,8 @@ export function LogsToolbar({
       <IconBtn onClick={onClear} title="Clear logs">
         <Trash2 size={12} />
       </IconBtn>
+
+      {trailing}
     </Bar>
   )
 }

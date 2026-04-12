@@ -1,30 +1,37 @@
 import { useEffect, useCallback } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api'
 import { useRunnerStore, type RunnerService } from '@/stores/runner-store'
+import { useProjectKeys } from './use-project-keys'
 
 /**
- * Initializes IPC listeners for runner status and output.
+ * Initializes IPC listeners for runner runtime state (status + logs).
+ * Also triggers auto-detection on first mount so configs exist in the DB.
  * Mount once at the project layout level.
  */
 export function useRunnerListener() {
   const store = useRunnerStore
+  const keys = useProjectKeys()
+  const qc = useQueryClient()
 
   useEffect(() => {
-    // Fetch initial status and auto-detect runners
+    // Auto-detect runners (seeds DB if no configs yet) and fetch initial live status
     api.runner.detectRunners().then((services) => {
       store.getState().setServices(services as RunnerService[])
+      // Invalidate configs query so React Query picks up any newly seeded configs
+      qc.invalidateQueries({ queryKey: keys.runnerConfigs })
     }).catch(() => {})
 
     const unsubs = [
+      // Live status pushes — update Zustand (runtime state only)
       api.runner.onStatus((data) => {
         store.getState().setServices(data as RunnerService[])
       }),
+      // Live log output — name comes from the server, not the store
       api.runner.onOutput((data) => {
-        // Find the service name for the log entry
-        const svc = store.getState().services.find((s) => s.id === data.configId)
         store.getState().addLog({
           configId: data.configId,
-          name: svc?.name ?? 'Unknown',
+          name: data.name,
           line: data.line,
           timestamp: Date.now(),
         })
@@ -32,7 +39,7 @@ export function useRunnerListener() {
     ]
 
     return () => unsubs.forEach((unsub) => unsub())
-  }, [])
+  }, [keys.runnerConfigs])
 }
 
 /**

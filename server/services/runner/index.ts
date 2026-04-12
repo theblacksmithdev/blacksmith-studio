@@ -8,7 +8,7 @@ export { RunnerConfigService } from './runner-config.js'
 export type { RunnerConfig } from './runner-config.js'
 export { detectRunners } from './detect-runners.js'
 
-type OutputListener = (configId: string, line: string) => void
+type OutputListener = (configId: string, name: string, line: string) => void
 type StatusListener = (services: RunnerServiceStatus[]) => void
 
 export class RunnerManager {
@@ -48,7 +48,7 @@ export class RunnerManager {
     const result = await spawnRunner(
       config,
       projectRoot,
-      (id, line) => this.emitOutput(id, line),
+      (id, line) => this.emitOutput(id, config.name, line),
       (id, status, port) => {
         const existing = this.processes.get(id)
         if (existing) {
@@ -106,8 +106,8 @@ export class RunnerManager {
     }
   }
 
-  private emitOutput(configId: string, line: string) {
-    for (const cb of this.outputListeners) cb(configId, line)
+  private emitOutput(configId: string, name: string, line: string) {
+    for (const cb of this.outputListeners) cb(configId, name, line)
   }
 
   private emitStatus() {

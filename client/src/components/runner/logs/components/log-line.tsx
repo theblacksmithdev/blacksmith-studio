@@ -1,6 +1,6 @@
 import styled from '@emotion/styled'
 import { type LogEntry } from '@/stores/runner-store'
-import { getLineColor, MONO_FONT } from '../runner-primitives'
+import { getLineColor, MONO_FONT } from '../../runner-primitives'
 
 const Line = styled.div`
   display: flex;
@@ -22,7 +22,7 @@ const Timestamp = styled.span`
 `
 
 const Source = styled.span`
-  width: 52px;
+  width: 58px;
   flex-shrink: 0;
   color: var(--studio-text-muted);
   font-weight: 600;
