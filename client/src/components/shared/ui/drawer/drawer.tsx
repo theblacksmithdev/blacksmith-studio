@@ -87,7 +87,7 @@ export function Drawer({
               </ChakraDrawer.CloseTrigger>
             </ChakraDrawer.Header>
 
-            <ChakraDrawer.Body css={{ padding: spacing.xl }}>
+            <ChakraDrawer.Body css={{ padding: spacing.xl, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
               {children}
             </ChakraDrawer.Body>
 

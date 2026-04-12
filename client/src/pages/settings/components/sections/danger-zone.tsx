@@ -6,8 +6,7 @@ import styled from '@emotion/styled'
 import { useProjects } from '@/hooks/use-projects'
 import { useProjectStore } from '@/stores/project-store'
 import { Path } from '@/router/paths'
-import { Text } from '@/components/shared/ui'
-import { Modal, DangerButton, GhostButton, FooterSpacer } from '@/components/shared/modal'
+import { Text, Modal, ModalDangerButton, ModalFooterSpacer, Button, Alert } from '@/components/shared/ui'
 
 type RemoveMode = 'soft' | 'hard' | null
 
@@ -18,16 +17,13 @@ const DangerCard = styled.div`
   background: var(--studio-bg-sidebar);
 `
 
-const DangerRowWrap = styled.div`
+const DangerRow = styled.div`
   display: flex;
   align-items: center;
   gap: 16px;
   padding: 16px;
   border-bottom: 1px solid var(--studio-error-subtle);
-
-  &:last-child {
-    border-bottom: none;
-  }
+  &:last-child { border-bottom: none; }
 `
 
 const DangerBtn = styled.button<{ fill?: boolean }>`
@@ -43,10 +39,7 @@ const DangerBtn = styled.button<{ fill?: boolean }>`
   font-family: inherit;
   cursor: pointer;
   transition: all 0.12s ease;
-
-  &:hover {
-    ${(p) => (p.fill ? 'opacity: 0.9;' : 'background: var(--studio-error-subtle);')}
-  }
+  &:hover { ${(p) => (p.fill ? 'opacity: 0.9;' : 'background: var(--studio-error-subtle);')} }
 `
 
 const ConfirmInput = styled.input`
@@ -60,10 +53,7 @@ const ConfirmInput = styled.input`
   font-family: inherit;
   outline: none;
   transition: border-color 0.12s ease;
-
-  &:focus {
-    border-color: var(--studio-border-hover);
-  }
+  &:focus { border-color: var(--studio-border-hover); box-shadow: var(--studio-ring-focus); }
 `
 
 export function DangerZone() {
@@ -102,7 +92,7 @@ export function DangerZone() {
         </Box>
 
         <DangerCard>
-          <DangerRowWrap>
+          <DangerRow>
             <Box css={{ flex: 1 }}>
               <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)', marginBottom: '2px' }}>
                 Remove from Studio
@@ -112,8 +102,8 @@ export function DangerZone() {
               </Text>
             </Box>
             <DangerBtn onClick={() => setModalMode('soft')}>Remove</DangerBtn>
-          </DangerRowWrap>
-          <DangerRowWrap>
+          </DangerRow>
+          <DangerRow>
             <Box css={{ flex: 1 }}>
               <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)', marginBottom: '2px' }}>
                 Delete project entirely
@@ -123,7 +113,7 @@ export function DangerZone() {
               </Text>
             </Box>
             <DangerBtn fill onClick={() => setModalMode('hard')}>Delete everything</DangerBtn>
-          </DangerRowWrap>
+          </DangerRow>
         </DangerCard>
       </Flex>
 
@@ -145,33 +135,28 @@ export function DangerZone() {
           }
           footer={
             <>
-              <FooterSpacer />
-              <GhostButton onClick={closeModal}>Cancel</GhostButton>
-              <DangerButton onClick={handleRemove} disabled={!confirmed || removing}>
+              <ModalFooterSpacer />
+              <Button variant="ghost" size="md" onClick={closeModal}>Cancel</Button>
+              <ModalDangerButton onClick={handleRemove} disabled={!confirmed || removing}>
                 <Trash2 size={13} />
                 {removing ? 'Removing...' : modalMode === 'hard' ? 'Delete everything' : 'Remove'}
-              </DangerButton>
+              </ModalDangerButton>
             </>
           }
         >
           <Flex direction="column" gap="16px">
-            <Flex direction="column" gap="6px" css={{
-              padding: '12px 14px', borderRadius: '8px',
-              background: 'var(--studio-error-subtle)',
-              border: '1px solid rgba(239,68,68,0.15)',
-            }}>
-              <Flex align="center" gap="6px">
-                <AlertTriangle size={14} style={{ color: 'var(--studio-error)' }} />
-                <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-error)' }}>
+            <Alert variant="error" icon={<AlertTriangle size={14} />}>
+              <Flex direction="column" gap="4px">
+                <Text css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-error)' }}>
                   This action cannot be undone
                 </Text>
+                <Text css={{ fontSize: '12px', color: 'var(--studio-text-tertiary)', lineHeight: 1.5 }}>
+                  {modalMode === 'hard'
+                    ? <>Permanently deletes <code style={{ fontSize: '11px', background: 'var(--studio-bg-surface)', padding: '1px 4px', borderRadius: '3px' }}>{activeProject?.path}</code> from disk, along with all chat history and settings.</>
+                    : 'Your project files remain on disk. All chat history and settings in Studio will be permanently deleted.'}
+                </Text>
               </Flex>
-              <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', lineHeight: 1.5 }}>
-                {modalMode === 'hard'
-                  ? <>This will permanently delete the folder at <code style={{ fontSize: '12px', background: 'var(--studio-bg-surface)', padding: '1px 4px', borderRadius: '3px' }}>{activeProject?.path}</code> from your disk, along with all chat history and settings.</>
-                  : 'Your project files will remain on disk. All chat history and settings stored in Studio will be permanently deleted.'}
-              </Text>
-            </Flex>
+            </Alert>
 
             <Box>
               <Text css={{ fontSize: '13px', color: 'var(--studio-text-secondary)', marginBottom: '8px' }}>
