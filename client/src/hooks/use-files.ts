@@ -1,29 +1,24 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api'
-import { queryKeys } from '@/api/query-keys'
-import { queryClient as globalQueryClient } from '@/api/query-client'
 import { useFileStore } from '@/stores/file-store'
-
-/** Clear the file content cache. Call when switching projects. */
-export function clearFileContentCache() {
-  globalQueryClient.removeQueries({ queryKey: ['files', 'content'] })
-}
+import { useProjectKeys } from './use-project-keys'
 
 export function useFiles() {
   const queryClient = useQueryClient()
+  const keys = useProjectKeys()
   const { openFile, setTabContent, setTabError, markSaved } = useFileStore()
 
   const treeQuery = useQuery({
-    queryKey: queryKeys.files,
+    queryKey: keys.files,
     queryFn: () => api.files.tree(),
-    staleTime: 30_000, // 30s — avoid re-scanning the entire project on every mount
+    staleTime: 30_000,
   })
 
   const fetchFileContent = async (filePath: string) => {
     openFile(filePath)
     try {
       const data = await queryClient.fetchQuery({
-        queryKey: queryKeys.fileContent(filePath),
+        queryKey: keys.fileContent(filePath),
         queryFn: () => api.files.content({ path: filePath }),
         staleTime: Infinity,
       })
@@ -39,7 +34,7 @@ export function useFiles() {
     if (!tab?.content || tab.content === tab.originalContent) return
     await api.files.save(filePath, tab.content)
     markSaved(filePath)
-    queryClient.removeQueries({ queryKey: queryKeys.fileContent(filePath) })
+    queryClient.removeQueries({ queryKey: keys.fileContent(filePath) })
   }
 
   return {

@@ -1,20 +1,21 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api'
-import { queryKeys } from '@/api/query-keys'
+import { useProjectKeys } from './use-project-keys'
 import { useProjectStore } from '@/stores/project-store'
 import type { McpServerConfig } from '@/api/modules/mcp'
 
 export function useMcp() {
   const queryClient = useQueryClient()
+  const keys = useProjectKeys()
   const activeProject = useProjectStore((s) => s.activeProject)
 
   const { data: servers = [], isLoading } = useQuery({
-    queryKey: queryKeys.mcp,
+    queryKey: keys.mcp,
     queryFn: () => api.mcp.list(),
     enabled: !!activeProject,
   })
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: queryKeys.mcp })
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: keys.mcp })
 
   const addMutation = useMutation({
     mutationFn: (data: { name: string; config: McpServerConfig }) => api.mcp.add(data),

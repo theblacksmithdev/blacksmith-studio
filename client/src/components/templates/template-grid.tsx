@@ -6,7 +6,7 @@ import { TemplateCard } from './template-card'
 import { TemplateModal } from './template-modal'
 import { PageContainer } from '@/components/shared/page-container'
 import { api } from '@/api'
-import { queryKeys } from '@/api/query-keys'
+import { useProjectKeys } from '@/hooks/use-project-keys'
 import { useClaude } from '@/hooks/use-claude'
 import { useSessions } from '@/hooks/use-sessions'
 import { useSessionStore } from '@/stores/session-store'
@@ -15,8 +15,9 @@ import { chatPath } from '@/router/paths'
 import type { PromptTemplate } from '@/types'
 
 export function TemplateGrid() {
+  const keys = useProjectKeys()
   const { data: templates = [] } = useQuery({
-    queryKey: queryKeys.templates,
+    queryKey: keys.templates,
     queryFn: () => api.templates.list(),
   })
   const [selected, setSelected] = useState<PromptTemplate | null>(null)

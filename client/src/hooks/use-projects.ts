@@ -1,11 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api'
 import { queryKeys } from '@/api/query-keys'
+import { useProjectKeys } from './use-project-keys'
 import { useProjectStore, type Project } from '@/stores/project-store'
 import { resetProjectStores } from '@/stores/reset'
 
 export function useProjects() {
   const queryClient = useQueryClient()
+  const keys = useProjectKeys()
   const { setActiveProject } = useProjectStore()
 
   const projectsQuery = useQuery({
@@ -57,9 +59,9 @@ export function useProjects() {
   })
 
   function invalidateProjectScoped() {
-    queryClient.invalidateQueries({ queryKey: queryKeys.sessions })
-    queryClient.invalidateQueries({ queryKey: queryKeys.files })
-    queryClient.invalidateQueries({ queryKey: queryKeys.settings })
+    queryClient.invalidateQueries({ queryKey: keys.sessions })
+    queryClient.invalidateQueries({ queryKey: keys.files })
+    queryClient.invalidateQueries({ queryKey: keys.settings })
   }
 
   return {

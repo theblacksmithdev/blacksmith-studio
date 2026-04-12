@@ -1,15 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api'
-import { queryKeys } from '@/api/query-keys'
+import { useProjectKeys } from './use-project-keys'
 import { useProjectStore } from '@/stores/project-store'
 import { useCallback } from 'react'
 
 export function useSettings() {
   const queryClient = useQueryClient()
+  const keys = useProjectKeys()
   const activeProject = useProjectStore((s) => s.activeProject)
 
   const { data: settings = {} } = useQuery({
-    queryKey: queryKeys.settings,
+    queryKey: keys.settings,
     queryFn: () => api.settings.getAll(),
     enabled: !!activeProject,
   })
@@ -18,9 +19,9 @@ export function useSettings() {
     mutationFn: (pair: { key: string; value: any }) =>
       api.settings.update({ [pair.key]: pair.value }),
     onMutate: async ({ key, value }) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.settings })
-      const previous = queryClient.getQueryData<Record<string, any>>(queryKeys.settings)
-      queryClient.setQueryData(queryKeys.settings, (old: Record<string, any> = {}) => ({
+      await queryClient.cancelQueries({ queryKey: keys.settings })
+      const previous = queryClient.getQueryData<Record<string, any>>(keys.settings)
+      queryClient.setQueryData(keys.settings, (old: Record<string, any> = {}) => ({
         ...old,
         [key]: value,
       }))
@@ -28,11 +29,11 @@ export function useSettings() {
     },
     onError: (_err, _vars, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(queryKeys.settings, context.previous)
+        queryClient.setQueryData(keys.settings, context.previous)
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.settings })
+      queryClient.invalidateQueries({ queryKey: keys.settings })
     },
   })
 

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api'
-import { queryKeys } from '@/api/query-keys'
+import { useProjectKeys } from './use-project-keys'
 
 interface UseAgentConversationsOptions {
   limit?: number
@@ -9,16 +9,17 @@ interface UseAgentConversationsOptions {
 export function useAgentConversations(options?: UseAgentConversationsOptions) {
   const { limit } = options ?? {}
   const queryClient = useQueryClient()
+  const keys = useProjectKeys()
 
   const { data, isLoading } = useQuery({
-    queryKey: queryKeys.agentConversations,
+    queryKey: keys.agentConversations,
     queryFn: () => api.agents.listConversations(),
   })
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api.agents.deleteConversation(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.agentConversations })
+      queryClient.invalidateQueries({ queryKey: keys.agentConversations })
     },
   })
 

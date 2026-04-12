@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api'
-import { queryKeys } from '@/api/query-keys'
 import { useFileStore } from '@/stores/file-store'
+import { useProjectKeys } from '@/hooks/use-project-keys'
 
 interface SaveInput {
   path: string
@@ -10,13 +10,14 @@ interface SaveInput {
 
 export function useFileSave() {
   const queryClient = useQueryClient()
+  const keys = useProjectKeys()
   const markSaved = useFileStore((s) => s.markSaved)
 
   const mutation = useMutation({
     mutationFn: ({ path, content }: SaveInput) => api.files.save(path, content),
     onSuccess: (_data, { path }) => {
       markSaved(path)
-      queryClient.removeQueries({ queryKey: queryKeys.fileContent(path) })
+      queryClient.removeQueries({ queryKey: keys.fileContent(path) })
     },
   })
 

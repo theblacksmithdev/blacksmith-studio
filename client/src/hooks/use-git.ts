@@ -1,8 +1,8 @@
 import { useEffect, useCallback, useMemo } from 'react'
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api'
-import { queryKeys } from '@/api/query-keys'
 import { useGitStore } from '@/stores/git-store'
+import { useProjectKeys } from './use-project-keys'
 
 /**
  * Initializes IPC listener for git status changes and syncs initial state.
@@ -29,14 +29,15 @@ export function useGitListener() {
  */
 export function useGit() {
   const qc = useQueryClient()
+  const keys = useProjectKeys()
 
   const invalidateAll = useCallback(() => {
-    qc.invalidateQueries({ queryKey: queryKeys.gitStatus })
-    qc.invalidateQueries({ queryKey: queryKeys.gitChangedFiles })
-    qc.invalidateQueries({ queryKey: queryKeys.gitHistory })
-    qc.invalidateQueries({ queryKey: queryKeys.gitBranches })
-    qc.invalidateQueries({ queryKey: queryKeys.gitSyncStatus })
-  }, [qc])
+    qc.invalidateQueries({ queryKey: keys.gitStatus })
+    qc.invalidateQueries({ queryKey: keys.gitChangedFiles })
+    qc.invalidateQueries({ queryKey: keys.gitHistory })
+    qc.invalidateQueries({ queryKey: keys.gitBranches })
+    qc.invalidateQueries({ queryKey: keys.gitSyncStatus })
+  }, [qc, keys])
 
   const commit = useMutation({
     mutationFn: api.git.commit,
@@ -78,8 +79,8 @@ export function useGit() {
   const resolveConflict = useMutation({
     mutationFn: api.git.resolveConflict,
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.gitConflicts })
-      qc.invalidateQueries({ queryKey: queryKeys.gitChangedFiles })
+      qc.invalidateQueries({ queryKey: keys.gitConflicts })
+      qc.invalidateQueries({ queryKey: keys.gitChangedFiles })
     },
   })
 
@@ -100,8 +101,9 @@ export function useGit() {
 /* All use the default staleTime (30s) from query-client unless overridden */
 
 export function useGitStatus() {
+  const keys = useProjectKeys()
   return useQuery({
-    queryKey: queryKeys.gitStatus,
+    queryKey: keys.gitStatus,
     queryFn: () => api.git.status(),
   })
 }
@@ -109,10 +111,11 @@ export function useGitStatus() {
 const CHANGED_FILES_PAGE_SIZE = 100
 
 export function useGitChangedFiles() {
+  const keys = useProjectKeys()
   const initialized = useGitStore((s) => s.initialized)
 
   const query = useInfiniteQuery({
-    queryKey: queryKeys.gitChangedFiles,
+    queryKey: keys.gitChangedFiles,
     queryFn: ({ pageParam = 0 }) => api.git.changedFiles({ limit: CHANGED_FILES_PAGE_SIZE, offset: pageParam }),
     initialPageParam: 0,
     getNextPageParam: (lastPage, _allPages, lastPageParam) =>
@@ -137,45 +140,50 @@ export function useGitChangedFiles() {
 }
 
 export function useGitHistory(limit?: number) {
+  const keys = useProjectKeys()
   const initialized = useGitStore((s) => s.initialized)
   return useQuery({
-    queryKey: queryKeys.gitHistory,
+    queryKey: keys.gitHistory,
     queryFn: () => api.git.history(limit ? { limit } : undefined),
     enabled: initialized,
   })
 }
 
 export function useGitBranches() {
+  const keys = useProjectKeys()
   const initialized = useGitStore((s) => s.initialized)
   return useQuery({
-    queryKey: queryKeys.gitBranches,
+    queryKey: keys.gitBranches,
     queryFn: () => api.git.listBranches(),
     enabled: initialized,
   })
 }
 
 export function useGitSyncStatus() {
+  const keys = useProjectKeys()
   const initialized = useGitStore((s) => s.initialized)
   return useQuery({
-    queryKey: queryKeys.gitSyncStatus,
+    queryKey: keys.gitSyncStatus,
     queryFn: () => api.git.syncStatus(),
     enabled: initialized,
-    staleTime: 60_000, // 1min — avoid frequent checks
+    staleTime: 60_000,
   })
 }
 
 export function useGitConflicts() {
+  const keys = useProjectKeys()
   const initialized = useGitStore((s) => s.initialized)
   return useQuery({
-    queryKey: queryKeys.gitConflicts,
+    queryKey: keys.gitConflicts,
     queryFn: () => api.git.conflicts(),
     enabled: initialized,
   })
 }
 
 export function useGitCommitDetail(hash: string) {
+  const keys = useProjectKeys()
   return useQuery({
-    queryKey: queryKeys.gitCommitDetail(hash),
+    queryKey: keys.gitCommitDetail(hash),
     queryFn: () => api.git.commitDetail({ hash }),
     enabled: !!hash,
     staleTime: Infinity,
@@ -183,8 +191,9 @@ export function useGitCommitDetail(hash: string) {
 }
 
 export function useGitDiff(filePath?: string) {
+  const keys = useProjectKeys()
   return useQuery({
-    queryKey: queryKeys.gitDiff(filePath ?? ''),
+    queryKey: keys.gitDiff(filePath ?? ''),
     queryFn: () => api.git.diff({ path: filePath! }),
     enabled: !!filePath,
     staleTime: 5_000,

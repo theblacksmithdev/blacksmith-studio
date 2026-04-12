@@ -4,7 +4,7 @@ import { useParams, useLocation } from 'react-router-dom'
 import { ReactFlowProvider } from '@xyflow/react'
 import { ListTodo, MessageSquare, X, Square } from 'lucide-react'
 import { api } from '@/api'
-import { queryKeys } from '@/api/query-keys'
+import { useProjectKeys } from '@/hooks/use-project-keys'
 import { useAgentStore } from '@/stores/agent-store'
 import { Tooltip } from '@/components/shared/tooltip'
 import { AgentCanvas } from '../canvas'
@@ -27,6 +27,7 @@ interface AgentsPageProps {
 export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
   const params = useParams()
   const conversationId = propConvId ?? params.conversationId
+  const keys = useProjectKeys()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
   const [chatClosing, setChatClosing] = useState(false)
@@ -36,7 +37,7 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
   chatOpenRef.current = chatOpen
 
   const { data: agents = [] } = useQuery({
-    queryKey: queryKeys.agents,
+    queryKey: keys.agents,
     queryFn: () => api.agents.list(),
   })
 

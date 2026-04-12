@@ -3,7 +3,7 @@ import styled from '@emotion/styled'
 import { useQuery } from '@tanstack/react-query'
 import { Sparkles, ArrowRight } from 'lucide-react'
 import { api } from '@/api'
-import { queryKeys } from '@/api/query-keys'
+import { useProjectKeys } from '@/hooks/use-project-keys'
 import { TemplateModal } from '@/components/templates/template-modal'
 import type { PromptTemplate } from '@/types'
 
@@ -87,8 +87,9 @@ interface TemplateSectionProps {
 }
 
 export function TemplateSection({ onSend }: TemplateSectionProps) {
+  const keys = useProjectKeys()
   const { data: templates = [] } = useQuery({
-    queryKey: queryKeys.templates,
+    queryKey: keys.templates,
     queryFn: () => api.templates.list(),
     staleTime: 60_000,
   })
