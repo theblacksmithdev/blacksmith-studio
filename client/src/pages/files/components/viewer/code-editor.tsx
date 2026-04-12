@@ -4,6 +4,7 @@ import Editor, { type OnMount, type Monaco } from '@monaco-editor/react'
 import { useThemeMode } from '@/hooks/use-theme-mode'
 import { Text } from '@/components/shared/ui'
 import { getMonacoLanguage } from './language-map'
+import { darkTheme, lightTheme } from './themes'
 
 interface CodeEditorProps {
   content: string
@@ -28,6 +29,8 @@ const EDITOR_OPTIONS = {
   glyphMargin: false,
   lineNumbersMinChars: 4,
   overviewRulerBorder: false,
+  overviewRulerLanes: 0,
+  hideCursorInOverviewRuler: true,
   minimap: { enabled: false },
   scrollbar: {
     verticalScrollbarSize: 6,
@@ -40,47 +43,10 @@ const EDITOR_OPTIONS = {
   contextmenu: false,
 }
 
-/** Custom theme colors that match our app's design tokens */
+/** Register GitHub-based themes with our app background overrides */
 function defineCustomThemes(monaco: Monaco) {
-  monaco.editor.defineTheme('blacksmith-light', {
-    base: 'vs',
-    inherit: true,
-    rules: [],
-    colors: {
-      'editor.background': '#ffffff',
-      'editor.foreground': '#1a1a1a',
-      'editor.lineHighlightBackground': '#f5f5f5',
-      'editor.selectionBackground': '#d0e8ff',
-      'editorLineNumber.foreground': '#c0c0c0',
-      'editorLineNumber.activeForeground': '#424242',
-      'editorIndentGuide.background': '#e8e8e8',
-      'editorIndentGuide.activeBackground': '#d0d0d0',
-      'editorBracketMatch.background': '#e0e8f0',
-      'editorBracketMatch.border': '#b0c4de',
-      'scrollbarSlider.background': 'rgba(0,0,0,0.08)',
-      'scrollbarSlider.hoverBackground': 'rgba(0,0,0,0.15)',
-    },
-  })
-
-  monaco.editor.defineTheme('blacksmith-dark', {
-    base: 'vs-dark',
-    inherit: true,
-    rules: [],
-    colors: {
-      'editor.background': '#121212',
-      'editor.foreground': '#f5f5f5',
-      'editor.lineHighlightBackground': '#1e1e1e',
-      'editor.selectionBackground': '#264f78',
-      'editorLineNumber.foreground': '#555555',
-      'editorLineNumber.activeForeground': '#bdbdbd',
-      'editorIndentGuide.background': '#2a2a2a',
-      'editorIndentGuide.activeBackground': '#3a3a3a',
-      'editorBracketMatch.background': '#1e3a5f',
-      'editorBracketMatch.border': '#3a6ea5',
-      'scrollbarSlider.background': 'rgba(255,255,255,0.08)',
-      'scrollbarSlider.hoverBackground': 'rgba(255,255,255,0.15)',
-    },
-  })
+  monaco.editor.defineTheme('blacksmith-dark', darkTheme)
+  monaco.editor.defineTheme('blacksmith-light', lightTheme)
 }
 
 export function CodeEditor({ content, language }: CodeEditorProps) {
