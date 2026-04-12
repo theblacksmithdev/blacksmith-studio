@@ -1,8 +1,13 @@
 import { SettingsSection } from '../settings-section'
 import { SettingRow } from '../setting-row'
-import { SettingSelect } from '../setting-select'
 import { SettingToggle } from '../setting-toggle'
+import { SegmentedControl } from '../segmented-control'
 import { useSettings } from '@/hooks/use-settings'
+
+const TAB_SIZE_OPTIONS = [
+  { value: '2', label: '2 spaces' },
+  { value: '4', label: '4 spaces' },
+] as const
 
 export function EditorSettings() {
   const s = useSettings()
@@ -12,13 +17,10 @@ export function EditorSettings() {
       title="Editor"
       description="Configure the built-in code viewer and editor."
     >
-      <SettingRow label="Tab size" description="Number of spaces per indentation level.">
-        <SettingSelect
+      <SettingRow label="Tab size" description="Spaces per indentation level.">
+        <SegmentedControl
           value={String(s.tabSize)}
-          options={[
-            { value: '2', label: '2 spaces' },
-            { value: '4', label: '4 spaces' },
-          ]}
+          options={[...TAB_SIZE_OPTIONS]}
           onChange={(v) => s.set('editor.tabSize', Number(v))}
         />
       </SettingRow>

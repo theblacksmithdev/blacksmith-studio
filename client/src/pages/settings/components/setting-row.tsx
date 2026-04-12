@@ -1,10 +1,11 @@
-import { Box, Text, HStack } from '@chakra-ui/react'
+import { Box, Flex } from '@chakra-ui/react'
 import type { ReactNode } from 'react'
+import { Text } from '@/components/shared/ui'
 
 interface SettingRowProps {
   label: string
-  description?: string
-  /** If true, renders children below the label (full width) instead of inline right */
+  description?: ReactNode
+  /** Renders children below the label (full width) instead of inline right */
   fullWidth?: boolean
   children: ReactNode
 }
@@ -19,13 +20,13 @@ export function SettingRow({ label, description, fullWidth, children }: SettingR
           '&:last-child': { borderBottom: 'none' },
         }}
       >
-        <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)', marginBottom: '2px' }}>
+        <Text css={{ fontSize: '14px', fontWeight: 500, color: 'var(--studio-text-primary)', marginBottom: description ? '2px' : '10px' }}>
           {label}
         </Text>
         {description && (
-          <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', marginBottom: '10px' }}>
+          <Box css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', marginBottom: '10px', lineHeight: 1.5 }}>
             {description}
-          </Text>
+          </Box>
         )}
         {children}
       </Box>
@@ -33,10 +34,11 @@ export function SettingRow({ label, description, fullWidth, children }: SettingR
   }
 
   return (
-    <HStack
-      gap={4}
+    <Flex
+      align="center"
+      gap="16px"
       css={{
-        padding: '12px 16px',
+        padding: '14px 16px',
         borderBottom: '1px solid var(--studio-border)',
         '&:last-child': { borderBottom: 'none' },
       }}
@@ -46,14 +48,14 @@ export function SettingRow({ label, description, fullWidth, children }: SettingR
           {label}
         </Text>
         {description && (
-          <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', marginTop: '1px' }}>
+          <Box css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', marginTop: '2px', lineHeight: 1.5 }}>
             {description}
-          </Text>
+          </Box>
         )}
       </Box>
       <Box css={{ flexShrink: 0 }}>
         {children}
       </Box>
-    </HStack>
+    </Flex>
   )
 }

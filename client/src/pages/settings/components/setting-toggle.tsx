@@ -1,40 +1,45 @@
-import { Box } from '@chakra-ui/react'
+import styled from '@emotion/styled'
+
+const Track = styled.button<{ on: boolean }>`
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  border: none;
+  background: ${(p) => (p.on ? 'var(--studio-accent)' : 'var(--studio-bg-hover-strong)')};
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+  padding: 0;
+`
+
+const Thumb = styled.span<{ on: boolean }>`
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: ${(p) => (p.on ? 'var(--studio-accent-fg)' : '#fff')};
+  position: absolute;
+  top: 3px;
+  left: ${(p) => (p.on ? '21px' : '3px')};
+  transition: left 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+`
 
 interface SettingToggleProps {
   value: boolean
+  disabled?: boolean
   onChange: (value: boolean) => void
 }
 
-export function SettingToggle({ value, onChange }: SettingToggleProps) {
+export function SettingToggle({ value, disabled, onChange }: SettingToggleProps) {
   return (
-    <Box
-      as="button"
-      onClick={() => onChange(!value)}
-      css={{
-        width: '40px',
-        height: '22px',
-        borderRadius: '11px',
-        border: 'none',
-        background: value ? 'var(--studio-green)' : 'var(--studio-bg-hover-strong)',
-        position: 'relative',
-        cursor: 'pointer',
-        transition: 'background 0.2s ease',
-        flexShrink: 0,
-      }}
+    <Track
+      on={value}
+      disabled={disabled}
+      onClick={() => !disabled && onChange(!value)}
+      style={{ opacity: disabled ? 0.5 : 1 }}
     >
-      <Box
-        css={{
-          width: '16px',
-          height: '16px',
-          borderRadius: '50%',
-          background: '#fff',
-          position: 'absolute',
-          top: '3px',
-          left: value ? '21px' : '3px',
-          transition: 'left 0.2s ease',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-        }}
-      />
-    </Box>
+      <Thumb on={value} />
+    </Track>
   )
 }

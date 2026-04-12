@@ -1,9 +1,16 @@
+import { Monitor, Sun, Moon } from 'lucide-react'
 import { SettingsSection } from '../settings-section'
 import { SettingRow } from '../setting-row'
-import { SettingSelect } from '../setting-select'
-import { SettingToggle } from '../setting-toggle'
 import { SettingInput } from '../setting-input'
+import { SettingToggle } from '../setting-toggle'
+import { SegmentedControl } from '../segmented-control'
 import { useSettings } from '@/hooks/use-settings'
+
+const THEME_OPTIONS = [
+  { value: 'system', label: 'System', icon: <Monitor /> },
+  { value: 'light', label: 'Light', icon: <Sun /> },
+  { value: 'dark', label: 'Dark', icon: <Moon /> },
+] as const
 
 export function AppearanceSettings() {
   const s = useSettings()
@@ -13,14 +20,10 @@ export function AppearanceSettings() {
       title="Appearance"
       description="Customize the look and feel of the interface."
     >
-      <SettingRow label="Theme" description="Choose between light, dark, or follow your system.">
-        <SettingSelect
+      <SettingRow label="Theme" description="Follow your system or choose manually.">
+        <SegmentedControl
           value={s.theme}
-          options={[
-            { value: 'system', label: 'System' },
-            { value: 'light', label: 'Light' },
-            { value: 'dark', label: 'Dark' },
-          ]}
+          options={[...THEME_OPTIONS]}
           onChange={(v) => s.set('appearance.theme', v)}
         />
       </SettingRow>
@@ -28,6 +31,7 @@ export function AppearanceSettings() {
         <SettingInput
           value={s.fontSize}
           type="number"
+          suffix="px"
           onChange={(v) => s.set('appearance.fontSize', v)}
         />
       </SettingRow>
