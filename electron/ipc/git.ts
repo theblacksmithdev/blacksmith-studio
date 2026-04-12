@@ -1,6 +1,7 @@
 import { ipcMain, type BrowserWindow } from 'electron'
 import type { GitManager } from '../../server/services/git.js'
 import type { ProjectManager } from '../../server/services/projects.js'
+import type { Ai } from '../../server/services/ai/ai.js'
 import {
   GIT_STATUS, GIT_CHANGED_FILES, GIT_DIFF,
   GIT_CREATE_CHECKPOINT, GIT_GENERATE_MESSAGE, GIT_HISTORY,
@@ -16,6 +17,7 @@ export function setupGitIPC(
   getWindow: () => BrowserWindow | null,
   gitManager: GitManager,
   projectManager: ProjectManager,
+  ai?: Ai,
 ) {
   function getPath(): string {
     const p = projectManager.getActivePath()
@@ -69,7 +71,7 @@ export function setupGitIPC(
 
   ipcMain.handle(GIT_GENERATE_MESSAGE, async () => {
     const p = await requireRepo()
-    return gitManager.generateMessage(p)
+    return gitManager.generateMessage(p, ai)
   })
 
   ipcMain.handle(GIT_HISTORY, async (_e, data?: { limit?: number }) => {

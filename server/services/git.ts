@@ -2,6 +2,8 @@ import simpleGit, { type SimpleGit, type StatusResult, type DefaultLogFields, ty
 import { watch, type FSWatcher } from 'node:fs'
 import path from 'node:path'
 import { paginate, type PaginationInput, type PaginatedResult } from '../types.js'
+import { AiModelTier } from './ai/types.js'
+import type { Ai } from './ai/ai.js'
 
 /* ── Types ── */
 
@@ -152,20 +154,68 @@ export class GitManager {
     return result.commit
   }
 
-  async generateMessage(projectPath: string): Promise<string> {
+  private static COMMIT_SYSTEM = [
+    'You generate concise git commit messages from diffs.',
+    'Use conventional commit format: type(scope): description.',
+    'Types: feat, fix, refactor, style, docs, test, chore, perf.',
+    'Scope is optional. Lowercase imperative mood, max 72 chars.',
+    'Output ONLY the message — no quotes, no explanation, no body.',
+  ].join(' ')
+
+  async generateMessage(projectPath: string, ai?: Ai): Promise<string> {
     const git = this.git(projectPath)
-    const status = await git.status()
+    const diff = await this.collectDiff(git)
+    if (!diff) return this.fallbackMessage(git)
 
-    const parts: string[] = []
-    const added = status.files.filter((f) => f.index === '?' || f.index === 'A' || f.working_dir === '?')
-    const modified = status.files.filter((f) => f.index === 'M' || f.working_dir === 'M')
-    const deleted = status.files.filter((f) => f.index === 'D' || f.working_dir === 'D')
+    if (ai) {
+      try {
+        const result = await ai.complete({
+          prompt: diff,
+          systemPrompt: GitManager.COMMIT_SYSTEM,
+          model: AiModelTier.Fast,
+          cwd: projectPath,
+          timeout: 30000,
+        })
 
-    if (added.length) parts.push(`Add ${added.length} new file${added.length > 1 ? 's' : ''}`)
-    if (modified.length) parts.push(`Update ${modified.length} file${modified.length > 1 ? 's' : ''}`)
-    if (deleted.length) parts.push(`Remove ${deleted.length} file${deleted.length > 1 ? 's' : ''}`)
+        if (result) {
+          const line = result.replace(/^["'`]+|["'`]+$/g, '').split('\n')[0].trim()
+          if (line.length > 0 && line.length < 150) return line
+        }
+      } catch {
+        // Fall through to basic message
+      }
+    }
 
-    return parts.join(', ') || 'Save changes'
+    return this.fallbackMessage(git)
+  }
+
+  private async collectDiff(git: SimpleGit): Promise<string> {
+    try {
+      const [staged, unstaged] = await Promise.all([
+        git.diff(['--cached']),
+        git.diff(),
+      ])
+      const combined = [staged, unstaged].filter(Boolean).join('\n')
+      if (!combined) return ''
+      return combined.length > 12000 ? combined.slice(0, 12000) + '\n...(truncated)' : combined
+    } catch {
+      return ''
+    }
+  }
+
+  private async fallbackMessage(git: SimpleGit): Promise<string> {
+    try {
+      const s = await git.status()
+      const counts = [
+        s.files.filter((f) => f.working_dir === '?' || f.index === 'A').length,
+        s.files.filter((f) => f.working_dir === 'M' || f.index === 'M').length,
+        s.files.filter((f) => f.working_dir === 'D' || f.index === 'D').length,
+      ]
+      const labels = ['add', 'update', 'remove']
+      return counts.map((n, i) => n ? `${labels[i]} ${n} file${n > 1 ? 's' : ''}` : '').filter(Boolean).join(', ') || 'save changes'
+    } catch {
+      return 'save changes'
+    }
   }
 
   async getHistory(projectPath: string, limit = 50): Promise<CommitEntry[]> {

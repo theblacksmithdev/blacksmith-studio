@@ -4,7 +4,7 @@ import { useProjectKeys } from './use-project-keys'
 import { useSessionStore } from '@/stores/session-store'
 import { useProjectStore } from '@/stores/project-store'
 import { useChatStore } from '@/stores/chat-store'
-import type { Session, SessionSummary } from '@/types'
+// Session type used implicitly via API return types
 
 interface UseSessionsOptions {
   limit?: number

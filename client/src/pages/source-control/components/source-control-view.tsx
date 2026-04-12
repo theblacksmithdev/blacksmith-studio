@@ -186,9 +186,8 @@ export function SourceControlView() {
       </Box>
 
       {/* ── Dialogs ── */}
-      {showCommitDialog && changedFiles.total > 0 && (
+      {showCommitDialog && (
         <CommitDialog
-          files={changedFiles.data}
           onClose={() => setShowCommitDialog(false)}
           onCommitted={handleCommitted}
         />

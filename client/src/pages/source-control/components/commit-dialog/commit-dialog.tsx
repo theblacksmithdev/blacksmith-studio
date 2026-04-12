@@ -1,32 +1,40 @@
 import { GitCommitHorizontal } from 'lucide-react'
-import type { GitChangedFile } from '@/api/types'
-import { Modal, ModalFooterSpacer, Button } from '@/components/shared/ui'
+import { Modal, ModalFooterSpacer, Button, Badge, SkeletonList } from '@/components/shared/ui'
 import { useCommit } from './hooks'
 import { MessageInput, FileList } from './components'
 
 interface CommitDialogProps {
-  files: GitChangedFile[]
   onClose: () => void
   onCommitted: () => void
 }
 
-export function CommitDialog({ files, onClose, onCommitted }: CommitDialogProps) {
+export function CommitDialog({ onClose, onCommitted }: CommitDialogProps) {
   const {
-    message, setMessage, selected,
+    files, total, selectedCount, isFileSelected, isAllSelected,
+    isLoadingFiles, hasNextPage, isFetchingNextPage, fetchNextPage,
+    message, setMessage,
     toggleFile, toggleAll, handleCommit, regenerateMessage,
     isCommitting, isGenerating, canCommit,
-  } = useCommit(files, onCommitted)
+  } = useCommit(onCommitted)
 
   return (
     <Modal
       title="Commit Changes"
       onClose={onClose}
-      headerExtra={<GitCommitHorizontal size={16} style={{ color: 'var(--studio-text-muted)' }} />}
+      width="520px"
+      headerExtra={
+        total > 0 ? (
+          <Badge variant="default" size="sm">
+            {total} file{total !== 1 ? 's' : ''}
+          </Badge>
+        ) : undefined
+      }
       footer={
         <>
           <ModalFooterSpacer />
           <Button variant="ghost" size="md" onClick={onClose}>Cancel</Button>
           <Button variant="primary" size="md" onClick={handleCommit} disabled={!canCommit}>
+            <GitCommitHorizontal size={14} />
             {isCommitting ? 'Committing...' : 'Commit'}
           </Button>
         </>
@@ -38,12 +46,22 @@ export function CommitDialog({ files, onClose, onCommitted }: CommitDialogProps)
         onRegenerate={regenerateMessage}
         isGenerating={isGenerating}
       />
-      <FileList
-        files={files}
-        selected={selected}
-        onToggle={toggleFile}
-        onToggleAll={toggleAll}
-      />
+
+      {isLoadingFiles ? (
+        <SkeletonList rows={5} />
+      ) : (
+        <FileList
+          files={files}
+          total={total}
+          selectedCount={selectedCount}
+          isAllSelected={isAllSelected}
+          isFileSelected={isFileSelected}
+          onToggle={toggleFile}
+          onToggleAll={toggleAll}
+          onLoadMore={hasNextPage ? () => fetchNextPage() : undefined}
+          isLoadingMore={isFetchingNextPage}
+        />
+      )}
     </Modal>
   )
 }

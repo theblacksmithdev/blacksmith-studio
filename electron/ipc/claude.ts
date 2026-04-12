@@ -1,20 +1,20 @@
 import { ipcMain, type BrowserWindow } from 'electron'
 import crypto from 'node:crypto'
-import type { ClaudeManager } from '../../server/services/claude/index.js'
+import type { Ai } from '../../server/services/ai/ai.js'
 import type { SessionManager } from '../../server/services/sessions.js'
 import type { ProjectManager } from '../../server/services/projects.js'
 import type { SettingsManager } from '../../server/services/settings.js'
 import type { McpManager } from '../../server/services/mcp.js'
+import { STUDIO_SYSTEM_PROMPT } from '../../server/services/claude/system-prompt.js'
+import { getProjectContext } from '../../server/services/claude/project-context.js'
 import {
   CLAUDE_SEND_PROMPT, CLAUDE_CANCEL,
   CLAUDE_ON_MESSAGE, CLAUDE_ON_TOOL_USE, CLAUDE_ON_DONE, CLAUDE_ON_ERROR,
-  FILES_ON_CHANGED,
 } from './channels.js'
-import { getProjectContext } from '../../server/services/claude/project-context.js'
 
 export function setupClaudeIPC(
   getWindow: () => BrowserWindow | null,
-  claudeManager: ClaudeManager,
+  ai: Ai,
   sessionManager: SessionManager,
   projectManager: ProjectManager,
   settingsManager: SettingsManager,
@@ -27,11 +27,10 @@ export function setupClaudeIPC(
     const win = getWindow()
 
     if (!projectId || !projectPath) {
-      win?.webContents.send(CLAUDE_ON_ERROR, { sessionId, error: 'No active project', code: 'NO_PROJECT' })
+      win?.webContents.send(CLAUDE_ON_ERROR, { sessionId, error: 'No active project. Open a project first.', code: 'NO_PROJECT' })
       return
     }
 
-    // Check if session already has messages (i.e. this is a follow-up)
     const existingSession = sessionManager.getSession(sessionId)
     const isResume = !!(existingSession && existingSession.messages.length > 0)
 
@@ -48,15 +47,13 @@ export function setupClaudeIPC(
     const toolCalls: any[] = []
 
     try {
-      // On first message, inject project context so Claude doesn't waste time scanning
-      const projectContext = !isResume ? getProjectContext(projectPath) : undefined
-
-      await claudeManager.sendPrompt({
-        sessionId,
+      const handle = ai.stream({
         prompt,
-        isResume,
-        projectContext,
-        projectRoot: projectPath,
+        systemPrompt: STUDIO_SYSTEM_PROMPT,
+        resume: isResume,
+        sessionId,
+        projectContext: !isResume ? getProjectContext(projectPath) : undefined,
+        cwd: projectPath,
         model: allSettings['ai.model'] || undefined,
         maxBudget: allSettings['ai.maxBudget'] || undefined,
         permissionMode: allSettings['ai.permissionMode'] || 'bypassPermissions',
@@ -66,33 +63,36 @@ export function setupClaudeIPC(
           Array.isArray(allSettings['mcp.disabledServers']) ? allSettings['mcp.disabledServers'] : [],
         ),
         nodePath: settingsManager.resolve(projectId, 'runner.nodePath') || undefined,
-      }, (chunk) => {
-        if (chunk.type === 'assistant') {
-          const textBlocks = (chunk.message?.content || []).filter((b: any) => b.type === 'text')
-          const toolBlocks = (chunk.message?.content || []).filter((b: any) => b.type === 'tool_use')
+        onChunk: (chunk) => {
+          if (chunk.type === 'assistant') {
+            const textBlocks = (chunk.message?.content || []).filter((b: any) => b.type === 'text')
+            const toolBlocks = (chunk.message?.content || []).filter((b: any) => b.type === 'tool_use')
 
-          if (textBlocks.length > 0) {
-            lastContent = textBlocks.map((b: any) => b.text).join('')
-            win?.webContents.send(CLAUDE_ON_MESSAGE, { sessionId, content: lastContent, isPartial: !chunk.stop_reason })
-          }
+            if (textBlocks.length > 0) {
+              lastContent = textBlocks.map((b: any) => b.text).join('')
+              win?.webContents.send(CLAUDE_ON_MESSAGE, { sessionId, content: lastContent, isPartial: !chunk.stop_reason })
+            }
 
-          for (const tool of toolBlocks) {
-            toolCalls.push({ toolId: tool.id, toolName: tool.name, input: tool.input })
-            win?.webContents.send(CLAUDE_ON_TOOL_USE, { sessionId, toolId: tool.id, toolName: tool.name, input: tool.input })
+            for (const tool of toolBlocks) {
+              toolCalls.push({ toolId: tool.id, toolName: tool.name, input: tool.input })
+              win?.webContents.send(CLAUDE_ON_TOOL_USE, { sessionId, toolId: tool.id, toolName: tool.name, input: tool.input })
+            }
+          } else if (chunk.type === 'result') {
+            if (lastContent) {
+              sessionManager.addMessage(sessionId, {
+                id: crypto.randomUUID(),
+                role: 'assistant',
+                content: lastContent,
+                toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
+                timestamp: new Date().toISOString(),
+              })
+            }
+            win?.webContents.send(CLAUDE_ON_DONE, { sessionId, costUsd: chunk.cost_usd || 0, durationMs: chunk.duration_ms || 0 })
           }
-        } else if (chunk.type === 'result') {
-          if (lastContent) {
-            sessionManager.addMessage(sessionId, {
-              id: crypto.randomUUID(),
-              role: 'assistant',
-              content: lastContent,
-              toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
-              timestamp: new Date().toISOString(),
-            })
-          }
-          win?.webContents.send(CLAUDE_ON_DONE, { sessionId, costUsd: chunk.cost_usd || 0, durationMs: chunk.duration_ms || 0 })
-        }
+        },
       })
+
+      await handle.promise
     } catch (error: any) {
       console.error(`[ipc] Claude error:`, error.message)
       sessionManager.addMessage(sessionId, {
@@ -106,6 +106,6 @@ export function setupClaudeIPC(
   })
 
   ipcMain.handle(CLAUDE_CANCEL, (_e, data: { sessionId: string }) => {
-    claudeManager.cancelPrompt(data.sessionId)
+    ai.cancel(data.sessionId)
   })
 }

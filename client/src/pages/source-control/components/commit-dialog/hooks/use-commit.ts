@@ -1,21 +1,28 @@
-import { useState, useEffect } from 'react'
-import type { GitChangedFile } from '@/api/types'
-import { useGit } from '@/hooks/use-git'
+import { useState } from 'react'
+import { useGit, useGitChangedFiles } from '@/hooks/use-git'
 
-export function useCommit(files: GitChangedFile[], onCommitted: () => void) {
+export function useCommit(onCommitted: () => void) {
   const { commit, generateMessage } = useGit()
-  const [message, setMessage] = useState('')
-  const [selected, setSelected] = useState<Set<string>>(() => new Set(files.map((f) => f.path)))
+  const changedFiles = useGitChangedFiles()
 
-  // Auto-generate message on mount
-  useEffect(() => {
-    generateMessage.mutate(undefined, {
-      onSuccess: (msg) => setMessage(msg),
-    })
-  }, [])
+  const files = changedFiles.data
+  const [message, setMessage] = useState('')
+  /** When true, ALL server files are selected (including unloaded ones) */
+  const [allSelected, setAllSelected] = useState(true)
+  /** Tracks individual deselections — only used when allSelected is false */
+  const [deselected, setDeselected] = useState<Set<string>>(new Set())
+
+  const selectedCount = allSelected
+    ? changedFiles.total - deselected.size
+    : files.filter((f) => !deselected.has(f.path)).length
+
+  const isFileSelected = (path: string) => {
+    if (allSelected) return !deselected.has(path)
+    return !deselected.has(path)
+  }
 
   const toggleFile = (path: string) => {
-    setSelected((prev) => {
+    setDeselected((prev) => {
       const next = new Set(prev)
       if (next.has(path)) next.delete(path)
       else next.add(path)
@@ -24,17 +31,36 @@ export function useCommit(files: GitChangedFile[], onCommitted: () => void) {
   }
 
   const toggleAll = () => {
-    if (selected.size === files.length) setSelected(new Set())
-    else setSelected(new Set(files.map((f) => f.path)))
+    if (allSelected && deselected.size === 0) {
+      // Everything is selected → deselect all
+      setAllSelected(false)
+      setDeselected(new Set(files.map((f) => f.path)))
+    } else {
+      // Some or none selected → select all
+      setAllSelected(true)
+      setDeselected(new Set())
+    }
   }
 
   const handleCommit = () => {
-    if (!message.trim() || selected.size === 0) return
-    const selectedFiles = selected.size === files.length ? undefined : Array.from(selected)
-    commit.mutate(
-      { message: message.trim(), files: selectedFiles },
-      { onSuccess: onCommitted },
-    )
+    if (!message.trim() || selectedCount === 0) return
+
+    // If all selected (no deselections), pass undefined to commit everything
+    if (allSelected && deselected.size === 0) {
+      commit.mutate(
+        { message: message.trim(), files: undefined },
+        { onSuccess: onCommitted },
+      )
+    } else {
+      // Build explicit list of selected files from loaded data
+      const selectedFiles = files
+        .filter((f) => !deselected.has(f.path))
+        .map((f) => f.path)
+      commit.mutate(
+        { message: message.trim(), files: selectedFiles },
+        { onSuccess: onCommitted },
+      )
+    }
   }
 
   const regenerateMessage = () => {
@@ -44,15 +70,23 @@ export function useCommit(files: GitChangedFile[], onCommitted: () => void) {
   }
 
   return {
+    files,
+    total: changedFiles.total,
+    selectedCount,
+    isFileSelected,
+    isLoadingFiles: changedFiles.isLoading,
+    hasNextPage: changedFiles.hasNextPage,
+    isFetchingNextPage: changedFiles.isFetchingNextPage,
+    fetchNextPage: changedFiles.fetchNextPage,
     message,
     setMessage,
-    selected,
     toggleFile,
     toggleAll,
     handleCommit,
     regenerateMessage,
     isCommitting: commit.isPending,
     isGenerating: generateMessage.isPending,
-    canCommit: !!message.trim() && selected.size > 0 && !commit.isPending,
+    canCommit: !!message.trim() && selectedCount > 0 && !commit.isPending,
+    isAllSelected: allSelected && deselected.size === 0,
   }
 }

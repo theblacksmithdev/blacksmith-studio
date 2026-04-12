@@ -26,6 +26,7 @@ import { setupFolderDialogIPC } from './folder-dialog.js'
 import { setupGitIPC } from './git.js'
 import { setupTerminalIPC } from './terminal.js'
 import { setupAgentsIPC } from './agents.js'
+import { Ai } from '../../server/services/ai/ai.js'
 
 export function setupAllIPC(
   getWindow: () => BrowserWindow | null,
@@ -40,20 +41,23 @@ export function setupAllIPC(
   gitManager: GitManager,
   terminalManager: TerminalManager,
 ) {
+  // Single Ai instance shared across all IPC handlers
+  const ai = new Ai()
+
   setupFolderDialogIPC()
   setupProjectsIPC(getWindow, projectManager, settingsManager)
   setupSessionsIPC(sessionManager, projectManager)
   setupFilesIPC(projectManager)
   setupTemplatesIPC()
   setupSettingsIPC(settingsManager, projectManager)
-  setupClaudeIPC(getWindow, claudeManager, sessionManager, projectManager, settingsManager, mcpManager)
+  setupClaudeIPC(getWindow, ai, sessionManager, projectManager, settingsManager, mcpManager)
   setupRunnerIPC(getWindow, runnerManager, projectManager, settingsManager)
   setupMcpIPC(mcpManager, projectManager, settingsManager)
   setupHealthIPC(claudeManager, projectManager)
   setupKnowledgeIPC(knowledgeManager, projectManager)
   setupSkillsIPC(skillsManager, projectManager)
   setupSetupIPC(settingsManager, projectManager)
-  setupGitIPC(getWindow, gitManager, projectManager)
+  setupGitIPC(getWindow, gitManager, projectManager, ai)
   setupTerminalIPC(getWindow, terminalManager, projectManager, settingsManager)
   setupAgentsIPC(getWindow, projectManager, settingsManager, claudeManager, mcpManager)
 }
