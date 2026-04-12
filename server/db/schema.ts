@@ -141,6 +141,7 @@ export const runnerConfigs = sqliteTable('runner_configs', {
     .references(() => projects.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   command: text('command').notNull(),
+  setupCommand: text('setup_command'),
   cwd: text('cwd').default('.'),
   port: integer('port'),
   portArg: text('port_arg'),

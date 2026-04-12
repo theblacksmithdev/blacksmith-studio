@@ -7,6 +7,7 @@ function configToDefaults(config: RunnerConfigData): RunnerConfigFormData {
   return {
     name: config.name,
     command: config.command,
+    setupCommand: config.setupCommand || '',
     cwd: config.cwd || '.',
     port: config.port ? String(config.port) : '',
     readyPattern: config.readyPattern || '',
@@ -24,6 +25,7 @@ export function toPayload(data: RunnerConfigFormData): Partial<RunnerConfigData>
   return {
     name: data.name.trim(),
     command: data.command.trim(),
+    setupCommand: data.setupCommand?.trim() || null,
     cwd: data.cwd?.trim() || '.',
     port: data.port ? parseInt(data.port, 10) || null : null,
     readyPattern: data.readyPattern?.trim() || null,
@@ -38,7 +40,7 @@ export function useConfigForm(config?: RunnerConfigData | null) {
     resolver: zodResolver(runnerConfigSchema),
     mode: 'onChange',
     defaultValues: config ? configToDefaults(config) : {
-      name: '', command: '', cwd: '.', port: '',
+      name: '', command: '', setupCommand: '', cwd: '.', port: '',
       readyPattern: '', previewUrl: '', icon: 'terminal', env: [],
     },
   })

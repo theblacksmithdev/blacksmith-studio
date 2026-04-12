@@ -83,6 +83,7 @@ export interface RunnerConfigData {
   projectId: string
   name: string
   command: string
+  setupCommand: string | null
   cwd: string
   port: number | null
   portArg: string | null

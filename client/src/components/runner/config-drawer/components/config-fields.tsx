@@ -14,6 +14,7 @@ interface FieldDef {
 const FIELDS: FieldDef[] = [
   { name: 'name', label: 'Name', placeholder: 'Frontend' },
   { name: 'command', label: 'Command', placeholder: 'npm run dev -- --port {port}', hint: 'Use {port} as a placeholder for the resolved port', mono: true },
+  { name: 'setupCommand', label: 'Setup command', placeholder: 'npm install', hint: 'Runs before starting the service (e.g. install dependencies)', mono: true },
   { name: 'cwd', label: 'Working directory', placeholder: '.', hint: 'Relative to project root' },
   { name: 'port', label: 'Default port', placeholder: '3000' },
   { name: 'readyPattern', label: 'Ready pattern', placeholder: 'Local:|ready|listening', hint: 'Regex matched against stdout to detect running state', mono: true },

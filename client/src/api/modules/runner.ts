@@ -17,6 +17,9 @@ export const runner = {
 
   // Diagnosis
 
+  // Setup
+  setup: (configId: string) => raw.invoke<void>('runner:setup', { configId }),
+
   // Logs
   getLogs: (configId?: string) => raw.invoke<{ configId: string; name: string; line: string; timestamp: number }[]>('runner:getLogs', { configId }),
 

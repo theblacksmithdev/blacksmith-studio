@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { api } from '@/api'
 import { useRunnerStore } from '@/stores/runner-store'
 import { useRunnerConfigs, useAddRunnerConfig, useUpdateRunnerConfig, useRemoveRunnerConfig } from '@/hooks/use-runner-configs'
 import { useRunner } from '@/hooks/use-runner'
@@ -71,11 +72,16 @@ export function useServiceActions() {
     }
   }, [configs, storeLogs, createSession])
 
+  const handleSetup = useCallback((svcId: string) => {
+    selectService(svcId)
+    api.runner.setup(svcId).catch(() => {})
+  }, [selectService])
+
   return {
     modalConfig, setModalConfig,
     deleteTarget, setDeleteTarget,
     diagnoseDrawer, setDiagnoseDrawer,
-    handleSave, handleDelete, handleDiagnose,
+    handleSave, handleDelete, handleDiagnose, handleSetup,
     start, stop, startAll, stopAll,
   }
 }

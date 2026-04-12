@@ -137,6 +137,7 @@ export function getDatabase() {
       project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
       name TEXT NOT NULL,
       command TEXT NOT NULL,
+      setup_command TEXT,
       cwd TEXT DEFAULT '.',
       port INTEGER,
       port_arg TEXT,
@@ -166,6 +167,7 @@ export function getDatabase() {
     'ALTER TABLE agent_tasks ADD COLUMN description TEXT',
     'ALTER TABLE agent_tasks ADD COLUMN task_type TEXT',
     'ALTER TABLE agent_tasks ADD COLUMN parent_task_id TEXT',
+    'ALTER TABLE runner_configs ADD COLUMN setup_command TEXT',
   ]
 
   for (const sql of migrations) {

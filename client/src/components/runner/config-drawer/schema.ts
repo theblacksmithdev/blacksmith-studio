@@ -8,6 +8,7 @@ export const envEntrySchema = z.object({
 export const runnerConfigSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   command: z.string().min(1, 'Command is required'),
+  setupCommand: z.string().optional(),
   cwd: z.string(),
   port: z.string().optional(),
   readyPattern: z.string().optional(),

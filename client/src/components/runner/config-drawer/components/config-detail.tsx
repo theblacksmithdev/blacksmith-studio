@@ -27,6 +27,7 @@ export function ConfigDetail({ config }: ConfigDetailProps) {
     <Flex direction="column" gap={spacing.xl}>
       <Field label="Name" value={config.name} />
       <Field label="Command" value={config.command} mono />
+      <Field label="Setup command" value={config.setupCommand} mono />
       <Field label="Working directory" value={config.cwd !== '.' ? config.cwd : undefined} mono />
       <Field label="Default port" value={config.port ? String(config.port) : undefined} />
       <Field label="Ready pattern" value={config.readyPattern} mono />

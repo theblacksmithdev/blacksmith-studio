@@ -8,7 +8,7 @@ import {
   RUNNER_GET_STATUS, RUNNER_START, RUNNER_STOP, RUNNER_DETECT_NODE,
   RUNNER_ON_STATUS, RUNNER_ON_OUTPUT,
   RUNNER_GET_CONFIGS, RUNNER_ADD_CONFIG, RUNNER_UPDATE_CONFIG, RUNNER_REMOVE_CONFIG,
-  RUNNER_DETECT_RUNNERS, RUNNER_GET_LOGS,
+  RUNNER_DETECT_RUNNERS, RUNNER_GET_LOGS, RUNNER_SETUP,
 } from './channels.js'
 
 export function setupRunnerIPC(
@@ -93,6 +93,12 @@ export function setupRunnerIPC(
 
   ipcMain.handle(RUNNER_GET_LOGS, (_e, data: { configId?: string }) => {
     return runnerManager.getLogs(data?.configId)
+  })
+
+  ipcMain.handle(RUNNER_SETUP, async (_e, data: { configId: string }) => {
+    const { path } = requireProject()
+    const nodePath = settingsManager.resolve(requireProject().id, 'runner.nodePath') || ''
+    await runnerManager.setup(data.configId, path, nodePath)
   })
 
   ipcMain.handle(RUNNER_DETECT_NODE, () => {

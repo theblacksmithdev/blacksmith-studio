@@ -8,6 +8,7 @@ export interface RunnerConfig {
   projectId: string
   name: string
   command: string
+  setupCommand: string | null
   cwd: string
   port: number | null
   portArg: string | null
@@ -50,6 +51,7 @@ export class RunnerConfigService {
       projectId,
       name: input.name,
       command: input.command,
+      setupCommand: input.setupCommand ?? null,
       cwd: input.cwd ?? '.',
       port: input.port ?? null,
       portArg: input.portArg ?? null,
@@ -70,6 +72,7 @@ export class RunnerConfigService {
 
     if (partial.name !== undefined) updates.name = partial.name
     if (partial.command !== undefined) updates.command = partial.command
+    if (partial.setupCommand !== undefined) updates.setupCommand = partial.setupCommand
     if (partial.cwd !== undefined) updates.cwd = partial.cwd
     if (partial.port !== undefined) updates.port = partial.port
     if (partial.portArg !== undefined) updates.portArg = partial.portArg
@@ -114,6 +117,7 @@ export class RunnerConfigService {
       projectId: row.projectId,
       name: row.name,
       command: row.command,
+      setupCommand: row.setupCommand ?? null,
       cwd: row.cwd ?? '.',
       port: row.port ?? null,
       portArg: row.portArg ?? null,

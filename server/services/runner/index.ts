@@ -1,7 +1,10 @@
+import { spawn } from 'node:child_process'
+import path from 'node:path'
 import type { RunnerProcess, RunnerServiceStatus, RunnerStatus } from './types.js'
 import type { RunnerConfigService, RunnerConfig } from './runner-config.js'
 import { spawnRunner } from './spawn-runner.js'
 import { detectRunners } from './detect-runners.js'
+import { nodeEnv } from '../node-env.js'
 
 export type { RunnerStatus, RunnerServiceStatus } from './types.js'
 export { RunnerConfigService } from './runner-config.js'
@@ -112,6 +115,64 @@ export class RunnerManager {
 
   stopEverything(): void {
     for (const [id] of this.processes) this.stop(id)
+  }
+
+  /**
+   * Run the setup command for a service (e.g. npm install, pip install).
+   * Streams output through the same log pipeline as the runner itself.
+   * Resolves when the command exits. Rejects on non-zero exit code.
+   */
+  async setup(configId: string, projectRoot: string, nodePath?: string): Promise<void> {
+    const config = this.configService.getConfig(configId)
+    if (!config) throw new Error('Runner config not found.')
+    if (!config.setupCommand) throw new Error('No setup command configured for this service.')
+
+    const cwd = path.resolve(projectRoot, config.cwd ?? '.')
+    const env = nodeEnv(nodePath, { ...config.env })
+
+    this.emitOutput(configId, config.name, `[studio] Running setup: ${config.setupCommand}`)
+
+    return new Promise<void>((resolve, reject) => {
+      const proc = spawn(config.setupCommand!, { cwd, shell: true, stdio: ['ignore', 'pipe', 'pipe'], env } as any)
+
+      let stdoutBuf = ''
+      proc.stdout?.on('data', (chunk: Buffer) => {
+        stdoutBuf += chunk.toString()
+        const lines = stdoutBuf.split('\n')
+        stdoutBuf = lines.pop() ?? ''
+        for (const line of lines) {
+          if (line.trim()) this.emitOutput(configId, config.name, line)
+        }
+      })
+
+      let stderrBuf = ''
+      proc.stderr?.on('data', (chunk: Buffer) => {
+        stderrBuf += chunk.toString()
+        const lines = stderrBuf.split('\n')
+        stderrBuf = lines.pop() ?? ''
+        for (const line of lines) {
+          if (line.trim()) this.emitOutput(configId, config.name, line)
+        }
+      })
+
+      proc.on('close', (code) => {
+        if (stdoutBuf.trim()) this.emitOutput(configId, config.name, stdoutBuf)
+        if (stderrBuf.trim()) this.emitOutput(configId, config.name, stderrBuf)
+
+        if (code === 0) {
+          this.emitOutput(configId, config.name, '[studio] Setup completed successfully.')
+          resolve()
+        } else {
+          this.emitOutput(configId, config.name, `[studio] Setup failed (exit code ${code}).`)
+          reject(new Error(`Setup failed with exit code ${code}`))
+        }
+      })
+
+      proc.on('error', (err) => {
+        this.emitOutput(configId, config.name, `[studio] Setup error: ${err.message}`)
+        reject(err)
+      })
+    })
   }
 
   detectAndSeed(projectId: string, projectRoot: string): void {

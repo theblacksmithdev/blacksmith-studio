@@ -24,6 +24,7 @@ export function detectRunners(projectRoot: string): DetectedRunner[] {
       runners.push({
         name: 'Backend',
         command: 'python manage.py runserver 0.0.0.0:{port} --noreload',
+        setupCommand: exists('backend/requirements.txt') ? 'pip install -r requirements.txt' : null,
         cwd: 'backend',
         port: config.backend?.port ?? 8000,
         env: { PYTHONUNBUFFERED: '1', STUDIO_EMBED: '1' },
@@ -36,9 +37,11 @@ export function detectRunners(projectRoot: string): DetectedRunner[] {
     }
 
     if (exists('frontend/package.json')) {
+      const yarnFe = exists('frontend/yarn.lock')
       runners.push({
         name: 'Frontend',
         command: 'npm run dev -- --port {port}',
+        setupCommand: yarnFe ? 'yarn install' : 'npm install',
         cwd: 'frontend',
         port: config.frontend?.port ?? 5173,
         env: { FORCE_COLOR: '0' },
@@ -53,11 +56,16 @@ export function detectRunners(projectRoot: string): DetectedRunner[] {
     if (runners.length > 0) return runners
   }
 
+  const hasYarn = exists('yarn.lock')
+  const hasPnpm = exists('pnpm-lock.yaml')
+  const installCmd = hasPnpm ? 'pnpm install' : hasYarn ? 'yarn install' : 'npm install'
+
   // ── Next.js ──
   if (exists('next.config.js') || exists('next.config.mjs') || exists('next.config.ts')) {
     runners.push({
       name: 'Next.js',
       command: 'npm run dev -- --port {port}',
+      setupCommand: installCmd,
       port: 3000,
       env: { FORCE_COLOR: '0' },
       previewUrl: 'http://localhost:{port}/',
@@ -74,6 +82,7 @@ export function detectRunners(projectRoot: string): DetectedRunner[] {
     runners.push({
       name: 'Vite',
       command: 'npm run dev -- --port {port}',
+      setupCommand: installCmd,
       port: 5173,
       env: { FORCE_COLOR: '0' },
       previewUrl: 'http://localhost:{port}/',
@@ -91,6 +100,7 @@ export function detectRunners(projectRoot: string): DetectedRunner[] {
     runners.push({
       name: 'Django',
       command: `${venvPython} manage.py runserver 0.0.0.0:{port} --noreload`,
+      setupCommand: exists('requirements.txt') ? 'pip install -r requirements.txt' : null,
       port: 8000,
       env: { PYTHONUNBUFFERED: '1' },
       previewUrl: 'http://localhost:{port}/',
@@ -123,6 +133,7 @@ export function detectRunners(projectRoot: string): DetectedRunner[] {
     runners.push({
       name: 'Go',
       command: 'go run .',
+      setupCommand: 'go mod download',
       port: 8080,
       icon: 'terminal',
       readyPattern: 'Listening|listening|started',
@@ -137,6 +148,7 @@ export function detectRunners(projectRoot: string): DetectedRunner[] {
     runners.push({
       name: 'Rust',
       command: 'cargo run',
+      setupCommand: 'cargo build',
       port: 8080,
       icon: 'terminal',
       readyPattern: 'listening|Listening|started',
@@ -165,6 +177,7 @@ export function detectRunners(projectRoot: string): DetectedRunner[] {
       runners.push({
         name: 'Dev Server',
         command: 'npm run dev',
+        setupCommand: installCmd,
         port: 3000,
         env: { FORCE_COLOR: '0' },
         previewUrl: 'http://localhost:{port}/',
@@ -177,6 +190,7 @@ export function detectRunners(projectRoot: string): DetectedRunner[] {
       runners.push({
         name: 'Server',
         command: 'npm start',
+        setupCommand: installCmd,
         port: 3000,
         icon: 'globe',
         readyPattern: 'listening|ready|started',

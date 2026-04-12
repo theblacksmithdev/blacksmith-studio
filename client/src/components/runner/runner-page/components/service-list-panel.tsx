@@ -20,7 +20,7 @@ export function ServiceListPanel() {
     modalConfig, setModalConfig,
     deleteTarget, setDeleteTarget,
     diagnoseDrawer, setDiagnoseDrawer,
-    handleSave, handleDelete, handleDiagnose,
+    handleSave, handleDelete, handleDiagnose, handleSetup,
     start, stop, startAll, stopAll,
   } = useServiceActions()
 
@@ -144,6 +144,8 @@ export function ServiceListPanel() {
                 </Tooltip>
 
                 <ServiceMenu
+                  hasSetupCommand={!!config?.setupCommand}
+                  onSetup={() => handleSetup(svc.id)}
                   onViewDetails={() => { if (config) setModalConfig(config as any) }}
                   onDiagnose={() => handleDiagnose(svc.id)}
                   onDelete={() => setDeleteTarget({ id: svc.id, name: svc.name })}
