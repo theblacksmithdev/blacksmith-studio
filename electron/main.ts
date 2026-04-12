@@ -156,6 +156,7 @@ app.whenReady().then(async () => {
     claudeManager,
     settingsManager,
     runnerManager,
+    runnerConfigService,
     mcpManager,
     skillsManager,
     knowledgeManager,

@@ -15,11 +15,13 @@ export function useRunnerListener() {
   const qc = useQueryClient()
 
   useEffect(() => {
-    // Auto-detect runners (seeds DB if no configs yet) and fetch initial live status
-    api.runner.detectRunners().then((services) => {
-      store.getState().setServices(services as RunnerService[])
-      // Invalidate configs query so React Query picks up any newly seeded configs
+    // Auto-detect runners (seeds DB if no configs yet), then fetch live status
+    api.runner.detectRunners().then(() => {
       qc.invalidateQueries({ queryKey: keys.runnerConfigs })
+      // Fetch initial live status separately
+      return api.runner.getStatus()
+    }).then((status) => {
+      store.getState().setServices(status as RunnerService[])
     }).catch(() => {})
 
     const unsubs = [

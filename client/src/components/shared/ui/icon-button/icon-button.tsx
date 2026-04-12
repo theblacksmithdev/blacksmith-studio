@@ -1,6 +1,7 @@
 import { IconButton as ChakraIconButton, type IconButtonProps as ChakraIconButtonProps } from '@chakra-ui/react'
 import type { SystemStyleObject } from '@chakra-ui/react'
 import { sizes, radii } from '../tokens'
+import { Tooltip } from '../tooltip'
 
 export type IconButtonVariant = 'default' | 'ghost' | 'danger'
 export type IconButtonSize = 'xs' | 'sm' | 'md'
@@ -47,11 +48,14 @@ const variantStyles: Record<IconButtonVariant, SystemStyleObject> = {
 interface IconButtonProps extends Omit<ChakraIconButtonProps, 'variant' | 'size'> {
   variant?: IconButtonVariant
   size?: IconButtonSize
+  /** If provided, wraps the button in a Tooltip */
+  tooltip?: string
 }
 
 export function IconButton({
   variant = 'ghost',
   size = 'sm',
+  tooltip,
   css: cssProp,
   ...rest
 }: IconButtonProps) {
@@ -69,5 +73,11 @@ export function IconButton({
     ...(cssProp as SystemStyleObject ?? {}),
   }
 
-  return <ChakraIconButton css={merged} {...rest} />
+  const button = <ChakraIconButton css={merged} {...rest} />
+
+  if (tooltip) {
+    return <Tooltip content={tooltip}>{button}</Tooltip>
+  }
+
+  return button
 }

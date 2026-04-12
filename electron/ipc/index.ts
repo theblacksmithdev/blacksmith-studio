@@ -4,6 +4,7 @@ import type { SessionManager } from '../../server/services/sessions.js'
 import type { ClaudeManager } from '../../server/services/claude/index.js'
 import type { SettingsManager } from '../../server/services/settings.js'
 import type { RunnerManager } from '../../server/services/runner/index.js'
+import type { RunnerConfigService } from '../../server/services/runner/runner-config.js'
 import type { McpManager } from '../../server/services/mcp.js'
 import type { SkillsManager } from '../../server/services/skills.js'
 import type { KnowledgeManager } from '../../server/services/knowledge.js'
@@ -35,6 +36,7 @@ export function setupAllIPC(
   claudeManager: ClaudeManager,
   settingsManager: SettingsManager,
   runnerManager: RunnerManager,
+  runnerConfigService: RunnerConfigService,
   mcpManager: McpManager,
   skillsManager: SkillsManager,
   knowledgeManager: KnowledgeManager,
@@ -51,7 +53,7 @@ export function setupAllIPC(
   setupTemplatesIPC()
   setupSettingsIPC(settingsManager, projectManager)
   setupClaudeIPC(getWindow, ai, sessionManager, projectManager, settingsManager, mcpManager)
-  setupRunnerIPC(getWindow, runnerManager, projectManager, settingsManager)
+  setupRunnerIPC(getWindow, runnerManager, runnerConfigService, projectManager, settingsManager)
   setupMcpIPC(mcpManager, projectManager, settingsManager)
   setupHealthIPC(claudeManager, projectManager)
   setupKnowledgeIPC(knowledgeManager, projectManager)

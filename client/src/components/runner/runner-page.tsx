@@ -1,13 +1,13 @@
 import { useState, useMemo } from 'react'
 import { Flex, Box } from '@chakra-ui/react'
-import { Play, Square, PanelRight, Plus, Pencil, Trash2 } from 'lucide-react'
+import { Play, Square, PanelRight, Plus, MoreVertical, Eye, Trash2 } from 'lucide-react'
 import { useRunnerStore, selectServices, selectIsAnyActive, isServiceActive, type RunnerService } from '@/stores/runner-store'
 import { useRunnerConfigs, useAddRunnerConfig, useUpdateRunnerConfig, useRemoveRunnerConfig } from '@/hooks/use-runner-configs'
 import { useRunner } from '@/hooks/use-runner'
 import { useUiStore } from '@/stores/ui-store'
 import { getServiceIcon, StatusDot } from './runner-primitives'
 import { RunnerLogs } from './logs'
-import { RunnerConfigModal } from './config-modal'
+import { RunnerConfigDrawer } from './config-drawer'
 import { PreviewPanel } from '@/components/shared/preview-panel'
 import { SplitPanel } from '@/components/shared/layout'
 import { Text, IconButton, Tooltip, Badge, Skeleton, ConfirmDialog, spacing, radii } from '@/components/shared/ui'
@@ -30,6 +30,7 @@ function ServiceListPanel({
 
   const [modalConfig, setModalConfig] = useState<RunnerConfigData | null | 'new'>(null)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
+  const [menuOpen, setMenuOpen] = useState<string | null>(null)
 
   const services: RunnerService[] = useMemo(() =>
     configs.map((cfg) => {
@@ -124,7 +125,6 @@ function ServiceListPanel({
 
           return (
             <Flex
-              as="button"
               key={svc.id}
               align="center"
               gap={spacing.sm}
@@ -132,10 +132,8 @@ function ServiceListPanel({
               css={{
                 padding: `${spacing.sm} ${spacing.sm}`,
                 borderRadius: radii.md,
-                border: 'none',
                 background: isSelected ? 'var(--studio-bg-hover)' : 'transparent',
                 cursor: 'pointer',
-                fontFamily: 'inherit',
                 textAlign: 'left',
                 width: '100%',
                 transition: 'background 0.1s ease',
@@ -158,16 +156,6 @@ function ServiceListPanel({
               </Flex>
 
               <Flex className="svc-actions" gap={spacing.xs} css={{ opacity: 0, transition: 'opacity 0.1s ease' }}>
-                <Tooltip content="Edit">
-                  <IconButton
-                    variant="ghost"
-                    size="xs"
-                    onClick={(e: React.MouseEvent) => { e.stopPropagation(); if (config) setModalConfig(config as any) }}
-                    aria-label="Edit"
-                  >
-                    <Pencil />
-                  </IconButton>
-                </Tooltip>
                 <Tooltip content={active ? 'Stop' : 'Start'}>
                   <IconButton
                     variant="ghost"
@@ -178,16 +166,94 @@ function ServiceListPanel({
                     {active ? <Square size={8} fill="currentColor" /> : <Play size={10} />}
                   </IconButton>
                 </Tooltip>
-                <Tooltip content="Remove">
+
+                {/* Menu button */}
+                <Box css={{ position: 'relative' }}>
                   <IconButton
                     variant="ghost"
                     size="xs"
-                    onClick={(e: React.MouseEvent) => { e.stopPropagation(); setDeleteTarget({ id: svc.id, name: svc.name }) }}
-                    aria-label="Remove"
+                    onClick={(e: React.MouseEvent) => { e.stopPropagation(); setMenuOpen(menuOpen === svc.id ? null : svc.id) }}
+                    aria-label="More options"
                   >
-                    <Trash2 />
+                    <MoreVertical />
                   </IconButton>
-                </Tooltip>
+
+                  {menuOpen === svc.id && (
+                    <>
+                      <Box
+                        onClick={() => setMenuOpen(null)}
+                        css={{ position: 'fixed', inset: 0, zIndex: 99 }}
+                      />
+                      <Flex
+                        direction="column"
+                        css={{
+                          position: 'absolute',
+                          top: '100%',
+                          right: 0,
+                          zIndex: 100,
+                          minWidth: '150px',
+                          padding: spacing.xs,
+                          background: 'var(--studio-bg-surface)',
+                          border: '1px solid var(--studio-border-hover)',
+                          borderRadius: radii.lg,
+                          boxShadow: '0 8px 30px rgba(0, 0, 0, 0.18)',
+                          animation: 'fadeIn 0.1s ease',
+                        }}
+                      >
+                        <Flex
+                          as="button"
+                          align="center"
+                          gap={spacing.sm}
+                          onClick={(e: React.MouseEvent) => {
+                            e.stopPropagation()
+                            setMenuOpen(null)
+                            if (config) setModalConfig(config as any)
+                          }}
+                          css={{
+                            padding: `${spacing.xs} ${spacing.sm}`,
+                            borderRadius: radii.md,
+                            border: 'none',
+                            background: 'transparent',
+                            color: 'var(--studio-text-secondary)',
+                            fontSize: '13px',
+                            cursor: 'pointer',
+                            fontFamily: 'inherit',
+                            textAlign: 'left',
+                            width: '100%',
+                            '&:hover': { background: 'var(--studio-bg-hover)', color: 'var(--studio-text-primary)' },
+                          }}
+                        >
+                          <Eye size={13} /> View Details
+                        </Flex>
+                        <Flex
+                          as="button"
+                          align="center"
+                          gap={spacing.sm}
+                          onClick={(e: React.MouseEvent) => {
+                            e.stopPropagation()
+                            setMenuOpen(null)
+                            setDeleteTarget({ id: svc.id, name: svc.name })
+                          }}
+                          css={{
+                            padding: `${spacing.xs} ${spacing.sm}`,
+                            borderRadius: radii.md,
+                            border: 'none',
+                            background: 'transparent',
+                            color: 'var(--studio-error)',
+                            fontSize: '13px',
+                            cursor: 'pointer',
+                            fontFamily: 'inherit',
+                            textAlign: 'left',
+                            width: '100%',
+                            '&:hover': { background: 'var(--studio-error-subtle)' },
+                          }}
+                        >
+                          <Trash2 size={13} /> Remove
+                        </Flex>
+                      </Flex>
+                    </>
+                  )}
+                </Box>
               </Flex>
             </Flex>
           )
@@ -226,9 +292,9 @@ function ServiceListPanel({
         ) : null}
       </Flex>
 
-      {/* Config modal */}
+      {/* Config drawer */}
       {modalConfig && (
-        <RunnerConfigModal
+        <RunnerConfigDrawer
           config={modalConfig === 'new' ? null : modalConfig}
           onSave={handleSave}
           onClose={() => setModalConfig(null)}

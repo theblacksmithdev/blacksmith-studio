@@ -17,7 +17,7 @@ function getPageName(pathname: string, projectId: string): string | null {
   // Check for specific sub-pages (not the home routes)
   if (pathname.includes('/chat/') && !pathname.endsWith('/chat/new')) return 'Chat'
   if (pathname.endsWith('/code')) return 'Code'
-  if (pathname.endsWith('/run')) return 'Dev Servers'
+  if (pathname.endsWith('/run')) return 'Dev Services'
   if (pathname.endsWith('/settings')) return 'Settings'
   if (pathname.includes('/agents/') && !pathname.endsWith('/agents')) return 'Agents'
   if (pathname.endsWith('/source-control')) return 'Source Control'

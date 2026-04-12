@@ -17,7 +17,7 @@ export function GlobalSettingsDrawer({ onClose }: GlobalSettingsDrawerProps) {
   const gs = useGlobalSettings()
 
   return (
-    <Drawer title="Global Settings" subtitle="Defaults for all projects. Override per-project in workspace settings." onClose={onClose} size="480px">
+    <Drawer title="Global Settings" subtitle="Defaults for all projects. Override per-project in workspace settings." onClose={onClose} size="sm">
       <ScrollArea>
         <NodeSection value={gs.nodePath} onChange={(v) => gs.set('runner.nodePath', v)} />
       </ScrollArea>

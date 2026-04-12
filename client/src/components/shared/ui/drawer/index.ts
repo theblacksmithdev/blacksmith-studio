@@ -1,2 +1,2 @@
 export { Drawer } from './drawer'
-export type { DrawerPlacement } from './drawer'
+export type { DrawerPlacement, DrawerSize } from './drawer'

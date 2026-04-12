@@ -1,3 +1,4 @@
+import pluralize from 'pluralize'
 import styled from '@emotion/styled'
 import { Play, Square } from 'lucide-react'
 import { useRunnerStore, selectServices, selectIsAnyActive, isServiceActive } from '@/stores/runner-store'
@@ -71,8 +72,8 @@ export function RunServersCard() {
       <Header>
         <Play size={15} style={{ color: 'var(--studio-text-tertiary)', flexShrink: 0 }} />
         <div style={{ flex: 1 }}>
-          <Title>Dev Servers</Title>
-          <Desc>{serviceCount} service{serviceCount !== 1 ? 's' : ''} configured</Desc>
+          <Title>Dev Services</Title>
+          <Desc>{pluralize('service', serviceCount, true)} configured</Desc>
         </div>
         <ToggleAllBtn onClick={() => (anyActive ? stop() : start())}>
           {anyActive ? <Square size={10} /> : <Play size={10} />}

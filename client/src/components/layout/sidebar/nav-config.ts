@@ -26,7 +26,7 @@ export const projectNav: NavEntry[] = [
 ]
 
 export const bottomNav: NavEntry[] = [
-  { id: 'run', icon: Play, label: 'Dev Servers', path: runPath, match: '/run' },
+  { id: 'run', icon: Play, label: 'Dev Services', path: runPath, match: '/run' },
 ]
 
 export const settingsNav: NavEntry = {

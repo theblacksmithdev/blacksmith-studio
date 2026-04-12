@@ -87,7 +87,7 @@ export function CommitDetailDrawer({ hash, onClose }: Props) {
     <Drawer
       title={detail?.message ?? 'Commit Detail'}
       onClose={onClose}
-      size="620px"
+      size="lg"
       headerExtra={<GitCommitHorizontal size={16} style={{ color: 'var(--studio-text-muted)' }} />}
     >
       {isLoading ? (

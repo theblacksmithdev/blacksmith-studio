@@ -10,13 +10,13 @@ export const runner = {
   stop: (configId?: string) => raw.invoke<void>('runner:stop', { configId }),
 
   // Config CRUD
-  getConfigs: () => raw.invoke<RunnerServiceStatus[]>('runner:getConfigs'),
+  getConfigs: () => raw.invoke<RunnerConfigData[]>('runner:getConfigs'),
   addConfig: (data: Partial<RunnerConfigData>) => raw.invoke<RunnerConfigData>('runner:addConfig', data),
   updateConfig: (id: string, updates: Partial<RunnerConfigData>) => raw.invoke<RunnerConfigData>('runner:updateConfig', { id, updates }),
   removeConfig: (id: string) => raw.invoke<void>('runner:removeConfig', { id }),
 
   // Detection
-  detectRunners: () => raw.invoke<RunnerServiceStatus[]>('runner:detectRunners'),
+  detectRunners: () => raw.invoke<RunnerConfigData[]>('runner:detectRunners'),
   detectNode: () => raw.invoke<NodeInstallation[]>('runner:detectNode'),
 
   // Subscriptions
