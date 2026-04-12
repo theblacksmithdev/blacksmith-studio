@@ -5,7 +5,7 @@ import { useUiStore } from '@/stores/ui-store'
 import { useProjects } from '@/hooks/use-projects'
 import { SidebarTooltip } from './sidebar-tooltip'
 import { NavButton, NavLabel } from './nav-item'
-import { projectNav, bottomNav, settingsNav } from './nav-config'
+import { projectNav, bottomNav } from './nav-config'
 import { RunnerBadge } from './runner-badge'
 import { NewChatButton } from './new-chat-button'
 import { UserMenu } from './user-menu'
@@ -115,16 +115,6 @@ export function Sidebar() {
               </NavButton>
             </SidebarTooltip>
 
-            <SidebarTooltip label={settingsNav.label} visible={!expanded}>
-              <NavButton
-                active={isActive(settingsNav.match)}
-                expanded={expanded}
-                onClick={() => navigate(settingsNav.path(pid))}
-              >
-                <settingsNav.icon size={18} style={{ flexShrink: 0 }} />
-                <NavLabel visible={expanded}>{settingsNav.label}</NavLabel>
-              </NavButton>
-            </SidebarTooltip>
           </Section>
         </>
       ) : (

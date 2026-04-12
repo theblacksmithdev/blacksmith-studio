@@ -62,6 +62,12 @@ export function useProjects() {
     queryClient.invalidateQueries({ queryKey: keys.sessions })
     queryClient.invalidateQueries({ queryKey: keys.files })
     queryClient.invalidateQueries({ queryKey: keys.settings })
+    queryClient.invalidateQueries({ queryKey: keys.runnerConfigs })
+    queryClient.invalidateQueries({ queryKey: keys.mcp })
+    queryClient.invalidateQueries({ queryKey: keys.knowledge })
+    queryClient.invalidateQueries({ queryKey: keys.gitStatus })
+    queryClient.invalidateQueries({ queryKey: keys.agents })
+    queryClient.invalidateQueries({ queryKey: keys.agentConversations })
   }
 
   return {

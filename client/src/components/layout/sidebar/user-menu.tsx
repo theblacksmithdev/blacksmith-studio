@@ -1,15 +1,12 @@
-import { useState, useRef, useEffect } from 'react'
-import { createPortal } from 'react-dom'
+import { useCallback } from 'react'
 import styled from '@emotion/styled'
 import { useNavigate } from 'react-router-dom'
-import { LogOut, User, HelpCircle, Keyboard, Settings } from 'lucide-react'
+import { LogOut, User, Settings } from 'lucide-react'
 import { useProjectStore } from '@/stores/project-store'
 import { Path, settingsPath } from '@/router/paths'
+import { Menu } from '@/components/shared/ui'
+import type { MenuOption } from '@/components/shared/ui'
 import { SidebarTooltip } from './sidebar-tooltip'
-
-const Wrap = styled.div`
-  position: relative;
-`
 
 const AvatarBtn = styled.button<{ expanded: boolean }>`
   display: flex;
@@ -38,8 +35,8 @@ const AvatarBtn = styled.button<{ expanded: boolean }>`
 `
 
 const Avatar = styled.div`
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: var(--studio-bg-hover);
   border: 1px solid var(--studio-border);
@@ -58,139 +55,34 @@ const AvatarLabel = styled.span<{ visible: boolean }>`
   transition: opacity 0.15s ease;
 `
 
-const Backdrop = styled.div`
-  position: fixed;
-  inset: 0;
-  z-index: 999;
-`
-
-const Popover = styled.div`
-  position: fixed;
-  width: 200px;
-  background: var(--studio-bg-surface);
-  border: 1px solid var(--studio-border-hover);
-  border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  padding: 4px;
-  animation: fadeIn 0.12s ease;
-`
-
-const MenuItem = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: none;
-  background: transparent;
-  color: var(--studio-text-secondary);
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.1s ease;
-  font-family: inherit;
-  text-align: left;
-
-  &:hover {
-    background: var(--studio-bg-hover);
-    color: var(--studio-text-primary);
-  }
-`
-
-const MenuDivider = styled.div`
-  height: 1px;
-  background: var(--studio-border);
-  margin: 4px 6px;
-`
-
-const DangerItem = styled(MenuItem)`
-  color: var(--studio-error);
-
-  &:hover {
-    background: var(--studio-error-subtle));
-    color: var(--studio-error);
-  }
-`
-
 interface UserMenuProps {
   expanded: boolean
 }
 
 export function UserMenu({ expanded }: UserMenuProps) {
-  const [open, setOpen] = useState(false)
-  const [pos, setPos] = useState({ left: 0, bottom: 0 })
-  const btnRef = useRef<HTMLButtonElement>(null)
   const navigate = useNavigate()
   const activeProject = useProjectStore((s) => s.activeProject)
   const pid = activeProject?.id
 
-  useEffect(() => {
-    if (open && btnRef.current) {
-      const rect = btnRef.current.getBoundingClientRect()
-      setPos({
-        left: rect.left,
-        bottom: window.innerHeight - rect.top + 6,
-      })
-    }
-  }, [open])
-
-  const handleAction = (action: () => void) => {
-    setOpen(false)
-    action()
-  }
+  const options: MenuOption[] = pid ? [
+    { icon: <Settings />, label: 'Settings', onClick: () => navigate(settingsPath(pid)) },
+    { icon: <LogOut />, label: 'Exit Project', onClick: () => { useProjectStore.getState().setActiveProject(null); navigate(Path.Home) }, danger: true, separator: true },
+  ] : []
 
   return (
-    <Wrap>
-      <SidebarTooltip label="Menu" visible={!expanded && !open}>
-        <AvatarBtn ref={btnRef} expanded={expanded} onClick={() => setOpen(!open)}>
-          <Avatar>
-            <User size={12} />
-          </Avatar>
-          <AvatarLabel visible={expanded}>Menu</AvatarLabel>
-        </AvatarBtn>
-      </SidebarTooltip>
-
-      {open && createPortal(
-        <>
-          <Backdrop onClick={() => setOpen(false)} />
-          <Popover style={{ left: pos.left, bottom: pos.bottom }}>
-            {pid && (
-              <>
-                <MenuItem onClick={() => handleAction(() => navigate(settingsPath(pid)))}>
-                  <Settings size={14} />
-                  Settings
-                </MenuItem>
-                <MenuDivider />
-              </>
-            )}
-
-            <MenuItem onClick={() => handleAction(() => window.open('https://github.com/anthropics/claude-code/issues', '_blank'))}>
-              <HelpCircle size={14} />
-              Help & Feedback
-            </MenuItem>
-
-            <MenuItem onClick={() => handleAction(() => {})}>
-              <Keyboard size={14} />
-              Keyboard Shortcuts
-            </MenuItem>
-
-            {pid && (
-              <>
-                <MenuDivider />
-                <DangerItem onClick={() => handleAction(() => {
-                  useProjectStore.getState().setActiveProject(null)
-                  navigate(Path.Home)
-                })}>
-                  <LogOut size={14} />
-                  Exit Project
-                </DangerItem>
-              </>
-            )}
-          </Popover>
-        </>,
-        document.body,
-      )}
-    </Wrap>
+    <SidebarTooltip label="Menu" visible={!expanded}>
+      <Menu
+        trigger={
+          <AvatarBtn expanded={expanded}>
+            <Avatar>
+              <User size={12} />
+            </Avatar>
+            <AvatarLabel visible={expanded}>Menu</AvatarLabel>
+          </AvatarBtn>
+        }
+        options={options}
+        placement="top-start"
+      />
+    </SidebarTooltip>
   )
 }

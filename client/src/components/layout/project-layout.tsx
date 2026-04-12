@@ -72,11 +72,26 @@ export function ProjectLayout() {
     }
   }, [projectId, activeProject?.id])
 
+  // Don't render until the backend has activated the correct project
+  const isReady = activeProject?.id === projectId
+
   const mainContent = (
     <Content>
       <Outlet />
     </Content>
   )
+
+  if (!isReady) {
+    return (
+      <Root>
+        <ProjectTitleBar />
+        <Body>
+          <Sidebar />
+          <Main><Content /></Main>
+        </Body>
+      </Root>
+    )
+  }
 
   return (
     <Root>
