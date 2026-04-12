@@ -7,6 +7,7 @@ import { resetProjectStores } from '@/stores/reset'
 import { useRunnerListener } from '@/hooks/use-runner'
 import { useGitListener } from '@/hooks/use-git'
 import { useUiStore } from '@/stores/ui-store'
+import { SplitPanel } from '@/components/shared/layout'
 import { RunnerDock } from '@/components/runner/dock'
 import { TerminalPanel } from '@/components/terminal'
 import { Sidebar } from './sidebar'
@@ -45,6 +46,7 @@ export function ProjectLayout() {
   const { activate } = useProjects()
   const activeProject = useProjectStore((s) => s.activeProject)
   const navigate = useNavigate()
+  const terminalOpen = useUiStore((s) => s.terminalOpen)
 
   useRunnerListener()
   useGitListener()
@@ -70,16 +72,31 @@ export function ProjectLayout() {
     }
   }, [projectId, activeProject?.id])
 
+  const mainContent = (
+    <Content>
+      <Outlet />
+    </Content>
+  )
+
   return (
     <Root>
       <ProjectTitleBar />
       <Body>
         <Sidebar />
         <Main>
-          <Content>
-            <Outlet />
-          </Content>
-          <TerminalPanel />
+          {terminalOpen ? (
+            <SplitPanel
+              left={mainContent}
+              direction="vertical"
+              defaultWidth={280}
+              minWidth={0}
+              maxWidth={600}
+              storageKey="terminal.height"
+              reverse
+            >
+              <TerminalPanel />
+            </SplitPanel>
+          ) : mainContent}
         </Main>
       </Body>
       <RunnerDock />

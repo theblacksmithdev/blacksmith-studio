@@ -27,6 +27,8 @@ interface SplitPanelProps {
   maxWidth?: number
   storageKey?: string
   direction?: SplitDirection
+  /** When true, children (right/bottom) is the fixed-size panel instead of left (top). */
+  reverse?: boolean
 }
 
 export function SplitPanel({
@@ -37,6 +39,7 @@ export function SplitPanel({
   maxWidth = 480,
   storageKey,
   direction = 'horizontal',
+  reverse = false,
 }: SplitPanelProps) {
   const isVertical = direction === 'vertical'
 
@@ -67,9 +70,10 @@ export function SplitPanel({
     if (!dragging) return
 
     const handleMouseMove = (e: MouseEvent) => {
-      const delta = isVertical
+      const raw = isVertical
         ? e.clientY - startRef.current.pos
         : e.clientX - startRef.current.pos
+      const delta = reverse ? -raw : raw
       const next = Math.max(minWidth, Math.min(maxWidth, startRef.current.size + delta))
       setSize(next)
     }
@@ -97,80 +101,87 @@ export function SplitPanel({
     }
   }, [size, storageKey, dragging])
 
+  const fixedPanel = (
+    <Box
+      css={{
+        flexShrink: 0,
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        ...(isVertical ? { height: size } : { width: size }),
+      }}
+    >
+      {reverse ? children : left}
+    </Box>
+  )
+
+  const flexPanel = (
+    <Box
+      css={{
+        flex: 1,
+        minWidth: 0,
+        minHeight: 0,
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {reverse ? left : children}
+    </Box>
+  )
+
+  const separator = (
+    <Box
+      css={{
+        position: 'relative',
+        flexShrink: 0,
+        ...(isVertical
+          ? { width: '100%', height: 0, borderTop: `1px solid ${dragging ? 'var(--studio-border-hover)' : 'var(--studio-border)'}` }
+          : { height: '100%', width: 0, borderLeft: `1px solid ${dragging ? 'var(--studio-border-hover)' : 'var(--studio-border)'}` }
+        ),
+        transition: dragging ? 'none' : 'border-color 0.15s ease',
+      }}
+    >
+      <Box
+        onMouseDown={handleMouseDown}
+        css={{
+          position: 'absolute',
+          zIndex: 2,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          ...(isVertical
+            ? { left: 0, right: 0, top: '-5px', height: '9px', cursor: 'row-resize' }
+            : { top: 0, bottom: 0, left: '-5px', width: '9px', cursor: 'col-resize' }
+          ),
+          '&:hover .split-knob': { opacity: 1 },
+        }}
+      >
+        <Box
+          className="split-knob"
+          css={{
+            borderRadius: '4px',
+            background: dragging ? 'var(--studio-text-muted)' : 'var(--studio-border-hover)',
+            opacity: dragging ? 1 : 0,
+            transition: 'opacity 0.15s ease',
+            ...(isVertical
+              ? { width: '32px', height: '4px' }
+              : { width: '4px', height: '32px' }
+            ),
+          }}
+        />
+      </Box>
+    </Box>
+  )
+
   return (
     <Flex
       direction={isVertical ? 'column' : 'row'}
       css={{ height: '100%', width: '100%', overflow: 'hidden' }}
     >
-      <Box
-        css={{
-          flexShrink: 0,
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          ...(isVertical ? { height: size } : { width: size }),
-        }}
-      >
-        {left}
-      </Box>
-
-      {/* Separator + drag handle */}
-      <Box
-        css={{
-          position: 'relative',
-          flexShrink: 0,
-          ...(isVertical
-            ? { width: '100%', height: 0, borderTop: `1px solid ${dragging ? 'var(--studio-border-hover)' : 'var(--studio-border)'}` }
-            : { height: '100%', width: 0, borderLeft: `1px solid ${dragging ? 'var(--studio-border-hover)' : 'var(--studio-border)'}` }
-          ),
-          transition: dragging ? 'none' : 'border-color 0.15s ease',
-        }}
-      >
-        {/* Invisible hit area (absolute, wider than the 1px line) */}
-        <Box
-          onMouseDown={handleMouseDown}
-          css={{
-            position: 'absolute',
-            zIndex: 2,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            ...(isVertical
-              ? { left: 0, right: 0, top: '-5px', height: '9px', cursor: 'row-resize' }
-              : { top: 0, bottom: 0, left: '-5px', width: '9px', cursor: 'col-resize' }
-            ),
-            '&:hover ~ .split-line': { borderColor: 'var(--studio-border-hover)' },
-            '&:hover .split-knob': { opacity: 1 },
-          }}
-        >
-          <Box
-            className="split-knob"
-            css={{
-              borderRadius: '4px',
-              background: dragging ? 'var(--studio-text-muted)' : 'var(--studio-border-hover)',
-              opacity: dragging ? 1 : 0,
-              transition: 'opacity 0.15s ease',
-              ...(isVertical
-                ? { width: '32px', height: '4px' }
-                : { width: '4px', height: '32px' }
-              ),
-            }}
-          />
-        </Box>
-      </Box>
-
-      <Box
-        css={{
-          flex: 1,
-          minWidth: 0,
-          minHeight: 0,
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        {children}
-      </Box>
+      {reverse ? flexPanel : fixedPanel}
+      {separator}
+      {reverse ? fixedPanel : flexPanel}
     </Flex>
   )
 }

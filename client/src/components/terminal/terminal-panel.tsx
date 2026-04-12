@@ -1,56 +1,17 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import styled from '@emotion/styled'
-import { Terminal, X, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
+import { Terminal, X, Plus, Trash2, ChevronDown } from 'lucide-react'
 import { api } from '@/api'
 import { useUiStore } from '@/stores/ui-store'
 import { XtermInstance } from './xterm-instance'
 
-const MIN_HEIGHT = 140
-const MAX_HEIGHT_RATIO = 0.75
-const DEFAULT_HEIGHT = 280
-
 /* ── Styled ── */
 
 const Wrapper = styled.div`
-  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  border-top: 1px solid var(--studio-border);
+  height: 100%;
   overflow: hidden;
-`
-
-const ResizeHandle = styled.div`
-  height: 5px;
-  cursor: row-resize;
-  flex-shrink: 0;
-  position: relative;
-  background: transparent;
-  transition: background 0.12s ease;
-
-  &::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 40px;
-    height: 3px;
-    border-radius: 1.5px;
-    background: transparent;
-    transition: background 0.15s ease;
-  }
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.02);
-  }
-
-  &:hover::after {
-    background: var(--studio-border-hover);
-  }
-
-  &:active::after {
-    background: var(--studio-accent);
-  }
 `
 
 const Header = styled.div`
@@ -180,10 +141,6 @@ export function TerminalPanel() {
   const setOpen = useUiStore((s) => s.setTerminalOpen)
   const [tabs, setTabs] = useState<TermTab[]>([])
   const [activeTab, setActiveTab] = useState<string | null>(null)
-  const [height, setHeight] = useState(DEFAULT_HEIGHT)
-  const dragging = useRef(false)
-  const startY = useRef(0)
-  const startH = useRef(0)
 
   // Spawn first terminal on open
   useEffect(() => {
@@ -230,44 +187,10 @@ export function TerminalPanel() {
     })
   }, [activeTab, setOpen])
 
-  // ── Resize ──
-
-  const onMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault()
-    dragging.current = true
-    startY.current = e.clientY
-    startH.current = height
-    document.body.style.cursor = 'row-resize'
-    document.body.style.userSelect = 'none'
-  }, [height])
-
-  useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      if (!dragging.current) return
-      const delta = startY.current - e.clientY
-      const maxH = window.innerHeight * MAX_HEIGHT_RATIO
-      setHeight(Math.min(maxH, Math.max(MIN_HEIGHT, startH.current + delta)))
-    }
-    const onUp = () => {
-      if (!dragging.current) return
-      dragging.current = false
-      document.body.style.cursor = ''
-      document.body.style.userSelect = ''
-    }
-    window.addEventListener('mousemove', onMove)
-    window.addEventListener('mouseup', onUp)
-    return () => {
-      window.removeEventListener('mousemove', onMove)
-      window.removeEventListener('mouseup', onUp)
-    }
-  }, [])
-
   if (!isOpen) return null
 
   return (
-    <Wrapper style={{ height }}>
-      <ResizeHandle onMouseDown={onMouseDown} />
-
+    <Wrapper>
       <Header>
         <HeaderLabel>
           <Terminal size={12} />
@@ -293,7 +216,7 @@ export function TerminalPanel() {
         </TabStrip>
 
         <Actions>
-          <IconBtn onClick={spawnTab} title="New terminal (split)">
+          <IconBtn onClick={spawnTab} title="New terminal">
             <Plus size={13} />
           </IconBtn>
           <IconBtn
