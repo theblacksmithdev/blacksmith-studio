@@ -1,88 +1,6 @@
-import styled from '@emotion/styled'
+import { Flex, Box } from '@chakra-ui/react'
+import { Text, spacing, radii } from '@/components/shared/ui'
 import type { GitCommitEntry } from '@/api/types'
-
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-`
-
-const DateGroup = styled.div`
-  &:not(:first-of-type) {
-    margin-top: 4px;
-  }
-`
-
-const DateLabel = styled.div`
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--studio-text-muted);
-  padding: 8px 0 6px;
-  letter-spacing: 0.02em;
-`
-
-const EntryRow = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
-  margin-left: 6px;
-  border: none;
-  border-left: 1px solid var(--studio-border);
-  border-radius: 0;
-  background: transparent;
-  width: 100%;
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.12s ease;
-
-  &:hover {
-    background: var(--studio-bg-surface);
-  }
-`
-
-const Dot = styled.div`
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--studio-border);
-  border: 1.5px solid var(--studio-bg-main);
-  flex-shrink: 0;
-  margin-left: -4px;
-`
-
-const Message = styled.span`
-  font-size: 14px;
-  font-weight: 450;
-  color: var(--studio-text-primary);
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  letter-spacing: -0.01em;
-`
-
-const Meta = styled.span`
-  font-size: 12px;
-  color: var(--studio-text-muted);
-  flex-shrink: 0;
-  white-space: nowrap;
-`
-
-const Hash = styled.span`
-  font-size: 12px;
-  font-family: 'SF Mono', 'Fira Code', monospace;
-  color: var(--studio-text-muted);
-  flex-shrink: 0;
-  opacity: 0.7;
-`
-
-const EmptyMessage = styled.div`
-  padding: 20px 12px;
-  text-align: center;
-  font-size: 14px;
-  color: var(--studio-text-muted);
-  line-height: 1.6;
-`
 
 function formatRelative(dateStr: string): string {
   const date = new Date(dateStr)
@@ -126,26 +44,89 @@ interface Props {
 
 export function HistoryTimeline({ entries, onSelect }: Props) {
   if (entries.length === 0) {
-    return <EmptyMessage>No commits yet. Make your first commit to start tracking history.</EmptyMessage>
+    return (
+      <Flex align="center" justify="center" css={{ padding: `${spacing.xl} 0` }}>
+        <Text variant="caption" color="muted">No commits yet</Text>
+      </Flex>
+    )
   }
 
   const groups = groupByDate(entries)
 
   return (
-    <Container>
+    <Flex direction="column">
       {Array.from(groups.entries()).map(([date, items]) => (
-        <DateGroup key={date}>
-          <DateLabel>{date}</DateLabel>
-          {items.map((entry) => (
-            <EntryRow key={entry.hash} onClick={() => onSelect?.(entry.hash)}>
-              <Dot />
-              <Hash>{entry.hash.slice(0, 7)}</Hash>
-              <Message>{entry.message}</Message>
-              <Meta>{formatRelative(entry.date)}</Meta>
-            </EntryRow>
-          ))}
-        </DateGroup>
+        <Box key={date}>
+          <Text variant="tiny" color="muted" css={{ padding: `${spacing.sm} 0 ${spacing.xs}`, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            {date}
+          </Text>
+
+          <Box css={{ marginLeft: '6px', borderLeft: '1px solid var(--studio-border)', paddingLeft: 0 }}>
+            {items.map((entry) => (
+              <Flex
+                as="button"
+                key={entry.hash}
+                align="center"
+                gap={spacing.sm}
+                onClick={() => onSelect?.(entry.hash)}
+                css={{
+                  width: '100%',
+                  padding: `6px ${spacing.sm}`,
+                  marginLeft: '-1px',
+                  border: 'none',
+                  borderLeft: '1px solid transparent',
+                  background: 'transparent',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  transition: 'all 0.1s ease',
+                  '&:hover': {
+                    background: 'var(--studio-bg-surface)',
+                    borderLeftColor: 'var(--studio-text-muted)',
+                  },
+                }}
+              >
+                {/* Dot */}
+                <Box css={{
+                  width: '7px',
+                  height: '7px',
+                  borderRadius: '50%',
+                  background: 'var(--studio-border-hover)',
+                  flexShrink: 0,
+                  marginLeft: '-4px',
+                }} />
+
+                {/* Hash */}
+                <Text variant="caption" css={{
+                  fontFamily: "'SF Mono', monospace",
+                  color: 'var(--studio-text-muted)',
+                  flexShrink: 0,
+                  opacity: 0.7,
+                }}>
+                  {entry.hash.slice(0, 7)}
+                </Text>
+
+                {/* Message */}
+                <Text variant="bodySmall" css={{
+                  flex: 1,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  color: 'var(--studio-text-primary)',
+                  fontWeight: 450,
+                }}>
+                  {entry.message}
+                </Text>
+
+                {/* Time */}
+                <Text variant="caption" color="muted" css={{ flexShrink: 0 }}>
+                  {formatRelative(entry.date)}
+                </Text>
+              </Flex>
+            ))}
+          </Box>
+        </Box>
       ))}
-    </Container>
+    </Flex>
   )
 }

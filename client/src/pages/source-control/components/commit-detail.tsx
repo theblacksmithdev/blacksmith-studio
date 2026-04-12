@@ -1,144 +1,17 @@
 import { useState } from 'react'
-import styled from '@emotion/styled'
 import { Flex, Box } from '@chakra-ui/react'
 import { GitCommitHorizontal, User, Calendar, Copy, Check } from 'lucide-react'
-import { Drawer } from '@/components/shared/drawer'
 import { useGitCommitDetail } from '@/hooks/use-git'
+import { Drawer } from '@/components/shared/ui'
+import { Text, Badge, spacing, radii } from '@/components/shared/ui'
+import { FileIcon } from '@/pages/files/components/explorer/utils/file-icon'
 
-const MetaRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--studio-text-tertiary);
-`
-
-const MetaIcon = styled.span`
-  color: var(--studio-text-muted);
-  display: flex;
-  flex-shrink: 0;
-`
-
-const HashBadge = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--studio-border);
-  background: var(--studio-bg-inset);
-  font-size: 13px;
-  font-family: 'SF Mono', 'Fira Code', monospace;
-  color: var(--studio-text-secondary);
-  cursor: pointer;
-  transition: all 0.12s ease;
-
-  &:hover {
-    border-color: var(--studio-border-hover);
-    color: var(--studio-text-primary);
-  }
-`
-
-const FileRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 10px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-family: 'SF Mono', 'Fira Code', monospace;
-  transition: background 0.12s ease;
-
-  &:hover {
-    background: var(--studio-bg-hover);
-  }
-`
-
-const FilePath = styled.span`
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--studio-text-secondary);
-`
-
-const StatBadge = styled.span<{ variant: 'add' | 'del' }>`
-  font-size: 12px;
-  font-weight: 500;
-  color: ${(p) => (p.variant === 'add' ? 'var(--studio-green)' : 'var(--studio-error)')};
-`
-
-const DiffBlock = styled.div`
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  border-radius: 8px;
-  border: 1px solid var(--studio-border);
-  background: var(--studio-bg-inset);
-`
-
-const DiffTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-  font-family: 'SF Mono', 'Fira Code', monospace;
-  line-height: 18px;
-`
-
-const DiffRow = styled.tr<{ type: 'add' | 'remove' | 'context' | 'hunk' }>`
-  background: ${(p) => {
-    switch (p.type) {
-      case 'add': return 'var(--studio-green-subtle)'
-      case 'remove': return 'var(--studio-error-subtle))'
-      case 'hunk': return 'var(--studio-bg-surface)'
-      default: return 'transparent'
-    }
-  }};
-`
-
-const LineNum = styled.td`
-  width: 40px;
-  padding: 0 6px;
-  text-align: right;
-  color: var(--studio-text-muted);
-  font-size: 11px;
-  user-select: none;
-  opacity: 0.5;
-  vertical-align: top;
-`
-
-const LineContent = styled.td<{ type: 'add' | 'remove' | 'context' | 'hunk' }>`
-  padding: 0 10px 0 6px;
-  white-space: pre-wrap;
-  word-break: break-all;
-  color: ${(p) => {
-    switch (p.type) {
-      case 'add': return 'var(--studio-green)'
-      case 'remove': return 'var(--studio-error)'
-      case 'hunk': return 'var(--studio-text-muted)'
-      default: return 'var(--studio-text-tertiary)'
-    }
-  }};
-  font-weight: ${(p) => (p.type === 'hunk' ? 600 : 400)};
-`
-
-const SectionLabel = styled.div`
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--studio-text-muted);
-  margin-bottom: 8px;
-`
-
-const LoadingState = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 200px;
-  font-size: 14px;
-  color: var(--studio-text-muted);
-`
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleString(undefined, {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  })
+}
 
 function classifyLine(line: string): 'add' | 'remove' | 'hunk' | 'context' {
   if (line.startsWith('@@')) return 'hunk'
@@ -147,14 +20,15 @@ function classifyLine(line: string): 'add' | 'remove' | 'hunk' | 'context' {
   return 'context'
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+const diffLineColors: Record<string, { bg: string; text: string }> = {
+  add: { bg: 'var(--studio-green-subtle)', text: 'var(--studio-text-primary)' },
+  remove: { bg: 'var(--studio-error-subtle)', text: 'var(--studio-text-primary)' },
+  hunk: { bg: 'var(--studio-bg-surface)', text: 'var(--studio-text-muted)' },
+  context: { bg: 'transparent', text: 'var(--studio-text-tertiary)' },
+}
+
+function getFileName(path: string) {
+  return path.split('/').pop() || path
 }
 
 interface Props {
@@ -163,7 +37,7 @@ interface Props {
 }
 
 export function CommitDetailDrawer({ hash, onClose }: Props) {
-  const { data: detail, isLoading: loading } = useGitCommitDetail(hash)
+  const { data: detail, isLoading } = useGitCommitDetail(hash)
   const [copied, setCopied] = useState(false)
 
   const copyHash = () => {
@@ -175,82 +49,149 @@ export function CommitDetailDrawer({ hash, onClose }: Props) {
   const totalAdded = detail?.files.reduce((n, f) => n + f.insertions, 0) ?? 0
   const totalDeleted = detail?.files.reduce((n, f) => n + f.deletions, 0) ?? 0
 
-  const diffLines = (detail?.diff ?? '').split('\n').filter((l) => {
-    // Skip diff header lines (diff --git, index, ---, +++)
-    return !l.startsWith('diff --git') && !l.startsWith('index ') && !l.startsWith('---') && !l.startsWith('+++')
-  })
+  const diffLines = (detail?.diff ?? '').split('\n').filter((l) =>
+    !l.startsWith('diff --git') && !l.startsWith('index ') && !l.startsWith('---') && !l.startsWith('+++')
+  )
 
   return (
     <Drawer
       title={detail?.message ?? 'Commit Detail'}
       onClose={onClose}
       size="620px"
-      headerExtra={
-        <GitCommitHorizontal size={16} style={{ color: 'var(--studio-text-muted)' }} />
-      }
+      headerExtra={<GitCommitHorizontal size={16} style={{ color: 'var(--studio-text-muted)' }} />}
     >
-      {loading ? (
-        <LoadingState>Loading commit details...</LoadingState>
+      {isLoading ? (
+        <Flex align="center" justify="center" css={{ height: '200px' }}>
+          <Text variant="body" color="muted">Loading commit details...</Text>
+        </Flex>
       ) : detail ? (
-        <Flex direction="column" gap={5} css={{ height: '100%', minHeight: 0 }}>
-          {/* Metadata */}
-          <Flex direction="column" gap={2}>
-            <Flex align="center" gap={3}>
-              <HashBadge onClick={copyHash} title="Copy full hash">
-                {copied ? <Check size={11} /> : <Copy size={11} />}
-                {detail.hash.slice(0, 7)}
-              </HashBadge>
-              <MetaRow>
-                <MetaIcon><User size={12} /></MetaIcon>
-                {detail.author}
-              </MetaRow>
-              <MetaRow>
-                <MetaIcon><Calendar size={12} /></MetaIcon>
-                {formatDate(detail.date)}
-              </MetaRow>
+        <Flex direction="column" gap={spacing.xl} css={{ height: '100%', minHeight: 0 }}>
+          {/* ── Metadata ── */}
+          <Flex align="center" gap={spacing.md} css={{ flexWrap: 'wrap' }}>
+            <Flex
+              as="button"
+              align="center"
+              gap={spacing.xs}
+              onClick={copyHash}
+              css={{
+                padding: `3px ${spacing.sm}`,
+                borderRadius: radii.md,
+                border: '1px solid var(--studio-border)',
+                background: 'var(--studio-bg-surface)',
+                fontFamily: "'SF Mono', monospace",
+                fontSize: '12px',
+                color: 'var(--studio-text-secondary)',
+                cursor: 'pointer',
+                transition: 'all 0.12s ease',
+                '&:hover': { borderColor: 'var(--studio-border-hover)', color: 'var(--studio-text-primary)' },
+              }}
+            >
+              {copied ? <Check size={11} /> : <Copy size={11} />}
+              {detail.hash.slice(0, 7)}
+            </Flex>
+
+            <Flex align="center" gap={spacing.xs} css={{ color: 'var(--studio-text-muted)' }}>
+              <User size={12} />
+              <Text variant="caption">{detail.author}</Text>
+            </Flex>
+
+            <Flex align="center" gap={spacing.xs} css={{ color: 'var(--studio-text-muted)' }}>
+              <Calendar size={12} />
+              <Text variant="caption">{formatDate(detail.date)}</Text>
             </Flex>
           </Flex>
 
-          {/* Files changed */}
+          {/* ── Files changed ── */}
           <Box>
-            <SectionLabel>
-              {detail.files.length} file{detail.files.length !== 1 ? 's' : ''} changed
-              {totalAdded > 0 && <StatBadge variant="add" style={{ marginLeft: '8px' }}>+{totalAdded}</StatBadge>}
-              {totalDeleted > 0 && <StatBadge variant="del" style={{ marginLeft: '4px' }}>-{totalDeleted}</StatBadge>}
-            </SectionLabel>
-            <Flex direction="column" gap={0}>
+            <Flex align="center" gap={spacing.sm} css={{ marginBottom: spacing.sm }}>
+              <Text variant="tiny" color="muted" css={{ textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                Files changed
+              </Text>
+              <Badge variant="default" size="sm">{detail.files.length}</Badge>
+              {totalAdded > 0 && <Text variant="caption" css={{ color: 'var(--studio-green)', fontWeight: 500 }}>+{totalAdded}</Text>}
+              {totalDeleted > 0 && <Text variant="caption" css={{ color: 'var(--studio-error)', fontWeight: 500 }}>-{totalDeleted}</Text>}
+            </Flex>
+
+            <Flex direction="column" gap="1px">
               {detail.files.map((f) => (
-                <FileRow key={f.path}>
-                  <FilePath>{f.path}</FilePath>
-                  {f.insertions > 0 && <StatBadge variant="add">+{f.insertions}</StatBadge>}
-                  {f.deletions > 0 && <StatBadge variant="del">-{f.deletions}</StatBadge>}
-                </FileRow>
+                <Flex
+                  key={f.path}
+                  align="center"
+                  gap={spacing.sm}
+                  css={{
+                    padding: `5px ${spacing.sm}`,
+                    borderRadius: radii.md,
+                    transition: 'background 0.1s ease',
+                    '&:hover': { background: 'var(--studio-bg-hover)' },
+                  }}
+                >
+                  <FileIcon name={getFileName(f.path)} size={14} />
+                  <Text variant="bodySmall" css={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {f.path}
+                  </Text>
+                  {f.insertions > 0 && <Text variant="caption" css={{ color: 'var(--studio-green)', fontWeight: 500 }}>+{f.insertions}</Text>}
+                  {f.deletions > 0 && <Text variant="caption" css={{ color: 'var(--studio-error)', fontWeight: 500 }}>-{f.deletions}</Text>}
+                </Flex>
               ))}
             </Flex>
           </Box>
 
-          {/* Diff */}
+          {/* ── Diff ── */}
           <Box css={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-            <SectionLabel>Diff</SectionLabel>
-            <DiffBlock>
-              <DiffTable>
+            <Text variant="tiny" color="muted" css={{ textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: spacing.sm }}>
+              Diff
+            </Text>
+            <Box css={{
+              flex: 1,
+              minHeight: 0,
+              overflow: 'auto',
+              borderRadius: radii.lg,
+              border: '1px solid var(--studio-border)',
+              background: 'var(--studio-bg-sidebar)',
+              '&::-webkit-scrollbar': { width: '6px', height: '6px' },
+              '&::-webkit-scrollbar-thumb': { background: 'rgba(128,128,128,0.2)', borderRadius: '3px' },
+            }}>
+              <Box
+                as="table"
+                css={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                  fontFamily: "'SF Mono', 'Fira Code', monospace",
+                  fontSize: '12px',
+                  lineHeight: '18px',
+                }}
+              >
                 <tbody>
                   {diffLines.map((line, i) => {
                     const type = classifyLine(line)
+                    const colors = diffLineColors[type]
                     return (
-                      <DiffRow key={i} type={type}>
-                        <LineNum>{i + 1}</LineNum>
-                        <LineContent type={type}>{line || ' '}</LineContent>
-                      </DiffRow>
+                      <tr key={i} style={{ background: colors.bg }}>
+                        <td style={{
+                          width: '40px', padding: '0 6px', textAlign: 'right',
+                          color: 'var(--studio-text-muted)', fontSize: '11px',
+                          userSelect: 'none', opacity: 0.5, verticalAlign: 'top',
+                        }}>
+                          {i + 1}
+                        </td>
+                        <td style={{
+                          padding: '0 10px 0 6px', whiteSpace: 'pre-wrap', wordBreak: 'break-all',
+                          color: colors.text, fontWeight: type === 'hunk' ? 600 : 400,
+                        }}>
+                          {line || ' '}
+                        </td>
+                      </tr>
                     )
                   })}
                 </tbody>
-              </DiffTable>
-            </DiffBlock>
+              </Box>
+            </Box>
           </Box>
         </Flex>
       ) : (
-        <LoadingState>Failed to load commit details</LoadingState>
+        <Flex align="center" justify="center" css={{ height: '200px' }}>
+          <Text variant="body" color="muted">Failed to load commit details</Text>
+        </Flex>
       )}
     </Drawer>
   )
