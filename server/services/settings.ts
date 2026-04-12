@@ -26,6 +26,7 @@ const DEFAULTS: Record<string, any> = {
 
 const GLOBAL_DEFAULTS: Record<string, any> = {
   'runner.nodePath': '',
+  'editor.preferred': '',
 }
 
 export class SettingsManager {

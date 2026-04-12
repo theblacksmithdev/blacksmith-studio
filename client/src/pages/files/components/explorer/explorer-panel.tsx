@@ -6,6 +6,7 @@ import { api } from '@/api'
 import type { SearchResult } from '@/api/modules/files'
 import { TreeNode } from './tree-node'
 import { FileLabel } from './utils/file-label'
+import { OpenInEditorButton } from './open-in-editor-button'
 import { toTreeData, filterTree } from './utils/tree-data'
 import type { FileNode } from '@/types'
 
@@ -58,9 +59,12 @@ export function ExplorerPanel({
       {/* Header */}
       <Flex align="center" justify="space-between" css={{ padding: `${spacing.sm} ${spacing.md}`, flexShrink: 0 }}>
         <Text variant="tiny" color="muted">Explorer</Text>
-        <Tooltip content="Refresh file tree">
-          <IconButton variant="ghost" size="xs" onClick={onRefresh} aria-label="Refresh"><RefreshCw /></IconButton>
-        </Tooltip>
+        <Flex align="center" gap={1}>
+          <OpenInEditorButton />
+          <Tooltip content="Refresh file tree">
+            <IconButton variant="ghost" size="sm" onClick={onRefresh} aria-label="Refresh"><RefreshCw /></IconButton>
+          </Tooltip>
+        </Flex>
       </Flex>
 
       {/* Search */}

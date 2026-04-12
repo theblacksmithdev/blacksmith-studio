@@ -2,6 +2,7 @@ import { useState, memo } from 'react'
 import { Box, Flex } from '@chakra-ui/react'
 import { ChevronRight, ChevronDown } from 'lucide-react'
 import { FileLabel } from './utils/file-label'
+import { FileContextMenu, type ContextMenuPosition } from '../file-context-menu'
 import type { TreeItem } from './utils/tree-data'
 
 interface TreeNodeProps {
@@ -13,6 +14,10 @@ interface TreeNodeProps {
   defaultOpen?: boolean
 }
 
+interface ContextState {
+  position: ContextMenuPosition
+}
+
 export const TreeNode = memo(function TreeNode({
   item,
   depth,
@@ -22,9 +27,16 @@ export const TreeNode = memo(function TreeNode({
   defaultOpen = false,
 }: TreeNodeProps) {
   const [open, setOpen] = useState(defaultOpen)
+  const [ctx, setCtx] = useState<ContextState | null>(null)
   const isDir = item.isDir
   const isSelected = item.path === selectedFile
   const isChanged = changedFiles.has(item.path)
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setCtx({ position: { x: e.clientX, y: e.clientY } })
+  }
 
   return (
     <>
@@ -35,6 +47,7 @@ export const TreeNode = memo(function TreeNode({
           if (isDir) setOpen(!open)
           else onSelectFile(item.path)
         }}
+        onContextMenu={handleContextMenu}
         css={{
           width: '100%',
           height: '28px',
@@ -68,6 +81,16 @@ export const TreeNode = memo(function TreeNode({
           <Box css={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--studio-warning)', flexShrink: 0 }} />
         )}
       </Flex>
+
+      {/* Context menu */}
+      {ctx && (
+        <FileContextMenu
+          path={item.path}
+          position={ctx.position}
+          isDirectory={isDir}
+          onClose={() => setCtx(null)}
+        />
+      )}
 
       {/* Children */}
       {isDir && open && item.children?.map((child) => (

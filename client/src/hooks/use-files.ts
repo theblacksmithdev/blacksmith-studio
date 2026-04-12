@@ -11,7 +11,7 @@ export function clearFileContentCache() {
 
 export function useFiles() {
   const queryClient = useQueryClient()
-  const { openFile, setTabContent, setTabError } = useFileStore()
+  const { openFile, setTabContent, setTabError, markSaved } = useFileStore()
 
   const treeQuery = useQuery({
     queryKey: queryKeys.files,
@@ -33,10 +33,19 @@ export function useFiles() {
     }
   }
 
+  const saveFileContent = async (filePath: string) => {
+    const tab = useFileStore.getState().openTabs.find((t) => t.path === filePath)
+    if (!tab?.content || tab.content === tab.originalContent) return
+    await api.files.save(filePath, tab.content)
+    markSaved(filePath)
+    queryClient.removeQueries({ queryKey: queryKeys.fileContent(filePath) })
+  }
+
   return {
     tree: treeQuery.data ?? null,
     isLoading: treeQuery.isLoading,
     fetchFileTree: () => treeQuery.refetch(),
     fetchFileContent,
+    saveFileContent,
   }
 }

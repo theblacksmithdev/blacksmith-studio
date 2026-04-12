@@ -89,6 +89,21 @@ export function readFileContent(
   return { content, language: languageMap[ext] || ext || 'text', size: stat.size }
 }
 
+export function writeFileContent(
+  projectRoot: string,
+  relativePath: string,
+  content: string,
+): void {
+  const fullPath = path.resolve(projectRoot, relativePath)
+
+  // Security: ensure the path is within the project root
+  if (!fullPath.startsWith(projectRoot)) {
+    throw new Error('Access denied: path outside project root')
+  }
+
+  fs.writeFileSync(fullPath, content, 'utf-8')
+}
+
 /* ── Content Search ── */
 
 const TEXT_EXTENSIONS = new Set([

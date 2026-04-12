@@ -7,9 +7,10 @@ interface StatusBarProps {
   lineCount: number
   language: string
   isChanged: boolean
+  saving?: boolean
 }
 
-export function StatusBar({ lineCount, language, isChanged }: StatusBarProps) {
+export function StatusBar({ lineCount, language, isChanged, saving }: StatusBarProps) {
   const { mode } = useThemeMode()
   const isDark = mode === 'dark'
 
@@ -27,12 +28,14 @@ export function StatusBar({ lineCount, language, isChanged }: StatusBarProps) {
       <Text variant="tiny" color="muted">{lineCount} lines</Text>
 
       <Flex align="center" gap={spacing.md}>
-        {isChanged && (
+        {saving ? (
+          <Text variant="tiny" color="muted">Saving...</Text>
+        ) : isChanged ? (
           <Flex align="center" gap={spacing.xs}>
             <Circle size={5} fill="var(--studio-warning)" style={{ color: 'var(--studio-warning)' }} />
             <Text variant="tiny" css={{ color: 'var(--studio-warning)' }}>Modified</Text>
           </Flex>
-        )}
+        ) : null}
         <Text variant="tiny" color="muted" css={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           {language}
         </Text>

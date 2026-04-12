@@ -6,9 +6,9 @@ export type IconButtonVariant = 'default' | 'ghost' | 'danger'
 export type IconButtonSize = 'xs' | 'sm' | 'md'
 
 const sizeStyles: Record<IconButtonSize, SystemStyleObject> = {
-  xs: { width: sizes.icon.xs, height: sizes.icon.xs, borderRadius: radii.xs, '& svg': { width: '12px', height: '12px' } },
-  sm: { width: sizes.icon.sm, height: sizes.icon.sm, borderRadius: radii.sm, '& svg': { width: '14px', height: '14px' } },
-  md: { width: sizes.icon.md, height: sizes.icon.md, borderRadius: radii.md, '& svg': { width: '16px', height: '16px' } },
+  xs: { width: sizes.icon.xs, minWidth: sizes.icon.xs, height: sizes.icon.xs, minHeight: sizes.icon.xs, borderRadius: radii.xs, '& svg': { width: '12px', height: '12px' } },
+  sm: { width: sizes.icon.sm, minWidth: sizes.icon.sm, height: sizes.icon.sm, minHeight: sizes.icon.sm, borderRadius: radii.sm, '& svg': { width: '14px', height: '14px' } },
+  md: { width: sizes.icon.md, minWidth: sizes.icon.md, height: sizes.icon.md, minHeight: sizes.icon.md, borderRadius: radii.md, '& svg': { width: '16px', height: '16px' } },
 }
 
 const variantStyles: Record<IconButtonVariant, SystemStyleObject> = {

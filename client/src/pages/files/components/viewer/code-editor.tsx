@@ -9,10 +9,11 @@ import { darkTheme, lightTheme } from './themes'
 interface CodeEditorProps {
   content: string
   language: string
+  onChange?: (value: string) => void
+  onSave?: () => void
 }
 
 const EDITOR_OPTIONS = {
-  readOnly: true,
   fontSize: 13,
   fontFamily: "'SF Mono', 'Fira Code', 'JetBrains Mono', Menlo, Consolas, monospace",
   fontLigatures: true,
@@ -40,7 +41,16 @@ const EDITOR_OPTIONS = {
   renderWhitespace: 'none' as const,
   wordWrap: 'off' as const,
   links: true,
-  contextmenu: false,
+  contextmenu: true,
+  tabSize: 2,
+  insertSpaces: true,
+  autoIndent: 'full' as const,
+  formatOnPaste: true,
+  formatOnType: true,
+  suggestOnTriggerCharacters: true,
+  acceptSuggestionOnEnter: 'on' as const,
+  quickSuggestions: true,
+  wordBasedSuggestions: 'currentDocument' as const,
 }
 
 /** Register GitHub-based themes with our app background overrides */
@@ -49,11 +59,13 @@ function defineCustomThemes(monaco: Monaco) {
   monaco.editor.defineTheme('blacksmith-light', lightTheme)
 }
 
-export function CodeEditor({ content, language }: CodeEditorProps) {
+export function CodeEditor({ content, language, onChange, onSave }: CodeEditorProps) {
   const { mode } = useThemeMode()
   const monacoLang = getMonacoLanguage(language)
   const editorRef = useRef<any>(null)
   const monacoRef = useRef<Monaco | null>(null)
+  const onSaveRef = useRef(onSave)
+  onSaveRef.current = onSave
 
   const themeName = mode === 'dark' ? 'blacksmith-dark' : 'blacksmith-light'
 
@@ -62,7 +74,22 @@ export function CodeEditor({ content, language }: CodeEditorProps) {
     monacoRef.current = monaco
     defineCustomThemes(monaco)
     monaco.editor.setTheme(themeName)
+
+    // Cmd+S / Ctrl+S → save
+    editor.addAction({
+      id: 'blacksmith.save',
+      label: 'Save File',
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS],
+      run: () => onSaveRef.current?.(),
+    })
+
+    // Focus the editor
+    editor.focus()
   }, [themeName])
+
+  const handleChange = useCallback((value: string | undefined) => {
+    if (value !== undefined) onChange?.(value)
+  }, [onChange])
 
   // React to theme mode changes
   useEffect(() => {
@@ -82,6 +109,7 @@ export function CodeEditor({ content, language }: CodeEditorProps) {
           theme={themeName}
           options={EDITOR_OPTIONS}
           onMount={handleMount}
+          onChange={handleChange}
           beforeMount={defineCustomThemes}
           keepCurrentModel={false}
           loading={
