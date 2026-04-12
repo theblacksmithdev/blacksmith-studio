@@ -5,6 +5,13 @@ import { SetupWizard } from '@/components/setup/setup-wizard'
 
 const SETUP_COMPLETE_KEY = 'blacksmith-studio:setup-complete'
 
+// Restore zoom level on startup
+const savedZoom = localStorage.getItem('studio-zoom-level')
+if (savedZoom) {
+  const level = parseFloat(savedZoom)
+  if (!isNaN(level)) window.electronAPI?.setZoomLevel(level)
+}
+
 export function App() {
   const [setupDone, setSetupDone] = useState(
     () => localStorage.getItem(SETUP_COMPLETE_KEY) === '1'

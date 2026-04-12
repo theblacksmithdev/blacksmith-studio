@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, webFrame } from 'electron'
 import { INVOKE_CHANNELS, SUBSCRIBE_CHANNELS } from './ipc/channels.js'
 
 const invokeAllowlist = new Set<string>(INVOKE_CHANNELS)
@@ -11,6 +11,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   /** Check if running inside Electron. */
   isElectron: true,
+
+  /** Set the zoom level of the webview. 0 = 100%, 1 ≈ 120%, -1 ≈ 83%. */
+  setZoomLevel: (level: number) => webFrame.setZoomLevel(level),
+
+  /** Get current zoom level. */
+  getZoomLevel: () => webFrame.getZoomLevel(),
 
   /** Get app version. */
   getVersion: (): Promise<string> =>
