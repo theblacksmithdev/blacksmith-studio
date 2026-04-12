@@ -1,11 +1,11 @@
-import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process'
+import * as pty from 'node-pty'
 import path from 'node:path'
 import os from 'node:os'
 import fs from 'node:fs'
 
-export interface TerminalSession {
+interface TerminalSession {
   id: string
-  process: ChildProcessWithoutNullStreams
+  pty: pty.IPty
   cwd: string
 }
 
@@ -32,7 +32,7 @@ export class TerminalManager {
     return '/bin/sh'
   }
 
-  async spawn(cwd: string, _cols?: number, _rows?: number, nodePath?: string): Promise<string> {
+  async spawn(cwd: string, cols?: number, rows?: number, nodePath?: string): Promise<string> {
     const id = `term-${++this.idCounter}`
     const shell = this.resolveShell()
 
@@ -45,58 +45,51 @@ export class TerminalManager {
       const nodeDir = path.dirname(nodePath)
       env.PATH = `${nodeDir}${path.delimiter}${env.PATH ?? ''}`
     }
-    env.TERM = 'dumb'
-    env.PS1 = '\\w $ '
+    env.TERM = 'xterm-256color'
 
-    const proc = spawn(shell, [], {
+    const terminal = pty.spawn(shell, [], {
+      name: 'xterm-256color',
+      cols: cols ?? 80,
+      rows: rows ?? 24,
       cwd,
       env,
-      stdio: 'pipe',
-      shell: false,
     })
 
-    // Send initial prompt
-    const emitOutput = (data: string) => {
+    terminal.onData((data) => {
       for (const cb of this.outputCallbacks) cb(id, data)
-    }
-
-    proc.stdout.on('data', (chunk: Buffer) => emitOutput(chunk.toString()))
-    proc.stderr.on('data', (chunk: Buffer) => emitOutput(chunk.toString()))
-
-    proc.on('exit', (code) => {
-      this.sessions.delete(id)
-      for (const cb of this.exitCallbacks) cb(id, code ?? 0)
     })
 
-    proc.on('error', (err) => {
-      emitOutput(`\r\nError: ${err.message}\r\n`)
+    terminal.onExit(({ exitCode }) => {
       this.sessions.delete(id)
-      for (const cb of this.exitCallbacks) cb(id, 1)
+      for (const cb of this.exitCallbacks) cb(id, exitCode)
     })
 
-    this.sessions.set(id, { id, process: proc, cwd })
+    this.sessions.set(id, { id, pty: terminal, cwd })
     return id
   }
 
   write(id: string, data: string) {
-    this.sessions.get(id)?.process.stdin.write(data)
+    this.sessions.get(id)?.pty.write(data)
   }
 
-  resize(_id: string, _cols: number, _rows: number) {
-    // No-op without PTY
+  resize(id: string, cols: number, rows: number) {
+    const session = this.sessions.get(id)
+    if (session) {
+      session.pty.resize(cols, rows)
+    }
   }
 
   kill(id: string) {
     const session = this.sessions.get(id)
     if (session) {
-      session.process.kill('SIGTERM')
+      session.pty.kill()
       this.sessions.delete(id)
     }
   }
 
   killAll() {
     for (const [, session] of this.sessions) {
-      session.process.kill('SIGTERM')
+      session.pty.kill()
     }
     this.sessions.clear()
   }

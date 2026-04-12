@@ -12,7 +12,7 @@ export default defineConfig([
     splitting: false,
     sourcemap: true,
     shims: true,
-    external: ['electron', 'better-sqlite3', 'drizzle-orm'],
+    external: ['electron', 'better-sqlite3', 'drizzle-orm', 'node-pty'],
   },
   {
     entry: ['electron/preload.ts'],
