@@ -1,6 +1,6 @@
 import { useMemo, memo, useCallback } from 'react'
 import { Flex, Box } from '@chakra-ui/react'
-import { Text, VirtualList, spacing } from '@/components/shared/ui'
+import { Text, InfiniteScrollList, spacing } from '@/components/shared/ui'
 import type { GitCommitEntry } from '@/api/types'
 
 function formatRelative(dateStr: string): string {
@@ -123,7 +123,7 @@ export function HistoryTimeline({ entries, onSelect }: Props) {
   }, [onSelect])
 
   return (
-    <VirtualList
+    <InfiniteScrollList
       items={flatItems}
       estimateSize={32}
       renderItem={renderItem}

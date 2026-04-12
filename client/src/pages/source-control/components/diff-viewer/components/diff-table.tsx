@@ -1,6 +1,6 @@
 import { memo, useCallback } from 'react'
 import { Box, Flex } from '@chakra-ui/react'
-import { VirtualList, spacing } from '@/components/shared/ui'
+import { InfiniteScrollList, spacing } from '@/components/shared/ui'
 import type { DiffLine, ParsedDiff } from '../hooks'
 import { getLineStyles, lineNumStyle, LINE_HEIGHT, FONT } from '../hooks'
 
@@ -80,7 +80,7 @@ export function DiffTable({ parsed }: DiffTableProps) {
   ), [])
 
   return (
-    <VirtualList
+    <InfiniteScrollList
       items={parsed.lines}
       estimateSize={LINE_HEIGHT}
       renderItem={renderItem}

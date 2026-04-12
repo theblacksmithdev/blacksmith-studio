@@ -1,6 +1,6 @@
 import { memo, useCallback } from 'react'
 import { Flex, Box } from '@chakra-ui/react'
-import { Text, VirtualList, spacing, radii } from '@/components/shared/ui'
+import { Text, InfiniteScrollList, SkeletonList, spacing, radii } from '@/components/shared/ui'
 import { FileIcon } from '@/pages/files/components/explorer/utils/file-icon'
 import type { GitChangedFile } from '@/api/types'
 
@@ -129,13 +129,14 @@ export function ChangedFilesList({ files, selectedPath, onSelect, onLoadMore, is
   ), [selectedPath, onSelect])
 
   return (
-    <VirtualList
+    <InfiniteScrollList
       items={files}
       estimateSize={40}
       renderItem={renderItem}
       overscan={15}
       onLoadMore={onLoadMore}
       isLoadingMore={isLoadingMore}
+      loadingFooter={<SkeletonList rows={3} />}
     />
   )
 }

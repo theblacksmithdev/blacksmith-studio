@@ -2,7 +2,7 @@ import { useRef, useEffect, useCallback, type ReactNode } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Box } from '@chakra-ui/react'
 
-export interface VirtualListProps<T> {
+export interface InfiniteScrollListProps<T> {
   /** The full data array */
   items: T[]
   /** Estimated height of each row in pixels */
@@ -11,19 +11,21 @@ export interface VirtualListProps<T> {
   renderItem: (item: T, index: number) => ReactNode
   /** Number of items to render beyond the visible area */
   overscan?: number
-  /** Called when the user scrolls near the bottom — use for infinite scroll */
+  /** Called when the user scrolls near the bottom */
   onLoadMore?: () => void
   /** Distance from bottom (in px) to trigger onLoadMore */
   loadMoreThreshold?: number
   /** Whether more data is currently loading */
   isLoadingMore?: boolean
+  /** Custom footer rendered at the bottom when loading more */
+  loadingFooter?: ReactNode
   /** Gap between items in pixels */
   gap?: number
   /** CSS class for the scroll container */
   className?: string
 }
 
-export function VirtualList<T>({
+export function InfiniteScrollList<T>({
   items,
   estimateSize = 36,
   renderItem,
@@ -31,9 +33,10 @@ export function VirtualList<T>({
   onLoadMore,
   loadMoreThreshold = 200,
   isLoadingMore,
+  loadingFooter,
   gap = 0,
   className,
-}: VirtualListProps<T>) {
+}: InfiniteScrollListProps<T>) {
   const parentRef = useRef<HTMLDivElement>(null)
 
   const virtualizer = useVirtualizer({
@@ -44,7 +47,6 @@ export function VirtualList<T>({
     gap,
   })
 
-  // Infinite scroll — trigger onLoadMore when near bottom
   const handleScroll = useCallback(() => {
     if (!onLoadMore || isLoadingMore) return
     const el = parentRef.current
@@ -92,6 +94,12 @@ export function VirtualList<T>({
           </Box>
         ))}
       </Box>
+
+      {isLoadingMore && loadingFooter && (
+        <Box css={{ padding: '8px 0' }}>
+          {loadingFooter}
+        </Box>
+      )}
     </Box>
   )
 }

@@ -61,9 +61,12 @@ export type { DividerVariant } from './divider'
 export { Alert } from './alert'
 export type { AlertVariant } from './alert'
 
+export { Skeleton, SkeletonRow, SkeletonList } from './skeleton'
+export type { SkeletonVariant } from './skeleton'
+
 // ── Data ──
-export { VirtualList } from './virtual-list'
-export type { VirtualListProps } from './virtual-list'
+export { InfiniteScrollList } from './infinite-scroll-list'
+export type { InfiniteScrollListProps } from './infinite-scroll-list'
 
 // ── Composite ──
 export { EmptyState } from './empty-state'

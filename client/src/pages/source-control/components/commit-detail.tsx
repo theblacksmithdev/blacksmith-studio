@@ -2,7 +2,7 @@ import { useState, useMemo, memo, useCallback } from 'react'
 import { Flex, Box } from '@chakra-ui/react'
 import { GitCommitHorizontal, User, Calendar, Copy, Check } from 'lucide-react'
 import { useGitCommitDetail } from '@/hooks/use-git'
-import { Drawer, Text, Badge, VirtualList, spacing, radii } from '@/components/shared/ui'
+import { Drawer, Text, Badge, InfiniteScrollList, spacing, radii } from '@/components/shared/ui'
 import { FileIcon } from '@/pages/files/components/explorer/utils/file-icon'
 
 function formatDate(dateStr: string): string {
@@ -179,7 +179,7 @@ export function CommitDetailDrawer({ hash, onClose }: Props) {
               background: 'var(--studio-bg-sidebar)',
               overflow: 'hidden',
             }}>
-              <VirtualList
+              <InfiniteScrollList
                 items={diffLines}
                 estimateSize={18}
                 overscan={40}
