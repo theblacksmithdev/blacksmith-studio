@@ -5,6 +5,7 @@ export interface OpenTab {
   path: string
   content: string | null
   language: string
+  error?: string | null
 }
 
 interface FileState {
@@ -16,6 +17,7 @@ interface FileState {
   setTree: (tree: FileNode) => void
   openFile: (path: string) => void
   setTabContent: (path: string, content: string, language: string) => void
+  setTabError: (path: string, error: string) => void
   closeTab: (path: string) => void
   selectTab: (path: string) => void
   markChanged: (paths: string[]) => void
@@ -49,7 +51,15 @@ export const useFileStore = create<FileState>((set, get) => ({
   setTabContent: (path, content, language) => {
     set((s) => ({
       openTabs: s.openTabs.map((t) =>
-        t.path === path ? { ...t, content, language } : t,
+        t.path === path ? { ...t, content, language, error: null } : t,
+      ),
+    }))
+  },
+
+  setTabError: (path, error) => {
+    set((s) => ({
+      openTabs: s.openTabs.map((t) =>
+        t.path === path ? { ...t, error } : t,
       ),
     }))
   },

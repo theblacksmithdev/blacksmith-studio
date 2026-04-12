@@ -11,7 +11,7 @@ export function clearFileContentCache() {
 
 export function useFiles() {
   const queryClient = useQueryClient()
-  const { openFile, setTabContent } = useFileStore()
+  const { openFile, setTabContent, setTabError } = useFileStore()
 
   const treeQuery = useQuery({
     queryKey: queryKeys.files,
@@ -27,8 +27,9 @@ export function useFiles() {
         staleTime: Infinity,
       })
       setTabContent(filePath, data.content, data.language)
-    } catch {
-      setTabContent(filePath, '// Failed to load file', 'text')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to load file'
+      setTabError(filePath, message)
     }
   }
 
