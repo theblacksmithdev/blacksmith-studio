@@ -1,17 +1,19 @@
 import { Flex, Box } from '@chakra-ui/react'
-import { Check } from 'lucide-react'
+import { Check, type LucideIcon } from 'lucide-react'
 import { Text, Badge } from '@/components/shared/ui'
-import type { McpPreset } from '@/pages/settings/components/mcp-library/presets'
 
-interface McpPresetCardProps {
-  preset: McpPreset
+interface LibraryPresetCardProps {
+  icon: LucideIcon
+  label: string
+  name: string
+  description: string
+  category: string
   installed: boolean
+  hint?: string
   onClick: () => void
 }
 
-export function McpPresetCard({ preset, installed, onClick }: McpPresetCardProps) {
-  const Icon = preset.icon
-
+export function LibraryPresetCard({ icon: Icon, label, name, description, category, installed, hint, onClick }: LibraryPresetCardProps) {
   return (
     <Flex
       direction="column"
@@ -34,7 +36,7 @@ export function McpPresetCard({ preset, installed, onClick }: McpPresetCardProps
         },
       }}
     >
-      {/* Top: Icon + Name + Installed badge */}
+      {/* Top */}
       <Flex align="center" gap="10px" css={{ marginBottom: '10px' }}>
         <Flex
           align="center"
@@ -53,10 +55,10 @@ export function McpPresetCard({ preset, installed, onClick }: McpPresetCardProps
             fontSize: '14px', fontWeight: 600, letterSpacing: '-0.01em',
             color: installed ? 'var(--studio-text-tertiary)' : 'var(--studio-text-primary)',
           }}>
-            {preset.label}
+            {label}
           </Text>
           <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)', fontFamily: "'SF Mono', monospace" }}>
-            {preset.name}
+            {name}
           </Text>
         </Box>
         {installed && (
@@ -75,19 +77,18 @@ export function McpPresetCard({ preset, installed, onClick }: McpPresetCardProps
         fontSize: '13px', lineHeight: 1.6, flex: 1,
         color: installed ? 'var(--studio-text-muted)' : 'var(--studio-text-tertiary)',
       }}>
-        {preset.description}
+        {description}
       </Text>
 
-      {/* Env hint */}
-      {preset.envHint && !installed && (
+      {hint && !installed && (
         <Text css={{ fontSize: '11px', color: 'var(--studio-text-muted)', fontStyle: 'italic', marginTop: '6px' }}>
-          {preset.envHint}
+          {hint}
         </Text>
       )}
 
       {/* Footer */}
       <Flex align="center" justify="space-between" css={{ marginTop: '14px', paddingTop: '10px', borderTop: '1px solid var(--studio-border)' }}>
-        <Badge variant="default" size="sm">{preset.category}</Badge>
+        <Badge variant="default" size="sm">{category}</Badge>
         {!installed && (
           <Text css={{ fontSize: '12px', fontWeight: 500, color: 'var(--studio-accent)' }}>
             Add to project

@@ -1,7 +1,8 @@
 import { Flex, Box } from '@chakra-ui/react'
 import styled from '@emotion/styled'
-import { ArrowLeft, Plus, Blocks } from 'lucide-react'
+import { ArrowLeft, Plus, Search } from 'lucide-react'
 import { Text, IconButton, Badge } from '@/components/shared/ui'
+import type { ReactNode } from 'react'
 
 const SearchWrap = styled.div`
   display: flex;
@@ -15,9 +16,7 @@ const SearchWrap = styled.div`
   max-width: 480px;
   width: 100%;
 
-  &:focus-within {
-    border-color: var(--studio-border-hover);
-  }
+  &:focus-within { border-color: var(--studio-border-hover); }
 `
 
 const SearchInput = styled.input`
@@ -30,9 +29,7 @@ const SearchInput = styled.input`
   flex: 1;
   min-width: 0;
 
-  &::placeholder {
-    color: var(--studio-text-muted);
-  }
+  &::placeholder { color: var(--studio-text-muted); }
 `
 
 const AddBtn = styled.button`
@@ -58,49 +55,44 @@ const AddBtn = styled.button`
   }
 `
 
-interface McpHeaderProps {
+interface LibraryHeaderProps {
+  icon: ReactNode
+  title: string
+  installedCount: number
   search: string
   onSearchChange: (v: string) => void
   resultCount: number
   totalCount: number
-  installedCount: number
+  customLabel: string
   onBack: () => void
   onAddCustom: () => void
 }
 
-export function McpHeader({ search, onSearchChange, resultCount, totalCount, installedCount, onBack, onAddCustom }: McpHeaderProps) {
+export function LibraryHeader({ icon, title, installedCount, search, onSearchChange, resultCount, totalCount, customLabel, onBack, onAddCustom }: LibraryHeaderProps) {
   return (
     <Box css={{ flexShrink: 0, padding: '16px 24px 0' }}>
-      {/* Top bar */}
       <Flex align="center" justify="space-between" css={{ marginBottom: '20px' }}>
         <Flex align="center" gap="10px">
           <IconButton variant="ghost" size="sm" onClick={onBack} aria-label="Back">
             <ArrowLeft size={16} />
           </IconButton>
           <Flex align="center" gap="8px">
-            <Blocks size={16} style={{ color: 'var(--studio-text-muted)' }} />
+            {icon}
             <Text css={{ fontSize: '15px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
-              MCP Servers
+              {title}
             </Text>
           </Flex>
           <Badge variant="default" size="sm">{installedCount} installed</Badge>
         </Flex>
         <AddBtn onClick={onAddCustom}>
-          <Plus size={13} /> Custom Server
+          <Plus size={13} /> {customLabel}
         </AddBtn>
       </Flex>
 
-      {/* Search */}
       <Flex justify="center">
         <SearchWrap>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--studio-text-muted)', flexShrink: 0 }}>
-            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
-          </svg>
-          <SearchInput
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search servers..."
-          />
+          <Search size={15} style={{ color: 'var(--studio-text-muted)', flexShrink: 0 }} />
+          <SearchInput value={search} onChange={(e) => onSearchChange(e.target.value)} placeholder={`Search ${title.toLowerCase()}...`} />
           {search && (
             <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', flexShrink: 0 }}>
               {resultCount}/{totalCount}

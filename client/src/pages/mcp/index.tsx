@@ -1,13 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Flex, SimpleGrid } from '@chakra-ui/react'
+import { Blocks } from 'lucide-react'
 import { useMcp } from '@/hooks/use-mcp'
 import { PRESETS, CATEGORIES, type McpPreset } from '@/pages/settings/components/mcp-library/presets'
 import { McpServerModal } from './components/mcp-server-modal'
-import { McpHeader } from './components/mcp-header'
-import { McpCategoryTabs } from './components/mcp-category-tabs'
-import { McpPresetCard } from './components/mcp-preset-card'
-import { McpEmptySearch } from './components/mcp-empty-search'
+import { LibraryHeader, LibraryCategoryTabs, LibraryPresetCard, LibraryEmptySearch } from '@/components/shared/library-browser'
 import type { McpServerConfig, McpServerEntry } from '@/api/modules/mcp'
 
 export default function McpBrowserPage() {
@@ -36,48 +34,46 @@ export default function McpBrowserPage() {
 
   if (editor) {
     const server: McpServerEntry | undefined = editor.preset
-      ? {
-          name: editor.preset.name,
-          transport: 'command' in editor.preset.config ? 'stdio' : 'http',
-          config: editor.preset.config,
-          enabled: true,
-          status: 'unknown',
-        }
+      ? { name: editor.preset.name, transport: 'command' in editor.preset.config ? 'stdio' : 'http', config: editor.preset.config, enabled: true, status: 'unknown' }
       : undefined
-    return (
-      <McpServerModal server={server} onSave={handleAdd} onClose={() => setEditor(null)} />
-    )
+    return <McpServerModal server={server} onSave={handleAdd} onClose={() => setEditor(null)} />
   }
 
   return (
     <Flex direction="column" css={{ height: '100%', background: 'var(--studio-bg-main)' }}>
-      <McpHeader
+      <LibraryHeader
+        icon={<Blocks size={16} style={{ color: 'var(--studio-text-muted)' }} />}
+        title="MCP Servers"
+        installedCount={installedCount}
         search={search}
         onSearchChange={setSearch}
         resultCount={filtered.length}
         totalCount={PRESETS.length}
-        installedCount={installedCount}
+        customLabel="Custom Server"
         onBack={() => navigate(-1)}
         onAddCustom={() => setEditor({ custom: true })}
       />
-
-      <McpCategoryTabs
+      <LibraryCategoryTabs
         categories={CATEGORIES}
-        presets={PRESETS}
+        getCategoryCount={(id) => id === 'all' ? PRESETS.length : PRESETS.filter((p) => p.category === id).length}
         active={category}
         onChange={setCategory}
       />
-
       <Flex direction="column" css={{ flex: 1, overflowY: 'auto', padding: '18px 24px 32px' }}>
         {filtered.length === 0 ? (
-          <McpEmptySearch onAddCustom={() => setEditor({ custom: true })} />
+          <LibraryEmptySearch customLabel="Add Custom Server" onAddCustom={() => setEditor({ custom: true })} />
         ) : (
           <SimpleGrid columns={3} gap="12px" css={{ maxWidth: '960px', margin: '0 auto', width: '100%', minChildWidth: '260px' }}>
             {filtered.map((preset) => (
-              <McpPresetCard
+              <LibraryPresetCard
                 key={preset.name}
-                preset={preset}
+                icon={preset.icon}
+                label={preset.label}
+                name={preset.name}
+                description={preset.description}
+                category={preset.category}
                 installed={installedNames.has(preset.name)}
+                hint={preset.envHint}
                 onClick={() => setEditor({ preset })}
               />
             ))}

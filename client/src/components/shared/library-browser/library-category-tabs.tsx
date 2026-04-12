@@ -1,6 +1,5 @@
 import { Flex } from '@chakra-ui/react'
 import styled from '@emotion/styled'
-import type { McpPreset } from '@/pages/settings/components/mcp-library/presets'
 
 const Tab = styled.button<{ active: boolean }>`
   padding: 5px 14px;
@@ -26,27 +25,27 @@ const Count = styled.span`
   opacity: 0.6;
 `
 
-interface McpCategoryTabsProps {
-  categories: { id: string; label: string }[]
-  presets: McpPreset[]
+export interface LibraryCategory {
+  id: string
+  label: string
+}
+
+interface LibraryCategoryTabsProps {
+  categories: LibraryCategory[]
+  getCategoryCount: (categoryId: string) => number
   active: string
   onChange: (id: string) => void
 }
 
-export function McpCategoryTabs({ categories, presets, active, onChange }: McpCategoryTabsProps) {
+export function LibraryCategoryTabs({ categories, getCategoryCount, active, onChange }: LibraryCategoryTabsProps) {
   return (
     <Flex justify="center" css={{ padding: '14px 24px' }}>
       <Flex gap="4px" css={{ flexWrap: 'wrap' }}>
-        {categories.map((cat) => {
-          const count = cat.id === 'all'
-            ? presets.length
-            : presets.filter((p) => p.category === cat.id).length
-          return (
-            <Tab key={cat.id} active={active === cat.id} onClick={() => onChange(cat.id)}>
-              {cat.label}<Count>{count}</Count>
-            </Tab>
-          )
-        })}
+        {categories.map((cat) => (
+          <Tab key={cat.id} active={active === cat.id} onClick={() => onChange(cat.id)}>
+            {cat.label}<Count>{getCategoryCount(cat.id)}</Count>
+          </Tab>
+        ))}
       </Flex>
     </Flex>
   )
