@@ -59,7 +59,7 @@ export function Sidebar() {
   const isInsideProject = pid && pathname.startsWith(`/${pid}`)
 
   const isActive = (match: string) =>
-    match === '/chat' ? pathname.includes(match) : pathname.endsWith(match)
+    pathname.includes(match)
 
   return (
     <Nav expanded={expanded}>

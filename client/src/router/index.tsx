@@ -17,7 +17,7 @@ import { KnowledgeSettings } from '@/components/settings/sections/knowledge-sett
 import NewChatPage from '@/pages/chat/new'
 import ChatPage from '@/pages/chat'
 import FilesPage from '@/pages/files'
-import RunPage from '@/pages/run'
+import { RunnerPage, RunnerLogsPage } from '@/components/runner/runner-page'
 import SkillsBrowserPage from '@/pages/skills'
 import McpBrowserPage from '@/pages/mcp'
 import SourceControlPage from '@/pages/source-control'
@@ -42,7 +42,15 @@ export const router = createHashRouter([
       { path: 'chat/new', element: <NewChatPage /> },
       { path: 'chat/:sessionId', element: <ChatPage /> },
       { path: 'code', element: <FilesPage /> },
-      { path: 'run', element: <RunPage /> },
+      {
+        path: 'run',
+        element: <RunnerPage />,
+        children: [
+          { index: true, element: <Navigate to="logs" replace /> },
+          { path: 'logs', element: <RunnerLogsPage /> },
+          { path: 'logs/:configId', element: <RunnerLogsPage /> },
+        ],
+      },
       { path: 'skills', element: <SkillsBrowserPage /> },
       { path: 'mcp', element: <McpBrowserPage /> },
       { path: 'source-control', element: <SourceControlPage /> },

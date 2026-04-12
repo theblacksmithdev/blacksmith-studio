@@ -1,8 +1,10 @@
 import { useMemo } from 'react'
 import { Flex } from '@chakra-ui/react'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { Play, Square, Plus } from 'lucide-react'
 import { useRunnerStore, selectServices, selectIsAnyActive, isServiceActive, type RunnerService } from '@/stores/runner-store'
 import { useRunnerConfigs } from '@/hooks/use-runner-configs'
+import { runLogsPath, runServicePath } from '@/router/paths'
 import { getServiceIcon, StatusDot } from '../../runner-primitives'
 import { RunnerConfigDrawer } from '../../config-drawer'
 import { DiagnoseDrawer } from '../../logs/components'
@@ -10,15 +12,23 @@ import { useServiceActions } from '../hooks'
 import { ServiceMenu } from './service-menu'
 import { Text, IconButton, Tooltip, Badge, Skeleton, ConfirmDialog, spacing, radii } from '@/components/shared/ui'
 
-interface ServiceListPanelProps {
-  selectedId: string | null
-  onSelect: (id: string | null) => void
-}
+export function ServiceListPanel() {
+  const navigate = useNavigate()
+  const { projectId = '' } = useParams<{ projectId: string }>()
+  const location = useLocation()
 
-export function ServiceListPanel({ selectedId, onSelect }: ServiceListPanelProps) {
+  // Extract configId from URL: /:projectId/run/logs/:configId
+  const segments = location.pathname.split('/')
+  const logsIdx = segments.indexOf('logs')
+  const selectedId = logsIdx !== -1 && segments[logsIdx + 1] ? segments[logsIdx + 1] : null
+
   const { configs, isLoading: configsLoading } = useRunnerConfigs()
   const liveServices = useRunnerStore(selectServices)
   const anyActive = useRunnerStore(selectIsAnyActive)
+
+  const selectService = (id: string | null) => {
+    navigate(id ? runServicePath(projectId, id) : runLogsPath(projectId))
+  }
 
   const {
     modalConfig, setModalConfig,
@@ -26,7 +36,7 @@ export function ServiceListPanel({ selectedId, onSelect }: ServiceListPanelProps
     diagnoseDrawer, setDiagnoseDrawer,
     handleSave, handleDelete, handleDiagnose,
     start, stop, startAll, stopAll,
-  } = useServiceActions(selectedId, onSelect)
+  } = useServiceActions(selectedId)
 
   const services: RunnerService[] = useMemo(() =>
     configs.map((cfg) => {
@@ -76,7 +86,7 @@ export function ServiceListPanel({ selectedId, onSelect }: ServiceListPanelProps
           as="button"
           align="center"
           gap={spacing.sm}
-          onClick={() => onSelect(null)}
+          onClick={() => selectService(null)}
           css={{
             padding: `${spacing.sm} ${spacing.sm}`,
             borderRadius: radii.md,
@@ -106,7 +116,7 @@ export function ServiceListPanel({ selectedId, onSelect }: ServiceListPanelProps
               key={svc.id}
               align="center"
               gap={spacing.sm}
-              onClick={() => onSelect(svc.id)}
+              onClick={() => selectService(svc.id)}
               css={{
                 padding: `${spacing.sm} ${spacing.sm}`,
                 borderRadius: radii.md,
