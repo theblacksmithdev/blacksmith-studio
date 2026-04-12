@@ -8,7 +8,7 @@ import {
   RUNNER_GET_STATUS, RUNNER_START, RUNNER_STOP, RUNNER_DETECT_NODE,
   RUNNER_ON_STATUS, RUNNER_ON_OUTPUT,
   RUNNER_GET_CONFIGS, RUNNER_ADD_CONFIG, RUNNER_UPDATE_CONFIG, RUNNER_REMOVE_CONFIG,
-  RUNNER_DETECT_RUNNERS,
+  RUNNER_DETECT_RUNNERS, RUNNER_GET_LOGS,
 } from './channels.js'
 
 export function setupRunnerIPC(
@@ -89,6 +89,10 @@ export function setupRunnerIPC(
     } else {
       runnerManager.stopAll(id)
     }
+  })
+
+  ipcMain.handle(RUNNER_GET_LOGS, (_e, data: { configId?: string }) => {
+    return runnerManager.getLogs(data?.configId)
   })
 
   ipcMain.handle(RUNNER_DETECT_NODE, () => {

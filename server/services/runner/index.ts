@@ -11,11 +11,21 @@ export { detectRunners } from './detect-runners.js'
 type OutputListener = (configId: string, name: string, line: string) => void
 type StatusListener = (services: RunnerServiceStatus[]) => void
 
+interface BufferedLog {
+  configId: string
+  name: string
+  line: string
+  timestamp: number
+}
+
+const MAX_BUFFERED_LOGS = 500
+
 export class RunnerManager {
   private processes = new Map<string, RunnerProcess>()
   private outputListeners: OutputListener[] = []
   private statusListeners: StatusListener[] = []
   private configService: RunnerConfigService
+  private logBuffer: BufferedLog[] = []
 
   constructor(configService: RunnerConfigService) {
     this.configService = configService
@@ -23,6 +33,12 @@ export class RunnerManager {
 
   onOutput(cb: OutputListener) { this.outputListeners.push(cb) }
   onStatusChange(cb: StatusListener) { this.statusListeners.push(cb) }
+
+  /** Returns buffered logs, optionally filtered by configId. */
+  getLogs(configId?: string): BufferedLog[] {
+    if (configId) return this.logBuffer.filter((l) => l.configId === configId)
+    return [...this.logBuffer]
+  }
 
   getStatus(projectId: string): RunnerServiceStatus[] {
     const configs = this.configService.getConfigs(projectId)
@@ -107,6 +123,10 @@ export class RunnerManager {
   }
 
   private emitOutput(configId: string, name: string, line: string) {
+    this.logBuffer.push({ configId, name, line, timestamp: Date.now() })
+    if (this.logBuffer.length > MAX_BUFFERED_LOGS) {
+      this.logBuffer = this.logBuffer.slice(-MAX_BUFFERED_LOGS)
+    }
     for (const cb of this.outputListeners) cb(configId, name, line)
   }
 

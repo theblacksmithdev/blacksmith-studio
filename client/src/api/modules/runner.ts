@@ -17,6 +17,9 @@ export const runner = {
 
   // Diagnosis
 
+  // Logs
+  getLogs: (configId?: string) => raw.invoke<{ configId: string; name: string; line: string; timestamp: number }[]>('runner:getLogs', { configId }),
+
   // Detection
   detectRunners: () => raw.invoke<RunnerConfigData[]>('runner:detectRunners'),
   detectNode: () => raw.invoke<NodeInstallation[]>('runner:detectNode'),

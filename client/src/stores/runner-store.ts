@@ -30,6 +30,7 @@ interface RunnerState {
   setServices: (services: RunnerService[]) => void
   updateService: (id: string, partial: Partial<RunnerService>) => void
   addLog: (entry: LogEntry) => void
+  setLogs: (entries: LogEntry[]) => void
   clearLogs: () => void
 }
 
@@ -50,6 +51,8 @@ export const useRunnerStore = create<RunnerState>((set) => ({
   addLog: (entry) => set((s) => ({
     logs: [...s.logs.slice(-(MAX_LOGS - 1)), entry],
   })),
+
+  setLogs: (entries) => set({ logs: entries.slice(-MAX_LOGS) }),
 
   clearLogs: () => set({ logs: [] }),
 

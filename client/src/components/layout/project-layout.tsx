@@ -68,7 +68,6 @@ export function ProjectLayout() {
         navigate('/', { replace: true })
       })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, activeProject?.id])
 
   return (

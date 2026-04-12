@@ -2,36 +2,48 @@ import { useEffect, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api'
 import { useRunnerStore, RunnerStatus, type RunnerService } from '@/stores/runner-store'
+import { useProjectStore } from '@/stores/project-store'
 import { useProjectKeys } from './use-project-keys'
 
 /**
  * Initializes IPC listeners for runner runtime state (status + logs).
  * Also triggers auto-detection on first mount so configs exist in the DB.
  * Mount once at the project layout level.
+ *
+ * Guards against running before the project is activated —
+ * the effect only fires once activeProject is set.
  */
 export function useRunnerListener() {
-  const store = useRunnerStore
+  const activeProject = useProjectStore((s) => s.activeProject)
   const keys = useProjectKeys()
   const qc = useQueryClient()
 
   useEffect(() => {
+    if (!activeProject?.id) return
+
     // Auto-detect runners (seeds DB if no configs yet), then fetch live status
     api.runner.detectRunners().then(() => {
       qc.invalidateQueries({ queryKey: keys.runnerConfigs })
-      // Fetch initial live status separately
       return api.runner.getStatus()
     }).then((status) => {
-      store.getState().setServices(status as RunnerService[])
+      useRunnerStore.getState().setServices(status as RunnerService[])
+    }).catch(() => {})
+
+    // Replay buffered logs from the server (survives page reload)
+    api.runner.getLogs().then((buffered) => {
+      if (buffered.length > 0) {
+        useRunnerStore.getState().setLogs(buffered)
+      }
     }).catch(() => {})
 
     const unsubs = [
       // Live status pushes
       api.runner.onStatus((data) => {
-        store.getState().setServices(data as RunnerService[])
+        useRunnerStore.getState().setServices(data as RunnerService[])
       }),
-      // Live log output — name comes from the server, not the store
+      // Live log output
       api.runner.onOutput((data) => {
-        store.getState().addLog({
+        useRunnerStore.getState().addLog({
           configId: data.configId,
           name: data.name,
           line: data.line,
@@ -41,7 +53,7 @@ export function useRunnerListener() {
     ]
 
     return () => unsubs.forEach((unsub) => unsub())
-  }, [keys.runnerConfigs])
+  }, [activeProject?.id])
 }
 
 /**
