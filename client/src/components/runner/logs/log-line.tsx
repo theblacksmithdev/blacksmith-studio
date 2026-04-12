@@ -52,7 +52,7 @@ export function LogLine({ entry, showTimestamp }: LogLineProps) {
   return (
     <Line>
       {showTimestamp && <Timestamp>{formatTime(entry.timestamp)}</Timestamp>}
-      <Source>{entry.source === 'backend' ? 'django' : 'vite'}</Source>
+      <Source>{entry.name}</Source>
       <Text style={{ color: getLineColor(entry.line) }}>{entry.line}</Text>
     </Line>
   )

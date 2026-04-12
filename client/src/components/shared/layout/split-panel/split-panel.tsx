@@ -114,25 +114,50 @@ export function SplitPanel({
         {left}
       </Box>
 
+      {/* Separator + drag handle */}
       <Box
-        onMouseDown={handleMouseDown}
         css={{
-          flexShrink: 0,
           position: 'relative',
-          zIndex: 2,
+          flexShrink: 0,
           ...(isVertical
-            ? { width: '100%', height: '1px', cursor: 'row-resize', padding: '2px 0', margin: '-2px 0' }
-            : { height: '100%', width: '1px', cursor: 'col-resize', padding: '0 2px', margin: '0 -2px' }
+            ? { width: '100%', height: 0, borderTop: `1px solid ${dragging ? 'var(--studio-border-hover)' : 'var(--studio-border)'}` }
+            : { height: '100%', width: 0, borderLeft: `1px solid ${dragging ? 'var(--studio-border-hover)' : 'var(--studio-border)'}` }
           ),
-          background: dragging ? 'var(--studio-border-hover)' : 'var(--studio-border)',
-          backgroundClip: 'content-box',
-          transition: dragging ? 'none' : 'background 0.15s ease',
-          '&:hover': {
-            background: 'var(--studio-border-hover)',
-            backgroundClip: 'content-box',
-          },
+          transition: dragging ? 'none' : 'border-color 0.15s ease',
         }}
-      />
+      >
+        {/* Invisible hit area (absolute, wider than the 1px line) */}
+        <Box
+          onMouseDown={handleMouseDown}
+          css={{
+            position: 'absolute',
+            zIndex: 2,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            ...(isVertical
+              ? { left: 0, right: 0, top: '-5px', height: '9px', cursor: 'row-resize' }
+              : { top: 0, bottom: 0, left: '-5px', width: '9px', cursor: 'col-resize' }
+            ),
+            '&:hover ~ .split-line': { borderColor: 'var(--studio-border-hover)' },
+            '&:hover .split-knob': { opacity: 1 },
+          }}
+        >
+          <Box
+            className="split-knob"
+            css={{
+              borderRadius: '4px',
+              background: dragging ? 'var(--studio-text-muted)' : 'var(--studio-border-hover)',
+              opacity: dragging ? 1 : 0,
+              transition: 'opacity 0.15s ease',
+              ...(isVertical
+                ? { width: '32px', height: '4px' }
+                : { width: '4px', height: '32px' }
+              ),
+            }}
+          />
+        </Box>
+      </Box>
 
       <Box
         css={{

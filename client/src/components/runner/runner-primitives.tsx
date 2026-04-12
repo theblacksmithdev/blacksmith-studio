@@ -1,5 +1,21 @@
 import styled from '@emotion/styled'
+import { Globe, Server, Terminal, Container, Box, Cpu, type LucideIcon } from 'lucide-react'
 import { type RunnerStatus, statusColor } from '@/stores/runner-store'
+
+/* ── Icon lookup for dynamic service icons ── */
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  globe: Globe,
+  server: Server,
+  terminal: Terminal,
+  container: Container,
+  box: Box,
+  cpu: Cpu,
+}
+
+export function getServiceIcon(iconName: string): LucideIcon {
+  return ICON_MAP[iconName] ?? Server
+}
 
 /* ── Status dot ── */
 

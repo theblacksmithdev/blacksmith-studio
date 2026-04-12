@@ -131,6 +131,29 @@ export const agentTasks = sqliteTable('agent_tasks', {
 })
 
 /**
+ * Runner configs — per-project dev server configurations.
+ * Each row defines one runnable service (frontend, backend, worker, etc.)
+ */
+export const runnerConfigs = sqliteTable('runner_configs', {
+  id: text('id').primaryKey(),
+  projectId: text('project_id')
+    .notNull()
+    .references(() => projects.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  command: text('command').notNull(),
+  cwd: text('cwd').default('.'),
+  port: integer('port'),
+  portArg: text('port_arg'),
+  env: text('env').default('{}'),
+  readyPattern: text('ready_pattern'),
+  previewUrl: text('preview_url'),
+  icon: text('icon').default('terminal'),
+  sortOrder: integer('sort_order').default(0),
+  autoDetected: integer('auto_detected', { mode: 'boolean' }).default(false),
+  createdAt: text('created_at').notNull(),
+})
+
+/**
  * Agent chat messages — conversation history in the agents panel.
  */
 export const agentChatMessages = sqliteTable('agent_chat_messages', {

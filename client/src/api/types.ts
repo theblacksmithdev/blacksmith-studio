@@ -69,15 +69,35 @@ export type SettingsMap = Record<string, any>
 
 /* ── Runner ── */
 
-export type RunnerTarget = 'backend' | 'frontend' | 'all'
-export interface RunnerTargetInput { target: RunnerTarget }
-export interface RunnerServiceStatus { status: 'stopped' | 'starting' | 'running'; port: number | null }
-export interface RunnerStatusResult { backend: RunnerServiceStatus; frontend: RunnerServiceStatus }
+export interface RunnerServiceStatus {
+  id: string
+  name: string
+  status: 'stopped' | 'starting' | 'running'
+  port: number | null
+  previewUrl: string | null
+  icon: string
+}
+
+export interface RunnerConfigData {
+  id: string
+  projectId: string
+  name: string
+  command: string
+  cwd: string
+  port: number | null
+  portArg: string | null
+  env: Record<string, string>
+  readyPattern: string | null
+  previewUrl: string | null
+  icon: string
+  sortOrder: number
+  autoDetected: boolean
+}
 
 export interface NodeInstallation { label: string; path: string; version: string }
 
 // Subscribe events
-export interface RunnerOutputEvent { source: 'backend' | 'frontend'; line: string }
+export interface RunnerOutputEvent { configId: string; line: string }
 
 /* ── Claude ── */
 

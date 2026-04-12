@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useMemo } from 'react'
 import styled from '@emotion/styled'
-import { useRunnerStore } from '@/stores/runner-store'
+import { useRunnerStore, selectServices } from '@/stores/runner-store'
 import { MONO_FONT } from '../runner-primitives'
 import { LogLine } from './log-line'
 import { LogsToolbar, type LogFilter } from './logs-toolbar'
@@ -29,9 +29,15 @@ const EmptyMsg = styled.div`
   font-size: 13px;
 `
 
-export function RunnerLogs() {
+interface RunnerLogsProps {
+  /** When set, pre-filters logs to this configId. The toolbar filter still works on top. */
+  externalFilter?: string | null
+}
+
+export function RunnerLogs({ externalFilter }: RunnerLogsProps) {
   const logs = useRunnerStore((s) => s.logs)
   const clearLogs = useRunnerStore((s) => s.clearLogs)
+  const services = useRunnerStore(selectServices)
   const bottomRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [filter, setFilter] = useState<LogFilter>('all')
@@ -39,14 +45,24 @@ export function RunnerLogs() {
   const [searchTerm, setSearchTerm] = useState('')
   const [showTimestamps, setShowTimestamps] = useState(false)
 
+  const serviceNames = useMemo(
+    () => services.map((svc) => ({ id: svc.id, name: svc.name })),
+    [services],
+  )
+
   const filteredLogs = useMemo(() => {
-    let result = filter === 'all' ? logs : logs.filter((l) => l.source === filter)
+    let result = logs
+    // External filter from service panel
+    if (externalFilter) result = result.filter((l) => l.configId === externalFilter)
+    // Toolbar filter
+    if (filter !== 'all') result = result.filter((l) => l.configId === filter)
+    // Search
     if (searchTerm) {
       const term = searchTerm.toLowerCase()
       result = result.filter((l) => l.line.toLowerCase().includes(term))
     }
     return result
-  }, [logs, filter, searchTerm])
+  }, [logs, externalFilter, filter, searchTerm])
 
   useEffect(() => {
     if (autoScroll) {
@@ -71,6 +87,7 @@ export function RunnerLogs() {
       <LogsToolbar
         filter={filter}
         onFilterChange={setFilter}
+        serviceNames={serviceNames}
         count={filteredLogs.length}
         autoScroll={autoScroll}
         onScrollToBottom={scrollToBottom}

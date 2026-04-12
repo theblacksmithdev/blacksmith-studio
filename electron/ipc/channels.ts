@@ -47,6 +47,11 @@ export const RUNNER_GET_STATUS = 'runner:getStatus'
 export const RUNNER_START = 'runner:start'
 export const RUNNER_STOP = 'runner:stop'
 export const RUNNER_DETECT_NODE = 'runner:detectNode'
+export const RUNNER_GET_CONFIGS = 'runner:getConfigs'
+export const RUNNER_ADD_CONFIG = 'runner:addConfig'
+export const RUNNER_UPDATE_CONFIG = 'runner:updateConfig'
+export const RUNNER_REMOVE_CONFIG = 'runner:removeConfig'
+export const RUNNER_DETECT_RUNNERS = 'runner:detectRunners'
 
 // Claude
 export const CLAUDE_SEND_PROMPT = 'claude:sendPrompt'
@@ -163,6 +168,7 @@ export const INVOKE_CHANNELS = [
   TEMPLATES_LIST, TEMPLATES_INTERPOLATE,
   SETTINGS_GET_ALL, SETTINGS_UPDATE, SETTINGS_GET_ALL_GLOBAL, SETTINGS_UPDATE_GLOBAL,
   RUNNER_GET_STATUS, RUNNER_START, RUNNER_STOP, RUNNER_DETECT_NODE,
+  RUNNER_GET_CONFIGS, RUNNER_ADD_CONFIG, RUNNER_UPDATE_CONFIG, RUNNER_REMOVE_CONFIG, RUNNER_DETECT_RUNNERS,
   CLAUDE_SEND_PROMPT, CLAUDE_CANCEL,
   MCP_LIST, MCP_ADD, MCP_UPDATE, MCP_REMOVE, MCP_TOGGLE, MCP_TEST,
   HEALTH_CHECK,

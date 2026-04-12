@@ -1,25 +1,29 @@
 import { create } from 'zustand'
 
 export type RunnerStatus = 'stopped' | 'starting' | 'running'
-export type RunnerTarget = 'backend' | 'frontend' | 'all'
+
+export interface RunnerService {
+  id: string
+  name: string
+  status: RunnerStatus
+  port: number | null
+  previewUrl: string | null
+  icon: string
+}
 
 export interface LogEntry {
-  source: 'backend' | 'frontend'
+  configId: string
+  name: string
   line: string
   timestamp: number
 }
 
 interface RunnerState {
-  backendStatus: RunnerStatus
-  frontendStatus: RunnerStatus
-  backendPort: number | null
-  frontendPort: number | null
+  services: RunnerService[]
   logs: LogEntry[]
 
-  setStatus: (status: {
-    backend: { status: RunnerStatus; port: number | null }
-    frontend: { status: RunnerStatus; port: number | null }
-  }) => void
+  setServices: (services: RunnerService[]) => void
+  updateService: (id: string, partial: Partial<RunnerService>) => void
   addLog: (entry: LogEntry) => void
   clearLogs: () => void
 }
@@ -27,18 +31,16 @@ interface RunnerState {
 const MAX_LOGS = 1000
 
 export const useRunnerStore = create<RunnerState>((set) => ({
-  backendStatus: 'stopped',
-  frontendStatus: 'stopped',
-  backendPort: null,
-  frontendPort: null,
+  services: [],
   logs: [],
 
-  setStatus: (status) => set({
-    backendStatus: status.backend.status,
-    backendPort: status.backend.port,
-    frontendStatus: status.frontend.status,
-    frontendPort: status.frontend.port,
-  }),
+  setServices: (services) => set({ services }),
+
+  updateService: (id, partial) => set((s) => ({
+    services: s.services.map((svc) =>
+      svc.id === id ? { ...svc, ...partial } : svc,
+    ),
+  })),
 
   addLog: (entry) => set((s) => ({
     logs: [...s.logs.slice(-(MAX_LOGS - 1)), entry],
@@ -49,16 +51,22 @@ export const useRunnerStore = create<RunnerState>((set) => ({
 
 /* ── Derived selectors ── */
 
-const isActive = (s: RunnerStatus) => s === 'running' || s === 'starting'
+export const selectServices = (s: RunnerState) => s.services
 
 export const selectIsAnyActive = (s: RunnerState) =>
-  isActive(s.backendStatus) || isActive(s.frontendStatus)
+  s.services.some((svc) => svc.status === 'running' || svc.status === 'starting')
 
 export const selectIsAnyRunning = (s: RunnerState) =>
-  s.backendStatus === 'running' || s.frontendStatus === 'running'
+  s.services.some((svc) => svc.status === 'running')
 
 export const selectIsAnyStarting = (s: RunnerState) =>
-  s.backendStatus === 'starting' || s.frontendStatus === 'starting'
+  s.services.some((svc) => svc.status === 'starting')
+
+export const selectRunningCount = (s: RunnerState) =>
+  s.services.filter((svc) => svc.status === 'running' || svc.status === 'starting').length
+
+export const selectPreviewServices = (s: RunnerState) =>
+  s.services.filter((svc) => svc.previewUrl && svc.status === 'running')
 
 /* ── Helpers ── */
 

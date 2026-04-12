@@ -127,7 +127,9 @@ app.whenReady().then(async () => {
   const claudeManager = new ClaudeManager()
   const sessionManager = new SessionManager()
   const settingsManager = new SettingsManager()
-  const runnerManager = new RunnerManager()
+  const { RunnerConfigService } = await import('../server/services/runner/runner-config.js')
+  const runnerConfigService = new RunnerConfigService()
+  const runnerManager = new RunnerManager(runnerConfigService)
   const mcpManager = new McpManager()
   const skillsManager = new SkillsManager()
   const knowledgeManager = new KnowledgeManager()
@@ -169,7 +171,7 @@ app.whenReady().then(async () => {
 
   // Cleanup on quit
   app.on('before-quit', () => {
-    runnerManager.stopAll()
+    runnerManager.stopEverything()
     gitManager.stopAllWatching()
     terminalManager.killAll()
     closeDatabase()

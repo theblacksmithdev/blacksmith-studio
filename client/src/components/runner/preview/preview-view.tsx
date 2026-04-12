@@ -1,13 +1,10 @@
 import { useState } from 'react'
 import styled from '@emotion/styled'
-import { Globe, Server, X } from 'lucide-react'
-import { useRunnerStore } from '@/stores/runner-store'
-import { useSettings } from '@/hooks/use-settings'
-import { StatusDot } from '../runner-primitives'
+import { X } from 'lucide-react'
+import { useRunnerStore, selectPreviewServices } from '@/stores/runner-store'
+import { getServiceIcon, StatusDot } from '../runner-primitives'
 import { PreviewStopped } from './preview-states'
 import { IframeView } from './iframe-view'
-
-type PreviewTab = 'frontend' | 'backend'
 
 /* ── Layout ── */
 
@@ -93,33 +90,37 @@ interface PreviewViewProps {
 }
 
 export function PreviewView({ onClose }: PreviewViewProps) {
-  const [tab, setTab] = useState<PreviewTab>('frontend')
-  const [reloadKeys, setReloadKeys] = useState({ frontend: 0, backend: 0 })
+  const services = useRunnerStore((s) => s.services)
+  const previewServices = useRunnerStore(selectPreviewServices)
+  const [activeTabId, setActiveTabId] = useState<string | null>(null)
+  const [reloadKeys, setReloadKeys] = useState<Record<string, number>>({})
 
-  const reload = () => setReloadKeys((k) => ({ ...k, [tab]: k[tab] + 1 }))
+  // Use the first preview service as default if activeTabId is not set or invalid
+  const currentTab = previewServices.find((s) => s.id === activeTabId) ?? previewServices[0] ?? null
+  const currentService = services.find((s) => s.id === (activeTabId ?? previewServices[0]?.id))
 
-  const frontendStatus = useRunnerStore((s) => s.frontendStatus)
-  const backendStatus = useRunnerStore((s) => s.backendStatus)
-  const frontendPort = useRunnerStore((s) => s.frontendPort)
-  const backendPort = useRunnerStore((s) => s.backendPort)
-  const { frontendPath, backendPath } = useSettings()
-
-  const frontendUrl = frontendPort ? `http://localhost:${frontendPort}${frontendPath}` : null
-  const backendUrl = backendPort ? `http://localhost:${backendPort}${backendPath}` : null
+  const reload = () => {
+    if (!currentTab) return
+    setReloadKeys((k) => ({ ...k, [currentTab.id]: (k[currentTab.id] ?? 0) + 1 }))
+  }
 
   return (
     <Wrap>
       <TabBar>
-        <Tab active={tab === 'frontend'} onClick={() => setTab('frontend')}>
-          <Globe size={12} />
-          Frontend
-          <StatusDot status={frontendStatus} size={5} />
-        </Tab>
-        <Tab active={tab === 'backend'} onClick={() => setTab('backend')}>
-          <Server size={12} />
-          API
-          <StatusDot status={backendStatus} size={5} />
-        </Tab>
+        {services.map((svc) => {
+          const Icon = getServiceIcon(svc.icon)
+          return (
+            <Tab
+              key={svc.id}
+              active={(currentTab?.id ?? null) === svc.id}
+              onClick={() => setActiveTabId(svc.id)}
+            >
+              <Icon size={12} />
+              {svc.name}
+              <StatusDot status={svc.status} size={5} />
+            </Tab>
+          )
+        })}
         {onClose && (
           <CloseBtn onClick={onClose} title="Close preview">
             <X size={14} />
@@ -128,14 +129,26 @@ export function PreviewView({ onClose }: PreviewViewProps) {
       </TabBar>
 
       <Body>
-        {tab === 'frontend' ? (
-          frontendStatus === 'running' && frontendUrl
-            ? <IframeView url={frontendUrl} reloadKey={reloadKeys.frontend} onReload={reload} />
-            : <PreviewStopped service="frontend" status={frontendStatus} icon={Globe} />
+        {currentTab && currentTab.previewUrl ? (
+          <IframeView
+            url={currentTab.previewUrl}
+            reloadKey={reloadKeys[currentTab.id] ?? 0}
+            onReload={reload}
+          />
+        ) : currentService ? (
+          <PreviewStopped
+            serviceId={currentService.id}
+            serviceName={currentService.name}
+            status={currentService.status}
+            icon={getServiceIcon(currentService.icon)}
+          />
         ) : (
-          backendStatus === 'running' && backendUrl
-            ? <IframeView url={backendUrl} reloadKey={reloadKeys.backend} onReload={reload} />
-            : <PreviewStopped service="backend" status={backendStatus} icon={Server} />
+          <PreviewStopped
+            serviceId=""
+            serviceName="Server"
+            status="stopped"
+            icon={getServiceIcon('server')}
+          />
         )}
       </Body>
     </Wrap>

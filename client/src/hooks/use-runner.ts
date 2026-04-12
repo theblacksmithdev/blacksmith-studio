@@ -1,27 +1,30 @@
 import { useEffect, useCallback } from 'react'
 import { api } from '@/api'
-import { useRunnerStore } from '@/stores/runner-store'
+import { useRunnerStore, type RunnerService } from '@/stores/runner-store'
 
 /**
- * Initializes IPC listeners for runner status and output,
- * and syncs initial state from the main process.
- * Should be mounted once at the project layout level.
+ * Initializes IPC listeners for runner status and output.
+ * Mount once at the project layout level.
  */
 export function useRunnerListener() {
   const store = useRunnerStore
 
   useEffect(() => {
-    api.runner.getStatus().then((status) => {
-      store.getState().setStatus(status as any)
-    })
+    // Fetch initial status and auto-detect runners
+    api.runner.detectRunners().then((services) => {
+      store.getState().setServices(services as RunnerService[])
+    }).catch(() => {})
 
     const unsubs = [
       api.runner.onStatus((data) => {
-        store.getState().setStatus(data as any)
+        store.getState().setServices(data as RunnerService[])
       }),
       api.runner.onOutput((data) => {
+        // Find the service name for the log entry
+        const svc = store.getState().services.find((s) => s.id === data.configId)
         store.getState().addLog({
-          source: data.source,
+          configId: data.configId,
+          name: svc?.name ?? 'Unknown',
           line: data.line,
           timestamp: Date.now(),
         })
@@ -33,29 +36,30 @@ export function useRunnerListener() {
 }
 
 /**
- * Returns runner start/stop actions.
- * Can be used from any component.
+ * Runner actions — start, stop, restart individual or all services.
  */
 export function useRunner() {
-  const start = useCallback((target: 'backend' | 'frontend' | 'all') => {
-    api.runner.start({ target })
+  const start = useCallback((configId?: string) => {
+    api.runner.start(configId)
   }, [])
 
-  const stop = useCallback((target: 'backend' | 'frontend' | 'all') => {
-    api.runner.stop({ target })
+  const stop = useCallback((configId?: string) => {
+    api.runner.stop(configId)
   }, [])
 
-  const restart = useCallback((target: 'backend' | 'frontend') => {
-    api.runner.stop({ target })
-    // Wait for stopped status, then restart
-    const unsub = api.runner.onStatus((data: any) => {
-      const s = target === 'backend' ? data.backend.status : data.frontend.status
-      if (s === 'stopped') {
+  const restart = useCallback((configId: string) => {
+    api.runner.stop(configId)
+    const unsub = api.runner.onStatus((services: any[]) => {
+      const svc = services.find((s: any) => s.id === configId)
+      if (svc?.status === 'stopped') {
         unsub()
-        api.runner.start({ target })
+        api.runner.start(configId)
       }
     })
   }, [])
 
-  return { start, stop, restart }
+  const startAll = useCallback(() => api.runner.start(), [])
+  const stopAll = useCallback(() => api.runner.stop(), [])
+
+  return { start, stop, restart, startAll, stopAll }
 }

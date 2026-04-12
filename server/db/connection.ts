@@ -132,6 +132,24 @@ export function getDatabase() {
       timestamp TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS runner_configs (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      command TEXT NOT NULL,
+      cwd TEXT DEFAULT '.',
+      port INTEGER,
+      port_arg TEXT,
+      env TEXT DEFAULT '{}',
+      ready_pattern TEXT,
+      preview_url TEXT,
+      icon TEXT DEFAULT 'terminal',
+      sort_order INTEGER DEFAULT 0,
+      auto_detected INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_runner_configs_project_id ON runner_configs(project_id);
     CREATE INDEX IF NOT EXISTS idx_agent_conversations_project_id ON agent_conversations(project_id);
     CREATE INDEX IF NOT EXISTS idx_agent_dispatches_project_id ON agent_dispatches(project_id);
     CREATE INDEX IF NOT EXISTS idx_agent_tasks_dispatch_id ON agent_tasks(dispatch_id);

@@ -1,11 +1,12 @@
 import styled from '@emotion/styled'
 import { keyframes } from '@emotion/react'
-import { Server, Globe, Square, X } from 'lucide-react'
+import { Square, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { useRunnerStore, isServiceActive } from '@/stores/runner-store'
+import { useRunnerStore, selectServices, isServiceActive } from '@/stores/runner-store'
 import { useRunner } from '@/hooks/use-runner'
 import { useProjectStore } from '@/stores/project-store'
 import { runPath } from '@/router/paths'
+import { getServiceIcon } from '../runner-primitives'
 import { ServiceCard } from '../service-card'
 
 const panelIn = keyframes`
@@ -86,11 +87,7 @@ export function DockPanel({ onClose }: DockPanelProps) {
   const navigate = useNavigate()
   const { start, stop } = useRunner()
   const activeProject = useProjectStore((s) => s.activeProject)
-
-  const backendStatus = useRunnerStore((s) => s.backendStatus)
-  const frontendStatus = useRunnerStore((s) => s.frontendStatus)
-  const backendPort = useRunnerStore((s) => s.backendPort)
-  const frontendPort = useRunnerStore((s) => s.frontendPort)
+  const services = useRunnerStore(selectServices)
 
   const goToRunPage = () => {
     if (activeProject) {
@@ -101,27 +98,21 @@ export function DockPanel({ onClose }: DockPanelProps) {
 
   return (
     <Strip>
-      <ServiceCard
-        label="Backend"
-        icon={Server}
-        status={backendStatus}
-        port={backendPort}
-        variant="compact"
-        onToggle={() => (isServiceActive(backendStatus) ? stop('backend') : start('backend'))}
-      />
-
-      <ServiceCard
-        label="Frontend"
-        icon={Globe}
-        status={frontendStatus}
-        port={frontendPort}
-        variant="compact"
-        onToggle={() => (isServiceActive(frontendStatus) ? stop('frontend') : start('frontend'))}
-      />
+      {services.map((svc) => (
+        <ServiceCard
+          key={svc.id}
+          label={svc.name}
+          icon={getServiceIcon(svc.icon)}
+          status={svc.status}
+          port={svc.port}
+          variant="compact"
+          onToggle={() => (isServiceActive(svc.status) ? stop(svc.id) : start(svc.id))}
+        />
+      ))}
 
       <Separator />
 
-      <StopAllBtn onClick={() => stop('all')}>
+      <StopAllBtn onClick={() => stop()}>
         <Square size={9} />
         Stop
       </StopAllBtn>

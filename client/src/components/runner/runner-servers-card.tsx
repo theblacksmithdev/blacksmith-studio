@@ -1,7 +1,8 @@
 import styled from '@emotion/styled'
-import { Play, Square, Server, Globe } from 'lucide-react'
-import { useRunnerStore, selectIsAnyActive, isServiceActive } from '@/stores/runner-store'
+import { Play, Square } from 'lucide-react'
+import { useRunnerStore, selectServices, selectIsAnyActive, isServiceActive } from '@/stores/runner-store'
 import { useRunner } from '@/hooks/use-runner'
+import { getServiceIcon } from './runner-primitives'
 import { ServiceCard } from './service-card'
 
 const Card = styled.div`
@@ -59,12 +60,11 @@ const Services = styled.div`
 `
 
 export function RunServersCard() {
-  const backendStatus = useRunnerStore((s) => s.backendStatus)
-  const frontendStatus = useRunnerStore((s) => s.frontendStatus)
-  const backendPort = useRunnerStore((s) => s.backendPort)
-  const frontendPort = useRunnerStore((s) => s.frontendPort)
+  const services = useRunnerStore(selectServices)
   const anyActive = useRunnerStore(selectIsAnyActive)
   const { start, stop } = useRunner()
+
+  const serviceCount = services.length
 
   return (
     <Card>
@@ -72,30 +72,25 @@ export function RunServersCard() {
         <Play size={15} style={{ color: 'var(--studio-text-tertiary)', flexShrink: 0 }} />
         <div style={{ flex: 1 }}>
           <Title>Dev Servers</Title>
-          <Desc>Start Django & Vite</Desc>
+          <Desc>{serviceCount} service{serviceCount !== 1 ? 's' : ''} configured</Desc>
         </div>
-        <ToggleAllBtn onClick={() => (anyActive ? stop('all') : start('all'))}>
+        <ToggleAllBtn onClick={() => (anyActive ? stop() : start())}>
           {anyActive ? <Square size={10} /> : <Play size={10} />}
           {anyActive ? 'Stop All' : 'Start All'}
         </ToggleAllBtn>
       </Header>
       <Services>
-        <ServiceCard
-          label="Backend"
-          icon={Server}
-          status={backendStatus}
-          port={backendPort}
-          variant="inline"
-          onToggle={() => (isServiceActive(backendStatus) ? stop('backend') : start('backend'))}
-        />
-        <ServiceCard
-          label="Frontend"
-          icon={Globe}
-          status={frontendStatus}
-          port={frontendPort}
-          variant="inline"
-          onToggle={() => (isServiceActive(frontendStatus) ? stop('frontend') : start('frontend'))}
-        />
+        {services.map((svc) => (
+          <ServiceCard
+            key={svc.id}
+            label={svc.name}
+            icon={getServiceIcon(svc.icon)}
+            status={svc.status}
+            port={svc.port}
+            variant="inline"
+            onToggle={() => (isServiceActive(svc.status) ? stop(svc.id) : start(svc.id))}
+          />
+        ))}
       </Services>
     </Card>
   )

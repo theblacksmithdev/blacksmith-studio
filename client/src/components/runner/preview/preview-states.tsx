@@ -8,8 +8,9 @@ import {
   AlertTriangle,
   RotateCw,
   ShieldAlert,
+  type LucideIcon,
 } from 'lucide-react'
-import { useRunnerStore, isServiceActive, type RunnerStatus } from '@/stores/runner-store'
+import { useRunnerStore, selectIsAnyActive, type RunnerStatus } from '@/stores/runner-store'
 import { useRunner } from '@/hooks/use-runner'
 import { StatusDot, MONO_FONT } from '../runner-primitives'
 
@@ -324,17 +325,14 @@ export function PreviewError({ url, title, message, statusCode, onRetry }: Previ
   )
 }
 
-export function PreviewStopped({ service, status, icon: Icon }: {
-  service: 'frontend' | 'backend'
+export function PreviewStopped({ serviceId, serviceName, status, icon: Icon }: {
+  serviceId: string
+  serviceName: string
   status: RunnerStatus
-  icon: typeof Globe
+  icon: LucideIcon
 }) {
   const { start } = useRunner()
-  const otherStatus = useRunnerStore((s) =>
-    service === 'frontend' ? s.backendStatus : s.frontendStatus
-  )
-  const otherActive = isServiceActive(otherStatus)
-  const label = service === 'frontend' ? 'Frontend' : 'Backend'
+  const anyActive = useRunnerStore(selectIsAnyActive)
 
   if (status === 'starting') {
     return (
@@ -342,9 +340,9 @@ export function PreviewStopped({ service, status, icon: Icon }: {
         <Card>
           <Spinner />
           <div>
-            <Title>Starting {label}</Title>
+            <Title>Starting {serviceName}</Title>
             <Desc style={{ marginTop: 6 }}>
-              Waiting for the {service} server to be ready...
+              Waiting for {serviceName} to be ready...
             </Desc>
           </div>
         </Card>
@@ -359,18 +357,18 @@ export function PreviewStopped({ service, status, icon: Icon }: {
           <Icon size={22} />
         </IconCircle>
         <div>
-          <Title>{label} is offline</Title>
+          <Title>{serviceName} is offline</Title>
           <Desc style={{ marginTop: 6 }}>
-            Start the {service} server to see {service === 'frontend' ? 'your app' : 'API docs'} here.
+            Start {serviceName} to see its preview here.
           </Desc>
         </div>
         <Actions>
-          <PrimaryBtn onClick={() => start(service)}>
+          <PrimaryBtn onClick={() => start(serviceId)}>
             <Play size={13} />
-            Start {label}
+            Start {serviceName}
           </PrimaryBtn>
-          {!otherActive && (
-            <SecondaryBtn onClick={() => start('all')}>
+          {!anyActive && (
+            <SecondaryBtn onClick={() => start()}>
               <StatusDot status="stopped" size={5} />
               Start All Servers
             </SecondaryBtn>

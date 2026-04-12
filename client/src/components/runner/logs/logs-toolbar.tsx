@@ -2,7 +2,7 @@ import { useState } from 'react'
 import styled from '@emotion/styled'
 import { Trash2, ArrowDown, Search, Clock, X } from 'lucide-react'
 
-export type LogFilter = 'all' | 'backend' | 'frontend'
+export type LogFilter = 'all' | string
 
 const Bar = styled.div`
   display: flex;
@@ -100,6 +100,7 @@ const ClearSearchBtn = styled.button`
 interface LogsToolbarProps {
   filter: LogFilter
   onFilterChange: (filter: LogFilter) => void
+  serviceNames: { id: string; name: string }[]
   count: number
   autoScroll: boolean
   onScrollToBottom: () => void
@@ -111,7 +112,7 @@ interface LogsToolbarProps {
 }
 
 export function LogsToolbar({
-  filter, onFilterChange, count, autoScroll, onScrollToBottom, onClear,
+  filter, onFilterChange, serviceNames, count, autoScroll, onScrollToBottom, onClear,
   searchTerm, onSearchChange, showTimestamps, onToggleTimestamps,
 }: LogsToolbarProps) {
   const [searchOpen, setSearchOpen] = useState(!!searchTerm)
@@ -124,8 +125,15 @@ export function LogsToolbar({
   return (
     <Bar>
       <FilterBtn active={filter === 'all'} onClick={() => onFilterChange('all')}>All</FilterBtn>
-      <FilterBtn active={filter === 'backend'} onClick={() => onFilterChange('backend')}>Django</FilterBtn>
-      <FilterBtn active={filter === 'frontend'} onClick={() => onFilterChange('frontend')}>Vite</FilterBtn>
+      {serviceNames.map((svc) => (
+        <FilterBtn
+          key={svc.id}
+          active={filter === svc.id}
+          onClick={() => onFilterChange(svc.id)}
+        >
+          {svc.name}
+        </FilterBtn>
+      ))}
 
       <Spacer />
 
