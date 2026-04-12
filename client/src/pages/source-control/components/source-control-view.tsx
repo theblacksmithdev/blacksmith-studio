@@ -7,9 +7,9 @@ import { Text, Badge, Button, IconButton, Tooltip, EmptyState, spacing, radii } 
 import { SplitPanel } from '@/components/shared/layout'
 import { ChangedFilesList } from './changed-files'
 import { DiffViewer } from './diff-viewer'
-import { CommitDialog } from './save-dialog'
+import { CommitDialog } from './commit-dialog'
 import { HistoryTimeline } from './history-timeline'
-import { BranchSwitcher } from './version-switcher'
+import { BranchSwitcher } from './branch-switcher'
 import { SyncButton } from './sync-button'
 import { CommitDetailDrawer } from './commit-detail'
 

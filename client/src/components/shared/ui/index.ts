@@ -57,6 +57,10 @@ export type { ToolbarVariant } from './toolbar'
 export { Divider } from './divider'
 export type { DividerVariant } from './divider'
 
+// ── Feedback ──
+export { Alert } from './alert'
+export type { AlertVariant } from './alert'
+
 // ── Composite ──
 export { EmptyState } from './empty-state'
 

@@ -19,7 +19,7 @@ export function setupGitIPC(
 ) {
   function getPath(): string {
     const p = projectManager.getActivePath()
-    if (!p) throw new Error('No active project')
+    if (!p) throw new Error('No active project. Open a project first.')
     return p
   }
 
@@ -27,7 +27,7 @@ export function setupGitIPC(
   async function requireRepo(): Promise<string> {
     const p = getPath()
     const status = await gitManager.getStatus(p)
-    if (!status.initialized) throw new Error('Not a git repository')
+    if (!status.initialized) throw new Error('This project is not a git repository. Initialize one from Source Control.')
     return p
   }
 

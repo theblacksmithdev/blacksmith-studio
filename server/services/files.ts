@@ -69,12 +69,12 @@ export function readFileContent(
 
   // Security: ensure the path is within the project root
   if (!fullPath.startsWith(projectRoot)) {
-    throw new Error('Access denied: path outside project root')
+    throw new Error('This file is outside the project directory and can\'t be accessed.')
   }
 
   const stat = fs.statSync(fullPath)
   if (stat.size > 1024 * 512) {
-    throw new Error('File too large (max 512KB)')
+    throw new Error('This file is too large to open (over 512 KB). Try opening it in an external editor.')
   }
 
   const content = fs.readFileSync(fullPath, 'utf-8')
@@ -98,7 +98,7 @@ export function writeFileContent(
 
   // Security: ensure the path is within the project root
   if (!fullPath.startsWith(projectRoot)) {
-    throw new Error('Access denied: path outside project root')
+    throw new Error('This file is outside the project directory and can\'t be saved.')
   }
 
   fs.writeFileSync(fullPath, content, 'utf-8')
