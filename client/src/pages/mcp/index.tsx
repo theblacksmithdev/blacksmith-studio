@@ -5,8 +5,8 @@ import { Search, Plus, ArrowLeft, Check, Blocks } from 'lucide-react'
 import { useMcp } from '@/hooks/use-mcp'
 import { useProjectStore } from '@/stores/project-store'
 import { settingsPath } from '@/router/paths'
-import { PRESETS, CATEGORIES, type McpPreset } from '@/components/settings/mcp-library/presets'
-import { McpServerModal } from '@/components/settings/mcp-server-modal'
+import { PRESETS, CATEGORIES, type McpPreset } from '@/pages/settings/components/mcp-library/presets'
+import { McpServerModal } from '@/pages/settings/components/mcp-server-modal'
 import type { McpServerConfig, McpServerEntry } from '@/api/modules/mcp'
 
 export default function McpBrowserPage() {

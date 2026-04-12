@@ -5,8 +5,8 @@ import { Search, Plus, ArrowLeft, Check, Wand2, Sparkles } from 'lucide-react'
 import { useSkills } from '@/hooks/use-skills'
 import { useProjectStore } from '@/stores/project-store'
 import { settingsPath } from '@/router/paths'
-import { SKILL_PRESETS, SKILL_CATEGORIES, type SkillPreset } from '@/components/settings/skills-library/presets'
-import { SkillEditorModal } from '@/components/settings/skills-library'
+import { SKILL_PRESETS, SKILL_CATEGORIES, type SkillPreset } from '@/pages/settings/components/skills-library/presets'
+import { SkillEditorModal } from '@/pages/settings/components/skills-library'
 import type { SkillEntry } from '@/api/modules/skills'
 
 export default function SkillsBrowserPage() {
