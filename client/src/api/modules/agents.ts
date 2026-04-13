@@ -62,6 +62,7 @@ export const agents = {
   createConversation: (title?: string) => raw.invoke<any>('agents:createConversation', { title }),
   listConversations: () => raw.invoke<any[]>('agents:listConversations'),
   deleteConversation: (conversationId: string) => raw.invoke<void>('agents:deleteConversation', { conversationId }),
+  getArtifacts: (conversationId: string) => raw.invoke<{ path: string; tool: string; role: string; timestamp: string }[]>('agents:getArtifacts', { conversationId }),
 
   // ── Subscriptions (push events from main process) ──
   onEvent: (cb: (event: AgentEvent) => void) =>

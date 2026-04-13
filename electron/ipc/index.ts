@@ -61,5 +61,5 @@ export function setupAllIPC(
   setupSetupIPC(settingsManager, projectManager)
   setupGitIPC(getWindow, gitManager, projectManager, ai)
   setupTerminalIPC(getWindow, terminalManager, projectManager, settingsManager)
-  setupAgentsIPC(getWindow, projectManager, settingsManager, claudeManager, mcpManager)
+  setupAgentsIPC(getWindow, projectManager, settingsManager, claudeManager, mcpManager, sessionManager)
 }

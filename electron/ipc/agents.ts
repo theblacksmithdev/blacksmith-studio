@@ -5,6 +5,7 @@ import type { ClaudeManager } from '../../server/services/claude/index.js'
 import type { McpManager } from '../../server/services/mcp.js'
 import { AgentManager, ProjectBuilder } from '../../server/services/agents/index.js'
 import { AgentSessionManager } from '../../server/services/agent-sessions.js'
+import type { SessionManager } from '../../server/services/sessions.js'
 import type { AgentRole } from '../../server/services/agents/types.js'
 import type { AgentExecuteOptions } from '../../server/services/agents/base/index.js'
 import {
@@ -14,6 +15,7 @@ import {
   AGENTS_RESPOND, AGENTS_SET_AUTO_APPROVE,
   AGENTS_LIST_DISPATCHES, AGENTS_GET_DISPATCH, AGENTS_LIST_CHAT, AGENTS_CLEAR_CHAT,
   AGENTS_CREATE_CONVERSATION, AGENTS_LIST_CONVERSATIONS, AGENTS_DELETE_CONVERSATION,
+  AGENTS_GET_ARTIFACTS,
   AGENTS_ON_EVENT, AGENTS_ON_WORKFLOW_EVENT, AGENTS_ON_BUILD_EVENT, AGENTS_ON_INPUT_REQUEST,
 } from './channels.js'
 
@@ -46,6 +48,7 @@ export function setupAgentsIPC(
   settingsManager: SettingsManager,
   claudeManager: ClaudeManager,
   mcpManager: McpManager,
+  chatSessionManager: SessionManager,
 ) {
   const agentManager = new AgentManager()
   const projectBuilder = new ProjectBuilder(agentManager)
@@ -270,5 +273,9 @@ export function setupAgentsIPC(
 
   ipcMain.handle(AGENTS_DELETE_CONVERSATION, (_e, data: { conversationId: string }) => {
     sessionManager.deleteConversation(data.conversationId)
+  })
+
+  ipcMain.handle(AGENTS_GET_ARTIFACTS, (_e, data: { conversationId: string }) => {
+    return chatSessionManager.getConversationArtifacts(data.conversationId)
   })
 }

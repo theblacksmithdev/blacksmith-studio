@@ -180,7 +180,7 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
     </CanvasPanel>
   )
 
-  const mainPanel = <AgentMainPanel canvas={canvas} />
+  const mainPanel = <AgentMainPanel canvas={canvas} conversationId={currentConvId} />
 
   return (
     <Layout>

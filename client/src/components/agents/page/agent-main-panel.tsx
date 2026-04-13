@@ -12,11 +12,11 @@ const TABS = [
 ]
 
 interface AgentMainPanelProps {
-  /** The canvas content (ReactFlow + floating buttons + detail overlay) */
   canvas: ReactNode
+  conversationId?: string
 }
 
-export function AgentMainPanel({ canvas }: AgentMainPanelProps) {
+export function AgentMainPanel({ canvas, conversationId }: AgentMainPanelProps) {
   const [activeTab, setActiveTab] = useState<AgentTab>('agents')
 
   return (
@@ -42,8 +42,8 @@ export function AgentMainPanel({ canvas }: AgentMainPanelProps) {
 
         {/* Artifacts */}
         {activeTab === 'artifacts' && (
-          <Flex css={{ height: '100%' }}>
-            <AgentArtifacts />
+          <Flex css={{ height: '100%', width: '100%' }}>
+            <AgentArtifacts conversationId={conversationId} />
           </Flex>
         )}
       </Box>

@@ -1,7 +1,7 @@
 import crypto from 'node:crypto'
-import { eq, desc, and } from 'drizzle-orm'
+import { eq, desc, and, inArray } from 'drizzle-orm'
 import { getDatabase } from '../db/index.js'
-import { sessions, messages, toolCalls } from '../db/schema.js'
+import { sessions, messages, toolCalls, agentDispatches, agentTasks } from '../db/schema.js'
 import type { Session, SessionSummary, StoredMessage, ToolCall } from '../types.js'
 
 export class SessionManager {
@@ -164,5 +164,76 @@ export class SessionManager {
     if (!existing) return false
     this.db.delete(sessions).where(eq(sessions.id, id)).run()
     return true
+  }
+
+  /**
+   * Get all files changed by agents in a conversation.
+   * Traces: conversationId → dispatches → tasks → sessions → messages → tool_calls
+   * Extracts file paths from Edit/Write/Read tool inputs.
+   */
+  getConversationArtifacts(conversationId: string): { path: string; tool: string; role: string; timestamp: string }[] {
+    const FILE_TOOLS = ['Edit', 'Write', 'NotebookEdit']
+
+    // Get all dispatches for this conversation
+    const dispatches = this.db.select({ id: agentDispatches.id })
+      .from(agentDispatches)
+      .where(eq(agentDispatches.conversationId, conversationId))
+      .all()
+
+    if (dispatches.length === 0) return []
+
+    // Get all tasks with session IDs
+    const tasks = this.db.select({
+      sessionId: agentTasks.sessionId,
+      role: agentTasks.role,
+    })
+      .from(agentTasks)
+      .where(
+        inArray(agentTasks.dispatchId, dispatches.map((d) => d.id))
+      )
+      .all()
+      .filter((t) => t.sessionId)
+
+    if (tasks.length === 0) return []
+
+    const artifacts: { path: string; tool: string; role: string; timestamp: string }[] = []
+    const seenPaths = new Set<string>()
+
+    for (const task of tasks) {
+      // Get all messages for this session
+      const msgs = this.db.select({ id: messages.id, timestamp: messages.timestamp })
+        .from(messages)
+        .where(eq(messages.sessionId, task.sessionId!))
+        .all()
+
+      if (msgs.length === 0) continue
+
+      // Get tool calls for these messages
+      const tcs = this.db.select()
+        .from(toolCalls)
+        .where(inArray(toolCalls.messageId, msgs.map((m) => m.id)))
+        .all()
+
+      for (const tc of tcs) {
+        if (!FILE_TOOLS.includes(tc.toolName)) continue
+
+        try {
+          const input = JSON.parse(tc.input)
+          const filePath = input.file_path || input.path
+          if (!filePath || seenPaths.has(filePath)) continue
+
+          seenPaths.add(filePath)
+          const msg = msgs.find((m) => m.id === tc.messageId)
+          artifacts.push({
+            path: filePath,
+            tool: tc.toolName,
+            role: task.role,
+            timestamp: msg?.timestamp ?? '',
+          })
+        } catch { /* skip unparseable */ }
+      }
+    }
+
+    return artifacts.sort((a, b) => a.path.localeCompare(b.path))
   }
 }
