@@ -155,7 +155,7 @@ export class AgentManager {
     // Snapshot git state before agents start working
     const snapshot = takeSnapshot(options.projectRoot)
 
-    // Single task from PM — just run it
+    // Single task from PM — run it with a light review (1 cycle, no tests)
     if (plan.mode === 'single' && plan.task) {
       const execution = await this.execute({
         ...options,
@@ -166,7 +166,12 @@ export class AgentManager {
 
       if (execution.status === 'done' && needsQualityGate(plan.task.role, plan.task.reviewLevel)) {
         const changes = computeChanges(options.projectRoot, snapshot)
-        const gateExecs = await this.runFinalQualityGate({ ...plan.task, reviewLevel: plan.task.reviewLevel }, options, changes)
+        // Always use 'light' for the final gate — 1 review pass, no test cycle
+        const gateExecs = await this.runFinalQualityGate(
+          { ...plan.task, reviewLevel: 'light' },
+          options,
+          changes,
+        )
         executions.push(...gateExecs)
       }
 
@@ -177,27 +182,12 @@ export class AgentManager {
     const artifacts = new ArtifactManager(options.projectRoot)
     artifacts.ensureGitignore()
 
-    // Multi-task: execute all tasks, then quality gate with the full change set
+    // Multi-task: execute all tasks serially with adaptive re-planning.
+    // No final quality gate for multi-task — each task's reviewLevel is
+    // handled by the PM's task-level assignments, and the adaptive re-plan
+    // ensures proper sizing. A dispatch-level review of ALL changes is
+    // too slow and too broad to be useful.
     const executions = await this.executeTaskPlan(plan.tasks, options, artifacts)
-
-    // Determine the highest review level needed across all tasks
-    const reviewLevels = plan.tasks
-      .filter((t) => needsQualityGate(t.role, t.reviewLevel))
-      .map((t) => t.reviewLevel)
-    const highestReviewLevel = reviewLevels.includes('full') ? 'full'
-      : reviewLevels.includes('light') ? 'light'
-      : null
-
-    const allSucceeded = executions.every((e) => e.status === 'done')
-    if (highestReviewLevel && allSucceeded) {
-      const changes = computeChanges(options.projectRoot, snapshot)
-      const gateExecs = await this.runFinalQualityGate(
-        { role: 'code-reviewer' as AgentRole, prompt: plan.summary, title: plan.summary, reviewLevel: highestReviewLevel },
-        options,
-        changes,
-      )
-      executions.push(...gateExecs)
-    }
 
     return { plan, executions }
   }
