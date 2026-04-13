@@ -13,6 +13,7 @@ import { AgentChat } from '../chat'
 import { AgentDetail } from '../detail'
 import { AgentInnerView } from '../inner-view'
 import { TaskDrawer } from '../drawer'
+import { AgentMainPanel } from './agent-main-panel'
 import { useAgentEvents } from './use-agent-events'
 import { useConversation } from './use-conversation'
 import {
@@ -129,7 +130,7 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
     <AgentChat onSend={handleSend} onRespond={handleRespond} isProcessing={isProcessing} />
   )
 
-  const canvasContent = (
+  const canvas = (
     <CanvasPanel>
       <ReactFlowProvider>
         <AgentCanvas
@@ -179,6 +180,8 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
     </CanvasPanel>
   )
 
+  const mainPanel = <AgentMainPanel canvas={canvas} />
+
   return (
     <Layout>
       {chatOpen ? (
@@ -189,9 +192,9 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
           maxWidth={500}
           storageKey="agents.chatWidth"
         >
-          {canvasContent}
+          {mainPanel}
         </SplitPanel>
-      ) : canvasContent}
+      ) : mainPanel}
 
       {drawerOpen && <TaskDrawer onClose={() => setDrawerOpen(false)} />}
     </Layout>
