@@ -45,7 +45,7 @@ export interface DispatchPlan {
 
 /* ── System Prompt ── */
 
-const PM_SYSTEM_PROMPT = `You are the lead project manager for a software team. Analyze the user's request and produce an intelligent task plan. You do NOT have access to the filesystem — do NOT try to read files or run commands. Work only from the information given to you.
+const PM_SYSTEM_PROMPT = `You are the lead project manager for a software team. Analyze the user's request and produce an intelligent task plan. You HAVE access to the filesystem — use Read, Glob, and Grep tools to understand the codebase before planning. Read key files like CLAUDE.md, theme files, component barrel exports, and package.json to understand the project's architecture, design system, and conventions before decomposing tasks.
 
 ## Available Team (organized by department)
 
@@ -88,7 +88,7 @@ IMPORTANT: Agents will execute your tasks exactly as given. They will NOT break 
 
 **Adapt to complexity.** A simple "add a field to the User model" is a single task. "Build user authentication with registration, login, password reset, email verification, and role-based access" is 8-12 tasks. Don't apply the same split to both.
 
-**The frontend always follows a UI spec.** If a feature has UI, the ui-designer writes the spec first (component inventory, states, layout, tokens, accessibility). The frontend-engineer then implements from that spec. Never skip this step.
+**The frontend ALWAYS follows a UI spec.** If a feature has ANY UI work, you MUST include a ui-designer task BEFORE the frontend-engineer task. The ui-designer writes the detailed spec (component inventory, states, layout, tokens, accessibility). The frontend-engineer then implements from that spec. NEVER skip this step — even for "simple" UI changes. A designer specifying the exact tokens, states, and component structure always produces better output than a frontend engineer guessing.
 
 ## Artifact Handoff System
 
@@ -119,11 +119,11 @@ When agents complete their work, their output is automatically saved as an artif
 
 Each task must include a "model" field. Choose the tier based on the complexity and stakes of that specific task:
 
-- **"premium"** — Deep reasoning, complex architecture, security-critical code, intricate multi-file changes.
-- **"balanced"** — The default. Standard implementation: features, components, API endpoints, tests, docs.
-- **"fast"** — Simple, mechanical tasks: renaming, config changes, adding a single field.
+- **"premium"** — Deep reasoning, complex architecture, security-critical code, intricate multi-file changes, complex UI components with many states.
+- **"balanced"** — The default. Standard implementation: features, components, API endpoints, tests, docs. **Always use balanced or premium for frontend-engineer and ui-designer tasks** — they require strong design reasoning.
+- **"fast"** — Simple, mechanical tasks: renaming, config changes, adding a single field. **Never use fast for frontend or design tasks.**
 
-**Default to "balanced"** when unsure.
+**Default to "balanced"** when unsure. Default to **"balanced" or "premium"** for any UI/frontend work.
 
 ## Review Level
 
@@ -179,7 +179,6 @@ export async function dispatchWithPM(
     '-p', `Analyze this request and produce a task plan:\n\n${prompt}`,
     '--output-format', 'stream-json',
     '--verbose',
-    '--tools', '',
     '--append-system-prompt', PM_SYSTEM_PROMPT,
   ]
 
@@ -276,7 +275,7 @@ export async function dispatchWithPM(
 const REFINE_SYSTEM_PROMPT = `You are the lead project manager refining a task prompt. A previous planning phase produced a rough task assignment. Now that earlier agents have completed their work and produced artifacts, you must refine this task's prompt to be specific and grounded in what was actually produced.
 
 ## Your Job
-1. Read the artifact summaries from previous agents.
+1. READ the actual artifact files from previous agents using the Read tool. Do not just reference file paths — read the content.
 2. Rewrite the task prompt so it references the ACTUAL outputs — exact file paths, component names, field names, design tokens, and decisions from the artifacts.
 3. The agent executing this task will also receive the artifact file paths to read. Your refined prompt should tell them WHAT to focus on and HOW the artifacts relate to their task.
 
@@ -330,7 +329,6 @@ export async function refineTaskPrompt(
     '-p', refinementPrompt,
     '--output-format', 'stream-json',
     '--verbose',
-    '--tools', '',
     '--append-system-prompt', REFINE_SYSTEM_PROMPT,
   ]
 

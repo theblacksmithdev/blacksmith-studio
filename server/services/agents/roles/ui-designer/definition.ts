@@ -63,8 +63,11 @@ ${SPEC_ONLY_BOUNDARIES}`,
   selfDecompose: false,
   keyFiles: [
     'package.json', 'tailwind.config.ts', 'tailwind.config.js',
-    'theme.ts', 'theme.js', 'tokens.ts', 'tokens.css',
     'CLAUDE.md', 'README.md',
+    // Design system files — the designer MUST know the actual tokens and components
+    'src/theme.ts', 'client/src/theme.ts',
+    'src/components/shared/ui/tokens.ts', 'client/src/components/shared/ui/tokens.ts',
+    'src/components/shared/ui/index.ts', 'client/src/components/shared/ui/index.ts',
   ],
   permissionMode: 'default',
   preferredModel: null,
