@@ -1,5 +1,4 @@
 import styled from '@emotion/styled'
-import { keyframes } from '@emotion/react'
 
 export const Layout = styled.div`
   position: relative;
@@ -17,8 +16,6 @@ export const CanvasPanel = styled.div`
 /* ── Floating action buttons ── */
 
 const FloatingBase = styled.button<{ $active?: boolean }>`
-  position: absolute;
-  z-index: 10;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -42,20 +39,17 @@ const FloatingBase = styled.button<{ $active?: boolean }>`
 `
 
 export const TasksBtn = styled(FloatingBase)<{ $hasTasks: boolean }>`
-  position: static;
   opacity: ${({ $hasTasks }) => $hasTasks ? 1 : 0.5};
 `
 
 export const StopBtn = styled.button`
-  position: static;
-  z-index: 10;
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
   border-radius: 10px;
   border: 1px solid rgba(239, 68, 68, 0.3);
-  background: var(--studio-error-subtle));
+  background: var(--studio-error-subtle);
   color: var(--studio-error);
   font-size: 12px;
   font-weight: 500;
@@ -70,19 +64,16 @@ export const StopBtn = styled.button`
   }
 `
 
-export const ButtonGroup = styled.div<{ $shift?: boolean }>`
+export const ButtonGroup = styled.div`
   position: absolute;
   bottom: 16px;
-  left: ${({ $shift }) => $shift ? '376px' : '16px'};
+  left: 16px;
   z-index: 10;
   display: flex;
   gap: 6px;
-  transition: left 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 `
 
-export const ChatBtn = styled(FloatingBase)<{ $unread?: boolean }>`
-  position: static;
-`
+export const ChatBtn = styled(FloatingBase)``
 
 export const Badge = styled.span`
   font-size: 11px;
@@ -99,29 +90,4 @@ export const UnreadDot = styled.span`
   border-radius: 50%;
   background: var(--studio-green);
   flex-shrink: 0;
-`
-
-/* ── Sliding chat panel ── */
-
-const slideInLeft = keyframes`
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
-`
-
-const slideOutLeft = keyframes`
-  from { transform: translateX(0); }
-  to { transform: translateX(-100%); }
-`
-
-export const ChatOverlay = styled.div<{ $closing: boolean }>`
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  z-index: 20;
-  width: 360px;
-  max-width: 100%;
-  border-right: 1px solid var(--studio-border);
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
-  animation: ${({ $closing }) => $closing ? slideOutLeft : slideInLeft} 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 `

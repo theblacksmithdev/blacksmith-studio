@@ -2,11 +2,12 @@ import { useEffect, useCallback, useState, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useParams, useLocation } from 'react-router-dom'
 import { ReactFlowProvider } from '@xyflow/react'
-import { ListTodo, MessageSquare, X, Square } from 'lucide-react'
+import { ListTodo, MessageSquare, Square } from 'lucide-react'
 import { api } from '@/api'
 import { useProjectKeys } from '@/hooks/use-project-keys'
 import { useAgentStore } from '@/stores/agent-store'
 import { Tooltip } from '@/components/shared/tooltip'
+import { SplitPanel } from '@/components/shared/layout'
 import { AgentCanvas } from '../canvas'
 import { AgentChat } from '../chat'
 import { AgentDetail } from '../detail'
@@ -16,7 +17,6 @@ import { useAgentEvents } from './use-agent-events'
 import { useConversation } from './use-conversation'
 import {
   Layout, CanvasPanel, ButtonGroup, TasksBtn, ChatBtn, StopBtn, Badge, UnreadDot,
-  ChatOverlay,
 } from './styles'
 import type { AgentRole } from '@/api/types'
 
@@ -29,8 +29,7 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
   const conversationId = propConvId ?? params.conversationId
   const keys = useProjectKeys()
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [chatOpen, setChatOpen] = useState(false)
-  const [chatClosing, setChatClosing] = useState(false)
+  const [chatOpen, setChatOpen] = useState(true)
   const [hasUnread, setHasUnread] = useState(false)
   const [innerViewRole, setInnerViewRole] = useState<AgentRole | null>(null)
   const chatOpenRef = useRef(chatOpen)
@@ -56,7 +55,7 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
   useAgentEvents()
   const { currentConvId, handleSend } = useConversation(conversationId)
 
-  // Auto-send initial prompt from route state (e.g. from home page mode toggle)
+  // Auto-send initial prompt from route state
   const location = useLocation()
   const initialPromptSent = useRef(false)
   useEffect(() => {
@@ -76,18 +75,11 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
     prevCountRef.current = chatMessages.length
   }, [chatMessages.length])
 
-  const openChat = useCallback(() => {
-    setChatOpen(true)
-    setChatClosing(false)
-    setHasUnread(false)
-  }, [])
-
-  const closeChat = useCallback(() => {
-    setChatClosing(true)
-    setTimeout(() => {
-      setChatOpen(false)
-      setChatClosing(false)
-    }, 200)
+  const toggleChat = useCallback(() => {
+    setChatOpen((v) => {
+      if (!v) setHasUnread(false)
+      return !v
+    })
   }, [])
 
   const handleRespond = useCallback(async (requestId: string, value: string) => {
@@ -117,10 +109,6 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
     setInnerViewRole(role)
   }, [selectAgent])
 
-  const closeInnerView = useCallback(() => {
-    setInnerViewRole(null)
-  }, [])
-
   const selectedAgentInfo = agents.find((a) => a.role === selectedAgent)
   const innerViewAgent = innerViewRole ? agents.find((a) => a.role === innerViewRole) : null
   const isProcessing = agents.some((a) => a.isRunning) || buildActive
@@ -128,70 +116,82 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
   const completedCount = dispatchTasks.filter((t) => t.status === 'done').length
   const hasRunning = dispatchTasks.some((t) => t.status === 'running')
 
-  // When inner view is open, show that instead of the canvas
+  // Inner view replaces the whole page
   if (innerViewAgent) {
     return (
       <Layout>
-        <AgentInnerView agent={innerViewAgent} onBack={closeInnerView} />
+        <AgentInnerView agent={innerViewAgent} onBack={() => setInnerViewRole(null)} />
       </Layout>
     )
   }
 
+  const chatPanel = (
+    <AgentChat onSend={handleSend} onRespond={handleRespond} isProcessing={isProcessing} />
+  )
+
+  const canvasContent = (
+    <CanvasPanel>
+      <ReactFlowProvider>
+        <AgentCanvas
+          agents={agents}
+          onNodeClick={handleNodeClick}
+          onNodeDoubleClick={handleNodeDoubleClick}
+          conversationId={currentConvId}
+        />
+      </ReactFlowProvider>
+
+      {/* Floating buttons */}
+      <ButtonGroup>
+        <Tooltip content={chatOpen ? 'Hide chat' : 'Show chat'}>
+          <ChatBtn $active={chatOpen} onClick={toggleChat}>
+            <MessageSquare size={14} />
+            Chat
+            {hasUnread && !chatOpen && <UnreadDot />}
+          </ChatBtn>
+        </Tooltip>
+
+        <Tooltip content="View task plan">
+          <TasksBtn $active={hasRunning} $hasTasks={hasTasks} onClick={() => setDrawerOpen(true)}>
+            <ListTodo size={14} />
+            Tasks
+            {hasTasks && <Badge>{completedCount}/{dispatchTasks.length}</Badge>}
+          </TasksBtn>
+        </Tooltip>
+
+        {isProcessing && (
+          <Tooltip content="Stop all agents">
+            <StopBtn onClick={handleStop}>
+              <Square size={12} />
+              Stop
+            </StopBtn>
+          </Tooltip>
+        )}
+      </ButtonGroup>
+
+      {/* Agent detail panel */}
+      {selectedAgentInfo && (
+        <AgentDetail
+          agent={selectedAgentInfo}
+          onClose={() => selectAgent(null)}
+          onOpenInnerView={() => openInnerView(selectedAgentInfo.role)}
+        />
+      )}
+    </CanvasPanel>
+  )
+
   return (
     <Layout>
-      <CanvasPanel>
-        <ReactFlowProvider>
-          <AgentCanvas
-            agents={agents}
-            onNodeClick={handleNodeClick}
-            onNodeDoubleClick={handleNodeDoubleClick}
-            conversationId={currentConvId}
-          />
-        </ReactFlowProvider>
-
-        {/* Floating buttons */}
-        <ButtonGroup $shift={chatOpen && !chatClosing}>
-          <Tooltip content={chatOpen ? 'Close chat' : 'Open chat'}>
-            <ChatBtn $active={chatOpen} onClick={chatOpen ? closeChat : openChat}>
-              {chatOpen ? <X size={14} /> : <MessageSquare size={14} />}
-              Chat
-              {hasUnread && !chatOpen && <UnreadDot />}
-            </ChatBtn>
-          </Tooltip>
-
-          <Tooltip content="View task plan">
-            <TasksBtn $active={hasRunning} $hasTasks={hasTasks} onClick={() => setDrawerOpen(true)}>
-              <ListTodo size={14} />
-              Tasks
-              {hasTasks && <Badge>{completedCount}/{dispatchTasks.length}</Badge>}
-            </TasksBtn>
-          </Tooltip>
-
-          {isProcessing && (
-            <Tooltip content="Stop all agents">
-              <StopBtn onClick={handleStop}>
-                <Square size={12} />
-                Stop
-              </StopBtn>
-            </Tooltip>
-          )}
-        </ButtonGroup>
-
-        {/* Sliding chat panel within the canvas */}
-        {chatOpen && (
-          <ChatOverlay $closing={chatClosing}>
-            <AgentChat onSend={handleSend} onRespond={handleRespond} isProcessing={isProcessing} onClose={closeChat} />
-          </ChatOverlay>
-        )}
-        {/* Agent detail panel within the canvas */}
-        {selectedAgentInfo && (
-          <AgentDetail
-            agent={selectedAgentInfo}
-            onClose={() => selectAgent(null)}
-            onOpenInnerView={() => openInnerView(selectedAgentInfo.role)}
-          />
-        )}
-      </CanvasPanel>
+      {chatOpen ? (
+        <SplitPanel
+          left={chatPanel}
+          defaultWidth={360}
+          minWidth={280}
+          maxWidth={500}
+          storageKey="agents.chatWidth"
+        >
+          {canvasContent}
+        </SplitPanel>
+      ) : canvasContent}
 
       {drawerOpen && <TaskDrawer onClose={() => setDrawerOpen(false)} />}
     </Layout>
