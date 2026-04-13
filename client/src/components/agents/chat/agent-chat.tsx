@@ -2,7 +2,7 @@ import styled from '@emotion/styled'
 import { Box, Text } from '@chakra-ui/react'
 import { Network, X } from 'lucide-react'
 import { ChatMessages } from './chat-messages'
-import { ChatInput } from './chat-input'
+import { ConversationInput } from '@/components/shared/conversation'
 
 const Shell = styled.div`
   display: flex;
@@ -61,6 +61,11 @@ const Body = styled.div`
   min-height: 0;
 `
 
+const InputWrap = styled.div`
+  flex-shrink: 0;
+  padding: 0 12px 12px;
+`
+
 interface AgentChatProps {
   onSend: (msg: string) => void
   onRespond: (id: string, val: string) => void
@@ -90,7 +95,13 @@ export function AgentChat({ onSend, onRespond, isProcessing, onClose }: AgentCha
 
       <Body>
         <ChatMessages onRespond={onRespond} />
-        <ChatInput onSend={onSend} disabled={isProcessing} />
+        <InputWrap>
+          <ConversationInput
+            onSend={onSend}
+            disabled={isProcessing}
+            placeholder={isProcessing ? 'Agents are working...' : 'Describe what you want to build...'}
+          />
+        </InputWrap>
       </Body>
     </Shell>
   )
