@@ -14,7 +14,10 @@ import type {
 import { createAgentRegistry } from '../roles/index.js'
 import { ArtifactManager } from '../artifacts.js'
 import { routePrompt, type RouteResult } from './router.js'
-import { dispatchWithPM, refineTaskPrompt, type DispatchPlan, type DispatchTask } from './pm-dispatcher.js'
+import { dispatchWithPM, refineTaskPrompt, replanDownstream, type DispatchPlan, type DispatchTask } from './pm-dispatcher.js'
+
+/** Spec-producing roles whose completion triggers downstream re-planning */
+const REPLAN_TRIGGERS = new Set<string>(['ui-designer', 'architect', 'database-engineer'])
 import { needsQualityGate, runQualityGate } from './quality-gate.js'
 import { PIPELINE_TEMPLATES, type PipelineTemplate } from './pipelines.js'
 import { executeWorkflowSteps } from './workflow-engine.js'
@@ -329,8 +332,12 @@ export class AgentManager {
     const artifactPaths = new Map<string, string>()
     /** Tracks which roles have already executed in THIS pipeline (for session continuity) */
     const pipelineSessions = new Map<AgentRole, string>()
+    /** Re-plan fires at most once per pipeline to prevent cascading re-plans */
+    let hasReplanned = false
 
-    for (let task of tasks) {
+    for (let i = 0; i < tasks.length; i++) {
+      const task = tasks[i]
+
       // Check if execution was cancelled between tasks
       if (this._cancelled) {
         for (const remaining of tasks) {
@@ -351,7 +358,6 @@ export class AgentManager {
       // Check all dependencies are satisfied
       const unmetDeps = task.dependsOn.filter((dep) => !completed.has(dep))
       if (unmetDeps.length > 0) {
-        // Check if any dep failed — if so, skip this task
         const depFailed = task.dependsOn.some((dep) => {
           const depExec = completed.get(dep)
           return depExec && depExec.status === 'error'
@@ -377,14 +383,12 @@ export class AgentManager {
       }
 
       // PM assigns task
-      const taskIndex = tasks.indexOf(task)
-      this.emitPM(`Assigning task ${taskIndex + 1}/${tasks.length}: "${task.title}" → ${task.role}`)
+      this.emitPM(`Assigning task ${i + 1}/${tasks.length}: "${task.title}" → ${task.role}`)
       this.emitTaskStatus(task.id, 'running', task.title, task.role)
 
       try {
         // Two-phase PM: refine task prompts using artifacts from completed tasks.
-        // Only refine on the first task for a role — continuation tasks already
-        // have full context in the session and just need the task prompt.
+        let refinedTask = task
         const isFirstForRole = !pipelineSessions.has(task.role)
         if (isFirstForRole && artifactPaths.size > 0 && !this._cancelled) {
           const summaries = Array.from(artifactPaths.entries()).map(([taskId, path]) => {
@@ -396,7 +400,7 @@ export class AgentManager {
             }
           })
 
-          task = { ...task, prompt: await refineTaskPrompt(
+          refinedTask = { ...task, prompt: await refineTaskPrompt(
             task,
             summaries,
             baseOptions,
@@ -404,7 +408,7 @@ export class AgentManager {
           ) }
         }
 
-        const execution = await this.executeDispatchedTask(task, baseOptions, completed, artifactPaths, pipelineSessions, tasks)
+        const execution = await this.executeDispatchedTask(refinedTask, baseOptions, completed, artifactPaths, pipelineSessions, tasks)
         executions.push(execution)
         completed.set(task.id, execution)
 
@@ -425,19 +429,70 @@ export class AgentManager {
             }
           }
 
-          // Agent reports back to PM — PM marks done and announces next
           this.emitTaskStatus(task.id, 'done', task.title, task.role)
           const cost = execution.costUsd > 0 ? ` ($${execution.costUsd.toFixed(4)})` : ''
           this.emitPM(`${task.role} completed "${task.title}"${cost} — marking done`)
 
-          const nextTask = tasks[taskIndex + 1]
+          // ── Adaptive re-planning ──
+          // After a spec-producing role completes, PM re-evaluates remaining tasks.
+          // Fires at most once per pipeline to prevent cascading re-plans.
+          const remainingTasks = tasks.slice(i + 1).filter((t) => !completed.has(t.id))
+          const lastArtifactPath = artifactPaths.get(task.id)
+
+          if (
+            REPLAN_TRIGGERS.has(task.role) &&
+            !hasReplanned &&
+            !this._cancelled &&
+            remainingTasks.length > 0 &&
+            lastArtifactPath
+          ) {
+            try {
+              const newTasks = await replanDownstream(
+                task,
+                lastArtifactPath,
+                remainingTasks,
+                baseOptions,
+                (event) => this.emitAgentEvent(event),
+              )
+
+              // Only splice if re-plan produced different tasks
+              if (newTasks !== remainingTasks && newTasks.length > 0) {
+                // Remove old remaining tasks, insert new ones
+                tasks.splice(i + 1, tasks.length - i - 1, ...newTasks)
+                hasReplanned = true
+
+                // Emit updated plan so UI refreshes the task tray
+                this.emitAgentEvent({
+                  type: 'dispatch_plan',
+                  agentId: 'product-manager',
+                  executionId: '',
+                  timestamp: new Date().toISOString(),
+                  data: {
+                    type: 'dispatch_plan',
+                    plan: {
+                      mode: 'multi' as const,
+                      summary: `Re-planned: ${newTasks.length} tasks after ${task.role} completed`,
+                      tasks: tasks.map((t) => ({
+                        id: t.id, title: t.title, description: t.description, role: t.role, dependsOn: t.dependsOn,
+                      })),
+                    },
+                  },
+                })
+
+                this.emitPM(`Re-planned pipeline: ${remainingTasks.length} → ${newTasks.length} tasks`)
+              }
+            } catch (err: any) {
+              console.warn(`[agent-manager] Re-plan failed, continuing with original tasks:`, err.message)
+            }
+          }
+
+          const nextTask = tasks[i + 1]
           if (nextTask) {
             this.emitPM(`Moving to next task: "${nextTask.title}" → ${nextTask.role}`)
           } else {
             this.emitPM('All tasks completed — running final quality gate')
           }
         } else {
-          // Agent reports failure to PM
           this.emitTaskStatus(task.id, 'error', task.title, task.role)
           this.emitPM(`${task.role} failed "${task.title}": ${execution.error ?? 'unknown error'}`)
           this.emitPM('Stopping remaining tasks due to failure')

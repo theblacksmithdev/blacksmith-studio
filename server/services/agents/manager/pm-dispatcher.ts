@@ -391,6 +391,173 @@ export async function refineTaskPrompt(
   return task.prompt
 }
 
+/* ── Adaptive Re-Planning After Spec Tasks ── */
+
+const REPLAN_SYSTEM_PROMPT = `You are the lead PM re-evaluating a task plan. A spec-producing agent just completed their work and saved an artifact. Read the artifact to understand what was actually produced, then re-decompose the remaining tasks to be properly sized.
+
+## Rules
+1. READ the artifact file using the Read tool — do not guess at its contents.
+2. Re-decompose any task that's too large based on what the artifact actually specifies.
+3. Each engineering task should be ONE focused deliverable (one component, one API endpoint, one migration).
+4. Adjust model selections: use "balanced" or "premium" for complex work, never "fast" for frontend/design.
+5. Preserve non-engineering tasks (QA, security, docs) at the end.
+6. Keep the same overall goal — just size tasks properly based on the real spec.
+7. Set dependsOn so tasks execute serially — each depends on the previous.
+
+## Output
+Respond with ONLY a JSON array of task objects. No markdown, no explanation.
+[
+  { "id": "t1", "title": "...", "description": "...", "role": "...", "prompt": "...", "dependsOn": [], "model": "balanced", "reviewLevel": "full" },
+  ...
+]`
+
+/**
+ * Re-plan downstream tasks after a spec-producing agent completes.
+ * PM reads the artifact and re-decomposes remaining tasks based on actual output.
+ * Returns new task list to replace remaining unexecuted tasks.
+ * Falls back to original remaining tasks on failure.
+ */
+export async function replanDownstream(
+  completedTask: DispatchTask,
+  artifactPath: string,
+  remainingTasks: DispatchTask[],
+  baseOptions: Omit<AgentExecuteOptions, 'prompt'>,
+  emit?: EmitFn,
+): Promise<DispatchTask[]> {
+  if (remainingTasks.length === 0) return []
+
+  const claudeBin = baseOptions.claudeBin ?? 'claude'
+
+  const remainingDesc = remainingTasks
+    .map((t, i) => `${i + 1}. [${t.role}] "${t.title}": ${t.prompt.slice(0, 200)}...`)
+    .join('\n')
+
+  const replanPrompt = [
+    `A ${completedTask.role} just completed "${completedTask.title}".`,
+    `Their output artifact is at: ${artifactPath}`,
+    `Read that file to understand what was produced.`,
+    '',
+    `The remaining tasks in the pipeline are:`,
+    remainingDesc,
+    '',
+    `Based on the ACTUAL artifact content, re-decompose these remaining tasks.`,
+    `Split any oversized tasks into focused subtasks. Adjust model selections.`,
+    `Each task prompt must tell the agent exactly what to build and reference the artifact.`,
+  ].join('\n')
+
+  const args = [
+    '-p', replanPrompt,
+    '--output-format', 'stream-json',
+    '--verbose',
+    '--append-system-prompt', REPLAN_SYSTEM_PROMPT,
+  ]
+
+  const emitPM = (description: string) => {
+    if (!emit) return
+    emit({
+      type: 'activity' as AgentEvent['type'],
+      agentId: 'product-manager',
+      executionId: '',
+      timestamp: new Date().toISOString(),
+      data: { type: 'activity', description } as AgentEvent['data'],
+    })
+  }
+
+  emitPM(`Re-evaluating plan after ${completedTask.role} completed "${completedTask.title}"...`)
+
+  try {
+    const fullText = await new Promise<string>((resolve, reject) => {
+      const proc = spawn(claudeBin, args, {
+        cwd: baseOptions.projectRoot,
+        stdio: ['ignore', 'pipe', 'pipe'],
+        env: nodeEnv(baseOptions.nodePath),
+      })
+
+      let text = ''
+      let stderr = ''
+
+      const parser = createNdjsonParser((chunk: any) => {
+        if (chunk.type === 'assistant') {
+          for (const b of (chunk.message?.content || [])) {
+            if (b.type === 'text') text += b.text
+          }
+        }
+      })
+
+      proc.stdout!.on('data', (d: Buffer) => parser.write(d.toString()))
+      proc.stderr!.on('data', (d: Buffer) => { stderr += d.toString() })
+
+      proc.on('close', (code: number | null) => {
+        parser.flush()
+        if (text.trim()) resolve(text.trim())
+        else if (code !== 0) reject(new Error(stderr.trim() || `Re-plan exited with code ${code}`))
+        else resolve('')
+      })
+
+      proc.on('error', (err: Error) => reject(err))
+    })
+
+    if (!fullText) {
+      emitPM('Re-plan returned empty — keeping original tasks')
+      return remainingTasks
+    }
+
+    // Parse JSON array from response
+    const bracketStart = fullText.indexOf('[')
+    const bracketEnd = fullText.lastIndexOf(']')
+
+    if (bracketStart === -1 || bracketEnd <= bracketStart) {
+      console.warn('[pm-dispatcher] Re-plan: no JSON array found, keeping original tasks')
+      emitPM('Re-plan did not produce valid tasks — keeping original plan')
+      return remainingTasks
+    }
+
+    const parsed = JSON.parse(fullText.slice(bracketStart, bracketEnd + 1))
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      emitPM('Re-plan returned empty array — keeping original plan')
+      return remainingTasks
+    }
+
+    const prefix = crypto.randomUUID().slice(0, 8)
+    const VALID_ROLES = new Set<string>([
+      'frontend-engineer', 'backend-engineer', 'fullstack-engineer',
+      'devops-engineer', 'qa-engineer', 'security-engineer',
+      'database-engineer', 'ui-designer', 'technical-writer',
+      'code-reviewer', 'architect', 'product-manager',
+    ])
+    const VALID_MODELS = new Set<TaskModel>(['fast', 'balanced', 'premium'])
+    const VALID_REVIEW_LEVELS = new Set<ReviewLevel>(['none', 'light', 'full'])
+
+    const newTasks: DispatchTask[] = parsed.map((t: any, i: number) => {
+      const id = `${prefix}-r${i}`
+      return {
+        id,
+        title: t.title ?? `Task ${i + 1}`,
+        description: t.description ?? '',
+        role: VALID_ROLES.has(t.role) ? t.role : 'frontend-engineer',
+        prompt: t.prompt ?? '',
+        dependsOn: i > 0 ? [`${prefix}-r${i - 1}`] : [completedTask.id],
+        model: VALID_MODELS.has(t.model) ? t.model : 'balanced',
+        reviewLevel: VALID_REVIEW_LEVELS.has(t.reviewLevel) ? t.reviewLevel : 'full',
+      }
+    }).filter((t: DispatchTask) => t.prompt.trim())
+
+    if (newTasks.length === 0) {
+      emitPM('Re-plan produced no valid tasks — keeping original plan')
+      return remainingTasks
+    }
+
+    emitPM(`Re-plan: ${remainingTasks.length} tasks → ${newTasks.length} tasks`)
+    console.log(`[pm-dispatcher] Re-plan: ${remainingTasks.length} → ${newTasks.length} tasks`)
+    return newTasks
+
+  } catch (err: any) {
+    console.warn('[pm-dispatcher] Re-plan failed, keeping original tasks:', err.message)
+    emitPM(`Re-plan failed — continuing with original plan`)
+    return remainingTasks
+  }
+}
+
 function parsePlan(raw: string): DispatchPlan {
   const braceStart = raw.indexOf('{')
   const braceEnd = raw.lastIndexOf('}')

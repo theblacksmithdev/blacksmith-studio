@@ -91,13 +91,18 @@ export const useAgentStore = create<AgentState>((set) => ({
   setAgents: (agents) => set({ agents }),
 
   handleAgentEvent: (event) => set((state) => {
-    // Handle dispatch_plan events — open the task tray immediately when PM produces a plan
+    // Handle dispatch_plan events — open the task tray immediately when PM produces a plan.
+    // On re-plan (mid-pipeline), merge: preserve completed/running statuses, add new pending tasks.
     if (event.data.type === 'dispatch_plan') {
       const planData = (event.data as any).plan
       if (planData?.tasks) {
+        const existingStatuses = new Map(state.dispatchTasks.map((t) => [t.id, t.status]))
         return {
           dispatchPlan: planData,
-          dispatchTasks: planData.tasks.map((t: any) => ({ ...t, status: 'pending' as const })),
+          dispatchTasks: planData.tasks.map((t: any) => ({
+            ...t,
+            status: existingStatuses.get(t.id) ?? ('pending' as const),
+          })),
           taskTrayOpen: true,
         }
       }
