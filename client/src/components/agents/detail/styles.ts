@@ -2,8 +2,8 @@ import styled from '@emotion/styled'
 import { css, keyframes } from '@emotion/react'
 
 const slideIn = keyframes`
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
 `
 
 const pulse = keyframes`
@@ -18,18 +18,20 @@ const shimmer = keyframes`
 
 export const Panel = styled.div`
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
+  top: 8px;
+  right: 8px;
+  bottom: 8px;
   z-index: 20;
   width: 320px;
-  max-width: 100%;
+  max-width: calc(100% - 16px);
   background: var(--studio-bg-sidebar);
-  border-left: 1px solid var(--studio-border);
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--studio-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
-  animation: ${slideIn} 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: ${slideIn} 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
 `
 
 export const Header = styled.div`
@@ -45,8 +47,8 @@ export const HeaderTop = styled.div`
 `
 
 export const IconBox = styled.div<{ $active: boolean }>`
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -55,11 +57,11 @@ export const IconBox = styled.div<{ $active: boolean }>`
   transition: all 0.2s ease;
 
   ${({ $active }) => $active ? `
-    background: linear-gradient(135deg, var(--studio-green-border), var(--studio-green-subtle));
+    background: var(--studio-green-subtle);
     border: 1px solid var(--studio-green-border);
     color: var(--studio-green);
   ` : `
-    background: var(--studio-bg-hover);
+    background: var(--studio-bg-surface);
     border: 1px solid var(--studio-border);
     color: var(--studio-text-tertiary);
   `}
@@ -69,9 +71,9 @@ export const CloseBtn = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
   border: none;
   background: transparent;
   color: var(--studio-text-muted);
@@ -100,13 +102,13 @@ export const StatusBadge = styled.div<{ $status: string }>`
     switch ($status) {
       case 'executing':
       case 'thinking':
-        return `background: var(--studio-green-subtle); color: var(--studio-green);`
+        return `background: var(--studio-green-subtle); color: var(--studio-green); border: 1px solid var(--studio-green-border);`
       case 'done':
-        return `background: var(--studio-bg-hover); color: var(--studio-text-primary);`
+        return `background: var(--studio-bg-surface); color: var(--studio-text-primary); border: 1px solid var(--studio-border);`
       case 'error':
-        return `background: var(--studio-error-subtle)); color: var(--studio-error);`
+        return `background: var(--studio-error-subtle); color: var(--studio-error); border: 1px solid var(--studio-error);`
       default:
-        return `background: var(--studio-bg-surface); color: var(--studio-text-muted);`
+        return `background: var(--studio-bg-surface); color: var(--studio-text-muted); border: 1px solid var(--studio-border);`
     }
   }}
 `
@@ -133,9 +135,9 @@ export const Body = styled.div`
   overflow-y: auto;
   padding: 0;
 
-  &::-webkit-scrollbar { width: 5px; }
+  &::-webkit-scrollbar { width: 4px; }
   &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb { background: var(--studio-scrollbar); border-radius: 3px; }
+  &::-webkit-scrollbar-thumb { background: var(--studio-scrollbar); border-radius: 2px; }
 `
 
 export const Section = styled.div`
@@ -161,18 +163,41 @@ export const AboutText = styled.p`
   letter-spacing: -0.005em;
 `
 
+export const OpenFullBtn = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 9px;
+  border-radius: 8px;
+  border: 1px solid var(--studio-border);
+  background: var(--studio-bg-surface);
+  color: var(--studio-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.12s ease;
+
+  &:hover {
+    border-color: var(--studio-border-hover);
+    background: var(--studio-bg-hover);
+    color: var(--studio-text-primary);
+  }
+`
+
 /* ── Activity Timeline ── */
 
 export const Timeline = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0;
 `
 
 export const TimelineItem = styled.div<{ $status: string; $isLatest: boolean }>`
   display: flex;
   gap: 10px;
-  padding: 6px 0;
+  padding: 5px 0;
   position: relative;
 
   ${({ $isLatest, $status }) => $isLatest && ($status === 'executing' || $status === 'thinking') && css`
@@ -185,13 +210,13 @@ export const TimelineTrack = styled.div`
   flex-direction: column;
   align-items: center;
   flex-shrink: 0;
-  width: 16px;
-  padding-top: 2px;
+  width: 14px;
+  padding-top: 3px;
 `
 
 export const TimelineDot = styled.div<{ $status: string }>`
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
   transition: all 0.15s ease;
@@ -210,7 +235,7 @@ export const TimelineDot = styled.div<{ $status: string }>`
 export const TimelineLine = styled.div`
   width: 1px;
   flex: 1;
-  min-height: 8px;
+  min-height: 6px;
   background: var(--studio-border);
   margin-top: 3px;
 `

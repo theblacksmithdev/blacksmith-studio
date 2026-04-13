@@ -1,11 +1,12 @@
-import { Box, Text } from '@chakra-ui/react'
-import { Layers, X, Clock, Maximize2 } from 'lucide-react'
+import { Flex, Box } from '@chakra-ui/react'
+import { Layers, X, Clock, Maximize2, Zap, Wrench } from 'lucide-react'
 import { useAgentStore } from '@/stores/agent-store'
 import { ROLE_ICONS } from '../shared/role-icons'
+import { Text } from '@/components/shared/ui'
 import type { AgentInfo } from '@/api/types'
 import {
   Panel, Header, HeaderTop, IconBox, CloseBtn,
-  StatusBadge, StatusDot,
+  StatusBadge, StatusDot, OpenFullBtn,
   Body, Section, SectionLabel, AboutText,
   Timeline, TimelineItem, TimelineTrack, TimelineDot, TimelineLine,
   TimelineContent, TimelineText, TimelineTime, EmptyActivity,
@@ -18,8 +19,7 @@ interface AgentDetailProps {
 }
 
 function formatTime(ts: string): string {
-  const d = new Date(ts)
-  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 }
 
 function statusLabel(status: string): string {
@@ -29,7 +29,7 @@ function statusLabel(status: string): string {
     case 'executing': return 'Executing'
     case 'done': return 'Complete'
     case 'error': return 'Error'
-    default: return 'Unknown'
+    default: return 'Idle'
   }
 }
 
@@ -39,6 +39,8 @@ export function AgentDetail({ agent, onClose, onOpenInnerView }: AgentDetailProp
   const status = activity?.status ?? 'idle'
   const isActive = status === 'executing' || status === 'thinking'
   const history = activity?.history ?? []
+  const eventLog = activity?.eventLog ?? []
+  const toolCalls = eventLog.filter((e) => e.type === 'tool_use').length
 
   const reversed = [...history].reverse()
 
@@ -47,12 +49,16 @@ export function AgentDetail({ agent, onClose, onOpenInnerView }: AgentDetailProp
       <Header>
         <HeaderTop>
           <IconBox $active={isActive}>
-            <Icon size={18} />
+            <Icon size={16} />
           </IconBox>
           <Box css={{ flex: 1, minWidth: 0 }}>
-            <Text css={{ fontSize: '15px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
+            <Text css={{ fontSize: '14px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
               {agent.title}
             </Text>
+            <StatusBadge $status={status}>
+              <StatusDot $status={status} />
+              {statusLabel(status)}
+            </StatusBadge>
           </Box>
           {onOpenInnerView && (
             <CloseBtn onClick={onOpenInnerView} title="Open full view">
@@ -63,51 +69,75 @@ export function AgentDetail({ agent, onClose, onOpenInnerView }: AgentDetailProp
             <X size={14} />
           </CloseBtn>
         </HeaderTop>
-        <StatusBadge $status={status}>
-          <StatusDot $status={status} />
-          {statusLabel(status)}
-        </StatusBadge>
       </Header>
 
       <Body>
         {/* About */}
         <Section>
-          <SectionLabel>About</SectionLabel>
           <AboutText>{agent.description}</AboutText>
         </Section>
+
+        {/* Quick stats */}
+        {eventLog.length > 0 && (
+          <Section>
+            <Flex gap="8px">
+              <Flex align="center" gap="5px" css={{
+                padding: '5px 10px', borderRadius: '7px',
+                background: 'var(--studio-bg-surface)', border: '1px solid var(--studio-border)',
+                fontSize: '11px', fontWeight: 500, color: 'var(--studio-text-muted)',
+              }}>
+                <Zap size={10} /> {eventLog.length} events
+              </Flex>
+              {toolCalls > 0 && (
+                <Flex align="center" gap="5px" css={{
+                  padding: '5px 10px', borderRadius: '7px',
+                  background: 'var(--studio-bg-surface)', border: '1px solid var(--studio-border)',
+                  fontSize: '11px', fontWeight: 500, color: 'var(--studio-text-muted)',
+                }}>
+                  <Wrench size={10} /> {toolCalls} tools
+                </Flex>
+              )}
+            </Flex>
+          </Section>
+        )}
 
         {/* Activity Timeline */}
         <Section>
           <SectionLabel>Activity</SectionLabel>
           {history.length === 0 ? (
             <EmptyActivity>
-              <Clock size={16} />
+              <Clock size={14} />
               No activity yet
             </EmptyActivity>
           ) : (
             <Timeline>
-              {reversed.map((entry, i) => {
-                const isLatest = i === 0
-                const isLast = i === reversed.length - 1
-
-                return (
-                  <TimelineItem key={entry.id} $status={entry.status} $isLatest={isLatest}>
-                    <TimelineTrack>
-                      <TimelineDot $status={entry.status} />
-                      {!isLast && <TimelineLine />}
-                    </TimelineTrack>
-                    <TimelineContent>
-                      <TimelineText $status={entry.status} $isLatest={isLatest}>
-                        {entry.text}
-                      </TimelineText>
-                      <TimelineTime>{formatTime(entry.timestamp)}</TimelineTime>
-                    </TimelineContent>
-                  </TimelineItem>
-                )
-              })}
+              {reversed.map((entry, i) => (
+                <TimelineItem key={entry.id} $status={entry.status} $isLatest={i === 0}>
+                  <TimelineTrack>
+                    <TimelineDot $status={entry.status} />
+                    {i < reversed.length - 1 && <TimelineLine />}
+                  </TimelineTrack>
+                  <TimelineContent>
+                    <TimelineText $status={entry.status} $isLatest={i === 0}>
+                      {entry.text}
+                    </TimelineText>
+                    <TimelineTime>{formatTime(entry.timestamp)}</TimelineTime>
+                  </TimelineContent>
+                </TimelineItem>
+              ))}
             </Timeline>
           )}
         </Section>
+
+        {/* Open full view */}
+        {onOpenInnerView && (
+          <Section>
+            <OpenFullBtn onClick={onOpenInnerView}>
+              <Maximize2 size={12} />
+              Open full session view
+            </OpenFullBtn>
+          </Section>
+        )}
       </Body>
     </Panel>
   )
