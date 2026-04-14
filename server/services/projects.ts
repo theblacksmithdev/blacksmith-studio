@@ -1,6 +1,5 @@
 import crypto from 'node:crypto'
 import path from 'node:path'
-import fs from 'node:fs'
 import { eq } from 'drizzle-orm'
 import { getDatabase } from '../db/index.js'
 import { projects } from '../db/schema.js'
@@ -14,8 +13,6 @@ export interface Project {
 }
 
 export class ProjectManager {
-  private activeProjectId: string | null = null
-
   constructor() {
     getDatabase()
   }
@@ -42,7 +39,7 @@ export class ProjectManager {
     // Check if already registered
     const existing = this.getByPath(absPath)
     if (existing) {
-      this.setActive(existing.id)
+      this.touchLastOpened(existing.id)
       return existing
     }
 
@@ -58,7 +55,6 @@ export class ProjectManager {
       lastOpenedAt: now,
     }).run()
 
-    this.activeProjectId = id
     return { id, name: projectName, path: absPath, createdAt: now, lastOpenedAt: now }
   }
 
@@ -66,9 +62,6 @@ export class ProjectManager {
     const existing = this.get(id)
     if (!existing) return false
     this.db.delete(projects).where(eq(projects.id, id)).run()
-    if (this.activeProjectId === id) {
-      this.activeProjectId = null
-    }
     return true
   }
 
@@ -79,30 +72,11 @@ export class ProjectManager {
     return { ...existing, name }
   }
 
-  getActive(): Project | null {
-    if (!this.activeProjectId) return null
-    return this.get(this.activeProjectId)
-  }
-
-  getActiveId(): string | null {
-    return this.activeProjectId
-  }
-
-  getActivePath(): string | null {
-    const project = this.getActive()
-    return project?.path || null
-  }
-
-  setActive(id: string): Project | null {
-    const project = this.get(id)
-    if (!project) return null
-
-    this.activeProjectId = id
+  /** Update lastOpenedAt timestamp for a project. */
+  touchLastOpened(id: string): void {
     this.db.update(projects)
       .set({ lastOpenedAt: new Date().toISOString() })
       .where(eq(projects.id, id))
       .run()
-
-    return project
   }
 }

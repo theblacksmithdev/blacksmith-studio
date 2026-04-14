@@ -17,9 +17,8 @@ export interface SetupStatus {
   auth: { authenticated: boolean }
 }
 
-function getNodePath(settingsManager: SettingsManager, projectManager: ProjectManager): string | undefined {
-  const projectId = projectManager.getActiveId()
-  return settingsManager.resolve(projectId, 'runner.nodePath') || undefined
+function getNodePath(settingsManager: SettingsManager, projectId?: string): string | undefined {
+  return settingsManager.resolve(projectId ?? null, 'runner.nodePath') || undefined
 }
 
 function checkNode(nodePath?: string): NodeStatus {
@@ -93,8 +92,8 @@ function installClaude(nodePath?: string): Promise<{ success: boolean; error?: s
 }
 
 export function setupSetupIPC(settingsManager: SettingsManager, projectManager: ProjectManager) {
-  ipcMain.handle(SETUP_CHECK, async (): Promise<SetupStatus> => {
-    const nodePath = getNodePath(settingsManager, projectManager)
+  ipcMain.handle(SETUP_CHECK, async (_e, data?: { projectId?: string }): Promise<SetupStatus> => {
+    const nodePath = getNodePath(settingsManager, data?.projectId)
     const node = checkNode(nodePath)
     const claude = await checkClaude()
 
@@ -109,8 +108,8 @@ export function setupSetupIPC(settingsManager: SettingsManager, projectManager: 
     return { node, claude, auth }
   })
 
-  ipcMain.handle(SETUP_INSTALL_CLAUDE, async () => {
-    const nodePath = getNodePath(settingsManager, projectManager)
+  ipcMain.handle(SETUP_INSTALL_CLAUDE, async (_e, data?: { projectId?: string }) => {
+    const nodePath = getNodePath(settingsManager, data?.projectId)
     return installClaude(nodePath)
   })
 }

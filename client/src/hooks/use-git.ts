@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useMemo } from 'react'
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useParams } from 'react-router-dom'
 import { api } from '@/api'
 import { useGitStore } from '@/stores/git-store'
 import { useProjectKeys } from './use-project-keys'
@@ -10,9 +11,12 @@ import { useProjectKeys } from './use-project-keys'
  */
 export function useGitListener() {
   const store = useGitStore
+  const { projectId } = useParams<{ projectId: string }>()
 
   useEffect(() => {
-    api.git.status().then((status) => {
+    if (!projectId) return
+
+    api.git.status(projectId).then((status) => {
       store.getState().setStatus(status as any)
     }).catch(() => {})
 
@@ -21,7 +25,7 @@ export function useGitListener() {
     })
 
     return () => unsub()
-  }, [])
+  }, [projectId])
 }
 
 /**
@@ -30,6 +34,7 @@ export function useGitListener() {
 export function useGit() {
   const qc = useQueryClient()
   const keys = useProjectKeys()
+  const { projectId } = useParams<{ projectId: string }>()
 
   const invalidateAll = useCallback(() => {
     qc.invalidateQueries({ queryKey: keys.gitStatus })
@@ -40,44 +45,44 @@ export function useGit() {
   }, [qc, keys])
 
   const commit = useMutation({
-    mutationFn: api.git.commit,
+    mutationFn: (input: { message: string; files?: string[] }) => api.git.commit(projectId!, input),
     onSuccess: () => {
       invalidateAll()
-      api.git.status().then((s) => useGitStore.getState().setStatus(s as any)).catch(() => {})
+      api.git.status(projectId!).then((s) => useGitStore.getState().setStatus(s as any)).catch(() => {})
     },
   })
 
   const generateMessage = useMutation({
-    mutationFn: () => api.git.generateMessage(),
+    mutationFn: () => api.git.generateMessage(projectId!),
   })
 
   const createBranch = useMutation({
-    mutationFn: api.git.createBranch,
+    mutationFn: (input: { name: string }) => api.git.createBranch(projectId!, input),
     onSuccess: invalidateAll,
   })
 
   const switchBranch = useMutation({
-    mutationFn: api.git.switchBranch,
+    mutationFn: (input: { name: string }) => api.git.switchBranch(projectId!, input),
     onSuccess: invalidateAll,
   })
 
   const merge = useMutation({
-    mutationFn: api.git.merge,
+    mutationFn: (input: { source: string; target: string }) => api.git.merge(projectId!, input),
     onSuccess: invalidateAll,
   })
 
   const sync = useMutation({
-    mutationFn: () => api.git.sync(),
+    mutationFn: () => api.git.sync(projectId!),
     onSuccess: invalidateAll,
   })
 
   const initGit = useMutation({
-    mutationFn: () => api.git.init(),
+    mutationFn: () => api.git.init(projectId!),
     onSuccess: invalidateAll,
   })
 
   const resolveConflict = useMutation({
-    mutationFn: api.git.resolveConflict,
+    mutationFn: (input: { path: string; resolution: 'ours' | 'theirs' }) => api.git.resolveConflict(projectId!, input),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: keys.gitConflicts })
       qc.invalidateQueries({ queryKey: keys.gitChangedFiles })
@@ -102,9 +107,11 @@ export function useGit() {
 
 export function useGitStatus() {
   const keys = useProjectKeys()
+  const { projectId } = useParams<{ projectId: string }>()
   return useQuery({
     queryKey: keys.gitStatus,
-    queryFn: () => api.git.status(),
+    queryFn: () => api.git.status(projectId!),
+    enabled: !!projectId,
   })
 }
 
@@ -113,14 +120,15 @@ const CHANGED_FILES_PAGE_SIZE = 100
 export function useGitChangedFiles() {
   const keys = useProjectKeys()
   const initialized = useGitStore((s) => s.initialized)
+  const { projectId } = useParams<{ projectId: string }>()
 
   const query = useInfiniteQuery({
     queryKey: keys.gitChangedFiles,
-    queryFn: ({ pageParam = 0 }) => api.git.changedFiles({ limit: CHANGED_FILES_PAGE_SIZE, offset: pageParam }),
+    queryFn: ({ pageParam = 0 }) => api.git.changedFiles(projectId!, { limit: CHANGED_FILES_PAGE_SIZE, offset: pageParam }),
     initialPageParam: 0,
     getNextPageParam: (lastPage, _allPages, lastPageParam) =>
       lastPage.hasMore ? lastPageParam + CHANGED_FILES_PAGE_SIZE : undefined,
-    enabled: initialized,
+    enabled: initialized && !!projectId,
   })
 
   const files = useMemo(
@@ -142,30 +150,33 @@ export function useGitChangedFiles() {
 export function useGitHistory(limit?: number) {
   const keys = useProjectKeys()
   const initialized = useGitStore((s) => s.initialized)
+  const { projectId } = useParams<{ projectId: string }>()
   return useQuery({
     queryKey: keys.gitHistory,
-    queryFn: () => api.git.history(limit ? { limit } : undefined),
-    enabled: initialized,
+    queryFn: () => api.git.history(projectId!, limit ? { limit } : undefined),
+    enabled: initialized && !!projectId,
   })
 }
 
 export function useGitBranches() {
   const keys = useProjectKeys()
   const initialized = useGitStore((s) => s.initialized)
+  const { projectId } = useParams<{ projectId: string }>()
   return useQuery({
     queryKey: keys.gitBranches,
-    queryFn: () => api.git.listBranches(),
-    enabled: initialized,
+    queryFn: () => api.git.listBranches(projectId!),
+    enabled: initialized && !!projectId,
   })
 }
 
 export function useGitSyncStatus() {
   const keys = useProjectKeys()
   const initialized = useGitStore((s) => s.initialized)
+  const { projectId } = useParams<{ projectId: string }>()
   return useQuery({
     queryKey: keys.gitSyncStatus,
-    queryFn: () => api.git.syncStatus(),
-    enabled: initialized,
+    queryFn: () => api.git.syncStatus(projectId!),
+    enabled: initialized && !!projectId,
     staleTime: 60_000,
   })
 }
@@ -173,29 +184,32 @@ export function useGitSyncStatus() {
 export function useGitConflicts() {
   const keys = useProjectKeys()
   const initialized = useGitStore((s) => s.initialized)
+  const { projectId } = useParams<{ projectId: string }>()
   return useQuery({
     queryKey: keys.gitConflicts,
-    queryFn: () => api.git.conflicts(),
-    enabled: initialized,
+    queryFn: () => api.git.conflicts(projectId!),
+    enabled: initialized && !!projectId,
   })
 }
 
 export function useGitCommitDetail(hash: string) {
   const keys = useProjectKeys()
+  const { projectId } = useParams<{ projectId: string }>()
   return useQuery({
     queryKey: keys.gitCommitDetail(hash),
-    queryFn: () => api.git.commitDetail({ hash }),
-    enabled: !!hash,
+    queryFn: () => api.git.commitDetail(projectId!, { hash }),
+    enabled: !!hash && !!projectId,
     staleTime: Infinity,
   })
 }
 
 export function useGitDiff(filePath?: string) {
   const keys = useProjectKeys()
+  const { projectId } = useParams<{ projectId: string }>()
   return useQuery({
     queryKey: keys.gitDiff(filePath ?? ''),
-    queryFn: () => api.git.diff({ path: filePath! }),
-    enabled: !!filePath,
+    queryFn: () => api.git.diff(projectId!, { path: filePath! }),
+    enabled: !!filePath && !!projectId,
     staleTime: 5_000,
   })
 }

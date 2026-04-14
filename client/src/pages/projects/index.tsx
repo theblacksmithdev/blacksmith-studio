@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Box, Text, VStack, HStack } from '@chakra-ui/react'
+import { useNavigate } from 'react-router-dom'
 import { FolderOpen, Trash2, Check, FolderPlus } from 'lucide-react'
 import { PageContainer } from '@/components/shared/page-container'
 import { EmptyState } from '@/components/shared/empty-state'
@@ -8,7 +9,8 @@ import { useProjects } from '@/hooks/use-projects'
 import { useProjectStore, type Project } from '@/stores/project-store'
 
 export default function ProjectsPage() {
-  const { projects, register, activate, remove } = useProjects()
+  const navigate = useNavigate()
+  const { projects, register, remove } = useProjects()
   const activeProject = useProjectStore((s) => s.activeProject)
   const [showRegister, setShowRegister] = useState(false)
   const [newPath, setNewPath] = useState('')
@@ -168,7 +170,7 @@ export default function ProjectsPage() {
                 <Box
                   key={project.id}
                   as="button"
-                  onClick={() => activate(project.id)}
+                  onClick={() => navigate(`/${project.id}`)}
                   css={{
                     display: 'flex',
                     alignItems: 'center',

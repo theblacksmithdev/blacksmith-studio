@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useParams } from 'react-router-dom'
 import { api } from '@/api'
 import { useProjectKeys } from './use-project-keys'
 
@@ -10,10 +11,12 @@ export function useAgentConversations(options?: UseAgentConversationsOptions) {
   const { limit } = options ?? {}
   const queryClient = useQueryClient()
   const keys = useProjectKeys()
+  const { projectId } = useParams<{ projectId: string }>()
 
   const { data, isLoading } = useQuery({
     queryKey: keys.agentConversations,
-    queryFn: () => api.agents.listConversations(),
+    queryFn: () => api.agents.listConversations(projectId!),
+    enabled: !!projectId,
   })
 
   const deleteMutation = useMutation({

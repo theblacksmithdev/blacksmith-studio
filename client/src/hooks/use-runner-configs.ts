@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useParams } from 'react-router-dom'
 import { api } from '@/api'
 import { useProjectKeys } from './use-project-keys'
 import type { RunnerConfigData } from '@/api/types'
@@ -6,10 +7,12 @@ import type { RunnerConfigData } from '@/api/types'
 /** Fetch runner configs for the active project (from DB). */
 export function useRunnerConfigs() {
   const keys = useProjectKeys()
+  const { projectId } = useParams<{ projectId: string }>()
 
   const query = useQuery({
     queryKey: keys.runnerConfigs,
-    queryFn: () => api.runner.getConfigs(),
+    queryFn: () => api.runner.getConfigs(projectId!),
+    enabled: !!projectId,
   })
 
   return {
@@ -23,9 +26,10 @@ export function useRunnerConfigs() {
 export function useDetectRunners() {
   const keys = useProjectKeys()
   const qc = useQueryClient()
+  const { projectId } = useParams<{ projectId: string }>()
 
   return useMutation({
-    mutationFn: () => api.runner.detectRunners(),
+    mutationFn: () => api.runner.detectRunners(projectId!),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: keys.runnerConfigs })
     },
@@ -36,9 +40,10 @@ export function useDetectRunners() {
 export function useAddRunnerConfig() {
   const keys = useProjectKeys()
   const qc = useQueryClient()
+  const { projectId } = useParams<{ projectId: string }>()
 
   return useMutation({
-    mutationFn: (data: Partial<RunnerConfigData>) => api.runner.addConfig(data),
+    mutationFn: (data: Partial<RunnerConfigData>) => api.runner.addConfig(projectId!, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: keys.runnerConfigs })
     },

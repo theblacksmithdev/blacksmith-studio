@@ -84,12 +84,11 @@ const EmptyBox = styled.div`
 
 export default function DashboardPage() {
   const navigate = useNavigate()
-  const { projects, activate } = useProjects()
+  const { projects } = useProjects()
   const activeProject = useProjectStore((s) => s.activeProject)
   const [addModalOpen, setAddModalOpen] = useState(false)
 
-  const handleSelect = async (projectId: string) => {
-    await activate(projectId)
+  const handleSelect = (projectId: string) => {
     navigate(projectHome(projectId))
   }
 

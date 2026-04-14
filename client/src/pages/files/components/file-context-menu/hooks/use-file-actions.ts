@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useFileStore } from '@/stores/file-store'
 import { useProjectStore } from '@/stores/project-store'
 import { useFiles } from '@/hooks/use-files'
@@ -17,6 +17,7 @@ function getName(filePath: string) {
 
 export function useFileActions({ filePath, isDirectory, onClose }: UseFileActionsOptions) {
   const navigate = useNavigate()
+  const { projectId } = useParams<{ projectId: string }>()
   const { closeTab, closeOtherTabs, closeAllTabs, renameTab } = useFileStore()
   const { fetchFileTree } = useFiles()
   const project = useProjectStore((s) => s.activeProject)
@@ -40,7 +41,7 @@ export function useFileActions({ filePath, isDirectory, onClose }: UseFileAction
     const trimmed = newName.trim()
     if (!trimmed || trimmed === getName(filePath)) return false
     try {
-      const { newPath } = await api.files.rename(filePath, trimmed)
+      const { newPath } = await api.files.rename(projectId!, filePath, trimmed)
       if (!isDirectory) renameTab(filePath, newPath)
       fetchFileTree()
       onClose()
@@ -52,7 +53,7 @@ export function useFileActions({ filePath, isDirectory, onClose }: UseFileAction
 
   const deleteFile = async () => {
     try {
-      await api.files.delete(filePath)
+      await api.files.delete(projectId!, filePath)
       if (!isDirectory) closeTab(filePath)
       fetchFileTree()
     } catch { /* ignore */ }
@@ -75,8 +76,8 @@ export function useFileActions({ filePath, isDirectory, onClose }: UseFileAction
   }
 
   // ── External ──
-  const revealInFinder = () => run(() => api.files.reveal(filePath))
-  const openInEditor = (command?: string) => run(() => api.files.openInEditor(filePath, command))
+  const revealInFinder = () => run(() => api.files.reveal(projectId!, filePath))
+  const openInEditor = (command?: string) => run(() => api.files.openInEditor(projectId!, filePath, command))
 
   return {
     project,

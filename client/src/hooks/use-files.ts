@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useParams } from 'react-router-dom'
 import { api } from '@/api'
 import { useFileStore } from '@/stores/file-store'
 import { useProjectKeys } from './use-project-keys'
@@ -7,11 +8,13 @@ export function useFiles() {
   const queryClient = useQueryClient()
   const keys = useProjectKeys()
   const { openFile, setTabContent, setTabError, markSaved } = useFileStore()
+  const { projectId } = useParams<{ projectId: string }>()
 
   const treeQuery = useQuery({
     queryKey: keys.files,
-    queryFn: () => api.files.tree(),
+    queryFn: () => api.files.tree(projectId!),
     staleTime: 30_000,
+    enabled: !!projectId,
   })
 
   const fetchFileContent = async (filePath: string) => {
@@ -19,7 +22,7 @@ export function useFiles() {
     try {
       const data = await queryClient.fetchQuery({
         queryKey: keys.fileContent(filePath),
-        queryFn: () => api.files.content({ path: filePath }),
+        queryFn: () => api.files.content(projectId!, filePath),
         staleTime: Infinity,
       })
       setTabContent(filePath, data.content, data.language)
@@ -32,7 +35,7 @@ export function useFiles() {
   const saveFileContent = async (filePath: string) => {
     const tab = useFileStore.getState().openTabs.find((t) => t.path === filePath)
     if (!tab?.content || tab.content === tab.originalContent) return
-    await api.files.save(filePath, tab.content)
+    await api.files.save(projectId!, filePath, tab.content)
     markSaved(filePath)
     queryClient.removeQueries({ queryKey: keys.fileContent(filePath) })
   }

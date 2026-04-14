@@ -11,6 +11,12 @@ import {
   RUNNER_DETECT_RUNNERS, RUNNER_GET_LOGS, RUNNER_SETUP,
 } from './channels.js'
 
+function resolveProject(projectManager: ProjectManager, projectId: string): { id: string; path: string } {
+  const project = projectManager.get(projectId)
+  if (!project) throw new Error('Project not found')
+  return { id: project.id, path: project.path }
+}
+
 export function setupRunnerIPC(
   getWindow: () => BrowserWindow | null,
   runnerManager: RunnerManager,
@@ -18,13 +24,6 @@ export function setupRunnerIPC(
   projectManager: ProjectManager,
   settingsManager: SettingsManager,
 ) {
-  function requireProject() {
-    const id = projectManager.getActiveId()
-    const path = projectManager.getActivePath()
-    if (!id || !path) throw new Error('No active project. Open a project first.')
-    return { id, path }
-  }
-
   // Push callbacks
   runnerManager.onOutput((configId, name, line) => {
     getWindow()?.webContents.send(RUNNER_ON_OUTPUT, { configId, name, line })
@@ -36,20 +35,20 @@ export function setupRunnerIPC(
 
   // ── Status ──
 
-  ipcMain.handle(RUNNER_GET_STATUS, () => {
-    const { id } = requireProject()
+  ipcMain.handle(RUNNER_GET_STATUS, (_e, data: { projectId: string }) => {
+    const { id } = resolveProject(projectManager, data.projectId)
     return runnerManager.getStatus(id)
   })
 
   // ── Runner config CRUD (returns full DB config data) ──
 
-  ipcMain.handle(RUNNER_GET_CONFIGS, () => {
-    const { id } = requireProject()
+  ipcMain.handle(RUNNER_GET_CONFIGS, (_e, data: { projectId: string }) => {
+    const { id } = resolveProject(projectManager, data.projectId)
     return configService.getConfigs(id)
   })
 
-  ipcMain.handle(RUNNER_ADD_CONFIG, (_e, data: any) => {
-    const { id } = requireProject()
+  ipcMain.handle(RUNNER_ADD_CONFIG, (_e, data: { projectId: string } & any) => {
+    const { id } = resolveProject(projectManager, data.projectId)
     return configService.addConfig(id, data)
   })
 
@@ -61,16 +60,16 @@ export function setupRunnerIPC(
     configService.removeConfig(data.id)
   })
 
-  ipcMain.handle(RUNNER_DETECT_RUNNERS, () => {
-    const { id, path } = requireProject()
+  ipcMain.handle(RUNNER_DETECT_RUNNERS, (_e, data: { projectId: string }) => {
+    const { id, path } = resolveProject(projectManager, data.projectId)
     runnerManager.detectAndSeed(id, path)
     return configService.getConfigs(id)
   })
 
   // ── Start / Stop ──
 
-  ipcMain.handle(RUNNER_START, async (_e, data: { configId?: string }) => {
-    const { id, path } = requireProject()
+  ipcMain.handle(RUNNER_START, async (_e, data: { projectId: string; configId?: string }) => {
+    const { id, path } = resolveProject(projectManager, data.projectId)
     const nodePath = settingsManager.resolve(id, 'runner.nodePath') || ''
 
     runnerManager.detectAndSeed(id, path)
@@ -82,8 +81,8 @@ export function setupRunnerIPC(
     }
   })
 
-  ipcMain.handle(RUNNER_STOP, (_e, data: { configId?: string }) => {
-    const { id } = requireProject()
+  ipcMain.handle(RUNNER_STOP, (_e, data: { projectId: string; configId?: string }) => {
+    const { id } = resolveProject(projectManager, data.projectId)
     if (data.configId) {
       runnerManager.stop(data.configId)
     } else {
@@ -95,9 +94,9 @@ export function setupRunnerIPC(
     return runnerManager.getLogs(data?.configId)
   })
 
-  ipcMain.handle(RUNNER_SETUP, async (_e, data: { configId: string }) => {
-    const { path } = requireProject()
-    const nodePath = settingsManager.resolve(requireProject().id, 'runner.nodePath') || ''
+  ipcMain.handle(RUNNER_SETUP, async (_e, data: { projectId: string; configId: string }) => {
+    const { id, path } = resolveProject(projectManager, data.projectId)
+    const nodePath = settingsManager.resolve(id, 'runner.nodePath') || ''
     await runnerManager.setup(data.configId, path, nodePath)
   })
 

@@ -1,16 +1,18 @@
 import { useState } from 'react'
 import { Box, Text, VStack } from '@chakra-ui/react'
+import { useNavigate } from 'react-router-dom'
 import { ChevronDown, FolderOpen, Check } from 'lucide-react'
 import { useProjects } from '@/hooks/use-projects'
 import { useProjectStore, type Project } from '@/stores/project-store'
 
 export function ProjectSwitcher() {
   const [open, setOpen] = useState(false)
-  const { projects, activate } = useProjects()
+  const navigate = useNavigate()
+  const { projects } = useProjects()
   const activeProject = useProjectStore((s) => s.activeProject)
 
-  const handleSelect = async (project: Project) => {
-    await activate(project.id)
+  const handleSelect = (project: Project) => {
+    navigate(`/${project.id}`)
     setOpen(false)
   }
 

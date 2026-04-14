@@ -7,6 +7,6 @@ export interface SetupStatus {
 }
 
 export const setup = {
-  check: () => raw.invoke<SetupStatus>('setup:check'),
-  installClaude: () => raw.invoke<{ success: boolean; error?: string }>('setup:installClaude'),
+  check: (projectId?: string) => raw.invoke<SetupStatus>('setup:check', { projectId }),
+  installClaude: (projectId?: string) => raw.invoke<{ success: boolean; error?: string }>('setup:installClaude', { projectId }),
 } as const

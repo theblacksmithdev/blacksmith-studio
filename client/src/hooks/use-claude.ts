@@ -1,4 +1,5 @@
 import { useEffect, useCallback, useRef } from 'react'
+import { useParams } from 'react-router-dom'
 import { api } from '@/api'
 import { useChatStore } from '@/stores/chat-store'
 import { useFileStore } from '@/stores/file-store'
@@ -7,6 +8,7 @@ export function useClaude() {
   const lastContentRef = useRef('')
   const chatStore = useChatStore
   const markChanged = useFileStore((s) => s.markChanged)
+  const { projectId } = useParams<{ projectId: string }>()
 
   useEffect(() => {
     const unsubs = [
@@ -44,7 +46,7 @@ export function useClaude() {
       store.setStreaming(true)
       store.updateStreamingMessage('')
       lastContentRef.current = ''
-      api.claude.sendPrompt({ sessionId, prompt })
+      api.claude.sendPrompt({ projectId: projectId!, sessionId, prompt })
     },
     [],
   )

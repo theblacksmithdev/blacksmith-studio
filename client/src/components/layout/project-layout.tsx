@@ -43,7 +43,8 @@ const Content = styled.div`
 
 export function ProjectLayout() {
   const { projectId } = useParams<{ projectId: string }>()
-  const { activate } = useProjects()
+  const { projects } = useProjects()
+  const { setActiveProject } = useProjectStore()
   const activeProject = useProjectStore((s) => s.activeProject)
   const navigate = useNavigate()
   const terminalOpen = useUiStore((s) => s.terminalOpen)
@@ -66,13 +67,17 @@ export function ProjectLayout() {
   useEffect(() => {
     if (projectId && projectId !== activeProject?.id) {
       resetProjectStores()
-      activate(projectId).catch(() => {
+      const project = projects.find((p) => p.id === projectId)
+      if (project) {
+        setActiveProject(project)
+      } else if (projects.length > 0) {
+        // Project not found in the list — navigate home
         navigate('/', { replace: true })
-      })
+      }
     }
-  }, [projectId, activeProject?.id])
+  }, [projectId, activeProject?.id, projects])
 
-  // Don't render until the backend has activated the correct project
+  // Don't render until the store has the correct project
   const isReady = activeProject?.id === projectId
 
   const mainContent = (

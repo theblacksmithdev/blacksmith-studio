@@ -13,21 +13,21 @@ import {
   GIT_ON_STATUS_CHANGE,
 } from './channels.js'
 
+function resolveProjectPath(projectManager: ProjectManager, projectId: string): string {
+  const project = projectManager.get(projectId)
+  if (!project) throw new Error('Project not found')
+  return project.path
+}
+
 export function setupGitIPC(
   getWindow: () => BrowserWindow | null,
   gitManager: GitManager,
   projectManager: ProjectManager,
   ai?: Ai,
 ) {
-  function getPath(): string {
-    const p = projectManager.getActivePath()
-    if (!p) throw new Error('No active project. Open a project first.')
-    return p
-  }
-
   /** Guard: check repo is initialized before running git commands. */
-  async function requireRepo(): Promise<string> {
-    const p = getPath()
+  async function requireRepo(projectId: string): Promise<string> {
+    const p = resolveProjectPath(projectManager, projectId)
     const status = await gitManager.getStatus(p)
     if (!status.initialized) throw new Error('This project is not a git repository. Initialize one from Source Control.')
     return p
@@ -48,93 +48,95 @@ export function setupGitIPC(
 
   // ── Status ──
 
-  ipcMain.handle(GIT_STATUS, async () => {
-    return gitManager.getStatus(getPath())
+  ipcMain.handle(GIT_STATUS, async (_e, data: { projectId: string }) => {
+    const p = resolveProjectPath(projectManager, data.projectId)
+    return gitManager.getStatus(p)
   })
 
-  ipcMain.handle(GIT_CHANGED_FILES, async (_e, data?: { limit?: number; offset?: number }) => {
-    const p = await requireRepo()
+  ipcMain.handle(GIT_CHANGED_FILES, async (_e, data: { projectId: string; limit?: number; offset?: number }) => {
+    const p = await requireRepo(data.projectId)
     return gitManager.getChangedFiles(p, data)
   })
 
-  ipcMain.handle(GIT_DIFF, async (_e, data: { path: string }) => {
-    const p = await requireRepo()
+  ipcMain.handle(GIT_DIFF, async (_e, data: { projectId: string; path: string }) => {
+    const p = await requireRepo(data.projectId)
     return gitManager.getDiff(p, data.path)
   })
 
   // ── Commits ──
 
-  ipcMain.handle(GIT_CREATE_CHECKPOINT, async (_e, data: { message: string; files?: string[] }) => {
-    const p = await requireRepo()
+  ipcMain.handle(GIT_CREATE_CHECKPOINT, async (_e, data: { projectId: string; message: string; files?: string[] }) => {
+    const p = await requireRepo(data.projectId)
     return gitManager.commit(p, data.message, data.files)
   })
 
-  ipcMain.handle(GIT_GENERATE_MESSAGE, async () => {
-    const p = await requireRepo()
+  ipcMain.handle(GIT_GENERATE_MESSAGE, async (_e, data: { projectId: string }) => {
+    const p = await requireRepo(data.projectId)
     return gitManager.generateMessage(p, ai)
   })
 
-  ipcMain.handle(GIT_HISTORY, async (_e, data?: { limit?: number }) => {
-    const p = await requireRepo()
-    return gitManager.getHistory(p, data?.limit)
+  ipcMain.handle(GIT_HISTORY, async (_e, data: { projectId: string; limit?: number }) => {
+    const p = await requireRepo(data.projectId)
+    return gitManager.getHistory(p, data.limit)
   })
 
   // ── Branches ──
 
-  ipcMain.handle(GIT_LIST_VERSIONS, async () => {
-    const p = await requireRepo()
+  ipcMain.handle(GIT_LIST_VERSIONS, async (_e, data: { projectId: string }) => {
+    const p = await requireRepo(data.projectId)
     return gitManager.listBranches(p)
   })
 
-  ipcMain.handle(GIT_CREATE_VERSION, async (_e, data: { name: string }) => {
-    const p = await requireRepo()
+  ipcMain.handle(GIT_CREATE_VERSION, async (_e, data: { projectId: string; name: string }) => {
+    const p = await requireRepo(data.projectId)
     return gitManager.createBranch(p, data.name)
   })
 
-  ipcMain.handle(GIT_SWITCH_VERSION, async (_e, data: { name: string }) => {
-    const p = await requireRepo()
+  ipcMain.handle(GIT_SWITCH_VERSION, async (_e, data: { projectId: string; name: string }) => {
+    const p = await requireRepo(data.projectId)
     return gitManager.switchBranch(p, data.name)
   })
 
-  ipcMain.handle(GIT_APPLY_VERSION, async (_e, data: { source: string; target: string }) => {
-    const p = await requireRepo()
+  ipcMain.handle(GIT_APPLY_VERSION, async (_e, data: { projectId: string; source: string; target: string }) => {
+    const p = await requireRepo(data.projectId)
     return gitManager.merge(p, data.source, data.target)
   })
 
   // ── Push / Pull ──
 
-  ipcMain.handle(GIT_SYNC, async () => {
-    const p = await requireRepo()
+  ipcMain.handle(GIT_SYNC, async (_e, data: { projectId: string }) => {
+    const p = await requireRepo(data.projectId)
     return gitManager.sync(p)
   })
 
-  ipcMain.handle(GIT_SYNC_STATUS, async () => {
-    const p = await requireRepo()
+  ipcMain.handle(GIT_SYNC_STATUS, async (_e, data: { projectId: string }) => {
+    const p = await requireRepo(data.projectId)
     return gitManager.getSyncStatus(p)
   })
 
   // ── Conflicts ──
 
-  ipcMain.handle(GIT_CONFLICTS, async () => {
-    const p = await requireRepo()
+  ipcMain.handle(GIT_CONFLICTS, async (_e, data: { projectId: string }) => {
+    const p = await requireRepo(data.projectId)
     return gitManager.getConflicts(p)
   })
 
-  ipcMain.handle(GIT_RESOLVE_CONFLICT, async (_e, data: { path: string; resolution: 'ours' | 'theirs' }) => {
-    const p = await requireRepo()
+  ipcMain.handle(GIT_RESOLVE_CONFLICT, async (_e, data: { projectId: string; path: string; resolution: 'ours' | 'theirs' }) => {
+    const p = await requireRepo(data.projectId)
     return gitManager.resolveConflict(p, data.path, data.resolution)
   })
 
   // ── Commit Detail ──
 
-  ipcMain.handle(GIT_COMMIT_DETAIL, async (_e, data: { hash: string }) => {
-    const p = await requireRepo()
+  ipcMain.handle(GIT_COMMIT_DETAIL, async (_e, data: { projectId: string; hash: string }) => {
+    const p = await requireRepo(data.projectId)
     return gitManager.getCommitDetail(p, data.hash)
   })
 
   // ── Init ──
 
-  ipcMain.handle(GIT_INIT, async () => {
-    return gitManager.init(getPath())
+  ipcMain.handle(GIT_INIT, async (_e, data: { projectId: string }) => {
+    const p = resolveProjectPath(projectManager, data.projectId)
+    return gitManager.init(p)
   })
 }

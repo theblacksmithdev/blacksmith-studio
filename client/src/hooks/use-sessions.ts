@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useParams } from 'react-router-dom'
 import { api } from '@/api'
 import { useProjectKeys } from './use-project-keys'
 import { useSessionStore } from '@/stores/session-store'
-import { useProjectStore } from '@/stores/project-store'
 import { useChatStore } from '@/stores/chat-store'
 // Session type used implicitly via API return types
 
@@ -17,16 +17,16 @@ export function useSessions(options?: UseSessionsOptions) {
   const keys = useProjectKeys()
   const { setActiveSession } = useSessionStore()
   const { loadMessages, clearMessages } = useChatStore()
-  const activeProject = useProjectStore((s) => s.activeProject)
+  const { projectId } = useParams<{ projectId: string }>()
 
   const sessionsQuery = useQuery({
     queryKey: [...keys.sessions, { limit, offset }],
-    queryFn: () => api.sessions.list({ limit, offset }),
-    enabled: !!activeProject,
+    queryFn: () => api.sessions.list({ projectId: projectId!, limit, offset }),
+    enabled: !!projectId,
   })
 
   const createMutation = useMutation({
-    mutationFn: (name?: string) => api.sessions.create({ name }),
+    mutationFn: (name?: string) => api.sessions.create({ projectId: projectId!, name }),
     onSuccess: (session) => {
       queryClient.invalidateQueries({ queryKey: keys.sessions })
       setActiveSession(session.id)

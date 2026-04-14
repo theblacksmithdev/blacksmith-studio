@@ -18,31 +18,31 @@ export const agents = {
   route: (prompt: string) => raw.invoke<AgentRouteResult>('agents:route', { prompt }),
 
   // ── PM-First Dispatch (main entry point) ──
-  dispatch: (prompt: string, conversationId?: string) =>
-    raw.invoke<DispatchResult>('agents:dispatch', { prompt, conversationId }),
+  dispatch: (projectId: string, prompt: string, conversationId?: string) =>
+    raw.invoke<DispatchResult>('agents:dispatch', { projectId, prompt, conversationId }),
 
   // ── Direct Single Execution ──
-  execute: (data: { prompt: string; role?: AgentRole }) =>
-    raw.invoke<AgentExecution>('agents:execute', data),
+  execute: (projectId: string, data: { prompt: string; role?: AgentRole }) =>
+    raw.invoke<AgentExecution>('agents:execute', { projectId, ...data }),
   cancel: (role: AgentRole) => raw.invoke<void>('agents:cancel', { role }),
   cancelAll: () => raw.invoke<void>('agents:cancelAll'),
   history: (limit?: number) => raw.invoke<AgentExecution[]>('agents:history', { limit }),
 
   // ── Pipelines & Workflows ──
   listPipelines: () => raw.invoke<PipelineTemplate[]>('agents:listPipelines'),
-  runPipeline: (data: { pipelineId: string; prompt: string; maxBudgetUsd?: number }) =>
-    raw.invoke<any>('agents:runPipeline', data),
-  runWorkflow: (data: {
+  runPipeline: (projectId: string, data: { pipelineId: string; prompt: string; maxBudgetUsd?: number }) =>
+    raw.invoke<any>('agents:runPipeline', { projectId, ...data }),
+  runWorkflow: (projectId: string, data: {
     name: string
     steps: { role: AgentRole; prompt: string; dependsOn?: number }[]
     maxBudgetUsd?: number
-  }) => raw.invoke<any>('agents:runWorkflow', data),
+  }) => raw.invoke<any>('agents:runWorkflow', { projectId, ...data }),
 
   // ── Project Builder ──
-  build: (data: { requirements: string; maxBudgetUsd?: number }) =>
-    raw.invoke<any>('agents:build', data),
-  buildResume: (maxBudgetUsd?: number) =>
-    raw.invoke<any>('agents:buildResume', { maxBudgetUsd }),
+  build: (projectId: string, data: { requirements: string; maxBudgetUsd?: number }) =>
+    raw.invoke<any>('agents:build', { projectId, ...data }),
+  buildResume: (projectId: string, maxBudgetUsd?: number) =>
+    raw.invoke<any>('agents:buildResume', { projectId, maxBudgetUsd }),
   buildCancel: () => raw.invoke<void>('agents:buildCancel'),
   buildProgress: () => raw.invoke<any>('agents:buildProgress'),
 
@@ -53,14 +53,14 @@ export const agents = {
     raw.invoke<void>('agents:setAutoApprove', { enabled }),
 
   // ── Persistence ──
-  listDispatches: (limit?: number) => raw.invoke<any[]>('agents:listDispatches', { limit }),
+  listDispatches: (projectId: string, limit?: number) => raw.invoke<any[]>('agents:listDispatches', { projectId, limit }),
   getDispatch: (dispatchId: string) => raw.invoke<any>('agents:getDispatch', { dispatchId }),
-  listChat: (conversationId?: string) => raw.invoke<any[]>('agents:listChat', { conversationId }),
-  clearChat: () => raw.invoke<void>('agents:clearChat'),
+  listChat: (projectId: string, conversationId?: string) => raw.invoke<any[]>('agents:listChat', { projectId, conversationId }),
+  clearChat: (projectId: string) => raw.invoke<void>('agents:clearChat', { projectId }),
 
   // ── Conversations ──
-  createConversation: (title?: string) => raw.invoke<any>('agents:createConversation', { title }),
-  listConversations: () => raw.invoke<any[]>('agents:listConversations'),
+  createConversation: (projectId: string, title?: string) => raw.invoke<any>('agents:createConversation', { projectId, title }),
+  listConversations: (projectId: string) => raw.invoke<any[]>('agents:listConversations', { projectId }),
   deleteConversation: (conversationId: string) => raw.invoke<void>('agents:deleteConversation', { conversationId }),
   getArtifacts: (conversationId: string) => raw.invoke<{ path: string; tool: string; role: string; timestamp: string }[]>('agents:getArtifacts', { conversationId }),
 

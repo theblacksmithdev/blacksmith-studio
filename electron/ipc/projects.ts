@@ -7,8 +7,8 @@ import type { ProjectManager } from '../../server/services/projects.js'
 import type { SettingsManager } from '../../server/services/settings.js'
 import { nodeEnv, nodeCmd } from '../../server/services/node-env.js'
 import {
-  PROJECTS_LIST, PROJECTS_GET_ACTIVE, PROJECTS_REGISTER, PROJECTS_CREATE, PROJECTS_CLONE,
-  PROJECTS_ACTIVATE, PROJECTS_RENAME, PROJECTS_REMOVE, PROJECTS_VALIDATE,
+  PROJECTS_LIST, PROJECTS_GET, PROJECTS_REGISTER, PROJECTS_CREATE, PROJECTS_CLONE,
+  PROJECTS_RENAME, PROJECTS_REMOVE, PROJECTS_VALIDATE,
   BROWSE_LIST,
   PROJECTS_ON_CREATE_OUTPUT, PROJECTS_ON_CREATE_DONE, PROJECTS_ON_CREATE_ERROR,
 } from './channels.js'
@@ -18,22 +18,15 @@ export function setupProjectsIPC(getWindow: () => BrowserWindow | null, projectM
     return projectManager.list()
   })
 
-  ipcMain.handle(PROJECTS_GET_ACTIVE, () => {
-    return projectManager.getActive() || null
+  ipcMain.handle(PROJECTS_GET, (_e, data: { id: string }) => {
+    const project = projectManager.get(data.id)
+    if (!project) throw new Error('Project not found')
+    return project
   })
 
   ipcMain.handle(PROJECTS_REGISTER, (_e, data: { path: string; name?: string }) => {
     if (!data.path) throw new Error('path is required')
     return projectManager.register(data.path, data.name)
-  })
-
-  ipcMain.handle(PROJECTS_ACTIVATE, (_e, data: { id: string }) => {
-    const project = projectManager.setActive(data.id)
-    if (!project) {
-      console.warn(`[ipc] projects:activate — project not found: ${data.id}`)
-      throw new Error('Project not found')
-    }
-    return project
   })
 
   ipcMain.handle(PROJECTS_RENAME, (_e, data: { id: string; name: string }) => {
@@ -89,7 +82,8 @@ export function setupProjectsIPC(getWindow: () => BrowserWindow | null, projectM
 
   ipcMain.handle(PROJECTS_CREATE, (_e, data: {
     name: string; parentPath: string; type?: string;
-    backendPort?: number; frontendPort?: number; theme?: string; ai?: boolean
+    backendPort?: number; frontendPort?: number; theme?: string; ai?: boolean;
+    projectId?: string
   }) => {
     if (!data.name || !data.parentPath) throw new Error('name and parentPath are required')
 
@@ -113,8 +107,7 @@ export function setupProjectsIPC(getWindow: () => BrowserWindow | null, projectM
     if (data.ai) args.push('--ai')
 
     const win = getWindow()
-    const projectId = projectManager.getActiveId()
-    const nodePath = settingsManager.resolve(projectId, 'runner.nodePath') || undefined
+    const nodePath = settingsManager.resolve(data.projectId ?? null, 'runner.nodePath') || undefined
 
     // Run blacksmith via npx to ensure it uses a compatible Node version.
     // CI=true disables interactive prompts (auto-accepts defaults).

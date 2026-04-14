@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import styled from '@emotion/styled'
+import { useParams } from 'react-router-dom'
 import { Terminal, X, Plus, Trash2, ChevronDown, Search, SquareTerminal } from 'lucide-react'
 import type { SearchAddon } from '@xterm/addon-search'
 import { api } from '@/api'
@@ -146,6 +147,7 @@ interface TermTab {
 }
 
 export function TerminalPanel() {
+  const { projectId } = useParams<{ projectId: string }>()
   const isOpen = useUiStore((s) => s.terminalOpen)
   const setOpen = useUiStore((s) => s.setTerminalOpen)
   const [tabs, setTabs] = useState<TermTab[]>([])
@@ -180,7 +182,7 @@ export function TerminalPanel() {
 
   const spawnTab = useCallback(async () => {
     try {
-      const id = await api.terminal.spawn()
+      const id = await api.terminal.spawn({ projectId: projectId! })
       const num = tabs.length + 1
       setTabs((prev) => [...prev, { id, label: `zsh ${num}` }])
       setActiveTab(id)

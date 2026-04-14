@@ -21,13 +21,13 @@ export function setupTerminalIPC(
     getWindow()?.webContents.send(TERMINAL_ON_EXIT, { id, code })
   })
 
-  ipcMain.handle(TERMINAL_SPAWN, async (_e, data?: { cwd?: string; cols?: number; rows?: number }) => {
-    const cwd = data?.cwd || projectManager.getActivePath() || process.env.HOME || '/'
-    const projectId = projectManager.getActiveId()
-    const nodePath = settingsManager.resolve(projectId, 'runner.nodePath') || undefined
+  ipcMain.handle(TERMINAL_SPAWN, async (_e, data: { projectId: string; cwd?: string; cols?: number; rows?: number }) => {
+    const project = projectManager.get(data.projectId)
+    const cwd = data.cwd || project?.path || process.env.HOME || '/'
+    const nodePath = settingsManager.resolve(data.projectId, 'runner.nodePath') || undefined
     console.log('[terminal] spawning shell in', cwd)
     try {
-      const id = await terminalManager.spawn(cwd, data?.cols, data?.rows, nodePath)
+      const id = await terminalManager.spawn(cwd, data.cols, data.rows, nodePath)
       console.log('[terminal] spawned', id)
       return id
     } catch (err: any) {

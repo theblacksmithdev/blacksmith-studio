@@ -1,10 +1,10 @@
 import { api as raw } from '../client'
 import type {
   Project,
+  ProjectGetInput,
   ProjectRegisterInput,
   ProjectCreateInput,
   ProjectCloneInput,
-  ProjectActivateInput,
   ProjectRenameInput,
   ProjectRemoveInput,
   ProjectValidateInput,
@@ -16,11 +16,10 @@ import type {
 
 export const projects = {
   list: () => raw.invoke<Project[]>('projects:list'),
-  getActive: () => raw.invoke<Project | null>('projects:getActive'),
+  get: (input: ProjectGetInput) => raw.invoke<Project>('projects:get', input),
   register: (input: ProjectRegisterInput) => raw.invoke<Project>('projects:register', input),
-  create: (input: ProjectCreateInput) => raw.invoke<{ started: boolean }>('projects:create', input),
+  create: (input: ProjectCreateInput & { projectId?: string }) => raw.invoke<{ started: boolean }>('projects:create', input),
   clone: (input: ProjectCloneInput) => raw.invoke<{ started: boolean }>('projects:clone', input),
-  activate: (input: ProjectActivateInput) => raw.invoke<Project>('projects:activate', input),
   rename: (input: ProjectRenameInput) => raw.invoke<void>('projects:rename', input),
   remove: (input: ProjectRemoveInput) => raw.invoke<void>('projects:remove', input),
   validate: (input: ProjectValidateInput) => raw.invoke<ProjectValidateResult>('projects:validate', input),

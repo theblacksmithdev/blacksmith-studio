@@ -1,23 +1,23 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useParams } from 'react-router-dom'
 import { api } from '@/api'
 import { useProjectKeys } from './use-project-keys'
-import { useProjectStore } from '@/stores/project-store'
 import { useCallback } from 'react'
 
 export function useSettings() {
   const queryClient = useQueryClient()
   const keys = useProjectKeys()
-  const activeProject = useProjectStore((s) => s.activeProject)
+  const { projectId } = useParams<{ projectId: string }>()
 
   const { data: settings = {} } = useQuery({
     queryKey: keys.settings,
-    queryFn: () => api.settings.getAll(),
-    enabled: !!activeProject,
+    queryFn: () => api.settings.getAll(projectId!),
+    enabled: !!projectId,
   })
 
   const mutation = useMutation({
     mutationFn: (pair: { key: string; value: any }) =>
-      api.settings.update({ [pair.key]: pair.value }),
+      api.settings.update(projectId!, { [pair.key]: pair.value }),
     onMutate: async ({ key, value }) => {
       await queryClient.cancelQueries({ queryKey: keys.settings })
       const previous = queryClient.getQueryData<Record<string, any>>(keys.settings)

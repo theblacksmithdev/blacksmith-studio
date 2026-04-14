@@ -1,7 +1,7 @@
 /** Keys for global (non-project-scoped) queries */
 const global = {
   projects: ['projects'] as const,
-  activeProject: ['projects', 'active'] as const,
+  project: (id: string) => ['projects', id] as const,
   browse: (path?: string) => ['browse', path ?? '~'] as const,
   projectValidation: (path: string) => ['projects', 'validation', path] as const,
   health: ['health'] as const,

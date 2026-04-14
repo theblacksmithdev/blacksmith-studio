@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { useParams } from 'react-router-dom'
 import { api } from '@/api'
 import { useRunnerStore } from '@/stores/runner-store'
 import { useRunnerConfigs, useAddRunnerConfig, useUpdateRunnerConfig, useRemoveRunnerConfig } from '@/hooks/use-runner-configs'
@@ -14,6 +15,7 @@ export interface DiagnoseState {
 }
 
 export function useServiceActions() {
+  const { projectId } = useParams<{ projectId: string }>()
   const { activeId, selectService } = useActiveService()
   const { configs } = useRunnerConfigs()
   const addConfig = useAddRunnerConfig()
@@ -74,7 +76,7 @@ export function useServiceActions() {
 
   const handleSetup = useCallback((svcId: string) => {
     selectService(svcId)
-    api.runner.setup(svcId).catch(() => {})
+    api.runner.setup(projectId!, svcId).catch(() => {})
   }, [selectService])
 
   return {

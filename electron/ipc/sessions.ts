@@ -5,17 +5,17 @@ import {
   SESSIONS_LIST, SESSIONS_GET, SESSIONS_CREATE, SESSIONS_RENAME, SESSIONS_DELETE,
 } from './channels.js'
 
-function requireActiveProject(projectManager: ProjectManager): string {
-  const project = projectManager.getActive()
-  if (!project) throw new Error('No active project. Select or create a project first.')
+function resolveProject(projectManager: ProjectManager, projectId: string): string {
+  const project = projectManager.get(projectId)
+  if (!project) throw new Error('Project not found')
   return project.id
 }
 
 export function setupSessionsIPC(sessionManager: SessionManager, projectManager: ProjectManager) {
-  ipcMain.handle(SESSIONS_LIST, (_e, data?: { limit?: number; offset?: number }) => {
-    const projectId = requireActiveProject(projectManager)
-    const items = sessionManager.listSessions(projectId, data?.limit, data?.offset)
-    const total = sessionManager.countSessions(projectId)
+  ipcMain.handle(SESSIONS_LIST, (_e, data: { projectId: string; limit?: number; offset?: number }) => {
+    const id = resolveProject(projectManager, data.projectId)
+    const items = sessionManager.listSessions(id, data.limit, data.offset)
+    const total = sessionManager.countSessions(id)
     return { items, total }
   })
 
@@ -25,9 +25,9 @@ export function setupSessionsIPC(sessionManager: SessionManager, projectManager:
     return session
   })
 
-  ipcMain.handle(SESSIONS_CREATE, (_e, data?: { name?: string }) => {
-    const projectId = requireActiveProject(projectManager)
-    return sessionManager.createSession(projectId, data?.name)
+  ipcMain.handle(SESSIONS_CREATE, (_e, data: { projectId: string; name?: string }) => {
+    const id = resolveProject(projectManager, data.projectId)
+    return sessionManager.createSession(id, data.name)
   })
 
   ipcMain.handle(SESSIONS_RENAME, (_e, data: { id: string; name: string }) => {

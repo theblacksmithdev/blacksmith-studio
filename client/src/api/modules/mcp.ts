@@ -18,10 +18,10 @@ export interface McpServerEntry {
 }
 
 export const mcp = {
-  list: () => raw.invoke<McpServerEntry[]>('mcp:list'),
-  add: (data: { name: string; config: McpServerConfig }) => raw.invoke<void>('mcp:add', data),
-  update: (data: { name: string; config: McpServerConfig }) => raw.invoke<void>('mcp:update', data),
-  remove: (data: { name: string }) => raw.invoke<void>('mcp:remove', data),
-  toggle: (data: { name: string; enabled: boolean }) => raw.invoke<void>('mcp:toggle', data),
-  test: (data: { name: string }) => raw.invoke<{ ok: boolean; error?: string }>('mcp:test', data),
+  list: (projectId: string) => raw.invoke<McpServerEntry[]>('mcp:list', { projectId }),
+  add: (projectId: string, data: { name: string; config: McpServerConfig }) => raw.invoke<void>('mcp:add', { projectId, ...data }),
+  update: (projectId: string, data: { name: string; config: McpServerConfig }) => raw.invoke<void>('mcp:update', { projectId, ...data }),
+  remove: (projectId: string, name: string) => raw.invoke<void>('mcp:remove', { projectId, name }),
+  toggle: (projectId: string, data: { name: string; enabled: boolean }) => raw.invoke<void>('mcp:toggle', { projectId, ...data }),
+  test: (projectId: string, name: string) => raw.invoke<{ ok: boolean; error?: string }>('mcp:test', { projectId, name }),
 } as const

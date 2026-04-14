@@ -1,6 +1,5 @@
 import { api as raw } from '../client'
 import type {
-  ClaudePromptInput,
   ClaudeCancelInput,
   ClaudeMessageEvent,
   ClaudeToolUseEvent,
@@ -9,7 +8,7 @@ import type {
 } from '../types'
 
 export const claude = {
-  sendPrompt: (input: ClaudePromptInput) => raw.invoke<void>('claude:sendPrompt', input),
+  sendPrompt: (input: { projectId: string; sessionId: string; prompt: string }) => raw.invoke<void>('claude:sendPrompt', input),
   cancel: (input: ClaudeCancelInput) => raw.invoke<void>('claude:cancel', input),
 
   onMessage: (cb: (data: ClaudeMessageEvent) => void) => raw.subscribe('claude:onMessage', cb),

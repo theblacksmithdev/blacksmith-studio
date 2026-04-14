@@ -1,44 +1,44 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useParams } from 'react-router-dom'
 import { api } from '@/api'
 import { useProjectKeys } from './use-project-keys'
-import { useProjectStore } from '@/stores/project-store'
 import type { McpServerConfig } from '@/api/modules/mcp'
 
 export function useMcp() {
   const queryClient = useQueryClient()
   const keys = useProjectKeys()
-  const activeProject = useProjectStore((s) => s.activeProject)
+  const { projectId } = useParams<{ projectId: string }>()
 
   const { data: servers = [], isLoading } = useQuery({
     queryKey: keys.mcp,
-    queryFn: () => api.mcp.list(),
-    enabled: !!activeProject,
+    queryFn: () => api.mcp.list(projectId!),
+    enabled: !!projectId,
   })
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: keys.mcp })
 
   const addMutation = useMutation({
-    mutationFn: (data: { name: string; config: McpServerConfig }) => api.mcp.add(data),
+    mutationFn: (data: { name: string; config: McpServerConfig }) => api.mcp.add(projectId!, data),
     onSuccess: invalidate,
   })
 
   const updateMutation = useMutation({
-    mutationFn: (data: { name: string; config: McpServerConfig }) => api.mcp.update(data),
+    mutationFn: (data: { name: string; config: McpServerConfig }) => api.mcp.update(projectId!, data),
     onSuccess: invalidate,
   })
 
   const removeMutation = useMutation({
-    mutationFn: (name: string) => api.mcp.remove({ name }),
+    mutationFn: (name: string) => api.mcp.remove(projectId!, name),
     onSuccess: invalidate,
   })
 
   const toggleMutation = useMutation({
-    mutationFn: (data: { name: string; enabled: boolean }) => api.mcp.toggle(data),
+    mutationFn: (data: { name: string; enabled: boolean }) => api.mcp.toggle(projectId!, data),
     onSuccess: invalidate,
   })
 
   const testMutation = useMutation({
-    mutationFn: (name: string) => api.mcp.test({ name }),
+    mutationFn: (name: string) => api.mcp.test(projectId!, name),
     onSettled: invalidate,
   })
 

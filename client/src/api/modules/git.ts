@@ -23,32 +23,32 @@ import type {
 
 export const git = {
   // Status
-  status: () => raw.invoke<GitStatusResult>('git:status'),
-  changedFiles: (input?: PaginationInput) => raw.invoke<PaginatedResult<GitChangedFile>>('git:changedFiles', input),
-  diff: (input: GitDiffInput) => raw.invoke<string>('git:diff', input),
+  status: (projectId: string) => raw.invoke<GitStatusResult>('git:status', { projectId }),
+  changedFiles: (projectId: string, input?: PaginationInput) => raw.invoke<PaginatedResult<GitChangedFile>>('git:changedFiles', { projectId, ...input }),
+  diff: (projectId: string, input: GitDiffInput) => raw.invoke<string>('git:diff', { projectId, ...input }),
 
   // Commits
-  commit: (input: GitCommitInput) => raw.invoke<string>('git:createCheckpoint', input),
-  generateMessage: () => raw.invoke<string>('git:generateMessage'),
-  history: (input?: GitHistoryInput) => raw.invoke<GitCommitEntry[]>('git:history', input),
-  commitDetail: (input: GitCommitDetailInput) => raw.invoke<GitCommitDetail>('git:commitDetail', input),
+  commit: (projectId: string, input: GitCommitInput) => raw.invoke<string>('git:createCheckpoint', { projectId, ...input }),
+  generateMessage: (projectId: string) => raw.invoke<string>('git:generateMessage', { projectId }),
+  history: (projectId: string, input?: GitHistoryInput) => raw.invoke<GitCommitEntry[]>('git:history', { projectId, ...input }),
+  commitDetail: (projectId: string, input: GitCommitDetailInput) => raw.invoke<GitCommitDetail>('git:commitDetail', { projectId, ...input }),
 
   // Branches
-  listBranches: () => raw.invoke<GitBranchInfo[]>('git:listVersions'),
-  createBranch: (input: GitCreateBranchInput) => raw.invoke<void>('git:createVersion', input),
-  switchBranch: (input: GitSwitchBranchInput) => raw.invoke<void>('git:switchVersion', input),
-  merge: (input: GitMergeInput) => raw.invoke<GitMergeResult>('git:applyVersion', input),
+  listBranches: (projectId: string) => raw.invoke<GitBranchInfo[]>('git:listVersions', { projectId }),
+  createBranch: (projectId: string, input: GitCreateBranchInput) => raw.invoke<void>('git:createVersion', { projectId, ...input }),
+  switchBranch: (projectId: string, input: GitSwitchBranchInput) => raw.invoke<void>('git:switchVersion', { projectId, ...input }),
+  merge: (projectId: string, input: GitMergeInput) => raw.invoke<GitMergeResult>('git:applyVersion', { projectId, ...input }),
 
   // Push / Pull
-  sync: () => raw.invoke<GitSyncResult>('git:sync'),
-  syncStatus: () => raw.invoke<GitSyncStatus>('git:syncStatus'),
+  sync: (projectId: string) => raw.invoke<GitSyncResult>('git:sync', { projectId }),
+  syncStatus: (projectId: string) => raw.invoke<GitSyncStatus>('git:syncStatus', { projectId }),
 
   // Conflicts
-  conflicts: () => raw.invoke<GitConflictFile[]>('git:conflicts'),
-  resolveConflict: (input: GitResolveConflictInput) => raw.invoke<void>('git:resolveConflict', input),
+  conflicts: (projectId: string) => raw.invoke<GitConflictFile[]>('git:conflicts', { projectId }),
+  resolveConflict: (projectId: string, input: GitResolveConflictInput) => raw.invoke<void>('git:resolveConflict', { projectId, ...input }),
 
   // Init
-  init: () => raw.invoke<void>('git:init'),
+  init: (projectId: string) => raw.invoke<void>('git:init', { projectId }),
 
   // Subscribe
   onStatusChange: (cb: (data: GitStatusResult) => void) => raw.subscribe('git:onStatusChange', cb),

@@ -1,33 +1,33 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useParams } from 'react-router-dom'
 import { api } from '@/api'
 import { useProjectKeys } from './use-project-keys'
-import { useProjectStore } from '@/stores/project-store'
 
 export function useSkills() {
   const queryClient = useQueryClient()
   const keys = useProjectKeys()
-  const activeProject = useProjectStore((s) => s.activeProject)
+  const { projectId } = useParams<{ projectId: string }>()
 
   const { data: skills = [], isLoading } = useQuery({
     queryKey: keys.skills,
-    queryFn: () => api.skills.list(),
-    enabled: !!activeProject,
+    queryFn: () => api.skills.list(projectId!),
+    enabled: !!projectId,
   })
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: keys.skills })
 
   const addMutation = useMutation({
-    mutationFn: (data: { name: string; description: string; content: string }) => api.skills.add(data),
+    mutationFn: (data: { name: string; description: string; content: string }) => api.skills.add(projectId!, data),
     onSuccess: invalidate,
   })
 
   const updateMutation = useMutation({
-    mutationFn: (data: { name: string; description: string; content: string }) => api.skills.update(data),
+    mutationFn: (data: { name: string; description: string; content: string }) => api.skills.update(projectId!, data),
     onSuccess: invalidate,
   })
 
   const removeMutation = useMutation({
-    mutationFn: (name: string) => api.skills.remove({ name }),
+    mutationFn: (name: string) => api.skills.remove(projectId!, name),
     onSuccess: invalidate,
   })
 

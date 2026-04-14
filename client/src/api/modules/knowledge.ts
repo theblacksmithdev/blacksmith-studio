@@ -12,9 +12,9 @@ export interface KnowledgeDocContent {
 }
 
 export const knowledge = {
-  list: () => raw.invoke<KnowledgeDoc[]>('knowledge:list'),
-  get: (data: { name: string }) => raw.invoke<KnowledgeDocContent | null>('knowledge:get', data),
-  save: (data: { name: string; content: string }) => raw.invoke<void>('knowledge:save', data),
-  create: (data: { name: string }) => raw.invoke<void>('knowledge:create', data),
-  remove: (data: { name: string }) => raw.invoke<void>('knowledge:remove', data),
+  list: (projectId: string) => raw.invoke<KnowledgeDoc[]>('knowledge:list', { projectId }),
+  get: (projectId: string, name: string) => raw.invoke<KnowledgeDocContent | null>('knowledge:get', { projectId, name }),
+  save: (projectId: string, data: { name: string; content: string }) => raw.invoke<void>('knowledge:save', { projectId, ...data }),
+  create: (projectId: string, name: string) => raw.invoke<void>('knowledge:create', { projectId, name }),
+  remove: (projectId: string, name: string) => raw.invoke<void>('knowledge:remove', { projectId, name }),
 } as const

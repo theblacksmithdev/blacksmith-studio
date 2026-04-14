@@ -5,6 +5,7 @@ import {
   Bot, Sparkles, Loader2,
 } from 'lucide-react'
 import { Flex } from '@chakra-ui/react'
+import { useParams } from 'react-router-dom'
 import { useAgentStore, type AgentLogEntry } from '@/stores/agent-store'
 import { api } from '@/api'
 import { ROLE_ICONS } from '../shared/role-icons'
@@ -143,6 +144,7 @@ function ChatEntryView({ entry, agentRole }: { entry: AgentLogEntry; agentRole: 
 /* ── Main component ── */
 
 export function AgentInnerView({ agent, onBack }: AgentInnerViewProps) {
+  const { projectId } = useParams<{ projectId: string }>()
   const activities = useAgentStore((s) => s.activities)
   const agents = useAgentStore((s) => s.agents)
   const activity = activities.get(agent.role)
@@ -168,7 +170,7 @@ export function AgentInnerView({ agent, onBack }: AgentInnerViewProps) {
   const handleSend = useCallback((text: string) => {
     if (isActive) return
     setUserMessages((prev) => [...prev, { id: crypto.randomUUID(), content: text, timestamp: new Date().toISOString() }])
-    api.agents.execute({ prompt: text, role: agent.role })
+    api.agents.execute(projectId!, { prompt: text, role: agent.role })
   }, [isActive, agent.role])
 
   // Merge user messages + event log into ConversationMessages

@@ -10,9 +10,9 @@ import type {
 } from '../types'
 
 export const sessions = {
-  list: (input?: SessionListInput) => raw.invoke<PaginatedSessions>('sessions:list', input),
+  list: (input: { projectId: string } & SessionListInput) => raw.invoke<PaginatedSessions>('sessions:list', input),
   get: (input: SessionGetInput) => raw.invoke<Session>('sessions:get', input),
-  create: (input?: SessionCreateInput) => raw.invoke<Session>('sessions:create', input),
+  create: (input: { projectId: string } & SessionCreateInput) => raw.invoke<Session>('sessions:create', input),
   rename: (input: SessionRenameInput) => raw.invoke<void>('sessions:rename', input),
   delete: (input: SessionDeleteInput) => raw.invoke<void>('sessions:delete', input),
 } as const

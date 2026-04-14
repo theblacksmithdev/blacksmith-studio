@@ -20,16 +20,17 @@ export function setupClaudeIPC(
   settingsManager: SettingsManager,
   mcpManager: McpManager,
 ) {
-  ipcMain.handle(CLAUDE_SEND_PROMPT, async (_e, data: { sessionId: string; prompt: string }) => {
+  ipcMain.handle(CLAUDE_SEND_PROMPT, async (_e, data: { projectId: string; sessionId: string; prompt: string }) => {
     const { sessionId, prompt } = data
-    const projectId = projectManager.getActiveId()
-    const projectPath = projectManager.getActivePath()
+    const project = projectManager.get(data.projectId)
     const win = getWindow()
 
-    if (!projectId || !projectPath) {
-      win?.webContents.send(CLAUDE_ON_ERROR, { sessionId, error: 'No active project. Open a project first.', code: 'NO_PROJECT' })
+    if (!project) {
+      win?.webContents.send(CLAUDE_ON_ERROR, { sessionId, error: 'Project not found.', code: 'NO_PROJECT' })
       return
     }
+
+    const { id: projectId, path: projectPath } = project
 
     const existingSession = sessionManager.getSession(sessionId)
     const isResume = !!(existingSession && existingSession.messages.length > 0)

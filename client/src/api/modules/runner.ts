@@ -3,28 +3,26 @@ import type { RunnerServiceStatus, RunnerConfigData, RunnerOutputEvent, NodeInst
 
 export const runner = {
   // Status
-  getStatus: () => raw.invoke<RunnerServiceStatus[]>('runner:getStatus'),
+  getStatus: (projectId: string) => raw.invoke<RunnerServiceStatus[]>('runner:getStatus', { projectId }),
 
   // Start / Stop
-  start: (configId?: string) => raw.invoke<void>('runner:start', { configId }),
-  stop: (configId?: string) => raw.invoke<void>('runner:stop', { configId }),
+  start: (projectId: string, configId?: string) => raw.invoke<void>('runner:start', { projectId, configId }),
+  stop: (projectId: string, configId?: string) => raw.invoke<void>('runner:stop', { projectId, configId }),
 
   // Config CRUD
-  getConfigs: () => raw.invoke<RunnerConfigData[]>('runner:getConfigs'),
-  addConfig: (data: Partial<RunnerConfigData>) => raw.invoke<RunnerConfigData>('runner:addConfig', data),
+  getConfigs: (projectId: string) => raw.invoke<RunnerConfigData[]>('runner:getConfigs', { projectId }),
+  addConfig: (projectId: string, data: Partial<RunnerConfigData>) => raw.invoke<RunnerConfigData>('runner:addConfig', { projectId, ...data }),
   updateConfig: (id: string, updates: Partial<RunnerConfigData>) => raw.invoke<RunnerConfigData>('runner:updateConfig', { id, updates }),
   removeConfig: (id: string) => raw.invoke<void>('runner:removeConfig', { id }),
 
-  // Diagnosis
-
   // Setup
-  setup: (configId: string) => raw.invoke<void>('runner:setup', { configId }),
+  setup: (projectId: string, configId: string) => raw.invoke<void>('runner:setup', { projectId, configId }),
 
   // Logs
   getLogs: (configId?: string) => raw.invoke<{ configId: string; name: string; line: string; timestamp: number }[]>('runner:getLogs', { configId }),
 
   // Detection
-  detectRunners: () => raw.invoke<RunnerConfigData[]>('runner:detectRunners'),
+  detectRunners: (projectId: string) => raw.invoke<RunnerConfigData[]>('runner:detectRunners', { projectId }),
   detectNode: () => raw.invoke<NodeInstallation[]>('runner:detectNode'),
 
   // Subscriptions

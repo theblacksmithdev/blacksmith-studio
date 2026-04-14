@@ -91,7 +91,6 @@ export function CloneFromGit() {
       api.projects.onCreateDone((data) => {
         setCloning(false)
         qc.invalidateQueries({ queryKey: queryKeys.projects })
-        qc.invalidateQueries({ queryKey: queryKeys.activeProject })
         if (data.project?.id) {
           navigate(`/${data.project.id}`)
         }

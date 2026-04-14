@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { useParams } from 'react-router-dom'
 import { api } from '@/api'
 import { useRunnerStore, RunnerStatus, type RunnerService } from '@/stores/runner-store'
 import { useProjectStore } from '@/stores/project-store'
@@ -17,14 +18,15 @@ export function useRunnerListener() {
   const activeProject = useProjectStore((s) => s.activeProject)
   const keys = useProjectKeys()
   const qc = useQueryClient()
+  const { projectId } = useParams<{ projectId: string }>()
 
   useEffect(() => {
-    if (!activeProject?.id) return
+    if (!activeProject?.id || !projectId) return
 
     // Auto-detect runners (seeds DB if no configs yet), then fetch live status
-    api.runner.detectRunners().then(() => {
+    api.runner.detectRunners(projectId).then(() => {
       qc.invalidateQueries({ queryKey: keys.runnerConfigs })
-      return api.runner.getStatus()
+      return api.runner.getStatus(projectId)
     }).then((status) => {
       useRunnerStore.getState().setServices(status as RunnerService[])
     }).catch(() => {})
@@ -53,34 +55,36 @@ export function useRunnerListener() {
     ]
 
     return () => unsubs.forEach((unsub) => unsub())
-  }, [activeProject?.id])
+  }, [activeProject?.id, projectId])
 }
 
 /**
  * Runner actions — start, stop, restart individual or all services.
  */
 export function useRunner() {
+  const { projectId } = useParams<{ projectId: string }>()
+
   const start = useCallback((configId?: string) => {
-    api.runner.start(configId)
-  }, [])
+    api.runner.start(projectId!, configId)
+  }, [projectId])
 
   const stop = useCallback((configId?: string) => {
-    api.runner.stop(configId)
-  }, [])
+    api.runner.stop(projectId!, configId)
+  }, [projectId])
 
   const restart = useCallback((configId: string) => {
-    api.runner.stop(configId)
+    api.runner.stop(projectId!, configId)
     const unsub = api.runner.onStatus((services: any[]) => {
       const svc = services.find((s: any) => s.id === configId)
       if (svc?.status === RunnerStatus.Stopped) {
         unsub()
-        api.runner.start(configId)
+        api.runner.start(projectId!, configId)
       }
     })
-  }, [])
+  }, [projectId])
 
-  const startAll = useCallback(() => api.runner.start(), [])
-  const stopAll = useCallback(() => api.runner.stop(), [])
+  const startAll = useCallback(() => api.runner.start(projectId!), [projectId])
+  const stopAll = useCallback(() => api.runner.stop(projectId!), [projectId])
 
   return { start, stop, restart, startAll, stopAll }
 }

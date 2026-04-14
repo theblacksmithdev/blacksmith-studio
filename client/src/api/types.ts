@@ -22,9 +22,9 @@ export interface PaginatedResult<T> {
 
 /* ── Projects ── */
 
+export interface ProjectGetInput { id: string }
 export interface ProjectRegisterInput { path: string; name?: string }
 export interface ProjectCreateInput { name: string; parentPath: string; ai: boolean; backendPort?: number; frontendPort?: number; theme?: string }
-export interface ProjectActivateInput { id: string }
 export interface ProjectRenameInput { id: string; name: string }
 export interface ProjectRemoveInput { id: string; hard?: boolean }
 export interface ProjectCloneInput { gitUrl: string; parentPath: string; name?: string }

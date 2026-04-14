@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { Box, Flex } from '@chakra-ui/react'
+import { useParams } from 'react-router-dom'
 import { RefreshCw, Search, X, FileText } from 'lucide-react'
 import { Text, IconButton, Tooltip, Badge, spacing, radii } from '@/components/shared/ui'
 import { api } from '@/api'
@@ -24,6 +25,7 @@ export function ExplorerPanel({
   tree, activeTab, changedFiles, searchQuery,
   onSearchChange, onRefresh, onSelectFile,
 }: ExplorerPanelProps) {
+  const { projectId } = useParams<{ projectId: string }>()
   const [contentResults, setContentResults] = useState<SearchResult[]>([])
   const [searching, setSearching] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -36,7 +38,7 @@ export function ExplorerPanel({
     }
     setSearching(true)
     debounceRef.current = setTimeout(() => {
-      api.files.search(searchQuery, 15)
+      api.files.search(projectId!, searchQuery, 15)
         .then(setContentResults)
         .catch(() => setContentResults([]))
         .finally(() => setSearching(false))

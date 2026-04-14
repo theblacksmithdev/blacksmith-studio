@@ -24,9 +24,10 @@ function resolveBaseOptions(
   settingsManager: SettingsManager,
   claudeManager: ClaudeManager,
   mcpManager: McpManager,
+  projectId: string,
 ): Omit<AgentExecuteOptions, 'prompt'> {
-  const project = projectManager.getActive()
-  if (!project) throw new Error('No active project')
+  const project = projectManager.get(projectId)
+  if (!project) throw new Error('Project not found')
 
   const allSettings = settingsManager.getAll(project.id)
 
@@ -89,11 +90,11 @@ export function setupAgentsIPC(
 
   // ── PM-First Dispatch ──
 
-  ipcMain.handle(AGENTS_DISPATCH, async (_e, data: { prompt: string; conversationId?: string }) => {
-    const project = projectManager.getActive()
-    if (!project) throw new Error('No active project')
+  ipcMain.handle(AGENTS_DISPATCH, async (_e, data: { projectId: string; prompt: string; conversationId?: string }) => {
+    const project = projectManager.get(data.projectId)
+    if (!project) throw new Error('Project not found')
 
-    const baseOptions = resolveBaseOptions(projectManager, settingsManager, claudeManager, mcpManager)
+    const baseOptions = resolveBaseOptions(projectManager, settingsManager, claudeManager, mcpManager, data.projectId)
 
     // Persist user message
     sessionManager.addChatMessage(project.id, 'user', data.prompt, undefined, undefined, data.conversationId)
@@ -166,8 +167,8 @@ export function setupAgentsIPC(
 
   // ── Direct Single Agent Execution ──
 
-  ipcMain.handle(AGENTS_EXECUTE, async (_e, data: { prompt: string; role?: AgentRole }) => {
-    const baseOptions = resolveBaseOptions(projectManager, settingsManager, claudeManager, mcpManager)
+  ipcMain.handle(AGENTS_EXECUTE, async (_e, data: { projectId: string; prompt: string; role?: AgentRole }) => {
+    const baseOptions = resolveBaseOptions(projectManager, settingsManager, claudeManager, mcpManager, data.projectId)
     return agentManager.execute({ ...baseOptions, prompt: data.prompt, role: data.role })
   })
 
@@ -189,30 +190,31 @@ export function setupAgentsIPC(
     return agentManager.listPipelines()
   })
 
-  ipcMain.handle(AGENTS_RUN_PIPELINE, async (_e, data: { pipelineId: string; prompt: string; maxBudgetUsd?: number }) => {
-    const baseOptions = resolveBaseOptions(projectManager, settingsManager, claudeManager, mcpManager)
+  ipcMain.handle(AGENTS_RUN_PIPELINE, async (_e, data: { projectId: string; pipelineId: string; prompt: string; maxBudgetUsd?: number }) => {
+    const baseOptions = resolveBaseOptions(projectManager, settingsManager, claudeManager, mcpManager, data.projectId)
     return agentManager.runPipeline(data.pipelineId, data.prompt, baseOptions, data.maxBudgetUsd)
   })
 
   ipcMain.handle(AGENTS_RUN_WORKFLOW, async (_e, data: {
+    projectId: string
     name: string
     steps: { role: AgentRole; prompt: string; dependsOn?: number }[]
     maxBudgetUsd?: number
   }) => {
-    const baseOptions = resolveBaseOptions(projectManager, settingsManager, claudeManager, mcpManager)
+    const baseOptions = resolveBaseOptions(projectManager, settingsManager, claudeManager, mcpManager, data.projectId)
     return agentManager.runWorkflow(data.name, data.steps, baseOptions, data.maxBudgetUsd)
   })
 
   // ── Project Builder ──
 
-  ipcMain.handle(AGENTS_BUILD, async (_e, data: { requirements: string; maxBudgetUsd?: number }) => {
-    const baseOptions = resolveBaseOptions(projectManager, settingsManager, claudeManager, mcpManager)
+  ipcMain.handle(AGENTS_BUILD, async (_e, data: { projectId: string; requirements: string; maxBudgetUsd?: number }) => {
+    const baseOptions = resolveBaseOptions(projectManager, settingsManager, claudeManager, mcpManager, data.projectId)
     return projectBuilder.build(data.requirements, baseOptions, data.maxBudgetUsd)
   })
 
-  ipcMain.handle(AGENTS_BUILD_RESUME, async (_e, data?: { maxBudgetUsd?: number }) => {
-    const baseOptions = resolveBaseOptions(projectManager, settingsManager, claudeManager, mcpManager)
-    return projectBuilder.resume(baseOptions, data?.maxBudgetUsd)
+  ipcMain.handle(AGENTS_BUILD_RESUME, async (_e, data: { projectId: string; maxBudgetUsd?: number }) => {
+    const baseOptions = resolveBaseOptions(projectManager, settingsManager, claudeManager, mcpManager, data.projectId)
+    return projectBuilder.resume(baseOptions, data.maxBudgetUsd)
   })
 
   ipcMain.handle(AGENTS_BUILD_CANCEL, () => {
@@ -235,39 +237,39 @@ export function setupAgentsIPC(
 
   // ── Persistence ──
 
-  ipcMain.handle(AGENTS_LIST_DISPATCHES, (_e, data?: { limit?: number }) => {
-    const project = projectManager.getActive()
-    if (!project) throw new Error('No active project')
-    return sessionManager.listDispatches(project.id, data?.limit)
+  ipcMain.handle(AGENTS_LIST_DISPATCHES, (_e, data: { projectId: string; limit?: number }) => {
+    const project = projectManager.get(data.projectId)
+    if (!project) throw new Error('Project not found')
+    return sessionManager.listDispatches(project.id, data.limit)
   })
 
   ipcMain.handle(AGENTS_GET_DISPATCH, (_e, data: { dispatchId: string }) => {
     return sessionManager.getDispatch(data.dispatchId)
   })
 
-  ipcMain.handle(AGENTS_LIST_CHAT, (_e, data?: { conversationId?: string }) => {
-    const project = projectManager.getActive()
-    if (!project) throw new Error('No active project')
-    return sessionManager.listChatMessages(project.id, data?.conversationId)
+  ipcMain.handle(AGENTS_LIST_CHAT, (_e, data: { projectId: string; conversationId?: string }) => {
+    const project = projectManager.get(data.projectId)
+    if (!project) throw new Error('Project not found')
+    return sessionManager.listChatMessages(project.id, data.conversationId)
   })
 
-  ipcMain.handle(AGENTS_CLEAR_CHAT, () => {
-    const project = projectManager.getActive()
-    if (!project) throw new Error('No active project')
+  ipcMain.handle(AGENTS_CLEAR_CHAT, (_e, data: { projectId: string }) => {
+    const project = projectManager.get(data.projectId)
+    if (!project) throw new Error('Project not found')
     sessionManager.clearChatMessages(project.id)
   })
 
   // ── Conversations ──
 
-  ipcMain.handle(AGENTS_CREATE_CONVERSATION, (_e, data?: { title?: string }) => {
-    const project = projectManager.getActive()
-    if (!project) throw new Error('No active project')
-    return sessionManager.createConversation(project.id, data?.title)
+  ipcMain.handle(AGENTS_CREATE_CONVERSATION, (_e, data: { projectId: string; title?: string }) => {
+    const project = projectManager.get(data.projectId)
+    if (!project) throw new Error('Project not found')
+    return sessionManager.createConversation(project.id, data.title)
   })
 
-  ipcMain.handle(AGENTS_LIST_CONVERSATIONS, () => {
-    const project = projectManager.getActive()
-    if (!project) throw new Error('No active project')
+  ipcMain.handle(AGENTS_LIST_CONVERSATIONS, (_e, data: { projectId: string }) => {
+    const project = projectManager.get(data.projectId)
+    if (!project) throw new Error('Project not found')
     return sessionManager.listConversations(project.id)
   })
 

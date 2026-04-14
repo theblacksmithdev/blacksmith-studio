@@ -15,33 +15,12 @@ export function useProjects() {
     queryFn: () => api.projects.list(),
   })
 
-  const activeQuery = useQuery({
-    queryKey: queryKeys.activeProject,
-    queryFn: async () => {
-      const project = await api.projects.getActive()
-      setActiveProject(project)
-      return project
-    },
-  })
-
   const registerMutation = useMutation({
     mutationFn: (data: { path: string; name?: string }) =>
       api.projects.register(data),
     onSuccess: (project) => {
       resetProjectStores()
       queryClient.invalidateQueries({ queryKey: queryKeys.projects })
-      queryClient.invalidateQueries({ queryKey: queryKeys.activeProject })
-      setActiveProject(project)
-      invalidateProjectScoped()
-    },
-  })
-
-  const activateMutation = useMutation({
-    mutationFn: (id: string) =>
-      api.projects.activate({ id }),
-    onSuccess: (project) => {
-      resetProjectStores()
-      queryClient.invalidateQueries({ queryKey: queryKeys.activeProject })
       setActiveProject(project)
       invalidateProjectScoped()
     },
@@ -54,7 +33,6 @@ export function useProjects() {
       resetProjectStores()
       setActiveProject(null)
       queryClient.invalidateQueries({ queryKey: queryKeys.projects })
-      queryClient.invalidateQueries({ queryKey: queryKeys.activeProject })
     },
   })
 
@@ -72,10 +50,8 @@ export function useProjects() {
 
   return {
     projects: projectsQuery.data ?? [],
-    activeProject: activeQuery.data ?? null,
-    isLoading: projectsQuery.isLoading || activeQuery.isLoading,
+    isLoading: projectsQuery.isLoading,
     register: (path: string, name?: string) => registerMutation.mutateAsync({ path, name }),
-    activate: (id: string) => activateMutation.mutateAsync(id),
     remove: (id: string, hard?: boolean) => removeMutation.mutateAsync({ id, hard }),
   }
 }
