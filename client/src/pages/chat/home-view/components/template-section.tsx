@@ -3,7 +3,7 @@ import styled from '@emotion/styled'
 import { useQuery } from '@tanstack/react-query'
 import { Sparkles, ArrowRight } from 'lucide-react'
 import { api } from '@/api'
-import { useProjectKeys } from '@/hooks/use-project-keys'
+import { useProjectKeys } from '@/api/hooks/_shared'
 import { TemplateModal } from '@/components/templates/template-modal'
 import type { PromptTemplate } from '@/types'
 
