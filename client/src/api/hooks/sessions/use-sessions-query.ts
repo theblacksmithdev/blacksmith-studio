@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/api'
-import { useProjectKeys, useActiveProject } from '../_shared'
+import { useProjectKeys, useActiveProjectId } from '../_shared'
 import type { SessionListInput } from '@/api/types'
 
 /**
@@ -8,11 +8,11 @@ import type { SessionListInput } from '@/api/types'
  */
 export function useSessionsQuery(input?: SessionListInput) {
   const keys = useProjectKeys()
-  const { data: project } = useActiveProject()
+  const projectId = useActiveProjectId()
 
   return useQuery({
     queryKey: [...keys.sessions, input] as const,
-    queryFn: () => api.sessions.list({ projectId: project!.id, ...input }),
-    enabled: !!project,
+    queryFn: () => api.sessions.list({ projectId: projectId!, ...input }),
+    enabled: !!projectId,
   })
 }

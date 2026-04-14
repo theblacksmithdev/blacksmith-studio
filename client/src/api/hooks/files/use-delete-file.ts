@@ -3,18 +3,17 @@ import { api } from '@/api'
 import { useProjectKeys, useActiveProjectId } from '../_shared'
 
 /**
- * Creates a new session in the active project.
- * Invalidates the sessions list on success.
+ * Deletes a file or directory. Invalidates the file tree on success.
  */
-export function useCreateSession() {
+export function useDeleteFile() {
   const qc = useQueryClient()
   const keys = useProjectKeys()
   const projectId = useActiveProjectId()
 
   return useMutation({
-    mutationFn: (name?: string) => api.sessions.create({ projectId: projectId!, name }),
+    mutationFn: (path: string) => api.files.delete(projectId!, path),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: keys.sessions })
+      qc.invalidateQueries({ queryKey: keys.files })
     },
   })
 }

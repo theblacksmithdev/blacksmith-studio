@@ -3,18 +3,18 @@ import { api } from '@/api'
 import { useProjectKeys, useActiveProjectId } from '../_shared'
 
 /**
- * Creates a new session in the active project.
- * Invalidates the sessions list on success.
+ * Renames a file or directory. Invalidates the file tree on success.
  */
-export function useCreateSession() {
+export function useRenameFile() {
   const qc = useQueryClient()
   const keys = useProjectKeys()
   const projectId = useActiveProjectId()
 
   return useMutation({
-    mutationFn: (name?: string) => api.sessions.create({ projectId: projectId!, name }),
+    mutationFn: ({ path, newName }: { path: string; newName: string }) =>
+      api.files.rename(projectId!, path, newName),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: keys.sessions })
+      qc.invalidateQueries({ queryKey: keys.files })
     },
   })
 }
