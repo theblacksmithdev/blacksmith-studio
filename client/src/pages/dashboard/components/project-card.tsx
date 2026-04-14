@@ -2,15 +2,16 @@ import styled from '@emotion/styled'
 import { FolderOpen, ArrowRight } from 'lucide-react'
 import { Text, Avatar, spacing } from '@/components/shared/ui'
 import type { Project } from '@/stores/project-store'
+import { Link } from 'react-router-dom'
+import { projectHome } from '@/router/paths'
 
-const Root = styled.button<{ $active: boolean }>`
+const Root = styled(Link)`
   display: flex;
   align-items: center;
   gap: ${spacing.md};
   padding: ${spacing.md} ${spacing.xl};
   border: none;
   border-bottom: 1px solid var(--studio-border);
-  background: ${({ $active }) => $active ? 'var(--studio-bg-surface)' : 'transparent'};
   cursor: pointer;
   text-align: left;
   width: 100%;
@@ -45,14 +46,12 @@ const Arrow = styled.div`
 
 interface ProjectCardProps {
   project: Project
-  isActive?: boolean
-  onSelect: () => void
 }
 
-export function ProjectCard({ project, isActive = false, onSelect }: ProjectCardProps) {
+export function ProjectCard({ project }: ProjectCardProps) {
   return (
-    <Root $active={isActive} onClick={onSelect}>
-      <Avatar size="sm" variant={isActive ? 'active' : 'default'} icon={<FolderOpen />} />
+    <Root to={projectHome(project.id)}>
+      <Avatar size="sm" variant="default" icon={<FolderOpen />} />
       <Body>
         <Text variant="label" css={{ display: 'block', color: 'var(--studio-text-primary)', fontWeight: 500 }}>
           {project.name}
@@ -65,5 +64,6 @@ export function ProjectCard({ project, isActive = false, onSelect }: ProjectCard
         <ArrowRight size={14} />
       </Arrow>
     </Root>
+
   )
 }

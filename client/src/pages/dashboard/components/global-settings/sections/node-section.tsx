@@ -1,19 +1,16 @@
 import { useState, useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { RefreshCw, AlertTriangle, Check } from 'lucide-react'
-import { api } from '@/api'
-import { queryKeys } from '@/api/query-keys'
 import { Text, VStack, HStack, Badge, IconButton, spacing, radii } from '@/components/shared/ui'
 import { SettingsSection } from '../settings-section'
 import { SettingsRow } from '../settings-row'
+import { useDetectNodeQuery } from '@/api/hooks/runner'
+import { MIN_NODE_MAJOR } from '@/constants'
 
 interface NodeInstallation {
   path: string
   version: string
   label: string
 }
-
-const MIN_NODE_MAJOR = 20
 
 interface NodeSectionProps {
   value: string
@@ -23,11 +20,7 @@ interface NodeSectionProps {
 export function NodeSection({ value, onChange }: NodeSectionProps) {
   const [showCustom, setShowCustom] = useState(false)
 
-  const { data: installations = [], isLoading, refetch } = useQuery({
-    queryKey: queryKeys.nodeInstallations,
-    queryFn: () => api.runner.detectNode(),
-    staleTime: 60_000,
-  })
+  const { data: installations = [], isLoading, refetch } = useDetectNodeQuery()
 
   const selectedInstall = useMemo(() => {
     if (!value) return null
