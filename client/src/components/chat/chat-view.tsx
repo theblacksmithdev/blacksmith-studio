@@ -9,7 +9,7 @@ import { ToolCallCard } from './tool-call-card'
 import { ModelSelector } from './model-selector'
 import { MarkdownRenderer } from '@/components/shared/markdown-renderer'
 import { useClaude } from '@/hooks/use-claude'
-import { useSessions } from '@/hooks/use-sessions'
+import { api } from '@/api'
 import { useChatStore } from '@/stores/chat-store'
 import { useSessionStore } from '@/stores/session-store'
 import { useUiStore } from '@/stores/ui-store'
@@ -51,9 +51,9 @@ export function ChatView() {
   const { sessionId } = useParams<{ sessionId: string }>()
   const location = useLocation()
   const { sendPrompt, cancelPrompt } = useClaude()
-  const { loadSession } = useSessions()
   const { messages, isStreaming, partialMessage } = useChatStore()
-  const activeSessionId = useSessionStore((s) => s.activeSessionId)
+  const { activeSessionId, setActiveSession } = useSessionStore()
+  const { loadMessages } = useChatStore()
 
   const previewOpen = useUiStore((s) => s.previewOpen)
   const setPreviewOpen = useUiStore((s) => s.setPreviewOpen)
@@ -62,9 +62,12 @@ export function ChatView() {
 
   useEffect(() => {
     if (sessionId && sessionId !== activeSessionId) {
-      loadSession(sessionId)
+      api.sessions.get({ id: sessionId }).then((session) => {
+        setActiveSession(session.id)
+        loadMessages(session.messages)
+      })
     }
-  }, [sessionId, activeSessionId, loadSession])
+  }, [sessionId, activeSessionId])
 
   const initialPromptSent = useRef(false)
   useEffect(() => {

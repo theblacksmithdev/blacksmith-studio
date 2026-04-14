@@ -3,10 +3,11 @@ import styled from '@emotion/styled'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { MessageSquare, Network, Trash2, X } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
-import { useSessions } from '@/hooks/use-sessions'
-import { useAgentConversations } from '@/hooks/use-agent-conversations'
+import { useSessionsQuery, useSessionQuery, useDeleteSession } from '@/api/hooks/sessions'
+import { useAgentConversationsQuery, useDeleteAgentConversation } from '@/api/hooks/agents'
+import { useActiveProjectId } from '@/api/hooks/_shared'
 import { useSessionStore } from '@/stores/session-store'
-import { useProjectStore } from '@/stores/project-store'
+import { useChatStore } from '@/stores/chat-store'
 import { useUiStore } from '@/stores/ui-store'
 import { chatPath, agentsConversationPath } from '@/router/paths'
 import { ConfirmDialog } from '@/components/shared/ui'
@@ -178,16 +179,20 @@ const Empty = styled.div`
 export function HistoryPanel() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { sessions, loadSession, deleteSession } = useSessions()
+  const { data: sessionsData } = useSessionsQuery()
+  const deleteSessionMutation = useDeleteSession()
   const activeSessionId = useSessionStore((s) => s.activeSessionId)
-  const activeProject = useProjectStore((s) => s.activeProject)
+  const { setActiveSession } = useSessionStore()
+  const { loadMessages } = useChatStore()
+  const pid = useActiveProjectId()
   const close = useUiStore((s) => s.setHistoryPanelOpen)
 
   const isAgents = location.pathname.includes('/agents')
-  const { conversations: agentConvs, deleteConversation: deleteAgentConv } = useAgentConversations()
+  const { data: agentConvs = [] } = useAgentConversationsQuery()
+  const deleteAgentConvMutation = useDeleteAgentConversation()
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
-  const pid = activeProject?.id
+  const sessions = sessionsData?.items ?? []
 
   const items: HistoryItem[] = isAgents
     ? agentConvs.map((c: any) => ({ id: c.id, title: c.title, updatedAt: c.updatedAt }))
@@ -200,7 +205,10 @@ export function HistoryPanel() {
     if (isAgents) {
       navigate(agentsConversationPath(pid, id))
     } else {
-      await loadSession(id)
+      const { api } = await import('@/api')
+      const session = await api.sessions.get({ id })
+      setActiveSession(session.id)
+      loadMessages(session.messages)
       navigate(chatPath(pid, id))
     }
   }
@@ -208,9 +216,9 @@ export function HistoryPanel() {
   const handleConfirmDelete = () => {
     if (!deleteTarget) return
     if (isAgents) {
-      deleteAgentConv(deleteTarget)
+      deleteAgentConvMutation.mutate(deleteTarget)
     } else {
-      deleteSession(deleteTarget)
+      deleteSessionMutation.mutate(deleteTarget)
     }
     setDeleteTarget(null)
   }

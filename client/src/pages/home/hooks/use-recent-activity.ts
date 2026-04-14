@@ -1,9 +1,12 @@
-import { useSessions } from '@/hooks/use-sessions'
-import { useAgentConversations } from '@/hooks/use-agent-conversations'
+import { useSessionsQuery } from '@/api/hooks/sessions'
+import { useAgentConversationsQuery } from '@/api/hooks/agents'
 
 export function useRecentActivity() {
-  const { sessions } = useSessions({ limit: 3 })
-  const { conversations: agentConvs } = useAgentConversations({ limit: 3 })
+  const { data: sessionsData } = useSessionsQuery({ limit: 3 })
+  const { data: agentConvs = [] } = useAgentConversationsQuery()
 
-  return { sessions, agentConvs, hasRecent: sessions.length > 0 || agentConvs.length > 0 }
+  const sessions = sessionsData?.items ?? []
+  const limitedConvs = agentConvs.slice(0, 3)
+
+  return { sessions, agentConvs: limitedConvs, hasRecent: sessions.length > 0 || limitedConvs.length > 0 }
 }

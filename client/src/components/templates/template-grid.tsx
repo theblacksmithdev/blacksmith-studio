@@ -1,48 +1,41 @@
 import { useState } from 'react'
 import { Box, Text, useDisclosure } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
 import { TemplateCard } from './template-card'
 import { TemplateModal } from './template-modal'
 import { PageContainer } from '@/components/shared/page-container'
-import { api } from '@/api'
-import { useProjectKeys } from '@/hooks/use-project-keys'
+import { usePromptTemplatesQuery } from '@/api/hooks/prompt-templates'
+import { useCreateSession } from '@/api/hooks/sessions'
+import { useActiveProjectId } from '@/api/hooks/_shared'
 import { useClaude } from '@/hooks/use-claude'
-import { useSessions } from '@/hooks/use-sessions'
 import { useSessionStore } from '@/stores/session-store'
-import { useProjectStore } from '@/stores/project-store'
 import { chatPath } from '@/router/paths'
 import type { PromptTemplate } from '@/types'
 
 export function TemplateGrid() {
-  const keys = useProjectKeys()
-  const { data: templates = [] } = useQuery({
-    queryKey: keys.templates,
-    queryFn: () => api.templates.list(),
-  })
+  const { data: templates = [] } = usePromptTemplatesQuery()
   const [selected, setSelected] = useState<PromptTemplate | null>(null)
   const { open, onOpen, onClose } = useDisclosure()
   const { sendPrompt } = useClaude()
-  const { createSession } = useSessions()
+  const createSession = useCreateSession()
   const activeSessionId = useSessionStore((s) => s.activeSessionId)
   const navigate = useNavigate()
+  const pid = useActiveProjectId()
 
   const handleSelect = (template: PromptTemplate) => {
     setSelected(template)
     onOpen()
   }
 
-  const activeProject = useProjectStore((s) => s.activeProject)
-
   const handleSubmit = async (prompt: string) => {
-    if (!activeProject) return
+    if (!pid) return
     let sessionId = activeSessionId
     if (!sessionId) {
-      const session = await createSession()
+      const session = await createSession.mutateAsync(undefined)
       sessionId = session.id
     }
     sendPrompt(prompt, sessionId!)
-    navigate(chatPath(activeProject.id, sessionId!))
+    navigate(chatPath(pid, sessionId!))
   }
 
   return (

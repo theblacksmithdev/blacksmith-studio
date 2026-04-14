@@ -4,7 +4,7 @@ import { api } from '@/api'
 import { useRunnerStore } from '@/stores/runner-store'
 import { useRunnerConfigs, useAddRunnerConfig, useUpdateRunnerConfig, useRemoveRunnerConfig } from '@/hooks/use-runner-configs'
 import { useRunner } from '@/hooks/use-runner'
-import { useSessions } from '@/hooks/use-sessions'
+import { useCreateSession } from '@/api/hooks/sessions'
 import type { RunnerConfigData } from '@/api/types'
 import { useActiveService } from './use-active-service'
 
@@ -22,7 +22,7 @@ export function useServiceActions() {
   const updateConfig = useUpdateRunnerConfig()
   const removeConfig = useRemoveRunnerConfig()
   const { start, stop, startAll, stopAll } = useRunner()
-  const { createSession } = useSessions()
+  const createSessionMutation = useCreateSession()
   const storeLogs = useRunnerStore((s) => s.logs)
 
   const [modalConfig, setModalConfig] = useState<RunnerConfigData | null | 'new'>(null)
@@ -68,11 +68,11 @@ export function useServiceActions() {
       '3. Explain what you changed and why',
     ].join('\n')
 
-    const session = await createSession(`Fix: ${config?.name ?? 'service'} error`)
+    const session = await createSessionMutation.mutateAsync(`Fix: ${config?.name ?? 'service'} error`)
     if (session?.id) {
       setDiagnoseDrawer({ sessionId: session.id, prompt, title: `Fix: ${config?.name ?? 'Service'} Error` })
     }
-  }, [configs, storeLogs, createSession])
+  }, [configs, storeLogs, createSessionMutation])
 
   const handleSetup = useCallback((svcId: string) => {
     selectService(svcId)

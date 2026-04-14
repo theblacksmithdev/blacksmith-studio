@@ -4,9 +4,10 @@ import { History, MessageSquare, Clock } from 'lucide-react'
 import { SessionCard } from './session-card'
 import { EmptyState } from '@/components/shared/empty-state'
 import { PageContainer } from '@/components/shared/page-container'
-import { useSessions } from '@/hooks/use-sessions'
+import { useSessionsQuery, useSessionQuery, useDeleteSession } from '@/api/hooks/sessions'
+import { useActiveProjectId } from '@/api/hooks/_shared'
 import { useSessionStore } from '@/stores/session-store'
-import { useProjectStore } from '@/stores/project-store'
+import { useChatStore } from '@/stores/chat-store'
 import { chatPath } from '@/router/paths'
 
 function groupSessionsByDate(sessions: any[]) {
@@ -34,15 +35,22 @@ function groupSessionsByDate(sessions: any[]) {
 }
 
 export function ActivityLog() {
-  const { sessions, loadSession, deleteSession } = useSessions()
+  const { data: sessionsData } = useSessionsQuery()
+  const deleteMutation = useDeleteSession()
   const activeSessionId = useSessionStore((s) => s.activeSessionId)
-  const activeProject = useProjectStore((s) => s.activeProject)
+  const projectId = useActiveProjectId()
   const navigate = useNavigate()
+  const { setActiveSession } = useSessionStore()
+  const { loadMessages } = useChatStore()
+
+  const sessions = sessionsData?.items ?? []
 
   const handleSelect = async (id: string) => {
-    if (!activeProject) return
-    await loadSession(id)
-    navigate(chatPath(activeProject.id, id))
+    if (!projectId) return
+    const session = await import('@/api').then(({ api }) => api.sessions.get({ id }))
+    setActiveSession(session.id)
+    loadMessages(session.messages)
+    navigate(chatPath(projectId, id))
   }
 
   if (sessions.length === 0) {
@@ -119,7 +127,7 @@ export function ActivityLog() {
                     session={session}
                     isActive={session.id === activeSessionId}
                     onSelect={() => handleSelect(session.id)}
-                    onDelete={() => deleteSession(session.id)}
+                    onDelete={() => deleteMutation.mutate(session.id)}
                   />
                 ))}
               </VStack>

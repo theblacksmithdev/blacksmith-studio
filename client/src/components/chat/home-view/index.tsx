@@ -2,9 +2,9 @@ import { useNavigate } from 'react-router-dom'
 import { MessageSquare } from 'lucide-react'
 import { ChatInput } from '../chat-input'
 import { useClaude } from '@/hooks/use-claude'
-import { useSessions } from '@/hooks/use-sessions'
+import { useSessionsQuery, useCreateSession } from '@/api/hooks/sessions'
+import { useActiveProjectId } from '@/api/hooks/_shared'
 import { useChatStore } from '@/stores/chat-store'
-import { useProjectStore } from '@/stores/project-store'
 import { chatPath } from '@/router/paths'
 import { HomeHero } from './home-hero'
 import { QuickActions } from './quick-actions'
@@ -13,15 +13,17 @@ import { RecentSection, type RecentEntry } from './shared/recent-section'
 
 export function HomeView() {
   const { sendPrompt } = useClaude()
-  const { sessions, createSession } = useSessions({ limit: 4 })
+  const { data: sessionsData } = useSessionsQuery({ limit: 4 })
+  const createSession = useCreateSession()
   const { isStreaming } = useChatStore()
   const navigate = useNavigate()
-  const activeProject = useProjectStore((s) => s.activeProject)
-  const pid = activeProject?.id
+  const pid = useActiveProjectId()
+
+  const sessions = sessionsData?.items ?? []
 
   const handleSend = async (text: string) => {
     if (!pid) return
-    const session = await createSession()
+    const session = await createSession.mutateAsync(undefined)
     sendPrompt(text, session.id)
     navigate(chatPath(pid, session.id))
   }
