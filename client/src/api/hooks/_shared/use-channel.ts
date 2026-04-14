@@ -10,11 +10,6 @@ interface ChannelOptions<T> {
   filter?: (data: T) => boolean
 }
 
-interface ChannelState<T> {
-  messages: T[]
-  version: number
-}
-
 interface ChannelResult<T> {
   /** All accumulated messages (or single item if replace: true) */
   messages: T[]
@@ -34,31 +29,28 @@ interface ChannelResult<T> {
  * Pass a registered channel key — types are inferred automatically.
  *
  * @example
- * // State replacement
  * const { last: status } = useChannel('git:statusChange', { replace: true })
  *
- * // Bounded log buffer for a specific service
  * const { messages: logs } = useChannel('runner:output', {
  *   maxHistory: 1000,
  *   filter: (data) => data.configId === activeId,
  * })
  *
- * // Unbounded accumulation
  * const { messages, last } = useChannel('claude:message')
- *
- * // Filtered events
- * const { messages } = useChannel('terminal:output', {
- *   filter: (event) => event.id === terminalId,
- * })
  */
 export function useChannel<K extends ChannelKey>(
   key: K,
   options?: ChannelOptions<ChannelData<K>>,
 ): ChannelResult<ChannelData<K>> {
   type T = ChannelData<K>
-  const { maxHistory = 0, replace = false, filter } = options ?? {}
 
-  const stateRef = useRef<ChannelState<T>>({ messages: [], version: 0 })
+  // Store options in refs so the subscription effect doesn't rerun when
+  // the consumer passes unstable function references (e.g. inline filter)
+  const optionsRef = useRef(options)
+  optionsRef.current = options
+
+  // Immutable snapshot — replaced on every mutation so useSyncExternalStore detects changes
+  const snapshotRef = useRef<T[]>([])
   const listenersRef = useRef(new Set<() => void>())
 
   const emit = useCallback(() => {
@@ -66,49 +58,48 @@ export function useChannel<K extends ChannelKey>(
   }, [])
 
   const push = useCallback((data: T) => {
+    const { maxHistory = 0, replace = false, filter } = optionsRef.current ?? {}
+
     if (filter && !filter(data)) return
 
-    const state = stateRef.current
     if (replace) {
-      state.messages = [data]
+      snapshotRef.current = [data]
     } else {
-      state.messages = [...state.messages, data]
-      if (maxHistory > 0 && state.messages.length > maxHistory) {
-        state.messages = state.messages.slice(-maxHistory)
-      }
+      const next = [...snapshotRef.current, data]
+      snapshotRef.current = maxHistory > 0 && next.length > maxHistory
+        ? next.slice(-maxHistory)
+        : next
     }
-    state.version++
     emit()
-  }, [filter, replace, maxHistory, emit])
+  }, [emit])
 
+  // Subscribe to the IPC channel — only reruns if the channel key changes
   useEffect(() => {
     const subscribeFn = channels[key] as (cb: (data: T) => void) => () => void
     const unsub = subscribeFn(push)
-    return () => {
-      unsub()
-      stateRef.current = { messages: [], version: 0 }
-    }
+    return unsub
   }, [key, push])
 
+  // useSyncExternalStore for React-safe batched reads
   const subscribeStore = useCallback((cb: () => void) => {
     listenersRef.current.add(cb)
     return () => listenersRef.current.delete(cb)
   }, [])
 
-  const getSnapshot = useCallback(() => stateRef.current, [])
+  const getSnapshot = useCallback(() => snapshotRef.current, [])
 
-  const state = useSyncExternalStore(subscribeStore, getSnapshot)
+  const messages = useSyncExternalStore(subscribeStore, getSnapshot)
 
   const clear = useCallback(() => {
-    stateRef.current = { messages: [], version: stateRef.current.version + 1 }
+    snapshotRef.current = []
     emit()
   }, [emit])
 
   return {
-    messages: state.messages,
-    last: state.messages.length > 0 ? state.messages[state.messages.length - 1] : null,
-    count: state.messages.length,
-    hasData: state.messages.length > 0,
+    messages,
+    last: messages.length > 0 ? messages[messages.length - 1] : null,
+    count: messages.length,
+    hasData: messages.length > 0,
     clear,
   }
 }
