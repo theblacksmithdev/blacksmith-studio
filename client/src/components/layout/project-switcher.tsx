@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { ChevronDown, FolderOpen, Check } from 'lucide-react'
 import { useProjectsQuery, useProjectQuery } from '@/api/hooks/projects'
 import { useActiveProjectId } from '@/api/hooks/_shared'
-import type { Project } from '@/stores/project-store'
+import type { Project } from '@/api/types'
 
 export function ProjectSwitcher() {
   const [open, setOpen] = useState(false)

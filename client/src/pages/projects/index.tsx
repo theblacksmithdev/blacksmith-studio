@@ -6,7 +6,7 @@ import { PageContainer } from '@/components/shared/page-container'
 import { EmptyState } from '@/components/shared/empty-state'
 import { Tooltip } from '@/components/shared/tooltip'
 import { useProjectsQuery, useRegisterProject, useRemoveProject } from '@/api/hooks/projects'
-import type { Project } from '@/stores/project-store'
+import type { Project } from '@/api/types'
 
 export default function ProjectsPage() {
   const navigate = useNavigate()

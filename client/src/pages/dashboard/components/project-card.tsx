@@ -1,7 +1,7 @@
 import styled from '@emotion/styled'
 import { FolderOpen, ArrowRight } from 'lucide-react'
 import { Text, Avatar, spacing } from '@/components/shared/ui'
-import type { Project } from '@/stores/project-store'
+import type { Project } from '@/api/types'
 import { Link } from 'react-router-dom'
 import { projectHome } from '@/router/paths'
 

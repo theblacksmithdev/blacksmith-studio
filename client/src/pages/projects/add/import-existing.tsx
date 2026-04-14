@@ -5,8 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { FolderOpen, Anvil, Package, GitBranch, Folder } from 'lucide-react'
-import { useProjects } from '@/hooks/use-projects'
-import { useProjectValidation } from '@/hooks/use-project-validation'
+import { useRegisterProject, useValidateProject } from '@/api/hooks/projects'
 import { FormField, inputCss } from '@/components/forms/form-field'
 import { FolderPicker } from './folder-picker'
 import { isElectron, selectFolderNative } from '@/lib/electron'
@@ -20,9 +19,10 @@ type FormData = z.infer<typeof schema>
 
 export function ImportExisting() {
   const navigate = useNavigate()
-  const { register: registerProject } = useProjects()
+  const registerMutation = useRegisterProject()
 
   const [pickerOpen, setPickerOpen] = useState(false)
+  const [validationResult, setValidationResult] = useState<any>(null)
 
   const handleBrowseClick = async () => {
     if (isElectron()) {
@@ -32,7 +32,6 @@ export function ImportExisting() {
       setPickerOpen(true)
     }
   }
-  const { validate, validation, isValidating } = useProjectValidation()
   const [registering, setRegistering] = useState(false)
 
   const {
@@ -51,7 +50,9 @@ export function ImportExisting() {
   const handleFolderSelected = async (path: string) => {
     setValue('projectPath', path, { shouldValidate: true })
     try {
-      const result = await validate(path)
+      const { api } = await import('@/api')
+      const result = await api.projects.validate({ path })
+      setValidationResult(result)
       if (result.name) {
         setValue('projectName', result.name, { shouldValidate: true })
       }
@@ -59,10 +60,10 @@ export function ImportExisting() {
   }
 
   const onSubmit = async (data: FormData) => {
-    if (!validation?.valid) return
+    if (!validationResult?.valid) return
     setRegistering(true)
     try {
-      const project = await registerProject(data.projectPath, data.projectName)
+      const project = await registerMutation.mutateAsync({ path: data.projectPath, name: data.projectName })
       navigate(`/${project.id}`)
     } catch {
       setRegistering(false)
@@ -117,10 +118,10 @@ export function ImportExisting() {
           </FormField>
 
           {/* Validation info + name */}
-          {validation?.valid && (
+          {validationResult?.valid && (
             <Box css={{ padding: '16px', borderRadius: '10px', border: '1px solid var(--studio-border)', background: 'var(--studio-bg-sidebar)' }}>
               <HStack gap={3} css={{ marginBottom: '14px' }}>
-                {validation.isBlacksmithProject ? (
+                {validationResult.isBlacksmithProject ? (
                   <HStack gap={2} css={{ fontSize: '13px', color: 'var(--studio-green)' }}>
                     <Anvil size={14} /> <Text>Blacksmith project</Text>
                   </HStack>
@@ -129,12 +130,12 @@ export function ImportExisting() {
                     <Folder size={14} /> <Text>Project folder</Text>
                   </HStack>
                 )}
-                {validation.hasPackageJson && (
+                {validationResult.hasPackageJson && (
                   <HStack gap={1} css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)' }}>
                     <Package size={12} /> <Text>npm</Text>
                   </HStack>
                 )}
-                {validation.hasGit && (
+                {validationResult.hasGit && (
                   <HStack gap={1} css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)' }}>
                     <GitBranch size={12} /> <Text>git</Text>
                   </HStack>
@@ -142,7 +143,7 @@ export function ImportExisting() {
               </HStack>
 
               <FormField label="Project name" error={errors.projectName?.message}>
-                <input {...register('projectName')} placeholder={validation.name} style={inputCss} />
+                <input {...register('projectName')} placeholder={validationResult.name} style={inputCss} />
               </FormField>
             </Box>
           )}

@@ -1,4 +1,10 @@
-import type { Project } from '@/stores/project-store'
+export interface Project {
+  id: string
+  name: string
+  path: string
+  createdAt: string
+  lastOpenedAt: string
+}
 import type {
   Session,
   SessionSummary,
@@ -332,4 +338,4 @@ export interface InputRequest {
 
 /* ── Re-exports for convenience ── */
 
-export type { Project, Session, SessionSummary, FileNode, PromptTemplate, HealthStatus }
+export type { Session, SessionSummary, FileNode, PromptTemplate, HealthStatus }
