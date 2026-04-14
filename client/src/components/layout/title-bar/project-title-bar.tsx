@@ -5,7 +5,7 @@ import { useProjectQuery } from '@/api/hooks/projects'
 import { useUiStore, type WorkMode } from '@/stores/ui-store'
 import { newChatPath, agentsPath } from '@/router/paths'
 import { Tooltip } from '@/components/shared/tooltip'
-import { ModeToggle } from '@/components/chat/home-view/mode-toggle'
+import { ModeToggle } from '@/pages/chat/home-view/mode-toggle'
 import {
   TitleBarShell,
   NavBtn,

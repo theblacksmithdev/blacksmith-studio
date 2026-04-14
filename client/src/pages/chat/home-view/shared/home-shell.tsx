@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import styled from "@emotion/styled";
 import { Box } from "@chakra-ui/react";
 import { History } from "lucide-react";
-import { HistoryPanel } from "../../history-panel";
+import { HistoryPanel } from "@/components/chat/history-panel";
 import { useUiStore } from "@/stores/ui-store";
 import { Tooltip } from "@/components/shared/tooltip";
 import { SplitPanel } from "@/components/shared/layout";

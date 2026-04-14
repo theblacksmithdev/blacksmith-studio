@@ -1,4 +1,4 @@
-import { HomeView } from '@/components/chat/home-view'
+import { HomeView } from './home-view'
 
 export default function NewChatPage() {
   return <HomeView />

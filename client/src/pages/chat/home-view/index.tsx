@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { MessageSquare } from 'lucide-react'
-import { ChatInput } from '../chat-input'
+import { ChatInput } from '@/components/chat/chat-input'
 import { useClaude } from '@/hooks/use-claude'
 import { useSessionsQuery, useCreateSession } from '@/api/hooks/sessions'
 import { useActiveProjectId } from '@/api/hooks/_shared'
