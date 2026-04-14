@@ -39,7 +39,13 @@ export interface ProjectCreateErrorEvent { error: string }
 /* ── Browse ── */
 
 export interface BrowseInput { path?: string }
-export interface BrowseEntry { name: string; path: string; type: 'file' | 'directory' }
+export interface BrowseResult {
+  current: string
+  parent: string
+  dirs: { name: string; path: string }[]
+  isProject: boolean
+  isBlacksmithProject: boolean
+}
 
 /* ── Sessions ── */
 
