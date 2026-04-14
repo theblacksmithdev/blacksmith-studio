@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { Sun, Moon, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useUiStore } from '@/stores/ui-store'
 import { useThemeMode } from '@/hooks/use-theme-mode'
-import { useWindowState } from '@/hooks/use-window'
+import { useFullscreen } from '@/api/hooks/window'
 import { Tooltip } from '@/components/shared/tooltip'
 
 const Bar = styled.div<{ fullscreen: boolean }>`
@@ -135,7 +135,7 @@ interface TitleBarShellProps {
 
 export function TitleBarShell({ leading, center, trailing }: TitleBarShellProps) {
   const navigate = useNavigate()
-  const { isFullscreen: fullscreen } = useWindowState()
+  const fullscreen = useFullscreen()
   const connectionStatus = useUiStore((s) => s.connectionStatus)
   const { mode, toggle: toggleTheme } = useThemeMode()
 

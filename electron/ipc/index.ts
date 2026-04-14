@@ -27,6 +27,7 @@ import { setupFolderDialogIPC } from './folder-dialog.js'
 import { setupGitIPC } from './git.js'
 import { setupTerminalIPC } from './terminal.js'
 import { setupAgentsIPC } from './agents.js'
+import { setupWindowIPC } from './window.js'
 import { Ai } from '../../server/services/ai/ai.js'
 
 export function setupAllIPC(
@@ -47,6 +48,7 @@ export function setupAllIPC(
   const ai = new Ai()
 
   setupFolderDialogIPC()
+  setupWindowIPC(getWindow)
   setupProjectsIPC(getWindow, projectManager, settingsManager)
   setupSessionsIPC(sessionManager, projectManager)
   setupFilesIPC(projectManager)
