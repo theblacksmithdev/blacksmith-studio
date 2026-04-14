@@ -1,6 +1,8 @@
-import { useState } from 'react'
-import styled from '@emotion/styled'
-import { Trash2, ArrowDown, Search, Clock, X } from 'lucide-react'
+import { useState } from "react";
+import styled from "@emotion/styled";
+import { Trash2, ArrowDown, Search, Clock, X } from "lucide-react";
+import { Link } from "react-router-dom";
+import { runServicePath } from "@/router/paths";
 
 const Bar = styled.div`
   display: flex;
@@ -9,14 +11,16 @@ const Bar = styled.div`
   padding: 6px 14px;
   border-bottom: 1px solid var(--studio-border);
   flex-shrink: 0;
-`
+`;
 
-const FilterBtn = styled.button<{ active: boolean }>`
+const FilterBtn = styled(Link)<{ active: boolean }>`
   padding: 3px 10px;
   border-radius: 6px;
   border: none;
-  background: ${({ active }) => (active ? 'var(--studio-bg-hover)' : 'transparent')};
-  color: ${({ active }) => (active ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)')};
+  background: ${({ active }) =>
+    active ? "var(--studio-bg-hover)" : "transparent"};
+  color: ${({ active }) =>
+    active ? "var(--studio-text-primary)" : "var(--studio-text-muted)"};
   font-size: 12px;
   font-weight: ${({ active }) => (active ? 500 : 400)};
   cursor: pointer;
@@ -26,25 +30,27 @@ const FilterBtn = styled.button<{ active: boolean }>`
   &:hover {
     color: var(--studio-text-secondary);
   }
-`
+`;
 
 const Spacer = styled.div`
   flex: 1;
-`
+`;
 
 const LineCount = styled.span`
   font-size: 11px;
   color: var(--studio-text-muted);
   margin-right: 4px;
-`
+`;
 
 const IconBtn = styled.button<{ active?: boolean }>`
   width: 22px;
   height: 22px;
   border-radius: 4px;
   border: none;
-  background: ${({ active }) => (active ? 'var(--studio-bg-hover)' : 'transparent')};
-  color: ${({ active }) => (active ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)')};
+  background: ${({ active }) =>
+    active ? "var(--studio-bg-hover)" : "transparent"};
+  color: ${({ active }) =>
+    active ? "var(--studio-text-primary)" : "var(--studio-text-muted)"};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -55,7 +61,7 @@ const IconBtn = styled.button<{ active?: boolean }>`
     color: var(--studio-text-secondary);
     background: var(--studio-bg-surface);
   }
-`
+`;
 
 const SearchWrap = styled.div`
   display: flex;
@@ -65,7 +71,7 @@ const SearchWrap = styled.div`
   border-radius: 6px;
   border: 1px solid var(--studio-border);
   background: var(--studio-bg-surface);
-`
+`;
 
 const SearchInput = styled.input`
   border: none;
@@ -79,7 +85,7 @@ const SearchInput = styled.input`
   &::placeholder {
     color: var(--studio-text-muted);
   }
-`
+`;
 
 const ClearSearchBtn = styled.button`
   border: none;
@@ -93,44 +99,58 @@ const ClearSearchBtn = styled.button`
   &:hover {
     color: var(--studio-text-primary);
   }
-`
+`;
 
 interface LogsToolbarProps {
-  activeConfigId: string | null
-  onSelectService: (id: string | null) => void
-  serviceNames: { id: string; name: string }[]
-  count: number
-  autoScroll: boolean
-  onScrollToBottom: () => void
-  onClear: () => void
-  searchTerm: string
-  onSearchChange: (term: string) => void
-  showTimestamps: boolean
-  onToggleTimestamps: () => void
+  projectId: string;
+  activeConfigId: string | null;
+  serviceNames: { id: string; name: string }[];
+  count: number;
+  autoScroll: boolean;
+  onScrollToBottom: () => void;
+  onClear: () => void;
+  searchTerm: string;
+  onSearchChange: (term: string) => void;
+  showTimestamps: boolean;
+  onToggleTimestamps: () => void;
   /** Extra actions rendered at the end of the toolbar */
-  trailing?: React.ReactNode
+  trailing?: React.ReactNode;
 }
 
 export function LogsToolbar({
-  activeConfigId, onSelectService, serviceNames,
-  count, autoScroll, onScrollToBottom, onClear,
-  searchTerm, onSearchChange, showTimestamps, onToggleTimestamps, trailing,
+  projectId,
+  activeConfigId,
+  serviceNames,
+  count,
+  autoScroll,
+  onScrollToBottom,
+  onClear,
+  searchTerm,
+  onSearchChange,
+  showTimestamps,
+  onToggleTimestamps,
+  trailing,
 }: LogsToolbarProps) {
-  const [searchOpen, setSearchOpen] = useState(!!searchTerm)
+  const [searchOpen, setSearchOpen] = useState(!!searchTerm);
 
   const handleCloseSearch = () => {
-    onSearchChange('')
-    setSearchOpen(false)
-  }
+    onSearchChange("");
+    setSearchOpen(false);
+  };
 
   return (
     <Bar>
-      <FilterBtn active={activeConfigId === null} onClick={() => onSelectService(null)}>All</FilterBtn>
+      <FilterBtn
+        active={activeConfigId === null}
+        to={runServicePath(projectId, "all")}
+      >
+        All
+      </FilterBtn>
       {serviceNames.map((svc) => (
         <FilterBtn
           key={svc.id}
           active={activeConfigId === svc.id}
-          onClick={() => onSelectService(svc.id)}
+          to={runServicePath(projectId, svc.id)}
         >
           {svc.name}
         </FilterBtn>
@@ -140,7 +160,10 @@ export function LogsToolbar({
 
       {searchOpen ? (
         <SearchWrap>
-          <Search size={11} style={{ color: 'var(--studio-text-muted)', flexShrink: 0 }} />
+          <Search
+            size={11}
+            style={{ color: "var(--studio-text-muted)", flexShrink: 0 }}
+          />
           <SearchInput
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
@@ -157,7 +180,11 @@ export function LogsToolbar({
         </IconBtn>
       )}
 
-      <IconBtn active={showTimestamps} onClick={onToggleTimestamps} title="Toggle timestamps">
+      <IconBtn
+        active={showTimestamps}
+        onClick={onToggleTimestamps}
+        title="Toggle timestamps"
+      >
         <Clock size={12} />
       </IconBtn>
 
@@ -175,5 +202,5 @@ export function LogsToolbar({
 
       {trailing}
     </Bar>
-  )
+  );
 }

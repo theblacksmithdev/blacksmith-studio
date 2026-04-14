@@ -1,41 +1,43 @@
-import { useMemo } from 'react'
-import { Flex, Box } from '@chakra-ui/react'
-import { useRunnerStore, selectServices } from '@/stores/runner-store'
-import { spacing } from '@/components/shared/ui'
-import { MONO_FONT } from '@/components/runner/runner-primitives'
-import { LogLine, LogsToolbar, LogsEmpty } from './components'
-import { useFilteredLogs, useAutoScroll } from './hooks'
+import { Flex, Box } from "@chakra-ui/react";
+import { spacing } from "@/components/shared/ui";
+import { MONO_FONT } from "@/components/runner/runner-primitives";
+import { LogLine, LogsToolbar, LogsEmpty } from "./components";
+import { useFilteredLogs, useAutoScroll } from "./hooks";
+import { useRunnerConfigsQuery } from "@/api/hooks/runner";
 
 interface RunnerLogsProps {
-  activeConfigId: string | null
-  onSelectService: (id: string | null) => void
-  toolbarTrailing?: React.ReactNode
+  projectId: string;
+  activeConfigId: string | null;
+  toolbarTrailing?: React.ReactNode;
 }
 
-export function RunnerLogs({ activeConfigId, onSelectService, toolbarTrailing }: RunnerLogsProps) {
-  const clearLogs = useRunnerStore((s) => s.clearLogs)
-  const services = useRunnerStore(selectServices)
+export function RunnerLogs({
+  projectId,
+  activeConfigId,
+  toolbarTrailing,
+}: RunnerLogsProps) {
 
-  const serviceNames = useMemo(
-    () => services.map((svc) => ({ id: svc.id, name: svc.name })),
-    [services],
-  )
+  const { data: services = [] } = useRunnerConfigsQuery()
 
   const {
-    logs, filteredLogs,
-    searchTerm, setSearchTerm,
-    showTimestamps, toggleTimestamps,
-  } = useFilteredLogs(activeConfigId)
+    logs,
+    filteredLogs,
+    searchTerm,
+    setSearchTerm,
+    showTimestamps,
+    toggleTimestamps,
+    clearLogs,
+  } = useFilteredLogs(activeConfigId);
 
   const { bottomRef, containerRef, autoScroll, handleScroll, scrollToBottom } =
-    useAutoScroll([filteredLogs])
+    useAutoScroll([filteredLogs]);
 
   return (
-    <Flex direction="column" css={{ height: '100%' }}>
+    <Flex direction="column" css={{ height: "100%" }}>
       <LogsToolbar
+        projectId={projectId}
         activeConfigId={activeConfigId}
-        onSelectService={onSelectService}
-        serviceNames={serviceNames}
+        serviceNames={services}
         count={filteredLogs.length}
         autoScroll={autoScroll}
         onScrollToBottom={scrollToBottom}
@@ -52,16 +54,20 @@ export function RunnerLogs({ activeConfigId, onSelectService, toolbarTrailing }:
         onScroll={handleScroll}
         css={{
           flex: 1,
-          overflowY: 'auto',
+          overflowY: "auto",
           padding: `${spacing.xs} 0`,
           fontFamily: MONO_FONT,
-          fontSize: '13px',
-          lineHeight: '18px',
-          background: 'var(--studio-bg-main)',
+          fontSize: "13px",
+          lineHeight: "18px",
+          background: "var(--studio-bg-main)",
         }}
       >
         {filteredLogs.length === 0 ? (
-          <Flex align="center" justify="center" css={{ height: '100%', width: '100%' }}>
+          <Flex
+            align="center"
+            justify="center"
+            css={{ height: "100%", width: "100%" }}
+          >
             <LogsEmpty hasLogs={logs.length > 0} searchTerm={searchTerm} />
           </Flex>
         ) : (
@@ -72,5 +78,5 @@ export function RunnerLogs({ activeConfigId, onSelectService, toolbarTrailing }:
         <div ref={bottomRef} />
       </Box>
     </Flex>
-  )
+  );
 }

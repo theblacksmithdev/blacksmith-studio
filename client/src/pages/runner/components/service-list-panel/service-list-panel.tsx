@@ -21,10 +21,10 @@ export function ServiceListPanel() {
   const { services, configs, isLoading, anyActive } = useServiceList();
   const {
     modalConfig,
-    setModalConfig,
     deleteTarget,
-    setDeleteTarget,
     diagnoseDrawer,
+    setModalConfig,
+    setDeleteTarget,
     setDiagnoseDrawer,
     handleSave,
     handleDelete,

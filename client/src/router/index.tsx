@@ -41,7 +41,7 @@ export const router = createHashRouter([
       },
     ],
   },
-  
+
   {
     path: "/:projectId",
     element: <ProjectLayout />,

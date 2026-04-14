@@ -27,24 +27,6 @@ export function RunnerPage() {
 
   const outletContext = useMemo(() => ({ previewToggle }), [previewOpen])
 
-  const mainContent = (
-    <Box css={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Outlet context={outletContext} />
-    </Box>
-  )
-
-  const rightContent = previewOpen ? (
-    <SplitPanel
-      left={mainContent}
-      defaultWidth={500}
-      minWidth={300}
-      maxWidth={900}
-      storageKey="runner.previewSplit"
-    >
-      <PreviewPanel onClose={() => setPreviewOpen(false)} />
-    </SplitPanel>
-  ) : mainContent
-
   return (
     <Flex css={{ height: '100%', background: 'var(--studio-bg-main)' }}>
       <SplitPanel
@@ -54,7 +36,16 @@ export function RunnerPage() {
         maxWidth={350}
         storageKey="runner.servicesWidth"
       >
-        {rightContent}
+        <Flex css={{ height: '100%', flex: 1, minWidth: 0 }}>
+          <Box css={{ height: '100%', flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+            <Outlet context={outletContext} />
+          </Box>
+          {previewOpen && (
+            <Box css={{ width: '45%', maxWidth: '600px', minWidth: '280px', borderLeft: '1px solid var(--studio-border)' }}>
+              <PreviewPanel onClose={() => setPreviewOpen(false)} />
+            </Box>
+          )}
+        </Flex>
       </SplitPanel>
     </Flex>
   )

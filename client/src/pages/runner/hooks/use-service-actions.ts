@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
-import { useRunnerStore } from '@/stores/runner-store'
 import { useRunnerConfigsQuery, useAddRunnerConfig, useUpdateRunnerConfig, useRemoveRunnerConfig, useSetupRunner } from '@/api/hooks/runner'
+import { useChannel } from '@/api/hooks/_shared'
 import { useRunner } from '@/hooks/use-runner'
 import { useCreateSession } from '@/api/hooks/sessions'
 import type { RunnerConfigData } from '@/api/types'
@@ -19,9 +19,10 @@ export function useServiceActions() {
   const updateConfig = useUpdateRunnerConfig()
   const removeConfig = useRemoveRunnerConfig()
   const setupRunner = useSetupRunner()
-  const { start, stop, startAll, stopAll } = useRunner()
   const createSessionMutation = useCreateSession()
-  const storeLogs = useRunnerStore((s) => s.logs)
+  
+  const { start, stop, startAll, stopAll } = useRunner()
+  const { messages: allLogs } = useChannel('runner:output', { maxHistory: 1000 })
 
   const [modalConfig, setModalConfig] = useState<RunnerConfigData | null | 'new'>(null)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
@@ -45,7 +46,7 @@ export function useServiceActions() {
 
   const handleDiagnose = useCallback(async (svcId: string) => {
     const config = configs.find((c) => c.id === svcId)
-    const recentLogs = storeLogs.filter((l) => l.configId === svcId).slice(-80).map((l) => l.line)
+    const recentLogs = allLogs.filter((l) => l.configId === svcId).slice(-80).map((l) => l.line)
 
     const prompt = [
       `My dev service "${config?.name ?? 'Unknown'}" has issues. Please diagnose the error from the logs below and fix it.`,
@@ -70,7 +71,7 @@ export function useServiceActions() {
     if (session?.id) {
       setDiagnoseDrawer({ sessionId: session.id, prompt, title: `Fix: ${config?.name ?? 'Service'} Error` })
     }
-  }, [configs, storeLogs, createSessionMutation])
+  }, [configs, allLogs, createSessionMutation])
 
   const handleSetup = useCallback((svcId: string) => {
     selectService(svcId)
