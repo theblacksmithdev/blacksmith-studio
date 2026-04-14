@@ -1,7 +1,6 @@
 import styled from '@emotion/styled'
 import { getHours } from 'date-fns'
-import { useProjectQuery } from '@/api/hooks/projects'
-import { useActiveProjectId } from '@/api/hooks/_shared'
+import { useActiveProject } from '@/api/hooks/_shared'
 
 const Wrapper = styled.div`
   display: flex;
@@ -31,8 +30,7 @@ function getGreeting(): string {
 }
 
 export function HomeHero() {
-  const projectId = useActiveProjectId()
-  const { data: project } = useProjectQuery(projectId)
+  const { data: project } = useActiveProject()
 
   return (
     <Wrapper>

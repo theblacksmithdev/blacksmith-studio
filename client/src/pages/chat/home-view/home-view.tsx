@@ -1,8 +1,8 @@
 import { ChatInput } from '@/components/chat/chat-input'
-import { HomeHero } from './components/home-hero'
-import { QuickActions } from './components/quick-actions'
-import { HomeShell, SectionDivider } from './components/home-shell'
-import { RecentSection } from './components/recent-section'
+import { HomeHero } from '@/pages/home-page/components/home-hero'
+import { QuickActions } from '@/pages/home-page/components/quick-actions'
+import { HomeShell, SectionDivider } from '@/pages/home-page/components/home-shell'
+import { RecentSection } from '@/pages/home-page/components/recent-section'
 import { useHomeView } from './hooks/use-home-view'
 
 export function HomeView() {

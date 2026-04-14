@@ -4,7 +4,7 @@ import { useSessionsQuery, useCreateSession } from "@/api/hooks/sessions";
 import { useActiveProjectId } from "@/api/hooks/_shared";
 import { useChatStore } from "@/stores/chat-store";
 import { chatPath } from "@/router/paths";
-import { type RecentEntry } from "../components/recent-section";
+import { type RecentEntry } from "@/pages/home-page/components/recent-section";
 import { MessageSquare } from "lucide-react";
 
 export const useHomeView = () => {

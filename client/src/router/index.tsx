@@ -14,14 +14,13 @@ import { EditorSettings } from '@/pages/settings/components/sections/editor-sett
 import { WorkspaceSettings } from '@/pages/settings/components/sections/workspace'
 import { DangerZone } from '@/pages/settings/components/sections/danger-zone'
 import { KnowledgeSettings } from '@/pages/settings/components/sections/knowledge'
-import NewChatPage from '@/pages/chat/new'
+import { SingleAgentChat, AgentTeamChat } from '@/pages/home-page'
 import ChatPage from '@/pages/chat'
 import FilesPage from '@/pages/files'
 import { RunnerPage, RunnerLogsPage } from '@/components/runner/runner-page'
 import SkillsBrowserPage from '@/pages/skills'
 import McpBrowserPage from '@/pages/mcp'
 import SourceControlPage from '@/pages/source-control'
-import AgentsHomePage from '@/pages/agents/home'
 import AgentsNewPage from '@/pages/agents/new'
 import AgentsConversationPage from '@/pages/agents/conversation'
 
@@ -43,7 +42,7 @@ export const router = createHashRouter([
     element: <ProjectLayout />,
     children: [
       { index: true, element: <Navigate to="chat/new" replace /> },
-      { path: 'chat/new', element: <NewChatPage /> },
+      { path: 'chat/new', element: <SingleAgentChat /> },
       { path: 'chat/:sessionId', element: <ChatPage />, handle: { title: 'Chat' } satisfies RouteHandle },
       { path: 'code', element: <FilesPage />, handle: { title: 'Code' } satisfies RouteHandle },
       {
@@ -58,7 +57,7 @@ export const router = createHashRouter([
       { path: 'skills', element: <SkillsBrowserPage />, handle: { title: 'Skills' } satisfies RouteHandle },
       { path: 'mcp', element: <McpBrowserPage />, handle: { title: 'MCP' } satisfies RouteHandle },
       { path: 'source-control', element: <SourceControlPage />, handle: { title: 'Source Control' } satisfies RouteHandle },
-      { path: 'agents', element: <AgentsHomePage /> },
+      { path: 'agents', element: <AgentTeamChat /> },
       { path: 'agents/new', element: <AgentsNewPage />, handle: { title: 'Agents' } satisfies RouteHandle },
       { path: 'agents/:conversationId', element: <AgentsConversationPage />, handle: { title: 'Agents' } satisfies RouteHandle },
 
