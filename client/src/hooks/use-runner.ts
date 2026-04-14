@@ -1,30 +1,26 @@
 import { useEffect, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useParams } from 'react-router-dom'
 import { api } from '@/api'
 import { useRunnerStore, RunnerStatus, type RunnerService } from '@/stores/runner-store'
-import { useProjectStore } from '@/stores/project-store'
-import { useProjectKeys } from './use-project-keys'
+import { useProjectKeys, useActiveProjectId } from '@/api/hooks/_shared'
+import { useStartRunner, useStopRunner, useDetectRunners } from '@/api/hooks/runner'
 
 /**
  * Initializes IPC listeners for runner runtime state (status + logs).
  * Also triggers auto-detection on first mount so configs exist in the DB.
  * Mount once at the project layout level.
- *
- * Guards against running before the project is activated —
- * the effect only fires once activeProject is set.
  */
 export function useRunnerListener() {
-  const activeProject = useProjectStore((s) => s.activeProject)
   const keys = useProjectKeys()
   const qc = useQueryClient()
-  const { projectId } = useParams<{ projectId: string }>()
+  const projectId = useActiveProjectId()
+  const detectRunners = useDetectRunners()
 
   useEffect(() => {
-    if (!activeProject?.id || !projectId) return
+    if (!projectId) return
 
     // Auto-detect runners (seeds DB if no configs yet), then fetch live status
-    api.runner.detectRunners(projectId).then(() => {
+    detectRunners.mutateAsync().then(() => {
       qc.invalidateQueries({ queryKey: keys.runnerConfigs })
       return api.runner.getStatus(projectId)
     }).then((status) => {
@@ -55,36 +51,38 @@ export function useRunnerListener() {
     ]
 
     return () => unsubs.forEach((unsub) => unsub())
-  }, [activeProject?.id, projectId])
+  }, [projectId])
 }
 
 /**
  * Runner actions — start, stop, restart individual or all services.
  */
 export function useRunner() {
-  const { projectId } = useParams<{ projectId: string }>()
+  const startMutation = useStartRunner()
+  const stopMutation = useStopRunner()
 
   const start = useCallback((configId?: string) => {
-    api.runner.start(projectId!, configId)
-  }, [projectId])
+    startMutation.mutate(configId)
+  }, [startMutation])
 
   const stop = useCallback((configId?: string) => {
-    api.runner.stop(projectId!, configId)
-  }, [projectId])
+    stopMutation.mutate(configId)
+  }, [stopMutation])
 
   const restart = useCallback((configId: string) => {
-    api.runner.stop(projectId!, configId)
+    stopMutation.mutate(configId)
+    // Wait for the service to stop, then start it again
     const unsub = api.runner.onStatus((services: any[]) => {
       const svc = services.find((s: any) => s.id === configId)
       if (svc?.status === RunnerStatus.Stopped) {
         unsub()
-        api.runner.start(projectId!, configId)
+        startMutation.mutate(configId)
       }
     })
-  }, [projectId])
+  }, [startMutation, stopMutation])
 
-  const startAll = useCallback(() => api.runner.start(projectId!), [projectId])
-  const stopAll = useCallback(() => api.runner.stop(projectId!), [projectId])
+  const startAll = useCallback(() => startMutation.mutate(undefined), [startMutation])
+  const stopAll = useCallback(() => stopMutation.mutate(undefined), [stopMutation])
 
   return { start, stop, restart, startAll, stopAll }
 }

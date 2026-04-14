@@ -1,8 +1,6 @@
 import { useState, useCallback } from 'react'
-import { useParams } from 'react-router-dom'
-import { api } from '@/api'
 import { useRunnerStore } from '@/stores/runner-store'
-import { useRunnerConfigs, useAddRunnerConfig, useUpdateRunnerConfig, useRemoveRunnerConfig } from '@/hooks/use-runner-configs'
+import { useRunnerConfigsQuery, useAddRunnerConfig, useUpdateRunnerConfig, useRemoveRunnerConfig, useSetupRunner } from '@/api/hooks/runner'
 import { useRunner } from '@/hooks/use-runner'
 import { useCreateSession } from '@/api/hooks/sessions'
 import type { RunnerConfigData } from '@/api/types'
@@ -15,12 +13,12 @@ export interface DiagnoseState {
 }
 
 export function useServiceActions() {
-  const { projectId } = useParams<{ projectId: string }>()
   const { activeId, selectService } = useActiveService()
-  const { configs } = useRunnerConfigs()
+  const { data: configs = [] } = useRunnerConfigsQuery()
   const addConfig = useAddRunnerConfig()
   const updateConfig = useUpdateRunnerConfig()
   const removeConfig = useRemoveRunnerConfig()
+  const setupRunner = useSetupRunner()
   const { start, stop, startAll, stopAll } = useRunner()
   const createSessionMutation = useCreateSession()
   const storeLogs = useRunnerStore((s) => s.logs)
@@ -76,8 +74,8 @@ export function useServiceActions() {
 
   const handleSetup = useCallback((svcId: string) => {
     selectService(svcId)
-    api.runner.setup(projectId!, svcId).catch(() => {})
-  }, [selectService])
+    setupRunner.mutate(svcId)
+  }, [selectService, setupRunner])
 
   return {
     modalConfig, setModalConfig,

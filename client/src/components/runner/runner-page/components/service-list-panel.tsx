@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Flex } from '@chakra-ui/react'
 import { Play, Square, Plus } from 'lucide-react'
 import { useRunnerStore, selectServices, selectIsAnyActive, isServiceActive, RunnerStatus, type RunnerService } from '@/stores/runner-store'
-import { useRunnerConfigs } from '@/hooks/use-runner-configs'
+import { useRunnerConfigsQuery } from '@/api/hooks/runner'
 import { getServiceIcon, StatusDot } from '../../runner-primitives'
 import { RunnerConfigDrawer } from '../../config-drawer'
 import { DiagnoseDrawer } from '../../logs/components'
@@ -12,7 +12,7 @@ import { Text, IconButton, Tooltip, Badge, Skeleton, ConfirmDialog, spacing, rad
 
 export function ServiceListPanel() {
   const { activeId, selectService, isSelected } = useActiveService()
-  const { configs, isLoading: configsLoading } = useRunnerConfigs()
+  const { data: configs = [], isLoading: configsLoading } = useRunnerConfigsQuery()
   const liveServices = useRunnerStore(selectServices)
   const anyActive = useRunnerStore(selectIsAnyActive)
 

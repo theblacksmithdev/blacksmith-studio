@@ -1,6 +1,7 @@
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useFileStore } from '@/stores/file-store'
-import { useProjectStore } from '@/stores/project-store'
+import { useProjectQuery } from '@/api/hooks/projects'
+import { useActiveProjectId } from '@/api/hooks/_shared'
 import { useFiles } from '@/hooks/use-files'
 import { api } from '@/api'
 import { newChatPath, agentsNewPath } from '@/router/paths'
@@ -17,10 +18,10 @@ function getName(filePath: string) {
 
 export function useFileActions({ filePath, isDirectory, onClose }: UseFileActionsOptions) {
   const navigate = useNavigate()
-  const { projectId } = useParams<{ projectId: string }>()
+  const projectId = useActiveProjectId()
+  const { data: project } = useProjectQuery(projectId)
   const { closeTab, closeOtherTabs, closeAllTabs, renameTab } = useFileStore()
   const { fetchFileTree } = useFiles()
-  const project = useProjectStore((s) => s.activeProject)
   const fullPath = project ? `${project.path}/${filePath}` : filePath
   const label = isDirectory ? 'folder' : 'file'
   const fileRef = `\`${filePath}\``

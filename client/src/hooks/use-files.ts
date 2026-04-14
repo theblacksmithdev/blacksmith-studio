@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
 import { api } from '@/api'
 import { useFileStore } from '@/stores/file-store'
-import { useProjectKeys } from './use-project-keys'
+import { useProjectKeys } from '@/api/hooks/_shared'
 
 export function useFiles() {
   const queryClient = useQueryClient()

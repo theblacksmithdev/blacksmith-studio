@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
 import { api } from '@/api'
 import { useFileStore } from '@/stores/file-store'
-import { useProjectKeys } from '@/hooks/use-project-keys'
+import { useProjectKeys } from '@/api/hooks/_shared'
 
 interface SaveInput {
   path: string
