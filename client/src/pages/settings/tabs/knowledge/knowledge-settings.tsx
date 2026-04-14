@@ -1,13 +1,14 @@
 import { Flex, Box } from '@chakra-ui/react'
 import styled from '@emotion/styled'
 import { Plus } from 'lucide-react'
+import { useRemoveKnowledge } from '@/api/hooks/knowledge'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { Text, Badge } from '@/components/shared/ui'
-import { useKnowledgeActions } from './use-knowledge-actions'
-import { KnowledgeRow } from './knowledge-row'
-import { KnowledgeEmptyState } from './knowledge-empty-state'
-import { KnowledgeCreateModal } from './knowledge-create-modal'
-import { KnowledgeEditorDrawer } from './knowledge-editor-drawer'
+import { useKnowledgeActions } from './hooks/use-knowledge-actions'
+import { KnowledgeRow } from './components/knowledge-row'
+import { KnowledgeEmptyState } from './components/knowledge-empty-state'
+import { KnowledgeCreateModal } from './components/knowledge-create-modal'
+import { KnowledgeEditorDrawer } from './components/knowledge-editor-drawer'
 
 const AddBtn = styled.button`
   display: flex;
@@ -35,16 +36,16 @@ const List = styled.div`
 `
 
 export function KnowledgeSettings() {
-  const {
-    docs, modal, setModal,
-    newName, setNewName,
-    editContent, setEditContent,
-    openDoc, handleCreate, handleSave, handleRemove, closeModal,
-  } = useKnowledgeActions()
+  const { docs, modal, setModal, closeModal } = useKnowledgeActions()
+  const removeMutation = useRemoveKnowledge()
+
+  const handleRemove = () => {
+    if (modal?.type !== 'delete') return
+    removeMutation.mutate(modal.name, { onSuccess: closeModal })
+  }
 
   return (
     <Flex direction="column" gap="14px">
-      {/* Header */}
       <Flex justify="space-between" align="flex-start">
         <Box>
           <Flex align="center" gap="8px" css={{ marginBottom: '4px' }}>
@@ -64,7 +65,6 @@ export function KnowledgeSettings() {
         )}
       </Flex>
 
-      {/* Content */}
       {docs.length === 0 ? (
         <KnowledgeEmptyState onCreate={() => setModal({ type: 'create' })} />
       ) : (
@@ -75,7 +75,7 @@ export function KnowledgeSettings() {
               name={doc.name}
               size={doc.size}
               updatedAt={doc.updatedAt}
-              onEdit={() => openDoc(doc.name)}
+              onEdit={() => setModal({ type: 'edit', name: doc.name })}
               onDelete={() => setModal({ type: 'delete', name: doc.name })}
             />
           ))}
@@ -86,28 +86,14 @@ export function KnowledgeSettings() {
         Stored in .blacksmith/docs/ — editable with any text editor.
       </Text>
 
-      {/* Create modal */}
       {modal?.type === 'create' && (
-        <KnowledgeCreateModal
-          name={newName}
-          onNameChange={setNewName}
-          onCreate={handleCreate}
-          onClose={closeModal}
-        />
+        <KnowledgeCreateModal onClose={closeModal} />
       )}
 
-      {/* Edit drawer */}
       {modal?.type === 'edit' && (
-        <KnowledgeEditorDrawer
-          name={modal.doc.name}
-          content={editContent}
-          onContentChange={setEditContent}
-          onSave={handleSave}
-          onClose={closeModal}
-        />
+        <KnowledgeEditorDrawer name={modal.name} onClose={closeModal} />
       )}
 
-      {/* Delete confirm */}
       {modal?.type === 'delete' && (
         <ConfirmDialog
           message={`Delete "${modal.name}"?`}

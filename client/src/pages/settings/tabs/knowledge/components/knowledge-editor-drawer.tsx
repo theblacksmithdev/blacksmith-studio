@@ -2,16 +2,18 @@ import { Flex } from '@chakra-ui/react'
 import { FileText } from 'lucide-react'
 import { Drawer, Button } from '@/components/shared/ui'
 import { MarkdownEditor } from '@/components/shared/markdown-editor'
+import { useKnowledgeDoc } from '../hooks/use-knowledge-doc'
 
 interface KnowledgeEditorDrawerProps {
   name: string
-  content: string
-  onContentChange: (v: string) => void
-  onSave: () => void
   onClose: () => void
 }
 
-export function KnowledgeEditorDrawer({ name, content, onContentChange, onSave, onClose }: KnowledgeEditorDrawerProps) {
+export function KnowledgeEditorDrawer({ name, onClose }: KnowledgeEditorDrawerProps) {
+  const { editContent, setEditContent, save, isSaving } = useKnowledgeDoc(name)
+
+  const handleSave = () => save(onClose)
+
   return (
     <Drawer
       title={name}
@@ -33,12 +35,14 @@ export function KnowledgeEditorDrawer({ name, content, onContentChange, onSave, 
         <Flex align="center" gap="8px" css={{ width: '100%' }}>
           <Flex flex={1} />
           <Button variant="ghost" size="md" onClick={onClose}>Cancel</Button>
-          <Button variant="primary" size="md" onClick={onSave}>Save</Button>
+          <Button variant="primary" size="md" onClick={handleSave} disabled={isSaving}>
+            {isSaving ? 'Saving...' : 'Save'}
+          </Button>
         </Flex>
       }
     >
       <Flex direction="column" css={{ flex: 1, minHeight: 0 }}>
-        <MarkdownEditor value={content} onChange={onContentChange} fill />
+        <MarkdownEditor value={editContent} onChange={setEditContent} fill />
       </Flex>
     </Drawer>
   )

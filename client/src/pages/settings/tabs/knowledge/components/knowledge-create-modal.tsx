@@ -1,6 +1,8 @@
-import { Flex, Box } from '@chakra-ui/react'
+import { useState } from 'react'
+import { Flex } from '@chakra-ui/react'
 import styled from '@emotion/styled'
 import { BookOpen } from 'lucide-react'
+import { useCreateKnowledge } from '@/api/hooks/knowledge'
 import { Modal, ModalPrimaryButton, ModalFooterSpacer, Button, Text } from '@/components/shared/ui'
 
 const NameInput = styled.input`
@@ -14,19 +16,23 @@ const NameInput = styled.input`
   font-family: inherit;
   outline: none;
   transition: border-color 0.12s ease;
-
   &::placeholder { color: var(--studio-text-muted); }
   &:focus { border-color: var(--studio-border-hover); box-shadow: var(--studio-ring-focus); }
 `
 
 interface KnowledgeCreateModalProps {
-  name: string
-  onNameChange: (v: string) => void
-  onCreate: () => void
   onClose: () => void
 }
 
-export function KnowledgeCreateModal({ name, onNameChange, onCreate, onClose }: KnowledgeCreateModalProps) {
+export function KnowledgeCreateModal({ onClose }: KnowledgeCreateModalProps) {
+  const [name, setName] = useState('')
+  const createMutation = useCreateKnowledge()
+
+  const handleCreate = () => {
+    if (!name.trim()) return
+    createMutation.mutate(name.trim(), { onSuccess: onClose })
+  }
+
   return (
     <Modal
       title="New Document"
@@ -46,7 +52,9 @@ export function KnowledgeCreateModal({ name, onNameChange, onCreate, onClose }: 
         <>
           <ModalFooterSpacer />
           <Button variant="ghost" size="md" onClick={onClose}>Cancel</Button>
-          <ModalPrimaryButton disabled={!name.trim()} onClick={onCreate}>Create</ModalPrimaryButton>
+          <ModalPrimaryButton disabled={!name.trim() || createMutation.isPending} onClick={handleCreate}>
+            {createMutation.isPending ? 'Creating...' : 'Create'}
+          </ModalPrimaryButton>
         </>
       }
     >
@@ -56,10 +64,10 @@ export function KnowledgeCreateModal({ name, onNameChange, onCreate, onClose }: 
         </Text>
         <NameInput
           value={name}
-          onChange={(e) => onNameChange(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
           placeholder="e.g. requirements, api-spec, design-system"
           autoFocus
-          onKeyDown={(e) => { if (e.key === 'Enter' && name.trim()) onCreate() }}
+          onKeyDown={(e) => { if (e.key === 'Enter' && name.trim()) handleCreate() }}
         />
         <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)' }}>
           Saved as a .md file in .blacksmith/docs/
