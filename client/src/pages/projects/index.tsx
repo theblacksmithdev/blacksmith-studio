@@ -1,24 +1,25 @@
 import { useState } from 'react'
 import { Box, Text, VStack, HStack } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
-import { FolderOpen, Trash2, Check, FolderPlus } from 'lucide-react'
+import { FolderOpen, Trash2, FolderPlus } from 'lucide-react'
 import { PageContainer } from '@/components/shared/page-container'
 import { EmptyState } from '@/components/shared/empty-state'
 import { Tooltip } from '@/components/shared/tooltip'
-import { useProjects } from '@/hooks/use-projects'
-import { useProjectStore, type Project } from '@/stores/project-store'
+import { useProjectsQuery, useRegisterProject, useRemoveProject } from '@/api/hooks/projects'
+import type { Project } from '@/stores/project-store'
 
 export default function ProjectsPage() {
   const navigate = useNavigate()
-  const { projects, register, remove } = useProjects()
-  const activeProject = useProjectStore((s) => s.activeProject)
+  const { data: projects = [] } = useProjectsQuery()
+  const registerMutation = useRegisterProject()
+  const removeMutation = useRemoveProject()
   const [showRegister, setShowRegister] = useState(false)
   const [newPath, setNewPath] = useState('')
   const [newName, setNewName] = useState('')
 
   const handleRegister = async () => {
     if (!newPath.trim()) return
-    await register(newPath.trim(), newName.trim() || undefined)
+    await registerMutation.mutateAsync({ path: newPath.trim(), name: newName.trim() || undefined })
     setNewPath('')
     setNewName('')
     setShowRegister(false)
@@ -164,9 +165,7 @@ export default function ProjectsPage() {
               background: 'var(--studio-bg-sidebar)',
             }}
           >
-            {projects.map((project: Project) => {
-              const isActive = project.id === activeProject?.id
-              return (
+            {projects.map((project: Project) => (
                 <Box
                   key={project.id}
                   as="button"
@@ -178,7 +177,7 @@ export default function ProjectsPage() {
                     padding: '12px 16px',
                     border: 'none',
                     borderBottom: '1px solid var(--studio-border)',
-                    background: isActive ? 'var(--studio-bg-hover)' : 'transparent',
+                    background: 'transparent',
                     cursor: 'pointer',
                     textAlign: 'left',
                     width: '100%',
@@ -196,12 +195,11 @@ export default function ProjectsPage() {
                       {project.path}
                     </Text>
                   </Box>
-                  {isActive && <Check size={14} style={{ color: 'var(--studio-green)', flexShrink: 0 }} />}
                   <Tooltip content="Remove from Studio">
                     <Box
                       as="span"
                       className="proj-del"
-                      onClick={(e: React.MouseEvent) => { e.stopPropagation(); remove(project.id) }}
+                      onClick={(e: React.MouseEvent) => { e.stopPropagation(); removeMutation.mutate({ id: project.id }) }}
                       css={{
                         opacity: 0,
                         width: '26px',
@@ -220,8 +218,7 @@ export default function ProjectsPage() {
                     </Box>
                   </Tooltip>
                 </Box>
-              )
-            })}
+            ))}
           </VStack>
         )}
       </PageContainer>

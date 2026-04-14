@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Folder, Package, GitBranch } from 'lucide-react'
 import { api } from '@/api'
-import { useProjects } from '@/hooks/use-projects'
+import { useRegisterProject } from '@/api/hooks/projects'
 import { FormField, inputCss } from '@/components/forms/form-field'
 import { FolderPicker } from '@/pages/projects/add/folder-picker'
 import { isElectron, selectFolderNative } from '@/lib/electron'
@@ -25,7 +25,7 @@ const importSchema = z.object({
 
 export function ImportStep({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate()
-  const { register: registerProject } = useProjects()
+  const registerMutation = useRegisterProject()
   const [pickerOpen, setPickerOpen] = useState(false)
   const [validation, setValidation] = useState<ValidationResult | null>(null)
   const [registering, setRegistering] = useState(false)
@@ -50,7 +50,7 @@ export function ImportStep({ onClose }: { onClose: () => void }) {
     if (!validation?.valid) return
     setRegistering(true)
     try {
-      const project = await registerProject(data.projectPath, data.projectName)
+      const project = await registerMutation.mutateAsync({ path: data.projectPath, name: data.projectName })
       onClose()
       navigate(projectHome(project.id))
     } catch { setRegistering(false) }

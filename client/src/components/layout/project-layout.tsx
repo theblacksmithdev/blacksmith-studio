@@ -1,9 +1,8 @@
 import { useEffect } from 'react'
 import styled from '@emotion/styled'
-import { Outlet, useParams, useNavigate } from 'react-router-dom'
-import { useProjects } from '@/hooks/use-projects'
-import { useProjectStore } from '@/stores/project-store'
-import { resetProjectStores } from '@/stores/reset'
+import { Outlet, useNavigate } from 'react-router-dom'
+import { useProjectQuery } from '@/api/hooks/projects'
+import { useActiveProjectId } from '@/api/hooks/_shared'
 import { useRunnerListener } from '@/hooks/use-runner'
 import { useGitListener } from '@/hooks/use-git'
 import { useUiStore } from '@/stores/ui-store'
@@ -42,10 +41,8 @@ const Content = styled.div`
 `
 
 export function ProjectLayout() {
-  const { projectId } = useParams<{ projectId: string }>()
-  const { projects } = useProjects()
-  const { setActiveProject } = useProjectStore()
-  const activeProject = useProjectStore((s) => s.activeProject)
+  const projectId = useActiveProjectId()
+  const { data: project, isLoading, isError } = useProjectQuery(projectId)
   const navigate = useNavigate()
   const terminalOpen = useUiStore((s) => s.terminalOpen)
 
@@ -64,21 +61,14 @@ export function ProjectLayout() {
     return () => window.removeEventListener('keydown', handler)
   }, [])
 
+  // Project not found — navigate home
   useEffect(() => {
-    if (projectId && projectId !== activeProject?.id) {
-      resetProjectStores()
-      const project = projects.find((p) => p.id === projectId)
-      if (project) {
-        setActiveProject(project)
-      } else if (projects.length > 0) {
-        // Project not found in the list — navigate home
-        navigate('/', { replace: true })
-      }
+    if (isError) {
+      navigate('/', { replace: true })
     }
-  }, [projectId, activeProject?.id, projects])
+  }, [isError])
 
-  // Don't render until the store has the correct project
-  const isReady = activeProject?.id === projectId
+  const isReady = !!project && !isLoading
 
   const mainContent = (
     <Content>

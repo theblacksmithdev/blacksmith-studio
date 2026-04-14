@@ -1,8 +1,7 @@
 import styled from '@emotion/styled'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useProjectStore } from '@/stores/project-store'
 import { useUiStore } from '@/stores/ui-store'
-import { useProjects } from '@/hooks/use-projects'
+import { useActiveProjectId } from '@/api/hooks/_shared'
 import { SidebarTooltip } from './sidebar-tooltip'
 import { NavButton, NavLabel } from './nav-item'
 import { projectNav, bottomNav } from './nav-config'
@@ -47,14 +46,10 @@ const Divider = styled.div`
 export function Sidebar() {
   const navigate = useNavigate()
   const location = useLocation()
-  const activeProject = useProjectStore((s) => s.activeProject)
+  const pid = useActiveProjectId()
   const expanded = useUiStore((s) => s.sidebarExpanded)
   const terminalOpen = useUiStore((s) => s.terminalOpen)
   const toggleTerminal = useUiStore((s) => s.toggleTerminal)
-
-  useProjects()
-
-  const pid = activeProject?.id
   const pathname = location.pathname
   const isInsideProject = pid && pathname.startsWith(`/${pid}`)
 

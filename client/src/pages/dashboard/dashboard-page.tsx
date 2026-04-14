@@ -5,8 +5,7 @@ import styled from '@emotion/styled'
 import { keyframes } from '@emotion/react'
 import { Text, Button, spacing, radii } from '@/components/shared/ui'
 import { AddProjectModal } from '@/components/projects/add-project-modal'
-import { useProjects } from '@/hooks/use-projects'
-import { useProjectStore } from '@/stores/project-store'
+import { useProjectsQuery } from '@/api/hooks/projects'
 import { projectHome } from '@/router/paths'
 import { HeroSection } from './components/hero-section'
 import { ProjectCard } from './components/project-card'
@@ -84,8 +83,7 @@ const EmptyBox = styled.div`
 
 export default function DashboardPage() {
   const navigate = useNavigate()
-  const { projects } = useProjects()
-  const activeProject = useProjectStore((s) => s.activeProject)
+  const { data: projects = [] } = useProjectsQuery()
   const [addModalOpen, setAddModalOpen] = useState(false)
 
   const handleSelect = (projectId: string) => {
@@ -108,7 +106,6 @@ export default function DashboardPage() {
                     <ProjectCard
                       key={project.id}
                       project={project}
-                      isActive={project.id === activeProject?.id}
                       onSelect={() => handleSelect(project.id)}
                     />
                   ))}

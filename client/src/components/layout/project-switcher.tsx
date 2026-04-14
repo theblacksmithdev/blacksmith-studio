@@ -2,14 +2,16 @@ import { useState } from 'react'
 import { Box, Text, VStack } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronDown, FolderOpen, Check } from 'lucide-react'
-import { useProjects } from '@/hooks/use-projects'
-import { useProjectStore, type Project } from '@/stores/project-store'
+import { useProjectsQuery, useProjectQuery } from '@/api/hooks/projects'
+import { useActiveProjectId } from '@/api/hooks/_shared'
+import type { Project } from '@/stores/project-store'
 
 export function ProjectSwitcher() {
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
-  const { projects } = useProjects()
-  const activeProject = useProjectStore((s) => s.activeProject)
+  const projectId = useActiveProjectId()
+  const { data: projects = [] } = useProjectsQuery()
+  const { data: activeProject } = useProjectQuery(projectId)
 
   const handleSelect = (project: Project) => {
     navigate(`/${project.id}`)
@@ -89,7 +91,7 @@ export function ProjectSwitcher() {
                 </Text>
               )}
               {projects.map((project) => {
-                const isActive = project.id === activeProject?.id
+                const isActive = project.id === projectId
                 return (
                   <Box
                     key={project.id}

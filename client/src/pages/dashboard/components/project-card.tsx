@@ -45,11 +45,11 @@ const Arrow = styled.div`
 
 interface ProjectCardProps {
   project: Project
-  isActive: boolean
+  isActive?: boolean
   onSelect: () => void
 }
 
-export function ProjectCard({ project, isActive, onSelect }: ProjectCardProps) {
+export function ProjectCard({ project, isActive = false, onSelect }: ProjectCardProps) {
   return (
     <Root $active={isActive} onClick={onSelect}>
       <Avatar size="sm" variant={isActive ? 'active' : 'default'} icon={<FolderOpen />} />

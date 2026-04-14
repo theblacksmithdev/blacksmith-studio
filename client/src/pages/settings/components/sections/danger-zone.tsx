@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { Flex, Box } from '@chakra-ui/react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Trash2, AlertTriangle, FolderX, Database } from 'lucide-react'
 import styled from '@emotion/styled'
-import { useProjects } from '@/hooks/use-projects'
-import { useProjectStore } from '@/stores/project-store'
+import { useProjectQuery, useRemoveProject } from '@/api/hooks/projects'
+import { useActiveProjectId } from '@/api/hooks/_shared'
 import { Path } from '@/router/paths'
 import { Text, Modal, ModalDangerButton, ModalFooterSpacer, Button, Alert } from '@/components/shared/ui'
 
@@ -58,9 +58,9 @@ const ConfirmInput = styled.input`
 
 export function DangerZone() {
   const navigate = useNavigate()
-  const { projectId } = useParams<{ projectId: string }>()
-  const { remove } = useProjects()
-  const activeProject = useProjectStore((s) => s.activeProject)
+  const projectId = useActiveProjectId()
+  const { data: activeProject } = useProjectQuery(projectId)
+  const removeMutation = useRemoveProject()
   const [modalMode, setModalMode] = useState<RemoveMode>(null)
   const [confirmText, setConfirmText] = useState('')
   const [removing, setRemoving] = useState(false)
@@ -69,7 +69,7 @@ export function DangerZone() {
     if (!projectId || !modalMode) return
     setRemoving(true)
     try {
-      await remove(projectId, modalMode === 'hard')
+      await removeMutation.mutateAsync({ id: projectId!, hard: modalMode === 'hard' })
       navigate(Path.Home)
     } catch {
       setRemoving(false)
