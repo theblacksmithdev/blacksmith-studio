@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback, useSyncExternalStore } from 'react'
-import { channels, type ChannelKey, type ChannelData } from '@/api/channels'
+import { channels, type ChannelKey, type ChannelData, type ChannelArgs } from '@/api/channels'
 
 interface ChannelOptions<T> {
   /** Max items to keep in history (0 = unlimited). Default: 0 */
@@ -8,6 +8,8 @@ interface ChannelOptions<T> {
   replace?: boolean
   /** Filter events — only matching events are stored. */
   filter?: (data: T) => boolean
+  /** Arguments passed to factory channels (e.g. projectId, configId). */
+  args?: any[]
 }
 
 interface ChannelResult<T> {
@@ -27,29 +29,38 @@ interface ChannelResult<T> {
  * Reusable hook for subscribing to IPC push/stream channels.
  *
  * Pass a registered channel key — types are inferred automatically.
+ * For factory channels that require arguments, pass them via `args`.
  *
  * @example
+ * // Direct channel (no args)
  * const { last: status } = useChannel('git:statusChange', { replace: true })
  *
- * const { messages: logs } = useChannel('runner:output', {
+ * // With args (factory channel)
+ * const { messages } = useChannel('runner:output', {
+ *   args: [projectId],
  *   maxHistory: 1000,
  *   filter: (data) => data.configId === activeId,
  * })
  *
+ * // Unbounded accumulation
  * const { messages, last } = useChannel('claude:message')
  */
 export function useChannel<K extends ChannelKey>(
   key: K,
-  options?: ChannelOptions<ChannelData<K>>,
+  ...rest: ChannelArgs<K> extends []
+    ? [options?: ChannelOptions<ChannelData<K>>]
+    : [args: ChannelArgs<K>, options?: ChannelOptions<ChannelData<K>>]
 ): ChannelResult<ChannelData<K>> {
   type T = ChannelData<K>
 
-  // Store options in refs so the subscription effect doesn't rerun when
-  // the consumer passes unstable function references (e.g. inline filter)
+  // Parse overloaded arguments
+  const hasArgs = Array.isArray(rest[0])
+  const args = (hasArgs ? rest[0] : []) as any[]
+  const options = (hasArgs ? rest[1] : rest[0]) as ChannelOptions<T> | undefined
+
   const optionsRef = useRef(options)
   optionsRef.current = options
 
-  // Immutable snapshot — replaced on every mutation so useSyncExternalStore detects changes
   const snapshotRef = useRef<T[]>([])
   const listenersRef = useRef(new Set<() => void>())
 
@@ -73,21 +84,29 @@ export function useChannel<K extends ChannelKey>(
     emit()
   }, [emit])
 
-  // Subscribe to the IPC channel — only reruns if the channel key changes
+  // Subscribe — reruns if the channel key or args change
+  const argsKey = JSON.stringify(args)
   useEffect(() => {
-    const subscribeFn = channels[key] as (cb: (data: T) => void) => () => void
+    const channelEntry = channels[key]
+    let subscribeFn: (cb: (data: T) => void) => () => void
+
+    if (args.length > 0 && typeof channelEntry === 'function') {
+      // Factory channel: call with args to get the subscribe function
+      subscribeFn = (channelEntry as any)(...args)
+    } else {
+      subscribeFn = channelEntry as any
+    }
+
     const unsub = subscribeFn(push)
     return unsub
-  }, [key, push])
+  }, [key, argsKey, push])
 
-  // useSyncExternalStore for React-safe batched reads
   const subscribeStore = useCallback((cb: () => void) => {
     listenersRef.current.add(cb)
     return () => listenersRef.current.delete(cb)
   }, [])
 
   const getSnapshot = useCallback(() => snapshotRef.current, [])
-
   const messages = useSyncExternalStore(subscribeStore, getSnapshot)
 
   const clear = useCallback(() => {

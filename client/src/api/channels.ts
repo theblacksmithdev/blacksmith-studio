@@ -8,12 +8,23 @@ import { agents } from './modules/agents'
 import { windowApi } from './modules/window'
 
 /**
+ * A subscribe function: takes a callback, returns an unsubscribe function.
+ */
+type SubscribeFn<T> = (cb: (data: T) => void) => () => void
+
+/**
  * Registry of all subscription (push) channels.
- * Use with `useChannel` by passing the key:
  *
- * ```ts
+ * Channels can be:
+ * - **Direct**: `(cb) => unsub` — no arguments needed
+ * - **Factory**: `(arg1, arg2) => (cb) => unsub` — requires arguments
+ *
+ * @example
+ * // Direct channel (no args)
  * const { last } = useChannel('git:statusChange', { replace: true })
- * ```
+ *
+ * // Factory channel (with args)
+ * const { messages } = useChannel('runner:output', { ... })
  */
 export const channels = {
   // Claude
@@ -54,6 +65,20 @@ export const channels = {
 /** Channel key — one of the registered subscription channels */
 export type ChannelKey = keyof typeof channels
 
-/** Infer the data type for a given channel key */
+/**
+ * Infer the data type for a given channel.
+ * Works for both direct subscribe functions and factory functions.
+ */
 export type ChannelData<K extends ChannelKey> =
-  (typeof channels)[K] extends (cb: (data: infer D) => void) => () => void ? D : never
+  (typeof channels)[K] extends SubscribeFn<infer D> ? D
+  : (typeof channels)[K] extends (...args: any[]) => SubscribeFn<infer D> ? D
+  : never
+
+/**
+ * Infer the argument types for a factory channel.
+ * Returns `[]` for direct subscribe functions (no args needed).
+ */
+export type ChannelArgs<K extends ChannelKey> =
+  (typeof channels)[K] extends SubscribeFn<any> ? []
+  : (typeof channels)[K] extends (...args: infer A) => SubscribeFn<any> ? A
+  : never
