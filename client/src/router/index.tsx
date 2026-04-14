@@ -25,12 +25,16 @@ import AgentsHomePage from '@/pages/agents/home'
 import AgentsNewPage from '@/pages/agents/new'
 import AgentsConversationPage from '@/pages/agents/conversation'
 
+export interface RouteHandle {
+  title?: string
+}
+
 export const router = createHashRouter([
   {
     element: <AppLayout />,
     children: [
       { path: Path.Home, element: <DashboardPage /> },
-      { path: Path.Projects, element: <ProjectsPage /> },
+      { path: Path.Projects, element: <ProjectsPage />, handle: { title: 'Projects' } satisfies RouteHandle },
     ],
   },
 
@@ -40,37 +44,39 @@ export const router = createHashRouter([
     children: [
       { index: true, element: <Navigate to="chat/new" replace /> },
       { path: 'chat/new', element: <NewChatPage /> },
-      { path: 'chat/:sessionId', element: <ChatPage /> },
-      { path: 'code', element: <FilesPage /> },
+      { path: 'chat/:sessionId', element: <ChatPage />, handle: { title: 'Chat' } satisfies RouteHandle },
+      { path: 'code', element: <FilesPage />, handle: { title: 'Code' } satisfies RouteHandle },
       {
         path: 'run',
         element: <RunnerPage />,
+        handle: { title: 'Dev Services' } satisfies RouteHandle,
         children: [
           { index: true, element: <Navigate to="all" replace /> },
-          { path: ':configId', element: <RunnerLogsPage /> },
+          { path: ':configId', element: <RunnerLogsPage />, handle: { title: 'Dev Services' } satisfies RouteHandle },
         ],
       },
-      { path: 'skills', element: <SkillsBrowserPage /> },
-      { path: 'mcp', element: <McpBrowserPage /> },
-      { path: 'source-control', element: <SourceControlPage /> },
+      { path: 'skills', element: <SkillsBrowserPage />, handle: { title: 'Skills' } satisfies RouteHandle },
+      { path: 'mcp', element: <McpBrowserPage />, handle: { title: 'MCP' } satisfies RouteHandle },
+      { path: 'source-control', element: <SourceControlPage />, handle: { title: 'Source Control' } satisfies RouteHandle },
       { path: 'agents', element: <AgentsHomePage /> },
-      { path: 'agents/new', element: <AgentsNewPage /> },
-      { path: 'agents/:conversationId', element: <AgentsConversationPage /> },
+      { path: 'agents/new', element: <AgentsNewPage />, handle: { title: 'Agents' } satisfies RouteHandle },
+      { path: 'agents/:conversationId', element: <AgentsConversationPage />, handle: { title: 'Agents' } satisfies RouteHandle },
 
       // Settings with nested routes
       {
         path: 'settings',
         element: <SettingsPage />,
+        handle: { title: 'Settings' } satisfies RouteHandle,
         children: [
           { index: true, element: <Navigate to="ai" replace /> },
-          { path: 'ai', element: <AiSettings /> },
-          { path: 'mcp', element: <McpSettings /> },
-          { path: 'skills', element: <SkillsSettings /> },
-          { path: 'appearance', element: <AppearanceSettings /> },
-          { path: 'editor', element: <EditorSettings /> },
-          { path: 'workspace', element: <WorkspaceSettings /> },
-          { path: 'knowledge', element: <KnowledgeSettings /> },
-          { path: 'danger', element: <DangerZone /> },
+          { path: 'ai', element: <AiSettings />, handle: { title: 'AI & Prompting' } satisfies RouteHandle },
+          { path: 'mcp', element: <McpSettings />, handle: { title: 'MCP Servers' } satisfies RouteHandle },
+          { path: 'skills', element: <SkillsSettings />, handle: { title: 'Skills' } satisfies RouteHandle },
+          { path: 'appearance', element: <AppearanceSettings />, handle: { title: 'Appearance' } satisfies RouteHandle },
+          { path: 'editor', element: <EditorSettings />, handle: { title: 'Editor' } satisfies RouteHandle },
+          { path: 'workspace', element: <WorkspaceSettings />, handle: { title: 'Workspace' } satisfies RouteHandle },
+          { path: 'knowledge', element: <KnowledgeSettings />, handle: { title: 'Knowledge Base' } satisfies RouteHandle },
+          { path: 'danger', element: <DangerZone />, handle: { title: 'Danger Zone' } satisfies RouteHandle },
         ],
       },
 
