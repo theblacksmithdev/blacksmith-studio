@@ -1,25 +1,33 @@
 import {
-  Code2, FileCode, Bug, TestTube, GitBranch, Rocket,
-  Shield, Database, Layout, Paintbrush, Terminal, BookOpen,
+  Code2,
+  FileCode,
+  Bug,
+  TestTube,
+  GitBranch,
+  Rocket,
+  Shield,
+  Database,
+  Layout,
+  BookOpen,
   type LucideIcon,
-} from 'lucide-react'
+} from "lucide-react";
 
 export interface SkillPreset {
-  name: string
-  label: string
-  description: string
-  icon: LucideIcon
-  category: 'development' | 'testing' | 'devops' | 'documentation'
-  content: string
+  name: string;
+  label: string;
+  description: string;
+  icon: LucideIcon;
+  category: "development" | "testing" | "devops" | "documentation";
+  content: string;
 }
 
 export const SKILL_PRESETS: SkillPreset[] = [
   {
-    name: 'code-review',
-    label: 'Code Review',
-    description: 'Review code for bugs, performance, and best practices',
+    name: "code-review",
+    label: "Code Review",
+    description: "Review code for bugs, performance, and best practices",
     icon: Code2,
-    category: 'development',
+    category: "development",
     content: `# Code Review
 
 Review the provided code for:
@@ -35,11 +43,11 @@ Provide specific line references and suggested fixes.
 $ARGUMENTS`,
   },
   {
-    name: 'refactor',
-    label: 'Refactor',
-    description: 'Refactor code for better structure and maintainability',
+    name: "refactor",
+    label: "Refactor",
+    description: "Refactor code for better structure and maintainability",
     icon: FileCode,
-    category: 'development',
+    category: "development",
     content: `# Refactor
 
 Refactor the specified code to improve:
@@ -55,11 +63,11 @@ Keep the same behavior — only improve the internal structure. Run tests after.
 $ARGUMENTS`,
   },
   {
-    name: 'fix-bug',
-    label: 'Fix Bug',
-    description: 'Investigate and fix a bug with root cause analysis',
+    name: "fix-bug",
+    label: "Fix Bug",
+    description: "Investigate and fix a bug with root cause analysis",
     icon: Bug,
-    category: 'development',
+    category: "development",
     content: `# Fix Bug
 
 Investigate and fix the reported bug:
@@ -73,11 +81,11 @@ Investigate and fix the reported bug:
 $ARGUMENTS`,
   },
   {
-    name: 'write-tests',
-    label: 'Write Tests',
-    description: 'Generate unit and integration tests for code',
+    name: "write-tests",
+    label: "Write Tests",
+    description: "Generate unit and integration tests for code",
     icon: TestTube,
-    category: 'testing',
+    category: "testing",
     content: `# Write Tests
 
 Write tests for the specified code:
@@ -93,11 +101,11 @@ Follow the project's existing test patterns and frameworks.
 $ARGUMENTS`,
   },
   {
-    name: 'add-api-endpoint',
-    label: 'Add API Endpoint',
-    description: 'Create a new REST API endpoint with validation',
+    name: "add-api-endpoint",
+    label: "Add API Endpoint",
+    description: "Create a new REST API endpoint with validation",
     icon: Database,
-    category: 'development',
+    category: "development",
     content: `# Add API Endpoint
 
 Create a new API endpoint:
@@ -114,11 +122,11 @@ Follow the project's existing API patterns.
 $ARGUMENTS`,
   },
   {
-    name: 'create-component',
-    label: 'Create Component',
-    description: 'Build a new UI component following design system',
+    name: "create-component",
+    label: "Create Component",
+    description: "Build a new UI component following design system",
     icon: Layout,
-    category: 'development',
+    category: "development",
     content: `# Create Component
 
 Build a new UI component:
@@ -133,11 +141,11 @@ Build a new UI component:
 $ARGUMENTS`,
   },
   {
-    name: 'git-commit',
-    label: 'Git Commit',
-    description: 'Stage and commit changes with conventional message',
+    name: "git-commit",
+    label: "Git Commit",
+    description: "Stage and commit changes with conventional message",
     icon: GitBranch,
-    category: 'devops',
+    category: "devops",
     content: `# Git Commit
 
 Review staged changes and create a commit:
@@ -156,11 +164,11 @@ Review staged changes and create a commit:
 $ARGUMENTS`,
   },
   {
-    name: 'deploy',
-    label: 'Deploy',
-    description: 'Prepare and deploy the application',
+    name: "deploy",
+    label: "Deploy",
+    description: "Prepare and deploy the application",
     icon: Rocket,
-    category: 'devops',
+    category: "devops",
     content: `# Deploy
 
 Prepare the application for deployment:
@@ -175,11 +183,11 @@ Prepare the application for deployment:
 $ARGUMENTS`,
   },
   {
-    name: 'security-audit',
-    label: 'Security Audit',
-    description: 'Audit code for security vulnerabilities',
+    name: "security-audit",
+    label: "Security Audit",
+    description: "Audit code for security vulnerabilities",
     icon: Shield,
-    category: 'testing',
+    category: "testing",
     content: `# Security Audit
 
 Audit the codebase for security issues:
@@ -196,11 +204,11 @@ Report findings with severity levels and remediation steps.
 $ARGUMENTS`,
   },
   {
-    name: 'document',
-    label: 'Document',
-    description: 'Generate documentation for code and APIs',
+    name: "document",
+    label: "Document",
+    description: "Generate documentation for code and APIs",
     icon: BookOpen,
-    category: 'documentation',
+    category: "documentation",
     content: `# Document
 
 Generate documentation for the specified code:
@@ -215,12 +223,12 @@ Write for the target audience (developers, not end users).
 
 $ARGUMENTS`,
   },
-]
+];
 
 export const SKILL_CATEGORIES = [
-  { id: 'all', label: 'All' },
-  { id: 'development', label: 'Development' },
-  { id: 'testing', label: 'Testing' },
-  { id: 'devops', label: 'DevOps' },
-  { id: 'documentation', label: 'Documentation' },
-]
+  { id: "all", label: "All" },
+  { id: "development", label: "Development" },
+  { id: "testing", label: "Testing" },
+  { id: "devops", label: "DevOps" },
+  { id: "documentation", label: "Documentation" },
+];
