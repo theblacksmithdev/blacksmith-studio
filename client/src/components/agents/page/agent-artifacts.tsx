@@ -1,8 +1,7 @@
 import { Flex, Box } from '@chakra-ui/react'
-import { useQuery } from '@tanstack/react-query'
 import styled from '@emotion/styled'
 import { FileCode, FileText, FilePlus, Pencil, Folder } from 'lucide-react'
-import { api } from '@/api'
+import { useAgentArtifactsQuery } from '@/api/hooks/agents'
 import { Text, Badge, Skeleton } from '@/components/shared/ui'
 import { ROLE_ICONS } from '../shared/role-icons'
 import type { AgentRole } from '@/api/types'
@@ -48,11 +47,7 @@ interface AgentArtifactsProps {
 }
 
 export function AgentArtifacts({ conversationId }: AgentArtifactsProps) {
-  const { data: artifacts = [], isLoading } = useQuery({
-    queryKey: ['agents', 'artifacts', conversationId],
-    queryFn: () => conversationId ? api.agents.getArtifacts(conversationId) : Promise.resolve([]),
-    enabled: !!conversationId,
-  })
+  const { data: artifacts = [], isLoading } = useAgentArtifactsQuery(conversationId)
 
   if (!conversationId) {
     return <ArtifactsEmpty message="Start a conversation to see artifacts" />

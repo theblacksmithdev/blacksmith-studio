@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { Network } from 'lucide-react'
 import { ChatInput } from '@/components/chat/chat-input'
 import { useChatStore } from '@/stores/chat-store'
-import { useProjectStore } from '@/stores/project-store'
-import { useAgentConversations } from '@/hooks/use-agent-conversations'
+import { useAgentConversationsQuery, useDeleteAgentConversation } from '@/api/hooks/agents'
+import { useActiveProjectId } from '@/api/hooks/_shared'
 import { agentsNewPath, agentsConversationPath } from '@/router/paths'
 import { HomeHero } from '@/components/chat/home-view/home-hero'
 import { QuickActions } from '@/components/chat/home-view/quick-actions'
@@ -15,11 +15,12 @@ import { ConfirmDialog } from '@/components/shared/ui'
 export function AgentsHomeView() {
   const { isStreaming } = useChatStore()
   const navigate = useNavigate()
-  const activeProject = useProjectStore((s) => s.activeProject)
-  const { conversations, deleteConversation } = useAgentConversations({ limit: 4 })
+  const pid = useActiveProjectId()
+  const { data: allConversations = [] } = useAgentConversationsQuery()
+  const deleteConvMutation = useDeleteAgentConversation()
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
-  const pid = activeProject?.id
+  const conversations = allConversations.slice(0, 4)
 
   const handleSend = async (text: string) => {
     if (!pid) return
@@ -28,9 +29,9 @@ export function AgentsHomeView() {
 
   const confirmDelete = useCallback(() => {
     if (!deleteTarget) return
-    deleteConversation(deleteTarget)
+    deleteConvMutation.mutate(deleteTarget)
     setDeleteTarget(null)
-  }, [deleteTarget, deleteConversation])
+  }, [deleteTarget, deleteConvMutation])
 
   const recentItems: RecentEntry[] = conversations.map((c: any) => ({
     id: c.id,

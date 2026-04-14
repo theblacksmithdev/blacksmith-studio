@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom'
 import { Box, Flex, Text, VStack } from '@chakra-ui/react'
 import { Network, Plus, MessageSquare, Trash2, ArrowRight } from 'lucide-react'
-import { useAgentConversations } from '@/hooks/use-agent-conversations'
-import { useProjectStore } from '@/stores/project-store'
+import { useAgentConversationsQuery, useDeleteAgentConversation } from '@/api/hooks/agents'
+import { useActiveProjectId } from '@/api/hooks/_shared'
 import { agentsNewPath, agentsConversationPath } from '@/router/paths'
 import { quickActions, roster, timeAgo } from './helpers'
 import {
@@ -16,15 +16,16 @@ import {
 
 export function ConversationsList() {
   const navigate = useNavigate()
-  const project = useProjectStore((s) => s.activeProject)
-  const { conversations: convs, isLoading: loading, deleteConversation } = useAgentConversations()
+  const pid = useActiveProjectId()
+  const { data: convs = [], isLoading: loading } = useAgentConversationsQuery()
+  const deleteConvMutation = useDeleteAgentConversation()
 
-  const goNew = () => { if (project) navigate(agentsNewPath(project.id)) }
-  const goConv = (id: string) => { if (project) navigate(agentsConversationPath(project.id, id)) }
+  const goNew = () => { if (pid) navigate(agentsNewPath(pid)) }
+  const goConv = (id: string) => { if (pid) navigate(agentsConversationPath(pid, id)) }
 
   const handleDelete = (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
-    deleteConversation(id)
+    deleteConvMutation.mutate(id)
   }
 
   return (

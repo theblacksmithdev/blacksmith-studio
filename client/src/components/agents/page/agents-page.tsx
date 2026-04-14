@@ -1,10 +1,8 @@
 import { useEffect, useCallback, useState, useRef } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { useParams, useLocation } from 'react-router-dom'
 import { ReactFlowProvider } from '@xyflow/react'
 import { ListTodo, MessageSquare, Square } from 'lucide-react'
-import { api } from '@/api'
-import { useProjectKeys } from '@/hooks/use-project-keys'
+import { useAgentsListQuery, useAgentRespond, useAgentCancelAll } from '@/api/hooks/agents'
 import { useAgentStore } from '@/stores/agent-store'
 import { Tooltip } from '@/components/shared/tooltip'
 import { SplitPanel } from '@/components/shared/layout'
@@ -28,7 +26,6 @@ interface AgentsPageProps {
 export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
   const params = useParams()
   const conversationId = propConvId ?? params.conversationId
-  const keys = useProjectKeys()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [chatOpen, setChatOpen] = useState(true)
   const [hasUnread, setHasUnread] = useState(false)
@@ -36,10 +33,9 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
   const chatOpenRef = useRef(chatOpen)
   chatOpenRef.current = chatOpen
 
-  const { data: agents = [] } = useQuery({
-    queryKey: keys.agents,
-    queryFn: () => api.agents.list(),
-  })
+  const { data: agents = [] } = useAgentsListQuery()
+  const respondMutation = useAgentRespond()
+  const cancelAllMutation = useAgentCancelAll()
 
   const setAgents = useAgentStore((s) => s.setAgents)
   const removeInputRequest = useAgentStore((s) => s.removeInputRequest)
@@ -85,16 +81,16 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
 
   const handleRespond = useCallback(async (requestId: string, value: string) => {
     removeInputRequest(requestId)
-    await api.agents.respond(requestId, value)
-  }, [removeInputRequest])
+    await respondMutation.mutateAsync({ requestId, value })
+  }, [removeInputRequest, respondMutation])
 
   const handleStop = useCallback(async () => {
     const confirmed = window.confirm(
       'Stop all running agents? This will cancel the current task and skip all remaining tasks in the pipeline.',
     )
     if (!confirmed) return
-    await api.agents.cancelAll()
-  }, [])
+    await cancelAllMutation.mutateAsync()
+  }, [cancelAllMutation])
 
   const handleNodeClick = useCallback((role: AgentRole) => {
     selectAgent(selectedAgent === role ? null : role)
