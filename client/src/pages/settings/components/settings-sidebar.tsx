@@ -1,5 +1,6 @@
 import { Box, Flex } from '@chakra-ui/react'
-import { useProjectStore } from '@/stores/project-store'
+import { useProjectQuery } from '@/api/hooks/projects'
+import { useActiveProjectId } from '@/api/hooks/_shared'
 import { Text, spacing, radii } from '@/components/shared/ui'
 import { useSettingsNav, settingsGroups, dangerItems, type SettingsNavItem } from '../hooks'
 
@@ -50,7 +51,8 @@ function NavItem({ item, active, isDanger, onClick }: {
 }
 
 export function SettingsSidebar() {
-  const activeProject = useProjectStore((s) => s.activeProject)
+  const projectId = useActiveProjectId()
+  const { data: activeProject } = useProjectQuery(projectId)
   const { isActive, goTo } = useSettingsNav()
 
   return (

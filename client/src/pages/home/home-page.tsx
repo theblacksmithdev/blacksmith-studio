@@ -4,7 +4,8 @@ import { MessageSquare, Network } from 'lucide-react'
 import styled from '@emotion/styled'
 import { keyframes } from '@emotion/react'
 import { Text, VStack, spacing } from '@/components/shared/ui'
-import { useProjectStore } from '@/stores/project-store'
+import { useActiveProjectId } from '@/api/hooks/_shared'
+import { useProjectQuery } from '@/api/hooks/projects'
 import { newChatPath, chatPath, agentsPath, agentsConversationPath } from '@/router/paths'
 import { useRecentActivity } from './hooks/use-recent-activity'
 import { ModeCard } from './components/mode-card'
@@ -97,9 +98,9 @@ function getGreeting(): string {
 
 export default function HomePage() {
   const navigate = useNavigate()
-  const project = useProjectStore((s) => s.activeProject)
+  const pid = useActiveProjectId()
+  const { data: project } = useProjectQuery(pid)
   const { sessions, agentConvs, hasRecent } = useRecentActivity()
-  const pid = project?.id
 
   const goChat = useCallback(() => pid && navigate(newChatPath(pid)), [pid, navigate])
   const goAgents = useCallback(() => pid && navigate(agentsPath(pid)), [pid, navigate])

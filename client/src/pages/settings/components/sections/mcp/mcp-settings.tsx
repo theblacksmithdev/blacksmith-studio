@@ -2,7 +2,7 @@ import { Flex, Box } from '@chakra-ui/react'
 import styled from '@emotion/styled'
 import { useNavigate } from 'react-router-dom'
 import { Plus, ArrowRight } from 'lucide-react'
-import { useProjectStore } from '@/stores/project-store'
+import { useActiveProjectId } from '@/api/hooks/_shared'
 import { mcpBrowserPath } from '@/router/paths'
 import { McpServerModal } from '@/pages/mcp/components/mcp-server-modal'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
@@ -69,7 +69,7 @@ const CountLabel = styled.span`
 
 export function McpSettings() {
   const navigate = useNavigate()
-  const pid = useProjectStore((s) => s.activeProject?.id)
+  const pid = useActiveProjectId()
   const {
     servers, modal, setModal,
     testing, testResults, clearTestResult,

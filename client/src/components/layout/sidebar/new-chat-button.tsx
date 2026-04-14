@@ -1,7 +1,7 @@
 import styled from '@emotion/styled'
 import { useNavigate } from 'react-router-dom'
 import { Plus } from 'lucide-react'
-import { useProjectStore } from '@/stores/project-store'
+import { useActiveProjectId } from '@/api/hooks/_shared'
 import { projectHome } from '@/router/paths'
 
 const Btn = styled.button`
@@ -32,7 +32,7 @@ interface NewChatButtonProps {
 
 export function NewChatButton(_props: NewChatButtonProps) {
   const navigate = useNavigate()
-  const pid = useProjectStore((s) => s.activeProject?.id)
+  const pid = useActiveProjectId()
 
   if (!pid) return null
 

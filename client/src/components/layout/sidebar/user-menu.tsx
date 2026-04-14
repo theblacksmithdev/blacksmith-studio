@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import styled from '@emotion/styled'
 import { useNavigate } from 'react-router-dom'
 import { LogOut, User, Settings } from 'lucide-react'
-import { useProjectStore } from '@/stores/project-store'
+import { useActiveProjectId } from '@/api/hooks/_shared'
 import { Path, settingsPath } from '@/router/paths'
 import { Menu } from '@/components/shared/ui'
 import type { MenuOption } from '@/components/shared/ui'
@@ -61,12 +61,11 @@ interface UserMenuProps {
 
 export function UserMenu({ expanded }: UserMenuProps) {
   const navigate = useNavigate()
-  const activeProject = useProjectStore((s) => s.activeProject)
-  const pid = activeProject?.id
+  const pid = useActiveProjectId()
 
   const options: MenuOption[] = pid ? [
     { icon: <Settings />, label: 'Settings', onClick: () => navigate(settingsPath(pid)) },
-    { icon: <LogOut />, label: 'Exit Project', onClick: () => { useProjectStore.getState().setActiveProject(null); navigate(Path.Home) }, danger: true, separator: true },
+    { icon: <LogOut />, label: 'Exit Project', onClick: () => navigate(Path.Home), danger: true, separator: true },
   ] : []
 
   return (

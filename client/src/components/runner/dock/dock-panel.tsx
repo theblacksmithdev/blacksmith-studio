@@ -4,7 +4,7 @@ import { Square, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useRunnerStore, selectServices, isServiceActive } from '@/stores/runner-store'
 import { useRunner } from '@/hooks/use-runner'
-import { useProjectStore } from '@/stores/project-store'
+import { useActiveProjectId } from '@/api/hooks/_shared'
 import { runPath } from '@/router/paths'
 import { getServiceIcon } from '../runner-primitives'
 import { ServiceCard } from '../service-card'
@@ -86,12 +86,12 @@ interface DockPanelProps {
 export function DockPanel({ onClose }: DockPanelProps) {
   const navigate = useNavigate()
   const { start, stop } = useRunner()
-  const activeProject = useProjectStore((s) => s.activeProject)
+  const pid = useActiveProjectId()
   const services = useRunnerStore(selectServices)
 
   const goToRunPage = () => {
-    if (activeProject) {
-      navigate(runPath(activeProject.id))
+    if (pid) {
+      navigate(runPath(pid))
       onClose()
     }
   }

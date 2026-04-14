@@ -1,5 +1,6 @@
 import styled from '@emotion/styled'
-import { useProjectStore } from '@/stores/project-store'
+import { useProjectQuery } from '@/api/hooks/projects'
+import { useActiveProjectId } from '@/api/hooks/_shared'
 
 const Wrapper = styled.div`
   display: flex;
@@ -29,7 +30,8 @@ function getGreeting(): string {
 }
 
 export function HomeHero() {
-  const project = useProjectStore((s) => s.activeProject)
+  const projectId = useActiveProjectId()
+  const { data: project } = useProjectQuery(projectId)
 
   return (
     <Wrapper>

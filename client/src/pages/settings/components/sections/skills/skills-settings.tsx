@@ -2,7 +2,7 @@ import { Flex, Box } from '@chakra-ui/react'
 import styled from '@emotion/styled'
 import { useNavigate } from 'react-router-dom'
 import { Plus, ArrowRight } from 'lucide-react'
-import { useProjectStore } from '@/stores/project-store'
+import { useActiveProjectId } from '@/api/hooks/_shared'
 import { skillsBrowserPath } from '@/router/paths'
 import { SkillEditorModal } from '@/pages/skills/components'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
@@ -53,7 +53,7 @@ const FooterLink = styled.button`
 
 export function SkillsSettings() {
   const navigate = useNavigate()
-  const pid = useProjectStore((s) => s.activeProject?.id)
+  const pid = useActiveProjectId()
   const { skills, modal, setModal, handleUpdate, handleRemove } = useSkillsActions()
 
   const browseSkills = () => pid && navigate(skillsBrowserPath(pid))

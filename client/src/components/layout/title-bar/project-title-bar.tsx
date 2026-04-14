@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { PanelLeft } from 'lucide-react'
-import { useProjectStore } from '@/stores/project-store'
+import { useActiveProjectId } from '@/api/hooks/_shared'
+import { useProjectQuery } from '@/api/hooks/projects'
 import { useUiStore, type WorkMode } from '@/stores/ui-store'
 import { newChatPath, agentsPath } from '@/router/paths'
 import { Tooltip } from '@/components/shared/tooltip'
@@ -34,10 +35,9 @@ function getCurrentMode(pathname: string): WorkMode {
 export function ProjectTitleBar() {
   const location = useLocation()
   const navigate = useNavigate()
-  const activeProject = useProjectStore((s) => s.activeProject)
+  const pid = useActiveProjectId() ?? ''
+  const { data: activeProject } = useProjectQuery(pid || undefined)
   const toggleSidebar = useUiStore((s) => s.toggleSidebar)
-
-  const pid = activeProject?.id ?? ''
   const pageName = pid ? getPageName(location.pathname, pid) : null
   const isHome = !!pid && !pageName
   const currentMode = getCurrentMode(location.pathname)
