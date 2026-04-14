@@ -18,6 +18,7 @@ interface DrawerProps {
   footer?: ReactNode
   headerExtra?: ReactNode
   headerTrailing?: ReactNode
+  noPadding?: boolean
 }
 
 export function Drawer({
@@ -30,6 +31,7 @@ export function Drawer({
   footer,
   headerExtra,
   headerTrailing,
+  noPadding,
 }: DrawerProps) {
   // Cleanup on unmount — Chakra may not clean up if the component is
   // conditionally unmounted (e.g. {show && <Drawer />}) without transitioning open → false
@@ -87,7 +89,7 @@ export function Drawer({
               </ChakraDrawer.CloseTrigger>
             </ChakraDrawer.Header>
 
-            <ChakraDrawer.Body css={{ padding: spacing.xl, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+            <ChakraDrawer.Body css={{ padding: noPadding ? 0 : spacing.xl, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
               {children}
             </ChakraDrawer.Body>
 
