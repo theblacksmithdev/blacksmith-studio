@@ -1,6 +1,6 @@
 import styled from '@emotion/styled'
 import { ArrowRight } from 'lucide-react'
-import type { Mode } from './mode-toggle'
+import type { WorkMode as Mode } from '@/stores/ui-store'
 
 const chatSuggestions = [
   { label: 'Create a resource', prompt: 'Help me create a new full-stack resource with model, serializer, API viewset, and React pages.' },

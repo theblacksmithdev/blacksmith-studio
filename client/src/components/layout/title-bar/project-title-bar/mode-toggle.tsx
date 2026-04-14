@@ -1,9 +1,9 @@
+import { Link, useLocation } from 'react-router-dom'
 import styled from '@emotion/styled'
 import { MessageSquare, Network } from 'lucide-react'
+import { useActiveProjectId } from '@/api/hooks/_shared'
+import { newChatPath, agentsPath } from '@/router/paths'
 import { spacing, radii } from '@/components/shared/ui'
-import type { WorkMode } from '@/stores/ui-store'
-
-export type Mode = WorkMode
 
 const Wrap = styled.div`
   display: flex;
@@ -19,7 +19,7 @@ const Wrap = styled.div`
   -webkit-app-region: no-drag;
 `
 
-const Option = styled.button<{ $active: boolean }>`
+const Option = styled(Link)<{ $active: boolean }>`
   display: flex;
   align-items: center;
   gap: ${spacing.xs};
@@ -32,6 +32,7 @@ const Option = styled.button<{ $active: boolean }>`
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
+  text-decoration: none;
   transition: all 0.15s ease;
   box-shadow: ${({ $active }) => $active ? 'var(--studio-shadow)' : 'none'};
 
@@ -40,19 +41,21 @@ const Option = styled.button<{ $active: boolean }>`
   }
 `
 
-interface ModeToggleProps {
-  mode: Mode
-  onChange: (mode: Mode) => void
-}
+export function ModeToggle() {
+  const pid = useActiveProjectId()
+  const { pathname } = useLocation()
 
-export function ModeToggle({ mode, onChange }: ModeToggleProps) {
+  if (!pid) return null
+
+  const isAgents = pathname.includes('/agents')
+
   return (
     <Wrap>
-      <Option $active={mode === 'chat'} onClick={() => onChange('chat')}>
+      <Option to={newChatPath(pid)} $active={!isAgents}>
         <MessageSquare size={13} />
         Chat
       </Option>
-      <Option $active={mode === 'agents'} onClick={() => onChange('agents')}>
+      <Option to={agentsPath(pid)} $active={isAgents}>
         <Network size={13} />
         Agent Team
       </Option>

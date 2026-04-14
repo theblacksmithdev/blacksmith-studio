@@ -1,0 +1,117 @@
+import { useCallback } from 'react'
+import styled from '@emotion/styled'
+import { Flex, Box } from '@chakra-ui/react'
+import { PanelRight, History } from 'lucide-react'
+import { ConversationView } from '@/components/shared/conversation'
+import { StreamingIndicator } from '../streaming-indicator'
+import { HistoryPanel } from '../history-panel'
+import { ModelSelector } from '../model-selector'
+import { MarkdownRenderer } from '@/components/shared/markdown-renderer'
+import { PreviewPanel } from '@/components/shared/preview-panel'
+import { SplitPanel } from '@/components/shared/layout'
+import { IconButton, Tooltip, spacing } from '@/components/shared/ui'
+import { useChatSession } from './hooks/use-chat-session'
+import { useChatPanels } from './hooks/use-chat-panels'
+
+const Root = styled(Flex)`
+  height: 100%;
+  overflow: hidden;
+`
+
+export function ChatView() {
+  const {
+    conversationMessages,
+    isStreaming,
+    partialMessage,
+    handleSend,
+    handleCancel,
+  } = useChatSession()
+
+  const {
+    previewOpen,
+    historyOpen,
+    togglePreview,
+    toggleHistory,
+    closePreview,
+  } = useChatPanels()
+
+  const renderContent = useCallback(
+    (content: string) => <MarkdownRenderer content={content} />,
+    [],
+  )
+
+  const chatContent = (
+    <Flex direction="column" css={{ flex: 1, minWidth: 0, height: '100%' }}>
+      <Flex align="center" css={{ padding: spacing.sm, flexShrink: 0 }}>
+        <Tooltip content={historyOpen ? 'Close history' : 'Chat history'}>
+          <IconButton
+            variant={historyOpen ? 'default' : 'ghost'}
+            size="sm"
+            onClick={toggleHistory}
+            aria-label="Toggle history"
+          >
+            <History />
+          </IconButton>
+        </Tooltip>
+        <Box css={{ flex: 1 }} />
+        <Tooltip content={previewOpen ? 'Close preview' : 'Open preview'}>
+          <IconButton
+            variant={previewOpen ? 'default' : 'ghost'}
+            size="sm"
+            onClick={togglePreview}
+            aria-label="Toggle preview"
+          >
+            <PanelRight />
+          </IconButton>
+        </Tooltip>
+      </Flex>
+
+      <ConversationView
+        messages={conversationMessages}
+        onSend={handleSend}
+        onCancel={handleCancel}
+        isStreaming={isStreaming}
+        placeholder="Ask Claude to build something..."
+        renderContent={renderContent}
+        streamingTrailing={
+          isStreaming ? (
+            <StreamingIndicator partialMessage={partialMessage} />
+          ) : undefined
+        }
+        inputLeading={<ModelSelector />}
+      />
+    </Flex>
+  )
+
+  const mainContent = previewOpen ? (
+    <SplitPanel
+      left={chatContent}
+      defaultWidth={600}
+      minWidth={360}
+      maxWidth={900}
+      storageKey="chat.previewSplit"
+    >
+      <PreviewPanel onClose={closePreview} />
+    </SplitPanel>
+  ) : (
+    chatContent
+  )
+
+  if (!historyOpen) {
+    return <Root>{mainContent}</Root>
+  }
+
+  return (
+    <Root>
+      <SplitPanel
+        left={<HistoryPanel />}
+        defaultWidth={260}
+        minWidth={200}
+        maxWidth={400}
+        storageKey="chat.historyWidth"
+      >
+        {mainContent}
+      </SplitPanel>
+    </Root>
+  )
+}
