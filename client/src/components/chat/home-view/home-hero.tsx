@@ -1,4 +1,5 @@
 import styled from '@emotion/styled'
+import { getHours } from 'date-fns'
 import { useProjectQuery } from '@/api/hooks/projects'
 import { useActiveProjectId } from '@/api/hooks/_shared'
 
@@ -23,7 +24,7 @@ const ProjectName = styled.span`
 `
 
 function getGreeting(): string {
-  const hour = new Date().getHours()
+  const hour = getHours(new Date())
   if (hour < 12) return 'Good morning'
   if (hour < 18) return 'Good afternoon'
   return 'Good evening'

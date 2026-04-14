@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { getHours } from 'date-fns'
 import { MessageSquare, Network } from 'lucide-react'
 import styled from '@emotion/styled'
 import { keyframes } from '@emotion/react'
@@ -88,7 +89,7 @@ const HeroIllustration = styled.div`
 /* ── Helpers ── */
 
 function getGreeting(): string {
-  const hour = new Date().getHours()
+  const hour = getHours(new Date())
   if (hour < 12) return 'Good morning'
   if (hour < 18) return 'Good afternoon'
   return 'Good evening'
