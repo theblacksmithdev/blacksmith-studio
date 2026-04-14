@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Settings } from 'lucide-react'
 import { TitleBarShell, TitleText, NavBtn } from './title-bar-shell'
 import { Tooltip } from '@/components/shared/tooltip'
-import { GlobalSettingsDrawer } from '@/pages/dashboard/components/global-settings'
+import { GlobalSettingsDrawer } from './global-settings'
 
 export function AppTitleBar() {
   const [settingsOpen, setSettingsOpen] = useState(false)

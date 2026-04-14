@@ -1,11 +1,10 @@
-import type { ReactNode } from 'react'
-import styled from '@emotion/styled'
-import { useNavigate } from 'react-router-dom'
-import { Sun, Moon, ChevronLeft, ChevronRight } from 'lucide-react'
-import { useUiStore } from '@/stores/ui-store'
-import { useThemeMode } from '@/hooks/use-theme-mode'
-import { useFullscreen } from '@/api/hooks/window'
-import { Tooltip } from '@/components/shared/tooltip'
+import type { ReactNode } from "react";
+import styled from "@emotion/styled";
+import { useNavigate } from "react-router-dom";
+import { Sun, Moon, ChevronLeft, ChevronRight } from "lucide-react";
+import { useThemeMode } from "@/hooks/use-theme-mode";
+import { useFullscreen } from "@/api/hooks/window";
+import { Tooltip } from "@/components/shared/tooltip";
 
 const Bar = styled.div<{ fullscreen: boolean }>`
   display: flex;
@@ -16,17 +15,17 @@ const Bar = styled.div<{ fullscreen: boolean }>`
   border-bottom: 1px solid var(--studio-border);
   -webkit-app-region: drag;
   user-select: none;
-  padding-left: ${({ fullscreen }) => (fullscreen ? '14px' : '78px')};
+  padding-left: ${({ fullscreen }) => (fullscreen ? "14px" : "78px")};
   padding-right: 14px;
   transition: padding-left 0.2s ease;
-`
+`;
 
 export const NavActions = styled.div`
   display: flex;
   align-items: center;
   gap: 2px;
   -webkit-app-region: no-drag;
-`
+`;
 
 export const NavBtn = styled.button`
   width: 26px;
@@ -55,7 +54,7 @@ export const NavBtn = styled.button`
       color: var(--studio-text-muted);
     }
   }
-`
+`;
 
 export const Center = styled.div`
   flex: 1;
@@ -64,7 +63,7 @@ export const Center = styled.div`
   justify-content: center;
   gap: 6px;
   min-width: 0;
-`
+`;
 
 export const TitleText = styled.span`
   font-size: 13px;
@@ -73,7 +72,7 @@ export const TitleText = styled.span`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-`
+`;
 
 export const TitleTextBold = styled.span`
   font-size: 13px;
@@ -82,19 +81,19 @@ export const TitleTextBold = styled.span`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-`
+`;
 
 export const TitleSeparator = styled.span`
   color: var(--studio-text-muted);
   font-size: 13px;
-`
+`;
 
 const Actions = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
   -webkit-app-region: no-drag;
-`
+`;
 
 const ActionBtn = styled.button`
   width: 28px;
@@ -114,30 +113,24 @@ const ActionBtn = styled.button`
     background: var(--studio-bg-hover);
     color: var(--studio-text-primary);
   }
-`
-
-const StatusDot = styled.div<{ connected: boolean }>`
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: ${({ connected }) => (connected ? 'var(--studio-green)' : 'var(--studio-error)')};
-  margin-left: 4px;
-`
-
+`;
 interface TitleBarShellProps {
   /** Extra buttons rendered before back/forward nav */
-  leading?: ReactNode
+  leading?: ReactNode;
   /** Center content (title / breadcrumb) */
-  center: ReactNode
+  center: ReactNode;
   /** Extra buttons in the right actions area (before theme toggle) */
-  trailing?: ReactNode
+  trailing?: ReactNode;
 }
 
-export function TitleBarShell({ leading, center, trailing }: TitleBarShellProps) {
-  const navigate = useNavigate()
-  const fullscreen = useFullscreen()
-  const connectionStatus = useUiStore((s) => s.connectionStatus)
-  const { mode, toggle: toggleTheme } = useThemeMode()
+export function TitleBarShell({
+  leading,
+  center,
+  trailing,
+}: TitleBarShellProps) {
+  const navigate = useNavigate();
+  const fullscreen = useFullscreen();
+  const { mode, toggle: toggleTheme } = useThemeMode();
 
   return (
     <Bar fullscreen={fullscreen}>
@@ -157,17 +150,14 @@ export function TitleBarShell({ leading, center, trailing }: TitleBarShellProps)
 
       <Center>{center}</Center>
 
-      <Actions>        {trailing}
-        <Tooltip content={mode === 'dark' ? 'Light mode' : 'Dark mode'}>
+      <Actions>
+        <Tooltip content={mode === "dark" ? "Light mode" : "Dark mode"}>
           <ActionBtn onClick={toggleTheme}>
-            {mode === 'dark' ? <Sun size={13} /> : <Moon size={13} />}
+            {mode === "dark" ? <Sun size={13} /> : <Moon size={13} />}
           </ActionBtn>
         </Tooltip>
-
-        <Tooltip content={connectionStatus === 'connected' ? 'Connected' : 'Disconnected'}>
-          <StatusDot connected={connectionStatus === 'connected'} />
-        </Tooltip>
+        {trailing}
       </Actions>
     </Bar>
-  )
+  );
 }
