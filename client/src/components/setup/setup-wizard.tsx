@@ -3,6 +3,7 @@ import styled from '@emotion/styled'
 import { keyframes } from '@emotion/react'
 import { CheckCircle2, XCircle, Loader2, Terminal, Anvil, ArrowRight } from 'lucide-react'
 import { api } from '@/api'
+import { useInstallClaude } from '@/api/hooks/setup'
 import type { SetupStatus } from '@/api/modules/setup'
 
 const fadeIn = keyframes`
@@ -198,8 +199,8 @@ interface SetupWizardProps {
 export function SetupWizard({ onComplete }: SetupWizardProps) {
   const [step, setStep] = useState<Step>('checking')
   const [status, setStatus] = useState<SetupStatus | null>(null)
-  const [installing, setInstalling] = useState(false)
   const [installError, setInstallError] = useState<string | null>(null)
+  const installMutation = useInstallClaude()
 
   const runCheck = async () => {
     setStep('checking')
@@ -220,14 +221,16 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
   }, [])
 
   const handleInstallClaude = async () => {
-    setInstalling(true)
     setInstallError(null)
-    const result = await api.setup.installClaude()
-    setInstalling(false)
-    if (result.success) {
-      runCheck()
-    } else {
-      setInstallError(result.error || 'Installation failed')
+    try {
+      const result = await installMutation.mutateAsync()
+      if (result.success) {
+        runCheck()
+      } else {
+        setInstallError(result.error || 'Installation failed')
+      }
+    } catch {
+      setInstallError('Installation failed')
     }
   }
 
@@ -301,7 +304,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
               <CheckRow>
                 {status.claude.installed
                   ? <CheckCircle2 size={18} style={{ color: 'var(--studio-accent)', flexShrink: 0 }} />
-                  : installing
+                  : installMutation.isPending
                     ? <Spinner size={18} />
                     : <XCircle size={18} style={{ color: 'var(--studio-error)', flexShrink: 0 }} />
                 }
@@ -310,11 +313,11 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
                   <CheckMeta>
                     {status.claude.installed
                       ? `${status.claude.version} installed`
-                      : installing
+                      : installMutation.isPending
                         ? 'Installing...'
                         : 'Required for AI features'}
                   </CheckMeta>
-                  {!status.claude.installed && !installing && (
+                  {!status.claude.installed && !installMutation.isPending && (
                     <CodeBlock style={{ marginTop: 6 }}>npm install -g @anthropic-ai/claude-code</CodeBlock>
                   )}
                   {installError && <CheckError>{installError}</CheckError>}
@@ -327,13 +330,13 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
                     Re-check
                   </SecondaryBtn>
                 )}
-                {!status.claude.installed && !installing && status.node.installed && (
+                {!status.claude.installed && !installMutation.isPending && status.node.installed && (
                   <PrimaryBtn onClick={handleInstallClaude}>
                     <Terminal size={14} />
                     Install Claude Code
                   </PrimaryBtn>
                 )}
-                {!status.claude.installed && !installing && (
+                {!status.claude.installed && !installMutation.isPending && (
                   <SecondaryBtn onClick={() => runCheck()}>
                     Re-check
                   </SecondaryBtn>

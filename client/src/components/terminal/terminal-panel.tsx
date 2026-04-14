@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import styled from '@emotion/styled'
-import { useParams } from 'react-router-dom'
 import { Terminal, X, Plus, Trash2, ChevronDown, Search, SquareTerminal } from 'lucide-react'
 import type { SearchAddon } from '@xterm/addon-search'
 import { api } from '@/api'
+import { useSpawnTerminal, useKillTerminal } from '@/api/hooks/terminal'
 import { useUiStore } from '@/stores/ui-store'
 import { XtermInstance } from './xterm-instance'
 import { TerminalSearch } from './terminal-search'
@@ -147,7 +147,8 @@ interface TermTab {
 }
 
 export function TerminalPanel() {
-  const { projectId } = useParams<{ projectId: string }>()
+  const spawnMutation = useSpawnTerminal()
+  const killMutation = useKillTerminal()
   const isOpen = useUiStore((s) => s.terminalOpen)
   const setOpen = useUiStore((s) => s.setTerminalOpen)
   const [tabs, setTabs] = useState<TermTab[]>([])
@@ -182,17 +183,17 @@ export function TerminalPanel() {
 
   const spawnTab = useCallback(async () => {
     try {
-      const id = await api.terminal.spawn({ projectId: projectId! })
+      const id = await spawnMutation.mutateAsync(undefined)
       const num = tabs.length + 1
       setTabs((prev) => [...prev, { id, label: `zsh ${num}` }])
       setActiveTab(id)
     } catch (err: any) {
       console.error('Failed to spawn terminal:', err)
     }
-  }, [tabs.length])
+  }, [tabs.length, spawnMutation])
 
   const killTab = useCallback(async (id: string) => {
-    await api.terminal.kill(id)
+    await killMutation.mutateAsync(id)
     setTabs((prev) => {
       const next = prev.filter((t) => t.id !== id)
       if (activeTab === id) {
@@ -262,7 +263,7 @@ export function TerminalPanel() {
           </IconBtn>
           <IconBtn
             onClick={() => {
-              tabs.forEach((t) => api.terminal.kill(t.id))
+              tabs.forEach((t) => killMutation.mutate(t.id))
               setTabs([])
               setActiveTab(null)
               setOpen(false)
