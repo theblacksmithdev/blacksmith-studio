@@ -1,6 +1,7 @@
 import { Flex, Box } from '@chakra-ui/react'
 import { keyframes } from '@emotion/react'
-import { Zap, Pencil, Trash2, Check, Loader2, Server, Globe, MoreVertical } from 'lucide-react'
+import styled from '@emotion/styled'
+import { Zap, Trash2, Check, Loader2, Server, Globe, MoreVertical } from 'lucide-react'
 import { Text, Alert, Menu, IconButton, Badge } from '@/components/shared/ui'
 import type { MenuOption } from '@/components/shared/ui'
 import { SettingToggle } from '@/pages/settings/components/setting-toggle'
@@ -30,6 +31,24 @@ function getStatus(entry: McpServerEntry): ServerStatus {
   return 'on'
 }
 
+const Row = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: none;
+  border-bottom: 1px solid var(--studio-border);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  transition: background 0.12s ease;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: var(--studio-bg-surface); }
+`
+
 interface McpServerRowProps {
   entry: McpServerEntry
   onEdit: () => void
@@ -43,7 +62,6 @@ export function McpServerRow({ entry, onEdit, onDelete }: McpServerRowProps) {
 
   const menuOptions: MenuOption[] = [
     { icon: <Zap />, label: 'Test Connection', onClick: test },
-    { icon: <Pencil />, label: 'Edit', onClick: onEdit },
     { icon: <Trash2 />, label: 'Remove', onClick: onDelete, danger: true, separator: true },
   ]
 
@@ -52,13 +70,11 @@ export function McpServerRow({ entry, onEdit, onDelete }: McpServerRowProps) {
       direction="column"
       css={{
         borderBottom: '1px solid var(--studio-border)',
-        transition: 'background 0.12s ease',
         opacity: entry.enabled ? 1 : 0.5,
         '&:last-child': { borderBottom: 'none' },
-        '&:hover': { background: 'var(--studio-bg-surface)' },
       }}
     >
-      <Flex align="center" gap="12px" css={{ padding: '12px 16px' }}>
+      <Row onClick={onEdit} style={{ opacity: entry.enabled ? 1 : 0.5 }}>
         <Box css={{
           width: '7px', height: '7px', borderRadius: '50%', flexShrink: 0,
           background: statusColor[status],
@@ -93,16 +109,20 @@ export function McpServerRow({ entry, onEdit, onDelete }: McpServerRowProps) {
           </Text>
         </Flex>
 
-        <Menu
-          trigger={
-            <IconButton variant="ghost" size="xs" aria-label="Options">
-              <MoreVertical size={14} />
-            </IconButton>
-          }
-          options={menuOptions}
-        />
-        <SettingToggle value={entry.enabled} onChange={toggle} />
-      </Flex>
+        <Box onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+          <Menu
+            trigger={
+              <IconButton variant="ghost" size="xs" aria-label="Options">
+                <MoreVertical size={14} />
+              </IconButton>
+            }
+            options={menuOptions}
+          />
+        </Box>
+        <Box onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+          <SettingToggle value={entry.enabled} onChange={toggle} />
+        </Box>
+      </Row>
 
       {!isTesting && testResult && !testResult.ok && (
         <Box css={{ padding: '0 16px 12px 42px' }}>

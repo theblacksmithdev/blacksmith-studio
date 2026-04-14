@@ -1,12 +1,15 @@
+import { useState } from 'react'
 import { Flex, Box } from '@chakra-ui/react'
 import styled from '@emotion/styled'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Wand2, Code2, FileText } from 'lucide-react'
+import { Wand2, Code2, FileText, Pencil, Eye } from 'lucide-react'
+import Editor from '@monaco-editor/react'
 import type { SkillEntry } from '@/api/modules/skills'
 import { Drawer, Button, Text, Badge } from '@/components/shared/ui'
-import { MarkdownEditor } from '@/components/shared/markdown-editor'
+import { MarkdownRenderer } from '@/components/shared/markdown-renderer'
+import { useThemeMode } from '@/hooks/use-theme-mode'
 
 const DEFAULT_CONTENT = `# Skill Name
 
@@ -29,8 +32,6 @@ const schema = z.object({
 })
 
 type FormData = z.infer<typeof schema>
-
-/* ── Styled ── */
 
 const FieldLabel = styled.label`
   display: flex;
@@ -55,7 +56,6 @@ const StyledInput = styled.input<{ hasError?: boolean }>`
   font-family: inherit;
   outline: none;
   transition: border-color 0.12s ease;
-
   &::placeholder { color: var(--studio-text-muted); }
   &:hover:not(:disabled) { border-color: var(--studio-border-hover); }
   &:focus { border-color: var(--studio-border-hover); box-shadow: var(--studio-ring-focus); }
@@ -76,8 +76,6 @@ const FieldHint = styled.span`
   display: block;
 `
 
-/* ── Component ── */
-
 interface SkillEditorModalProps {
   skill?: SkillEntry
   onSave: (name: string, description: string, content: string) => void
@@ -86,11 +84,14 @@ interface SkillEditorModalProps {
 
 export function SkillEditorModal({ skill, onSave, onClose }: SkillEditorModalProps) {
   const isEdit = !!skill
+  const [editingContent, setEditingContent] = useState(!isEdit)
+  const { mode: themeMode } = useThemeMode()
 
   const {
     register,
     control,
     handleSubmit,
+    watch,
     formState: { errors, isValid },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -101,6 +102,9 @@ export function SkillEditorModal({ skill, onSave, onClose }: SkillEditorModalPro
       content: skill?.content || DEFAULT_CONTENT,
     },
   })
+
+  const currentContent = watch('content')
+  const currentName = watch('name')
 
   const onSubmit = (data: FormData) => {
     onSave(data.name, data.description, data.content)
@@ -113,6 +117,7 @@ export function SkillEditorModal({ skill, onSave, onClose }: SkillEditorModalPro
       onClose={onClose}
       placement="end"
       size="lg"
+      noPadding
       headerExtra={
         <Flex css={{
           width: '28px', height: '28px', borderRadius: '8px',
@@ -133,7 +138,7 @@ export function SkillEditorModal({ skill, onSave, onClose }: SkillEditorModalPro
         </Flex>
       }
     >
-      <Flex direction="column" gap="20px" css={{ height: '100%' }}>
+      <Flex direction="column" gap="20px" css={{ height: '100%', padding: '20px 24px 0' }}>
         {/* Name */}
         <Box>
           <FieldLabel><Code2 size={12} /> Skill Name</FieldLabel>
@@ -146,7 +151,7 @@ export function SkillEditorModal({ skill, onSave, onClose }: SkillEditorModalPro
           {errors.name ? (
             <FieldError>{errors.name.message}</FieldError>
           ) : (
-            <FieldHint>Lowercase with hyphens — invoked as <Badge variant="default" size="sm">/{skill?.name || 'skill-name'}</Badge></FieldHint>
+            <FieldHint>Invoked as <Badge variant="default" size="sm">/{currentName || 'skill-name'}</Badge></FieldHint>
           )}
         </Box>
 
@@ -161,26 +166,75 @@ export function SkillEditorModal({ skill, onSave, onClose }: SkillEditorModalPro
           {errors.description && <FieldError>{errors.description.message}</FieldError>}
         </Box>
 
-        {/* Content */}
+        {/* Instructions — edit/preview toggle */}
         <Flex direction="column" css={{ flex: 1, minHeight: 0 }}>
-          <FieldLabel>
-            <Wand2 size={12} /> Instructions
-            <Text css={{ fontSize: '11px', fontWeight: 400, color: 'var(--studio-text-muted)', textTransform: 'none', letterSpacing: 'normal', marginLeft: '4px' }}>
-              Use $ARGUMENTS for user input
-            </Text>
-          </FieldLabel>
-          <Controller
-            name="content"
-            control={control}
-            render={({ field }) => (
-              <MarkdownEditor
-                value={field.value}
-                onChange={field.onChange}
-                placeholder="# Skill Title\n\nInstructions for Claude...\n\n$ARGUMENTS"
-                fill
-              />
+          <Flex align="center" justify="space-between" css={{ marginBottom: '6px' }}>
+            <FieldLabel style={{ marginBottom: 0 }}>
+              <Wand2 size={12} /> Instructions
+              <Text css={{ fontSize: '11px', fontWeight: 400, color: 'var(--studio-text-muted)', textTransform: 'none', letterSpacing: 'normal', marginLeft: '4px' }}>
+                Use $ARGUMENTS for user input
+              </Text>
+            </FieldLabel>
+            {isEdit && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setEditingContent(!editingContent)}
+                css={{ padding: '2px 8px', fontSize: '12px' }}
+              >
+                {editingContent ? <><Eye size={11} /> Preview</> : <><Pencil size={11} /> Edit</>}
+              </Button>
             )}
-          />
+          </Flex>
+
+          {editingContent ? (
+            <Controller
+              name="content"
+              control={control}
+              render={({ field }) => (
+                <Box css={{ flex: 1, minHeight: 0, borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--studio-border)' }}>
+                  <Editor
+                    height="100%"
+                    language="markdown"
+                    theme={themeMode === 'dark' ? 'vs-dark' : 'light'}
+                    value={field.value}
+                    onChange={(v) => field.onChange(v ?? '')}
+                    options={{
+                      minimap: { enabled: false },
+                      lineNumbers: 'off',
+                      glyphMargin: false,
+                      folding: false,
+                      scrollBeyondLastLine: false,
+                      wordWrap: 'on',
+                      wrappingStrategy: 'advanced',
+                      fontSize: 13,
+                      fontFamily: "'SF Mono', 'Fira Code', 'JetBrains Mono', Menlo, monospace",
+                      lineHeight: 20,
+                      padding: { top: 12, bottom: 12 },
+                      renderLineHighlight: 'none',
+                      overviewRulerLanes: 0,
+                      hideCursorInOverviewRuler: true,
+                      overviewRulerBorder: false,
+                      scrollbar: { vertical: 'auto', horizontal: 'hidden', verticalScrollbarSize: 6 },
+                    }}
+                  />
+                </Box>
+              )}
+            />
+          ) : (
+            <Box css={{
+              flex: 1, minHeight: 0, borderRadius: '8px', overflow: 'auto',
+              border: '1px solid var(--studio-border)', padding: '16px', background: 'var(--studio-bg-main)',
+            }}>
+              {currentContent.trim() ? (
+                <MarkdownRenderer content={currentContent} />
+              ) : (
+                <Text css={{ color: 'var(--studio-text-muted)', fontSize: '14px', fontStyle: 'italic' }}>
+                  No instructions yet. Click Edit to add content.
+                </Text>
+              )}
+            </Box>
+          )}
           {errors.content && <FieldError>{errors.content.message}</FieldError>}
         </Flex>
       </Flex>
