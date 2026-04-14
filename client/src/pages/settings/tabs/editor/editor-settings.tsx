@@ -4,15 +4,10 @@ import { SettingsSection } from '@/pages/settings/components/settings-section'
 import { SettingRow } from '@/pages/settings/components/setting-row'
 import { SettingToggle } from '@/pages/settings/components/setting-toggle'
 import { SegmentedControl } from '@/pages/settings/components/segmented-control'
-import { useSettings } from '@/hooks/use-settings'
-
-const TAB_SIZE_OPTIONS = [
-  { value: '2', label: '2 spaces' },
-  { value: '4', label: '4 spaces' },
-] as const
+import { useEditorSettings, TAB_SIZE_OPTIONS } from './hooks/use-editor-settings'
 
 export function EditorSettings() {
-  const s = useSettings()
+  const editor = useEditorSettings()
 
   return (
     <SettingsSection
@@ -24,28 +19,28 @@ export function EditorSettings() {
         description={<Flex align="center" gap="4px"><IndentIncrease size={11} /> Spaces per indentation level.</Flex>}
       >
         <SegmentedControl
-          value={String(s.tabSize)}
+          value={String(editor.tabSize)}
           options={[...TAB_SIZE_OPTIONS]}
-          onChange={(v) => s.set('editor.tabSize', Number(v))}
+          onChange={editor.setTabSize}
         />
       </SettingRow>
       <SettingRow
         label="Word wrap"
         description={<Flex align="center" gap="4px"><WrapText size={11} /> Wrap long lines instead of horizontal scrolling.</Flex>}
       >
-        <SettingToggle value={s.wordWrap} onChange={(v) => s.set('editor.wordWrap', v)} />
+        <SettingToggle value={editor.wordWrap} onChange={editor.setWordWrap} />
       </SettingRow>
       <SettingRow
         label="Minimap"
         description={<Flex align="center" gap="4px"><Map size={11} /> Show a minimap overview for large files.</Flex>}
       >
-        <SettingToggle value={s.minimap} onChange={(v) => s.set('editor.minimap', v)} />
+        <SettingToggle value={editor.minimap} onChange={editor.setMinimap} />
       </SettingRow>
       <SettingRow
         label="Line numbers"
         description={<Flex align="center" gap="4px"><Hash size={11} /> Display line numbers in the gutter.</Flex>}
       >
-        <SettingToggle value={s.lineNumbers} onChange={(v) => s.set('editor.lineNumbers', v)} />
+        <SettingToggle value={editor.lineNumbers} onChange={editor.setLineNumbers} />
       </SettingRow>
     </SettingsSection>
   )
