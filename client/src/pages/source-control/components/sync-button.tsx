@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { ArrowUpDown, Check, AlertCircle, Cloud, CloudOff } from 'lucide-react'
-import { useGitSyncStatus, useGit } from '@/hooks/use-git'
+import { useGitSyncStatusQuery, useGitSync } from '@/api/hooks/git'
 import { Button, Badge, Tooltip, ConfirmDialog } from '@/components/shared/ui'
 
 export function SyncButton() {
-  const { data: syncStatus, isLoading } = useGitSyncStatus()
-  const { sync, invalidateAll } = useGit()
+  const { data: syncStatus, isLoading } = useGitSyncStatusQuery()
+  const sync = useGitSync()
   const [syncing, setSyncing] = useState(false)
   const [result, setResult] = useState<'success' | 'error' | null>(null)
   const [showConfirm, setShowConfirm] = useState(false)
@@ -29,7 +29,6 @@ export function SyncButton() {
     try {
       const r = await sync.mutateAsync()
       setResult(r.success ? 'success' : 'error')
-      invalidateAll()
     } catch {
       setResult('error')
     } finally {

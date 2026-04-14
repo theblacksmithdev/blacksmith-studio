@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { useGitBranches, useGit } from '@/hooks/use-git'
+import { useGitBranchesQuery, useGitCreateBranch, useGitSwitchBranch, useGitMerge } from '@/api/hooks/git'
 
 export function useBranchActions(onClose: () => void) {
-  const { data: branches, isLoading } = useGitBranches()
-  const { createBranch, switchBranch, merge, invalidateAll } = useGit()
+  const { data: branches, isLoading } = useGitBranchesQuery()
+  const createBranch = useGitCreateBranch()
+  const switchBranch = useGitSwitchBranch()
+  const merge = useGitMerge()
 
   const [error, setError] = useState<string | null>(null)
 
@@ -12,9 +14,8 @@ export function useBranchActions(onClose: () => void) {
 
   const checkout = (name: string) => {
     setError(null)
-    // Close modal immediately so the UI stays responsive during the git operation
     onClose()
-    switchBranch.mutate({ name }, {
+    switchBranch.mutate(name, {
       onError: (err) => setError(err instanceof Error ? err.message : 'Failed to switch branch'),
     })
   }
@@ -22,7 +23,7 @@ export function useBranchActions(onClose: () => void) {
   const create = (name: string) => {
     setError(null)
     onClose()
-    createBranch.mutate({ name }, {
+    createBranch.mutate(name, {
       onError: (err) => setError(err instanceof Error ? err.message : 'Failed to create branch'),
     })
   }

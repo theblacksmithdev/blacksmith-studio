@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useGitDiff } from '@/hooks/use-git'
+import { useGitDiffQuery } from '@/api/hooks/git'
 
 export interface DiffLine {
   type: 'add' | 'remove' | 'context' | 'header'
@@ -53,7 +53,7 @@ function parseDiff(raw: string): ParsedDiff {
 }
 
 export function useParsedDiff(filePath?: string) {
-  const { data: diff, isLoading } = useGitDiff(filePath)
+  const { data: diff, isLoading } = useGitDiffQuery(filePath)
 
   const parsed = useMemo(() => {
     if (!diff) return null

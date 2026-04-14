@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { useGit, useGitChangedFiles } from '@/hooks/use-git'
+import { useGitCommit, useGitGenerateMessage, useGitChangedFilesQuery } from '@/api/hooks/git'
 
 export function useCommit(onCommitted: () => void) {
-  const { commit, generateMessage } = useGit()
-  const changedFiles = useGitChangedFiles()
+  const commit = useGitCommit()
+  const generateMessage = useGitGenerateMessage()
+  const changedFiles = useGitChangedFilesQuery()
 
   const files = changedFiles.data
   const [message, setMessage] = useState('')

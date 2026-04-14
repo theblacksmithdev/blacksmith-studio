@@ -1,7 +1,7 @@
 import { useState, useMemo, memo, useCallback } from 'react'
 import { Flex, Box } from '@chakra-ui/react'
 import { GitCommitHorizontal, User, Calendar, Copy, Check } from 'lucide-react'
-import { useGitCommitDetail } from '@/hooks/use-git'
+import { useGitCommitDetailQuery } from '@/api/hooks/git'
 import { Drawer, Text, Badge, InfiniteScrollList, spacing, radii } from '@/components/shared/ui'
 import { FileIcon } from '@/pages/files/components/explorer/utils/file-icon'
 
@@ -36,7 +36,7 @@ interface Props {
 }
 
 export function CommitDetailDrawer({ hash, onClose }: Props) {
-  const { data: detail, isLoading } = useGitCommitDetail(hash)
+  const { data: detail, isLoading } = useGitCommitDetailQuery(hash)
   const [copied, setCopied] = useState(false)
 
   const copyHash = () => {
