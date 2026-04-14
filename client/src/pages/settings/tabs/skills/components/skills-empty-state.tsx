@@ -1,5 +1,6 @@
 import { Flex } from '@chakra-ui/react'
 import styled from '@emotion/styled'
+import { Link } from 'react-router-dom'
 import { Wand2, Plus, ArrowRight } from 'lucide-react'
 import { Text } from '@/components/shared/ui'
 
@@ -27,7 +28,7 @@ const IconWrap = styled.div`
   color: var(--studio-text-muted);
 `
 
-const PrimaryBtn = styled.button`
+const PrimaryLink = styled(Link)`
   display: flex;
   align-items: center;
   gap: 6px;
@@ -40,11 +41,12 @@ const PrimaryBtn = styled.button`
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
+  text-decoration: none;
   transition: opacity 0.12s ease;
   &:hover { opacity: 0.85; }
 `
 
-const SecondaryLink = styled.button`
+const SecondaryLink = styled(Link)`
   display: flex;
   align-items: center;
   gap: 4px;
@@ -55,15 +57,16 @@ const SecondaryLink = styled.button`
   font-size: 12px;
   cursor: pointer;
   font-family: inherit;
+  text-decoration: none;
   transition: color 0.12s ease;
   &:hover { color: var(--studio-text-primary); }
 `
 
 interface SkillsEmptyStateProps {
-  onBrowse: () => void
+  browsePath: string
 }
 
-export function SkillsEmptyState({ onBrowse }: SkillsEmptyStateProps) {
+export function SkillsEmptyState({ browsePath }: SkillsEmptyStateProps) {
   return (
     <Wrap>
       <IconWrap><Wand2 size={24} /></IconWrap>
@@ -76,10 +79,10 @@ export function SkillsEmptyState({ onBrowse }: SkillsEmptyStateProps) {
         </Text>
       </Flex>
       <Flex direction="column" align="center" gap="10px">
-        <PrimaryBtn onClick={onBrowse}>
+        <PrimaryLink to={browsePath}>
           <Plus size={13} /> Browse Library
-        </PrimaryBtn>
-        <SecondaryLink onClick={onBrowse}>
+        </PrimaryLink>
+        <SecondaryLink to={browsePath}>
           Or create a custom skill <ArrowRight size={11} />
         </SecondaryLink>
       </Flex>

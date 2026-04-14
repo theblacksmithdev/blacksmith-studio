@@ -28,10 +28,8 @@ export function SkillRow({ skill, onEdit, onDelete }: SkillRowProps) {
         '&:hover': { background: 'var(--studio-bg-surface)' },
       }}
     >
-      {/* Icon */}
       <Wand2 size={14} style={{ color: 'var(--studio-text-muted)', flexShrink: 0 }} />
 
-      {/* Content */}
       <Box css={{ flex: 1, minWidth: 0 }}>
         <Flex align="center" gap="6px">
           <Text css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>
@@ -49,7 +47,6 @@ export function SkillRow({ skill, onEdit, onDelete }: SkillRowProps) {
         )}
       </Box>
 
-      {/* Menu */}
       <Menu
         trigger={
           <IconButton variant="ghost" size="xs" aria-label="Options">

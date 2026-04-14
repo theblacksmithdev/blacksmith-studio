@@ -13,15 +13,21 @@ export function useSkillsActions() {
   const removeMutation = useRemoveSkill()
   const [modal, setModal] = useState<SkillModalState>(null)
 
-  const handleUpdate = useCallback(async (name: string, description: string, content: string) => {
-    await updateMutation.mutateAsync({ name, description, content })
-    setModal(null)
+  const handleUpdate = useCallback((name: string, description: string, content: string) => {
+    updateMutation.mutate({ name, description, content }, {
+      onSuccess() {
+        setModal(null)
+      },
+    })
   }, [updateMutation])
 
-  const handleRemove = useCallback(async () => {
+  const handleRemove = useCallback(() => {
     if (modal?.type === 'delete') {
-      await removeMutation.mutateAsync(modal.name)
-      setModal(null)
+      removeMutation.mutate(modal.name, {
+        onSuccess() {
+          setModal(null)
+        },
+      })
     }
   }, [modal, removeMutation])
 
