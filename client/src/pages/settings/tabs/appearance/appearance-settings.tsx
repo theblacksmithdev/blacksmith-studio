@@ -1,14 +1,13 @@
 import { useCallback } from 'react'
 import { Flex, Box } from '@chakra-ui/react'
 import styled from '@emotion/styled'
-import { Monitor, Sun, Moon, Minus, Plus, Type, PanelLeft, Palette } from 'lucide-react'
-import { SettingsSection } from '../settings-section'
-import { SettingRow } from '../setting-row'
-import { SettingToggle } from '../setting-toggle'
+import { Monitor, Sun, Moon, Minus, Plus, Type, PanelLeft } from 'lucide-react'
+import { SettingsSection } from '@/pages/settings/components/settings-section'
+import { SettingRow } from '@/pages/settings/components/setting-row'
+import { SettingToggle } from '@/pages/settings/components/setting-toggle'
 import { useSettings } from '@/hooks/use-settings'
 import { useThemeMode } from '@/hooks/use-theme-mode'
 import { useUiStore } from '@/stores/ui-store'
-import { Text } from '@/components/shared/ui'
 
 /* ── Theme Cards ── */
 

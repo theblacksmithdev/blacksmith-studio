@@ -1,9 +1,9 @@
 import { Flex } from '@chakra-ui/react'
 import { FolderCog, Eye, Server } from 'lucide-react'
-import { SettingsSection } from '../../settings-section'
-import { SettingRow } from '../../setting-row'
-import { SettingInput } from '../../setting-input'
-import { SettingTextarea } from '../../setting-textarea'
+import { SettingsSection } from '@/pages/settings/components/settings-section'
+import { SettingRow } from '@/pages/settings/components/setting-row'
+import { SettingInput } from '@/pages/settings/components/setting-input'
+import { SettingTextarea } from '@/pages/settings/components/setting-textarea'
 import { useSettings } from '@/hooks/use-settings'
 import { NodeVersionPicker } from './node-version-picker'
 

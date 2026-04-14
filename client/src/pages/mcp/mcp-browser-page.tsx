@@ -1,41 +1,23 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Flex, SimpleGrid } from '@chakra-ui/react'
 import { Blocks } from 'lucide-react'
-import { useMcpServersQuery, useAddMcpServer } from '@/api/hooks/mcp'
-import { PRESETS, CATEGORIES, type McpPreset } from '@/pages/settings/components/mcp-library/presets'
+import { PRESETS, CATEGORIES } from './components/presets'
 import { McpServerModal } from './components/mcp-server-modal'
 import { LibraryHeader, LibraryCategoryTabs, LibraryPresetCard, LibraryEmptySearch } from '@/components/shared/library-browser'
-import type { McpServerConfig, McpServerEntry } from '@/api/modules/mcp'
+import { useMcpBrowser } from './hooks/use-mcp-browser'
 
 export default function McpBrowserPage() {
   const navigate = useNavigate()
-  const { data: servers = [] } = useMcpServersQuery()
-  const addMutation = useAddMcpServer()
-  const [search, setSearch] = useState('')
-  const [category, setCategory] = useState('all')
-  const [editor, setEditor] = useState<{ preset?: McpPreset; custom?: boolean } | null>(null)
-
-  const installedNames = new Set(servers.map((s) => s.name))
-  const installedCount = PRESETS.filter((p) => installedNames.has(p.name)).length
-
-  const filtered = PRESETS.filter((p) => {
-    if (category !== 'all' && p.category !== category) return false
-    if (search) {
-      const q = search.toLowerCase()
-      return p.label.toLowerCase().includes(q) || p.description.toLowerCase().includes(q) || p.name.includes(q)
-    }
-    return true
-  })
-
-  const handleAdd = async (name: string, config: McpServerConfig) => {
-    await addMutation.mutateAsync({ name, config })
-    setEditor(null)
-  }
-
-  const editorServer: McpServerEntry | undefined = editor?.preset
-    ? { name: editor.preset.name, transport: 'command' in editor.preset.config ? 'stdio' : 'http', config: editor.preset.config, enabled: true, status: 'unknown' }
-    : undefined
+  const {
+    search, setSearch,
+    category, setCategory,
+    filtered,
+    installedNames,
+    installedCount,
+    editor, setEditor,
+    editorServer,
+    handleAdd,
+  } = useMcpBrowser()
 
   return (
     <Flex direction="column" css={{ height: '100%', background: 'var(--studio-bg-main)' }}>

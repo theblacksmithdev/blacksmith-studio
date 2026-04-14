@@ -3,7 +3,7 @@ import { keyframes } from '@emotion/react'
 import { Zap, Pencil, Trash2, Check, Loader2, Server, Globe, MoreVertical } from 'lucide-react'
 import { Text, Alert, Menu, IconButton, Badge } from '@/components/shared/ui'
 import type { MenuOption } from '@/components/shared/ui'
-import { SettingToggle } from '../../setting-toggle'
+import { SettingToggle } from '@/pages/settings/components/setting-toggle'
 import type { McpServerEntry } from '@/api/modules/mcp'
 
 const spin = keyframes`from { transform: rotate(0deg); } to { transform: rotate(360deg); }`

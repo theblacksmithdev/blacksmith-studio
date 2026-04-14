@@ -1,9 +1,9 @@
 import { Flex } from '@chakra-ui/react'
 import { IndentIncrease, WrapText, Map, Hash } from 'lucide-react'
-import { SettingsSection } from '../settings-section'
-import { SettingRow } from '../setting-row'
-import { SettingToggle } from '../setting-toggle'
-import { SegmentedControl } from '../segmented-control'
+import { SettingsSection } from '@/pages/settings/components/settings-section'
+import { SettingRow } from '@/pages/settings/components/setting-row'
+import { SettingToggle } from '@/pages/settings/components/setting-toggle'
+import { SegmentedControl } from '@/pages/settings/components/segmented-control'
 import { useSettings } from '@/hooks/use-settings'
 
 const TAB_SIZE_OPTIONS = [
