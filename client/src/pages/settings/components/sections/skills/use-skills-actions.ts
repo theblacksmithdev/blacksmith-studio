@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { useSkills } from '@/hooks/use-skills'
+import { useSkillsListQuery, useUpdateSkill, useRemoveSkill } from '@/api/hooks/skills'
 import type { SkillEntry } from '@/api/modules/skills'
 
 export type SkillModalState =
@@ -8,20 +8,22 @@ export type SkillModalState =
   | { type: 'delete'; name: string }
 
 export function useSkillsActions() {
-  const { skills, update, remove } = useSkills()
+  const { data: skills = [] } = useSkillsListQuery()
+  const updateMutation = useUpdateSkill()
+  const removeMutation = useRemoveSkill()
   const [modal, setModal] = useState<SkillModalState>(null)
 
   const handleUpdate = useCallback(async (name: string, description: string, content: string) => {
-    await update({ name, description, content })
+    await updateMutation.mutateAsync({ name, description, content })
     setModal(null)
-  }, [update])
+  }, [updateMutation])
 
   const handleRemove = useCallback(async () => {
     if (modal?.type === 'delete') {
-      await remove(modal.name)
+      await removeMutation.mutateAsync(modal.name)
       setModal(null)
     }
-  }, [modal, remove])
+  }, [modal, removeMutation])
 
   return { skills, modal, setModal, handleUpdate, handleRemove }
 }

@@ -1,5 +1,7 @@
 import { useState, useCallback } from 'react'
-import { useKnowledge } from '@/hooks/use-knowledge'
+import { api } from '@/api'
+import { useKnowledgeListQuery, useCreateKnowledge, useSaveKnowledge, useRemoveKnowledge } from '@/api/hooks/knowledge'
+import { useActiveProjectId } from '@/api/hooks/_shared'
 import type { KnowledgeDocContent } from '@/api/modules/knowledge'
 
 export type KnowledgeModalState =
@@ -9,39 +11,44 @@ export type KnowledgeModalState =
   | { type: 'delete'; name: string }
 
 export function useKnowledgeActions() {
-  const { docs, getDoc, create, save, remove } = useKnowledge()
+  const { data: docs = [] } = useKnowledgeListQuery()
+  const createMutation = useCreateKnowledge()
+  const saveMutation = useSaveKnowledge()
+  const removeMutation = useRemoveKnowledge()
+  const projectId = useActiveProjectId()
   const [modal, setModal] = useState<KnowledgeModalState>(null)
   const [newName, setNewName] = useState('')
   const [editContent, setEditContent] = useState('')
 
   const openDoc = useCallback(async (name: string) => {
-    const doc = await getDoc(name)
+    if (!projectId) return
+    const doc = await api.knowledge.get(projectId, name)
     if (doc) {
       setEditContent(doc.content)
       setModal({ type: 'edit', doc })
     }
-  }, [getDoc])
+  }, [projectId])
 
   const handleCreate = useCallback(async () => {
     if (!newName.trim()) return
-    await create(newName.trim())
+    await createMutation.mutateAsync(newName.trim())
     setNewName('')
     setModal(null)
-  }, [newName, create])
+  }, [newName, createMutation])
 
   const handleSave = useCallback(async () => {
     if (modal?.type === 'edit') {
-      await save({ name: modal.doc.name, content: editContent })
+      await saveMutation.mutateAsync({ name: modal.doc.name, content: editContent })
       setModal(null)
     }
-  }, [modal, editContent, save])
+  }, [modal, editContent, saveMutation])
 
   const handleRemove = useCallback(async () => {
     if (modal?.type === 'delete') {
-      await remove(modal.name)
+      await removeMutation.mutateAsync(modal.name)
       setModal(null)
     }
-  }, [modal, remove])
+  }, [modal, removeMutation])
 
   const closeModal = useCallback(() => {
     setModal(null)

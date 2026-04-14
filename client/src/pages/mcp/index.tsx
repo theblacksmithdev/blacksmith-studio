@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Flex, SimpleGrid } from '@chakra-ui/react'
 import { Blocks } from 'lucide-react'
-import { useMcp } from '@/hooks/use-mcp'
+import { useMcpServersQuery, useAddMcpServer } from '@/api/hooks/mcp'
 import { PRESETS, CATEGORIES, type McpPreset } from '@/pages/settings/components/mcp-library/presets'
 import { McpServerModal } from './components/mcp-server-modal'
 import { LibraryHeader, LibraryCategoryTabs, LibraryPresetCard, LibraryEmptySearch } from '@/components/shared/library-browser'
@@ -10,7 +10,8 @@ import type { McpServerConfig, McpServerEntry } from '@/api/modules/mcp'
 
 export default function McpBrowserPage() {
   const navigate = useNavigate()
-  const { servers, add } = useMcp()
+  const { data: servers = [] } = useMcpServersQuery()
+  const addMutation = useAddMcpServer()
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('all')
   const [editor, setEditor] = useState<{ preset?: McpPreset; custom?: boolean } | null>(null)
@@ -28,7 +29,7 @@ export default function McpBrowserPage() {
   })
 
   const handleAdd = async (name: string, config: McpServerConfig) => {
-    await add({ name, config })
+    await addMutation.mutateAsync({ name, config })
     setEditor(null)
   }
 

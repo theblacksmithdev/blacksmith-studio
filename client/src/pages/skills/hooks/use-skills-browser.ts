@@ -1,9 +1,10 @@
 import { useState, useMemo, useCallback } from 'react'
-import { useSkills } from '@/hooks/use-skills'
+import { useSkillsListQuery, useAddSkill } from '@/api/hooks/skills'
 import { SKILL_PRESETS, type SkillPreset } from '../components/presets'
 
 export function useSkillsBrowser() {
-  const { skills, add } = useSkills()
+  const { data: skills = [] } = useSkillsListQuery()
+  const addMutation = useAddSkill()
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('all')
   const [editor, setEditor] = useState<{ preset?: SkillPreset; custom?: boolean } | null>(null)
@@ -21,9 +22,9 @@ export function useSkillsBrowser() {
   }), [category, search])
 
   const handleAdd = useCallback(async (name: string, description: string, content: string) => {
-    await add({ name, description, content })
+    await addMutation.mutateAsync({ name, description, content })
     setEditor(null)
-  }, [add])
+  }, [addMutation])
 
   return {
     search, setSearch,
