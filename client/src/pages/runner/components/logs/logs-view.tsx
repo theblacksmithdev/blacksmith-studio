@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Flex, Box } from '@chakra-ui/react'
 import { useRunnerStore, selectServices } from '@/stores/runner-store'
 import { spacing } from '@/components/shared/ui'
-import { MONO_FONT } from '../runner-primitives'
+import { MONO_FONT } from '@/components/runner/runner-primitives'
 import { LogLine, LogsToolbar, LogsEmpty } from './components'
 import { useFilteredLogs, useAutoScroll } from './hooks'
 

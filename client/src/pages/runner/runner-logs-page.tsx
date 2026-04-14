@@ -1,6 +1,6 @@
 import { useOutletContext } from 'react-router-dom'
-import { RunnerLogs } from '../../logs'
-import { useActiveService } from '../hooks'
+import { RunnerLogs } from './components/logs'
+import { useActiveService } from './hooks/use-active-service'
 
 interface RunnerOutletContext {
   previewToggle: React.ReactNode

@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { useRunnerStore, selectIsAnyActive, RunnerStatus } from '@/stores/runner-store'
 import { useRunner } from '@/hooks/use-runner'
-import { StatusDot, MONO_FONT } from '../runner-primitives'
+import { StatusDot, MONO_FONT } from '@/components/runner/runner-primitives'
 
 /* ── Shared layout ── */
 

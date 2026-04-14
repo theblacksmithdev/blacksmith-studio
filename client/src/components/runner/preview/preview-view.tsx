@@ -2,7 +2,7 @@ import { useState } from 'react'
 import styled from '@emotion/styled'
 import { X } from 'lucide-react'
 import { useRunnerStore, useServices, RunnerStatus } from '@/stores/runner-store'
-import { getServiceIcon, StatusDot } from '../runner-primitives'
+import { getServiceIcon, StatusDot } from '@/components/runner/runner-primitives'
 import { PreviewStopped } from './preview-states'
 import { IframeView } from './iframe-view'
 

@@ -1,6 +1,6 @@
 import styled from '@emotion/styled'
 import { type LogEntry } from '@/stores/runner-store'
-import { getLineColor, MONO_FONT } from '../../runner-primitives'
+import { getLineColor, MONO_FONT } from '@/components/runner/runner-primitives'
 
 const Line = styled.div`
   display: flex;

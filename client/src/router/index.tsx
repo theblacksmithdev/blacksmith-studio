@@ -18,7 +18,7 @@ import SettingsPage, {
 import { SingleAgentChat, AgentTeamChat } from "@/pages/home-page";
 import ChatPage from "@/pages/chat";
 import FilesPage from "@/pages/files";
-import { RunnerPage, RunnerLogsPage } from "@/components/runner/runner-page";
+import { RunnerPage, RunnerLogsPage } from "@/pages/runner";
 import SkillsBrowserPage from "@/pages/skills";
 import McpBrowserPage from "@/pages/mcp";
 import SourceControlPage from "@/pages/source-control";
@@ -41,7 +41,7 @@ export const router = createHashRouter([
       },
     ],
   },
-
+  
   {
     path: "/:projectId",
     element: <ProjectLayout />,

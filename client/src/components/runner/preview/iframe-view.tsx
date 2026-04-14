@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import styled from '@emotion/styled'
 import { Globe, ExternalLink, RotateCw } from 'lucide-react'
-import { MONO_FONT } from '../runner-primitives'
+import { MONO_FONT } from '@/components/runner/runner-primitives'
 import {
   PreviewLoading,
   PreviewLoadingBar,
