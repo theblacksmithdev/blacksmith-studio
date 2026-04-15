@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process'
 import path from 'node:path'
-import type { RunnerProcess, RunnerServiceStatus, RunnerStatus } from './types.js'
-import type { RunnerConfigService, RunnerConfig } from './runner-config.js'
+import { RunnerProcess, type RunnerServiceStatus, type RunnerStatus } from './types.js'
+import type { RunnerConfigService } from './runner-config.js'
 import { spawnRunner } from './spawn-runner.js'
 import { detectRunners } from './detect-runners.js'
 import { nodeEnv } from '../node-env.js'
@@ -80,15 +80,15 @@ export class RunnerManager {
       nodePath,
     )
 
-    this.processes.set(configId, {
+    this.processes.set(configId, new RunnerProcess({
       process: result.process,
       configId,
       name: config.name,
       port: result.port,
       status: 'starting',
-      previewUrl: result.resolvedPreviewUrl,
+      previewUrlTemplate: config.previewUrl,
       icon: config.icon ?? 'terminal',
-    })
+    }))
   }
 
   stop(configId: string): void {

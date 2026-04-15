@@ -7,7 +7,6 @@ import type { RunnerConfig } from './runner-config.js'
 export interface SpawnResult {
   process: ChildProcess
   port: number | null
-  resolvedPreviewUrl: string | null
 }
 
 export type OutputCallback = (configId: string, line: string) => void
@@ -98,8 +97,5 @@ export async function spawnRunner(
   onStatus(config.id, 'starting', port)
   onOutput(config.id, `[studio] Starting ${config.name}${port ? ` on port ${port}` : ''}...`)
 
-  // Resolve preview URL
-  const resolvedPreviewUrl = config.previewUrl ? sub(config.previewUrl) : null
-
-  return { process: proc, port, resolvedPreviewUrl }
+  return { process: proc, port }
 }
