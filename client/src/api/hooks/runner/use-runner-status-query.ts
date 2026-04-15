@@ -14,3 +14,18 @@ export function useRunnerStatusQuery() {
     enabled: !!projectId,
   });
 }
+
+
+/**
+ * Fetches the current status of all runner services for a specific project.
+ * @param projectId 
+ * @returns 
+ */
+
+export function useProjectRunnerStatus(projectId: string) {
+  return useQuery({
+    queryKey: ["runner", projectId, "status"] as const,
+    queryFn: () => api.runner.getStatus(projectId),
+    refetchInterval: 10_000,
+  });
+}

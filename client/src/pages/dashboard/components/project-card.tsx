@@ -1,9 +1,10 @@
 import styled from "@emotion/styled";
 import { FolderOpen, ArrowRight } from "lucide-react";
-import { Text, Avatar, spacing } from "@/components/shared/ui";
+import { Text, Avatar, StatusDot, spacing } from "@/components/shared/ui";
 import type { Project } from "@/api/types";
 import { Link } from "react-router-dom";
 import { projectHome } from "@/router/paths";
+import { useProjectRunnerStatus } from "@/api/hooks/runner";
 
 const Root = styled(Link)`
   display: flex;
@@ -37,6 +38,20 @@ const Body = styled.div`
   min-width: 0;
 `;
 
+const RunnerBadge = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 100px;
+  background: var(--studio-bg-surface);
+  color: var(--studio-text-tertiary);
+  font-size: 11px;
+  font-weight: 500;
+  flex-shrink: 0;
+  white-space: nowrap;
+`;
+
 const Arrow = styled.div`
   opacity: 0;
   transform: translateX(-4px);
@@ -51,6 +66,12 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
+  const { data: services } = useProjectRunnerStatus(project.id);
+
+  const runningCount =
+    services?.filter((s) => s.status === "running" || s.status === "starting")
+      .length ?? 0;
+
   return (
     <Root to={projectHome(project.id)}>
       <Avatar size="sm" variant="default" icon={<FolderOpen />} />
@@ -74,6 +95,12 @@ export function ProjectCard({ project }: ProjectCardProps) {
           {project.path}
         </Text>
       </Body>
+      {runningCount > 0 && (
+        <RunnerBadge>
+          <StatusDot status="active" size="xs" />
+          {runningCount} running
+        </RunnerBadge>
+      )}
       <Arrow className="project-arrow">
         <ArrowRight size={14} />
       </Arrow>

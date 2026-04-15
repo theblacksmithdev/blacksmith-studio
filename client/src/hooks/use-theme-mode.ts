@@ -1,5 +1,8 @@
 import { useEffect, useCallback } from "react";
-import { useSettingsQuery, useUpdateSettings } from "@/api/hooks/settings";
+import {
+  useGlobalSettingsQuery,
+  useUpdateGlobalSettings,
+} from "@/api/hooks/settings";
 
 type ThemeMode = "light" | "dark";
 type ThemeSetting = "light" | "dark" | "system";
@@ -35,11 +38,11 @@ applyMode(
 
 /**
  * Single source of truth for theme mode.
- * Reads from project settings, applies CSS class as side effect.
+ * Uses global (app-level) settings so theme is consistent across all pages.
  */
 export function useThemeMode() {
-  const { data: settings } = useSettingsQuery();
-  const updateMutation = useUpdateSettings();
+  const { data: settings } = useGlobalSettingsQuery();
+  const updateMutation = useUpdateGlobalSettings();
 
   const themeSetting = (settings?.["appearance.theme"] ??
     "system") as ThemeSetting;
