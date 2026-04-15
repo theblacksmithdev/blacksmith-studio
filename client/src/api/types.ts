@@ -182,10 +182,16 @@ export interface NodeInstallation {
 
 // Subscribe events
 export interface RunnerOutputEvent {
+  projectId: string;
   configId: string;
   name: string;
   line: string;
   timestamp: number;
+}
+
+export interface RunnerStatusEvent {
+  projectId: string;
+  services: RunnerServiceStatus[];
 }
 
 /* ── Claude ── */

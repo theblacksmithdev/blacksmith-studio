@@ -126,7 +126,12 @@ app.whenReady().then(async () => {
   const { RunnerConfigService } =
     await import("../server/services/runner/runner-config.js");
   const runnerConfigService = new RunnerConfigService();
-  const runnerManager = new RunnerManager(runnerConfigService);
+  const runnerManager = new RunnerManager(runnerConfigService, (projectId) => {
+    const project = projectManager.get(projectId);
+    if (!project) throw new Error(`Project not found for id: ${projectId}`);
+    const nodePath = settingsManager.resolve(projectId, "runner.nodePath") || "";
+    return { path: project.path, nodePath };
+  });
   const mcpManager = new McpManager();
   const skillsManager = new SkillsManager();
   const knowledgeManager = new KnowledgeManager();

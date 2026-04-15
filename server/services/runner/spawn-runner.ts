@@ -1,6 +1,6 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import path from "node:path";
-import { findAvailablePort } from "./port-utils.js";
+import { assertPortAvailable, extractPortFromLine } from "./port-utils.js";
 import { nodeEnv } from "../node-env.js";
 import type { RunnerConfig } from "./runner-config.js";
 
@@ -18,7 +18,9 @@ export type StatusCallback = (
 
 /**
  * Generic runner spawner — works with any RunnerConfig.
- * Resolves port, substitutes {port} in command/args/previewUrl, spawns the process.
+ * Checks that the configured port is free, substitutes {port} in command,
+ * then spawns the process. Detects the actual port from process output
+ * so the preview URL always points to the right place.
  */
 export async function spawnRunner(
   config: RunnerConfig,
@@ -27,15 +29,18 @@ export async function spawnRunner(
   onStatus: StatusCallback,
   nodePath?: string,
 ): Promise<SpawnResult> {
-  // Resolve port
-  let port: number | null = null;
-  if (config.port) {
-    port = await findAvailablePort(config.port);
+  // Check that the configured port is free — fail fast if busy
+  const configuredPort = config.port ?? null;
+  console.log("Configured port:", configuredPort);
+  if (configuredPort) {
+    await assertPortAvailable(configuredPort);
   }
 
   // Substitute {port} in command
   const sub = (str: string) =>
-    port != null ? str.replace(/\{port\}/g, String(port)) : str;
+    configuredPort != null
+      ? str.replace(/\{port\}/g, String(configuredPort))
+      : str;
 
   const fullCommand = sub(config.command);
   const cwd = path.resolve(projectRoot, config.cwd ?? ".");
@@ -50,13 +55,16 @@ export async function spawnRunner(
     shell: true,
     stdio: ["ignore", "pipe", "pipe"],
     env,
-  } as any);
+  });
 
   // Ready pattern detection
   const readyRegex = config.readyPattern
     ? new RegExp(config.readyPattern, "i")
     : null;
   let isReady = false;
+
+  // Track the actual port detected from output
+  let detectedPort: number | null = configuredPort;
 
   // Timeout: auto-promote to "running" if readyPattern never matches
   const READY_TIMEOUT_MS = 30_000;
@@ -70,7 +78,7 @@ export async function spawnRunner(
           config.id,
           `[studio] Ready pattern not matched after ${READY_TIMEOUT_MS / 1000}s — assuming running`,
         );
-        onStatus(config.id, "running", port);
+        onStatus(config.id, "running", detectedPort);
       }
     }, READY_TIMEOUT_MS);
   }
@@ -79,11 +87,19 @@ export async function spawnRunner(
     if (!line.trim()) return;
     onOutput(config.id, line);
 
+    // Try to detect actual port from output (covers port reassignment by tools)
+    if (configuredPort) {
+      const linePort = extractPortFromLine(line);
+      if (linePort && linePort !== detectedPort) {
+        detectedPort = linePort;
+      }
+    }
+
     if (!isReady) {
       if (readyRegex ? readyRegex.test(line) : true) {
         isReady = true;
         if (readyTimer) clearTimeout(readyTimer);
-        onStatus(config.id, "running", port);
+        onStatus(config.id, "running", detectedPort);
       }
     }
   };
@@ -121,11 +137,11 @@ export async function spawnRunner(
   });
 
   // Emit starting status
-  onStatus(config.id, "starting", port);
+  onStatus(config.id, "starting", configuredPort);
   onOutput(
     config.id,
-    `[studio] Starting ${config.name}${port ? ` on port ${port}` : ""}...`,
+    `[studio] Starting ${config.name}${configuredPort ? ` on port ${configuredPort}` : ""}...`,
   );
 
-  return { process: proc, port };
+  return { process: proc, port: configuredPort };
 }

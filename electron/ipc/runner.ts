@@ -37,8 +37,9 @@ export function setupRunnerIPC(
   settingsManager: SettingsManager,
 ) {
   // Push callbacks
-  runnerManager.onOutput((configId, name, line, timestamp) => {
+  runnerManager.onOutput((projectId, configId, name, line, timestamp) => {
     getWindow()?.webContents.send(RUNNER_ON_OUTPUT, {
+      projectId,
       configId,
       name,
       line,
@@ -46,8 +47,8 @@ export function setupRunnerIPC(
     });
   });
 
-  runnerManager.onStatusChange((services) => {
-    getWindow()?.webContents.send(RUNNER_ON_STATUS, services);
+  runnerManager.onStatusChange((projectId, services) => {
+    getWindow()?.webContents.send(RUNNER_ON_STATUS, { projectId, services });
   });
 
   // ── Status ──
@@ -92,14 +93,12 @@ export function setupRunnerIPC(
     RUNNER_START,
     async (_e, data: { projectId: string; configId?: string }) => {
       const { id, path } = resolveProject(projectManager, data.projectId);
-      const nodePath = settingsManager.resolve(id, "runner.nodePath") || "";
-
       runnerManager.detectAndSeed(id, path);
 
       if (data.configId) {
-        await runnerManager.start(data.configId, path, nodePath);
+        await runnerManager.start(data.configId);
       } else {
-        await runnerManager.startAll(id, path, nodePath);
+        await runnerManager.startAll(id);
       }
     },
   );
@@ -119,16 +118,15 @@ export function setupRunnerIPC(
   ipcMain.handle(
     RUNNER_GET_LOGS,
     (_e, data: { projectId: string; configId?: string }) => {
-      return runnerManager.getLogs(data.projectId, data.configId);
+      const { id } = resolveProject(projectManager, data.projectId);
+      return runnerManager.getLogs(id, data.configId);
     },
   );
 
   ipcMain.handle(
     RUNNER_SETUP,
     async (_e, data: { projectId: string; configId: string }) => {
-      const { id, path } = resolveProject(projectManager, data.projectId);
-      const nodePath = settingsManager.resolve(id, "runner.nodePath") || "";
-      await runnerManager.setup(data.configId, path, nodePath);
+      await runnerManager.setup(data.configId);
     },
   );
 

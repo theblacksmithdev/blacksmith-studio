@@ -16,12 +16,16 @@ export type { RunnerConfig } from "./runner-config.js";
 export { detectRunners } from "./detect-runners.js";
 
 type OutputListener = (
+  projectId: string,
   configId: string,
   name: string,
   line: string,
   timestamp: number,
 ) => void;
-type StatusListener = (services: RunnerServiceStatus[]) => void;
+type StatusListener = (
+  projectId: string,
+  services: RunnerServiceStatus[],
+) => void;
 
 interface BufferedLog {
   configId: string;
@@ -33,15 +37,24 @@ interface BufferedLog {
 const MAX_BUFFERED_LOGS = 500;
 const KILL_ESCALATION_MS = 5_000;
 
+export type ProjectResolver = (
+  projectId: string,
+) => { path: string; nodePath: string };
+
 export class RunnerManager {
   private processes = new Map<string, RunnerProcess>();
   private outputListeners: OutputListener[] = [];
   private statusListeners: StatusListener[] = [];
   private configService: RunnerConfigService;
   private logBuffers = new Map<string, BufferedLog[]>();
+  private resolveProject: ProjectResolver;
 
-  constructor(configService: RunnerConfigService) {
+  constructor(
+    configService: RunnerConfigService,
+    resolveProject: ProjectResolver,
+  ) {
     this.configService = configService;
+    this.resolveProject = resolveProject;
   }
 
   onOutput(cb: OutputListener) {
@@ -73,36 +86,45 @@ export class RunnerManager {
     });
   }
 
-  async start(
-    configId: string,
-    projectRoot: string,
-    nodePath?: string,
-  ): Promise<void> {
+  async start(configId: string): Promise<void> {
     if (this.processes.has(configId)) return;
 
     const config = this.configService.getConfig(configId);
     if (!config) throw new Error(`Runner config not found.`);
 
+    const project = this.resolveProject(config.projectId);
+
     let currentProc: import("node:child_process").ChildProcess | null = null;
 
-    const result = await spawnRunner(
-      config,
-      projectRoot,
-      (id, line) => this.emitOutput(config.projectId, id, config.name, line),
-      (id, status, port) => {
-        const existing = this.processes.get(id);
-        // Only update if the entry still belongs to this spawn (not a newer restart)
-        if (existing && (!currentProc || existing.process === currentProc)) {
-          existing.status = status;
-          if (port != null) existing.port = port;
-          if (status === "stopped") {
-            this.processes.delete(id);
+    let result: Awaited<ReturnType<typeof spawnRunner>>;
+    try {
+      result = await spawnRunner(
+        config,
+        project.path,
+        (id, line) => this.emitOutput(config.projectId, id, config.name, line),
+        (id, status, port) => {
+          const existing = this.processes.get(id);
+          // Only update if the entry still belongs to this spawn (not a newer restart)
+          if (existing && (!currentProc || existing.process === currentProc)) {
+            existing.status = status;
+            if (port != null) existing.port = port;
+            if (status === "stopped") {
+              this.processes.delete(id);
+            }
           }
-        }
-        this.emitStatus(config.projectId);
-      },
-      nodePath,
-    );
+          this.emitStatus(config.projectId);
+        },
+        project.nodePath,
+      );
+    } catch (err: any) {
+      this.emitOutput(
+        config.projectId,
+        configId,
+        config.name,
+        `[studio] ${err.message}`,
+      );
+      throw err;
+    }
 
     currentProc = result.process;
 
@@ -144,15 +166,15 @@ export class RunnerManager {
     proc.process.once("close", () => clearTimeout(killTimer));
   }
 
-  async startAll(
-    projectId: string,
-    projectRoot: string,
-    nodePath?: string,
-  ): Promise<void> {
+  async startAll(projectId: string): Promise<void> {
     const configs = this.configService.getConfigs(projectId);
     for (const config of configs) {
       if (!this.processes.has(config.id)) {
-        await this.start(config.id, projectRoot, nodePath);
+        try {
+          await this.start(config.id);
+        } catch {
+          // Error already emitted to logs by start() — continue with remaining configs
+        }
       }
     }
   }
@@ -171,18 +193,15 @@ export class RunnerManager {
    * Streams output through the same log pipeline as the runner itself.
    * Resolves when the command exits. Rejects on non-zero exit code.
    */
-  async setup(
-    configId: string,
-    projectRoot: string,
-    nodePath?: string,
-  ): Promise<void> {
+  async setup(configId: string): Promise<void> {
     const config = this.configService.getConfig(configId);
     if (!config) throw new Error("Runner config not found.");
     if (!config.setupCommand)
       throw new Error("No setup command configured for this service.");
 
-    const cwd = path.resolve(projectRoot, config.cwd ?? ".");
-    const env = nodeEnv(nodePath, { ...config.env });
+    const project = this.resolveProject(config.projectId);
+    const cwd = path.resolve(project.path, config.cwd ?? ".");
+    const env = nodeEnv(project.nodePath, { ...config.env });
 
     this.emitOutput(
       config.projectId,
@@ -280,11 +299,11 @@ export class RunnerManager {
     } else {
       this.logBuffers.set(projectId, buf);
     }
-    for (const cb of this.outputListeners) cb(configId, name, line, ts);
+    for (const cb of this.outputListeners) cb(projectId, configId, name, line, ts);
   }
 
   private emitStatus(projectId: string) {
     const all = this.getStatus(projectId);
-    for (const cb of this.statusListeners) cb(all);
+    for (const cb of this.statusListeners) cb(projectId, all);
   }
 }

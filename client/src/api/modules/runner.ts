@@ -3,6 +3,7 @@ import type {
   RunnerServiceStatus,
   RunnerConfigData,
   RunnerOutputEvent,
+  RunnerStatusEvent,
   NodeInstallation,
 } from "../types";
 
@@ -42,7 +43,7 @@ export const runner = {
   detectNode: () => raw.invoke<NodeInstallation[]>("runner:detectNode"),
 
   // Subscriptions
-  onStatus: (cb: (data: RunnerServiceStatus[]) => void) =>
+  onStatus: (cb: (data: RunnerStatusEvent) => void) =>
     raw.subscribe("runner:onStatus", cb),
   onOutput: (cb: (data: RunnerOutputEvent) => void) =>
     raw.subscribe("runner:onOutput", cb),
