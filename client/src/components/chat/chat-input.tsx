@@ -119,7 +119,7 @@ export function ChatInput({
           rows={1}
           style={{
             width: "100%",
-            minHeight: "44px",
+            minHeight: "60px",
             padding: `${spacing.md} ${spacing.xl}`,
             background: "transparent",
             border: "none",

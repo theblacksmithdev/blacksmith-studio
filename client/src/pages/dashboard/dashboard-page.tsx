@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FolderPlus, LayoutGrid } from "lucide-react";
+import { FolderPlus, LayoutGrid, Plus } from "lucide-react";
 import styled from "@emotion/styled";
 import { keyframes } from "@emotion/react";
 import { Box, Flex } from "@chakra-ui/react";
@@ -12,7 +12,7 @@ import { ProjectCard } from "./components/project-card";
 const VISIBLE_LIMIT = 5;
 
 const fadeIn = keyframes`
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 `;
 
@@ -32,17 +32,75 @@ const Content = styled.div`
 
 const Inner = styled.div`
   width: 100%;
-  max-width: 480px;
+  max-width: 520px;
   display: flex;
   flex-direction: column;
   gap: ${spacing["3xl"]};
-  animation: ${fadeIn} 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: ${fadeIn} 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 `;
 
 const ProjectsBox = styled.div`
   border: 1px solid var(--studio-border);
   border-radius: ${radii["3xl"]};
   overflow: hidden;
+  background: var(--studio-bg-sidebar);
+`;
+
+const BoxHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px ${spacing.lg};
+  border-bottom: 1px solid var(--studio-border);
+`;
+
+const BoxLabel = styled.span`
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--studio-text-muted);
+`;
+
+const HeaderActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${spacing.xs};
+`;
+
+const ActionBtn = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: ${radii.sm};
+  border: 1px solid var(--studio-border);
+  background: transparent;
+  color: var(--studio-text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.1s ease;
+
+  &:hover {
+    border-color: var(--studio-border-hover);
+    color: var(--studio-text-primary);
+    background: var(--studio-bg-hover);
+  }
+`;
+
+const NewBtn = styled(ActionBtn)`
+  background: var(--studio-accent);
+  border-color: var(--studio-accent);
+  color: var(--studio-accent-fg);
+
+  &:hover {
+    opacity: 0.88;
+    background: var(--studio-accent);
+    border-color: var(--studio-accent);
+    color: var(--studio-accent-fg);
+  }
 `;
 
 const ProjectsList = styled.div`
@@ -50,39 +108,12 @@ const ProjectsList = styled.div`
   flex-direction: column;
 `;
 
-const FooterRow = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: ${spacing.sm};
-  width: 100%;
-  padding: ${spacing.md};
-  border: none;
-  border-top: 1px solid var(--studio-border);
-  background: transparent;
-  color: var(--studio-text-tertiary);
-  font-size: 13px;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.12s ease;
-
-  &:hover {
-    background: var(--studio-bg-surface);
-    color: var(--studio-text-primary);
-  }
-`;
-
-const SeeAllRow = styled(FooterRow)`
-  color: var(--studio-text-secondary);
-`;
-
 const EmptyBox = styled.div`
   padding: ${spacing["4xl"]} ${spacing["2xl"]};
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: ${spacing.lg};
+  gap: ${spacing.md};
   text-align: center;
 `;
 
@@ -108,39 +139,40 @@ export default function DashboardPage() {
           <HeroSection />
 
           <ProjectsBox>
-            {hasProjects ? (
-              <>
-                <ProjectsList>
-                  {visible.map((project) => (
-                    <ProjectCard key={project.id} project={project} />
-                  ))}
-                </ProjectsList>
-
+            <BoxHeader>
+              <BoxLabel>Recent</BoxLabel>
+              <HeaderActions>
                 {hasMore && (
-                  <SeeAllRow onClick={() => setAllModalOpen(true)}>
-                    <LayoutGrid size={13} />
-                    See all {projects.length} projects
-                  </SeeAllRow>
+                  <ActionBtn onClick={() => setAllModalOpen(true)}>
+                    <LayoutGrid size={11} />
+                    All {projects.length}
+                  </ActionBtn>
                 )}
+                <NewBtn onClick={() => setAddModalOpen(true)}>
+                  <Plus size={11} />
+                  New project
+                </NewBtn>
+              </HeaderActions>
+            </BoxHeader>
 
-                <FooterRow onClick={() => setAddModalOpen(true)}>
-                  <FolderPlus size={14} />
-                  Add project
-                </FooterRow>
-              </>
+            {hasProjects ? (
+              <ProjectsList>
+                {visible.map((project) => (
+                  <ProjectCard key={project.id} project={project} />
+                ))}
+              </ProjectsList>
             ) : (
               <EmptyBox>
-                <Text variant="title">No projects yet</Text>
-                <Text variant="body" color="muted" css={{ maxWidth: "280px" }}>
-                  Add your first project to start building with Claude.
+                <Text variant="body" color="muted" css={{ maxWidth: "260px" }}>
+                  No projects yet. Add your first project to start building.
                 </Text>
                 <Button
                   variant="primary"
-                  size="md"
+                  size="sm"
                   onClick={() => setAddModalOpen(true)}
                 >
-                  <FolderPlus size={14} />
-                  Add your first project
+                  <FolderPlus size={13} />
+                  Add first project
                 </Button>
               </EmptyBox>
             )}
