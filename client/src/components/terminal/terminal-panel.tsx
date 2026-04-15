@@ -1,12 +1,20 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
-import styled from '@emotion/styled'
-import { Terminal, X, Plus, Trash2, ChevronDown, Search, SquareTerminal } from 'lucide-react'
-import type { SearchAddon } from '@xterm/addon-search'
-import { api } from '@/api'
-import { useSpawnTerminal, useKillTerminal } from '@/api/hooks/terminal'
-import { useUiStore } from '@/stores/ui-store'
-import { XtermInstance } from './xterm-instance'
-import { TerminalSearch } from './terminal-search'
+import { useState, useEffect, useCallback, useRef } from "react";
+import styled from "@emotion/styled";
+import {
+  Terminal,
+  X,
+  Plus,
+  Trash2,
+  ChevronDown,
+  Search,
+  SquareTerminal,
+} from "lucide-react";
+import type { SearchAddon } from "@xterm/addon-search";
+import { api } from "@/api";
+import { useSpawnTerminal, useKillTerminal } from "@/api/hooks/terminal";
+import { useUiStore } from "@/stores/ui-store";
+import { XtermInstance } from "./xterm-instance";
+import { TerminalSearch } from "./terminal-search";
 
 /* ── Styled ── */
 
@@ -16,7 +24,7 @@ const Wrapper = styled.div`
   height: 100%;
   overflow: hidden;
   background: #0a0a0a;
-`
+`;
 
 const Header = styled.div`
   flex-shrink: 0;
@@ -28,7 +36,7 @@ const Header = styled.div`
   background: #0a0a0a;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   user-select: none;
-`
+`;
 
 const HeaderLabel = styled.div`
   display: flex;
@@ -41,7 +49,7 @@ const HeaderLabel = styled.div`
   letter-spacing: 0.08em;
   color: rgba(255, 255, 255, 0.35);
   flex-shrink: 0;
-`
+`;
 
 const TabStrip = styled.div`
   display: flex;
@@ -51,8 +59,10 @@ const TabStrip = styled.div`
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
-  &::-webkit-scrollbar { display: none; }
-`
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
 
 const Tab = styled.button<{ active?: boolean }>`
   display: flex;
@@ -62,8 +72,10 @@ const Tab = styled.button<{ active?: boolean }>`
   height: 26px;
   border-radius: 6px;
   border: none;
-  background: ${(p) => (p.active ? 'rgba(255, 255, 255, 0.08)' : 'transparent')};
-  color: ${(p) => (p.active ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.4)')};
+  background: ${(p) =>
+    p.active ? "rgba(255, 255, 255, 0.08)" : "transparent"};
+  color: ${(p) =>
+    p.active ? "rgba(255, 255, 255, 0.9)" : "rgba(255, 255, 255, 0.4)"};
   font-size: 12px;
   font-weight: ${(p) => (p.active ? 500 : 400)};
   cursor: pointer;
@@ -80,12 +92,13 @@ const Tab = styled.button<{ active?: boolean }>`
   &:hover .tab-close {
     opacity: 0.4;
   }
-`
+`;
 
 const TabIcon = styled.span<{ active?: boolean }>`
   display: flex;
-  color: ${(p) => (p.active ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.25)')};
-`
+  color: ${(p) =>
+    p.active ? "rgba(255, 255, 255, 0.5)" : "rgba(255, 255, 255, 0.25)"};
+`;
 
 const TabClose = styled.span`
   display: flex;
@@ -101,7 +114,7 @@ const TabClose = styled.span`
     opacity: 1 !important;
     background: rgba(255, 255, 255, 0.1);
   }
-`
+`;
 
 const Actions = styled.div`
   display: flex;
@@ -109,7 +122,7 @@ const Actions = styled.div`
   gap: 1px;
   margin-left: auto;
   flex-shrink: 0;
-`
+`;
 
 const IconBtn = styled.button<{ active?: boolean }>`
   display: flex;
@@ -119,8 +132,10 @@ const IconBtn = styled.button<{ active?: boolean }>`
   height: 28px;
   border-radius: 6px;
   border: none;
-  background: ${(p) => (p.active ? 'rgba(255, 255, 255, 0.08)' : 'transparent')};
-  color: ${(p) => (p.active ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.3)')};
+  background: ${(p) =>
+    p.active ? "rgba(255, 255, 255, 0.08)" : "transparent"};
+  color: ${(p) =>
+    p.active ? "rgba(255, 255, 255, 0.7)" : "rgba(255, 255, 255, 0.3)"};
   cursor: pointer;
   transition: all 0.12s ease;
   flex-shrink: 0;
@@ -129,7 +144,7 @@ const IconBtn = styled.button<{ active?: boolean }>`
     background: rgba(255, 255, 255, 0.08);
     color: rgba(255, 255, 255, 0.7);
   }
-`
+`;
 
 const Body = styled.div`
   flex: 1;
@@ -137,89 +152,94 @@ const Body = styled.div`
   position: relative;
   background: #0a0a0a;
   overflow: hidden;
-`
+`;
 
 /* ── Component ── */
 
 interface TermTab {
-  id: string
-  label: string
+  id: string;
+  label: string;
 }
 
 export function TerminalPanel() {
-  const spawnMutation = useSpawnTerminal()
-  const killMutation = useKillTerminal()
-  const isOpen = useUiStore((s) => s.terminalOpen)
-  const setOpen = useUiStore((s) => s.setTerminalOpen)
-  const [tabs, setTabs] = useState<TermTab[]>([])
-  const [activeTab, setActiveTab] = useState<string | null>(null)
-  const [searchOpen, setSearchOpen] = useState(false)
-  const searchAddonRef = useRef<SearchAddon | null>(null)
-  const wrapperRef = useRef<HTMLDivElement>(null)
+  const spawnMutation = useSpawnTerminal();
+  const killMutation = useKillTerminal();
+  const isOpen = useUiStore((s) => s.terminalOpen);
+  const setOpen = useUiStore((s) => s.setTerminalOpen);
+  const [tabs, setTabs] = useState<TermTab[]>([]);
+  const [activeTab, setActiveTab] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchAddonRef = useRef<SearchAddon | null>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   // Spawn first terminal on open — guard with ref to prevent StrictMode double-spawn
-  const spawningRef = useRef(false)
+  const spawningRef = useRef(false);
   useEffect(() => {
     if (isOpen && tabs.length === 0 && !spawningRef.current) {
-      spawningRef.current = true
-      spawnTab().finally(() => { spawningRef.current = false })
+      spawningRef.current = true;
+      spawnTab().finally(() => {
+        spawningRef.current = false;
+      });
     }
-  }, [isOpen])
+  }, [isOpen]);
 
   // Listen for terminal exits
   useEffect(() => {
     const unsub = api.terminal.onExit((event) => {
       setTabs((prev) => {
-        const next = prev.filter((t) => t.id !== event.id)
+        const next = prev.filter((t) => t.id !== event.id);
         if (activeTab === event.id) {
-          setActiveTab(next.length > 0 ? next[next.length - 1].id : null)
+          setActiveTab(next.length > 0 ? next[next.length - 1].id : null);
         }
-        if (next.length === 0) setOpen(false)
-        return next
-      })
-    })
-    return unsub
-  }, [activeTab, setOpen])
+        if (next.length === 0) setOpen(false);
+        return next;
+      });
+    });
+    return unsub;
+  }, [activeTab, setOpen]);
 
   const spawnTab = useCallback(async () => {
     try {
-      const id = await spawnMutation.mutateAsync(undefined)
-      const num = tabs.length + 1
-      setTabs((prev) => [...prev, { id, label: `zsh ${num}` }])
-      setActiveTab(id)
+      const id = await spawnMutation.mutateAsync(undefined);
+      const num = tabs.length + 1;
+      setTabs((prev) => [...prev, { id, label: `zsh ${num}` }]);
+      setActiveTab(id);
     } catch (err: any) {
-      console.error('Failed to spawn terminal:', err)
+      console.error("Failed to spawn terminal:", err);
     }
-  }, [tabs.length, spawnMutation])
+  }, [tabs.length, spawnMutation]);
 
-  const killTab = useCallback(async (id: string) => {
-    await killMutation.mutateAsync(id)
-    setTabs((prev) => {
-      const next = prev.filter((t) => t.id !== id)
-      if (activeTab === id) {
-        setActiveTab(next.length > 0 ? next[next.length - 1].id : null)
-      }
-      if (next.length === 0) setOpen(false)
-      return next
-    })
-  }, [activeTab, setOpen])
+  const killTab = useCallback(
+    async (id: string) => {
+      await killMutation.mutateAsync(id);
+      setTabs((prev) => {
+        const next = prev.filter((t) => t.id !== id);
+        if (activeTab === id) {
+          setActiveTab(next.length > 0 ? next[next.length - 1].id : null);
+        }
+        if (next.length === 0) setOpen(false);
+        return next;
+      });
+    },
+    [activeTab, setOpen],
+  );
 
   // Cmd+F to toggle search
   useEffect(() => {
-    const el = wrapperRef.current
-    if (!el) return
+    const el = wrapperRef.current;
+    if (!el) return;
     const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
-        e.preventDefault()
-        e.stopPropagation()
-        setSearchOpen((v) => !v)
+      if ((e.metaKey || e.ctrlKey) && e.key === "f") {
+        e.preventDefault();
+        e.stopPropagation();
+        setSearchOpen((v) => !v);
       }
-    }
-    el.addEventListener('keydown', handler)
-    return () => el.removeEventListener('keydown', handler)
-  }, [])
+    };
+    el.addEventListener("keydown", handler);
+    return () => el.removeEventListener("keydown", handler);
+  }, []);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <Wrapper ref={wrapperRef}>
@@ -242,7 +262,10 @@ export function TerminalPanel() {
               {tab.label}
               <TabClose
                 className="tab-close"
-                onClick={(e) => { e.stopPropagation(); killTab(tab.id) }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  killTab(tab.id);
+                }}
               >
                 <X size={9} />
               </TabClose>
@@ -263,10 +286,10 @@ export function TerminalPanel() {
           </IconBtn>
           <IconBtn
             onClick={() => {
-              tabs.forEach((t) => killMutation.mutate(t.id))
-              setTabs([])
-              setActiveTab(null)
-              setOpen(false)
+              tabs.forEach((t) => killMutation.mutate(t.id));
+              setTabs([]);
+              setActiveTab(null);
+              setOpen(false);
             }}
             title="Kill all"
           >
@@ -294,5 +317,5 @@ export function TerminalPanel() {
         )}
       </Body>
     </Wrapper>
-  )
+  );
 }

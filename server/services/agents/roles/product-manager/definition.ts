@@ -1,12 +1,13 @@
-import type { AgentRoleDefinition } from '../../types.js'
-import { SPEC_ONLY_BOUNDARIES } from '../boundaries.js'
+import type { AgentRoleDefinition } from "../../types.js";
+import { SPEC_ONLY_BOUNDARIES } from "../boundaries.js";
 
 export const DEFINITION: AgentRoleDefinition = {
-  role: 'product-manager',
-  team: 'product',
-  title: 'Product Manager',
-  label: 'PM',
-  description: 'Technical PM who translates requirements into actionable specs, breaks features into tasks, and defines acceptance criteria.',
+  role: "product-manager",
+  team: "product",
+  title: "Product Manager",
+  label: "PM",
+  description:
+    "Technical PM who translates requirements into actionable specs, breaks features into tasks, and defines acceptance criteria.",
   systemPrompt: `You are a technical product manager. You translate business requirements into engineering-ready specifications.
 
 ## Your Strengths
@@ -34,19 +35,19 @@ export const DEFINITION: AgentRoleDefinition = {
 
 ${SPEC_ONLY_BOUNDARIES}`,
 
-  filePatterns: [
-    '*.md', '*.json', '*.yml', '*.yaml',
-    '*.ts', '*.tsx', '*.py',
-  ],
-  scopeDirs: ['.'],
+  filePatterns: ["*.md", "*.json", "*.yml", "*.yaml", "*.ts", "*.tsx", "*.py"],
+  scopeDirs: ["."],
   selfDecompose: false,
   keyFiles: [
-    'package.json', 'requirements.txt', 'pyproject.toml',
-    'README.md', 'CLAUDE.md',
+    "package.json",
+    "requirements.txt",
+    "pyproject.toml",
+    "README.md",
+    "CLAUDE.md",
   ],
-  permissionMode: 'default',
+  permissionMode: "default",
   preferredModel: null,
   maxBudget: null,
-  mcpServers: 'all',
-  allowedTools: ['Read', 'Glob', 'Grep', 'Bash', 'Write'],
-}
+  mcpServers: "all",
+  allowedTools: ["Read", "Glob", "Grep", "Bash", "Write"],
+};

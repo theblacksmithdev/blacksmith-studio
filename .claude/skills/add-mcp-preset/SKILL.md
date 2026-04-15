@@ -10,6 +10,7 @@ Add a new MCP server preset: $ARGUMENTS
 ## Steps
 
 1. **Add preset** — Add to `client/src/components/settings/mcp-library/presets.ts` → `PRESETS` array:
+
    ```ts
    {
      name: 'server-name',
@@ -31,6 +32,7 @@ Add a new MCP server preset: $ARGUMENTS
 3. **Verify** — Run `npx tsc --noEmit`
 
 ## Categories
+
 - `development` — Code tools, CLIs, docs
 - `design` — Figma, design systems
 - `data` — Databases, storage, memory

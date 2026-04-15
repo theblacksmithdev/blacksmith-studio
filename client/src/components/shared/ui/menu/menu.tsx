@@ -1,24 +1,24 @@
-import { type ReactNode } from 'react'
-import { Menu as ChakraMenu, Portal } from '@chakra-ui/react'
-import styled from '@emotion/styled'
+import { type ReactNode } from "react";
+import { Menu as ChakraMenu, Portal } from "@chakra-ui/react";
+import styled from "@emotion/styled";
 
 /* ── Types ── */
 
 export interface MenuOption {
-  icon?: ReactNode
-  label: string
-  onClick: () => void
-  danger?: boolean
-  disabled?: boolean
+  icon?: ReactNode;
+  label: string;
+  onClick: () => void;
+  danger?: boolean;
+  disabled?: boolean;
   /** Insert a separator before this item */
-  separator?: boolean
+  separator?: boolean;
 }
 
 export interface MenuProps {
-  trigger: ReactNode
-  options: MenuOption[]
+  trigger: ReactNode;
+  options: MenuOption[];
   /** Placement relative to trigger (default: 'bottom-end') */
-  placement?: 'bottom-start' | 'bottom-end' | 'top-start' | 'top-end'
+  placement?: "bottom-start" | "bottom-end" | "top-start" | "top-end";
 }
 
 /* ── Styled overrides ── */
@@ -35,12 +35,18 @@ const StyledContent = styled(ChakraMenu.Content)`
   outline: none;
 
   @keyframes menuFadeIn {
-    from { opacity: 0; transform: scale(0.96); }
-    to   { opacity: 1; transform: scale(1); }
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
-`
+`;
 
-const StyledItem = styled(ChakraMenu.Item)<{ 'data-danger'?: boolean }>`
+const StyledItem = styled(ChakraMenu.Item)<{ "data-danger"?: boolean }>`
   display: flex;
   align-items: center;
   gap: 10px;
@@ -49,7 +55,8 @@ const StyledItem = styled(ChakraMenu.Item)<{ 'data-danger'?: boolean }>`
   border-radius: 6px;
   border: none;
   background: transparent;
-  color: ${(p) => p['data-danger'] ? 'var(--studio-error)' : 'var(--studio-text-secondary)'};
+  color: ${(p) =>
+    p["data-danger"] ? "var(--studio-error)" : "var(--studio-text-secondary)"};
   font-size: 13px;
   cursor: pointer;
   transition: all 0.1s ease;
@@ -57,9 +64,14 @@ const StyledItem = styled(ChakraMenu.Item)<{ 'data-danger'?: boolean }>`
   text-align: left;
   outline: none;
 
-  &:hover, &[data-highlighted] {
-    background: ${(p) => p['data-danger'] ? 'var(--studio-error-subtle)' : 'var(--studio-bg-hover)'};
-    color: ${(p) => p['data-danger'] ? 'var(--studio-error)' : 'var(--studio-text-primary)'};
+  &:hover,
+  &[data-highlighted] {
+    background: ${(p) =>
+      p["data-danger"]
+        ? "var(--studio-error-subtle)"
+        : "var(--studio-bg-hover)"};
+    color: ${(p) =>
+      p["data-danger"] ? "var(--studio-error)" : "var(--studio-text-primary)"};
   }
 
   &[data-disabled] {
@@ -72,23 +84,25 @@ const StyledItem = styled(ChakraMenu.Item)<{ 'data-danger'?: boolean }>`
     width: 14px;
     height: 14px;
   }
-`
+`;
 
 const StyledSeparator = styled(ChakraMenu.Separator)`
   height: 1px;
   background: var(--studio-border);
   margin: 4px 6px;
   border: none;
-`
+`;
 
 /* ── Component ── */
 
-export function Menu({ trigger, options, placement = 'bottom-end' }: MenuProps) {
+export function Menu({
+  trigger,
+  options,
+  placement = "bottom-end",
+}: MenuProps) {
   return (
     <ChakraMenu.Root positioning={{ placement }} lazyMount unmountOnExit>
-      <ChakraMenu.Trigger asChild>
-        {trigger}
-      </ChakraMenu.Trigger>
+      <ChakraMenu.Trigger asChild>{trigger}</ChakraMenu.Trigger>
       <Portal>
         <ChakraMenu.Positioner>
           <StyledContent>
@@ -110,5 +124,5 @@ export function Menu({ trigger, options, placement = 'bottom-end' }: MenuProps) 
         </ChakraMenu.Positioner>
       </Portal>
     </ChakraMenu.Root>
-  )
+  );
 }

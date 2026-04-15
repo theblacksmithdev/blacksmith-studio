@@ -1,1 +1,1 @@
-export { AgentInnerView } from './agent-inner-view'
+export { AgentInnerView } from "./agent-inner-view";

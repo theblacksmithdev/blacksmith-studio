@@ -1,2 +1,2 @@
-export { Divider } from './divider'
-export type { DividerVariant } from './divider'
+export { Divider } from "./divider";
+export type { DividerVariant } from "./divider";

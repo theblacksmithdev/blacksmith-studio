@@ -1,13 +1,13 @@
-import { type ReactNode } from 'react'
-import styled from '@emotion/styled'
+import { type ReactNode } from "react";
+import styled from "@emotion/styled";
 
-export type AgentTab = 'agents' | 'preview' | 'artifacts'
+export type AgentTab = "agents" | "preview" | "artifacts";
 
 interface TabDef {
-  id: AgentTab
-  icon: ReactNode
-  label: string
-  badge?: ReactNode
+  id: AgentTab;
+  icon: ReactNode;
+  label: string;
+  badge?: ReactNode;
 }
 
 const Bar = styled.div`
@@ -18,7 +18,7 @@ const Bar = styled.div`
   flex-shrink: 0;
   background: var(--studio-bg-sidebar);
   height: 38px;
-`
+`;
 
 const Tab = styled.button<{ active: boolean }>`
   position: relative;
@@ -29,7 +29,8 @@ const Tab = styled.button<{ active: boolean }>`
   height: 100%;
   border: none;
   background: transparent;
-  color: ${(p) => (p.active ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)')};
+  color: ${(p) =>
+    p.active ? "var(--studio-text-primary)" : "var(--studio-text-muted)"};
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -38,19 +39,20 @@ const Tab = styled.button<{ active: boolean }>`
   white-space: nowrap;
 
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: 0;
     left: 14px;
     right: 14px;
     height: 2px;
     border-radius: 1px;
-    background: ${(p) => (p.active ? 'var(--studio-accent)' : 'transparent')};
+    background: ${(p) => (p.active ? "var(--studio-accent)" : "transparent")};
     transition: background 0.12s ease;
   }
 
   &:hover {
-    color: ${(p) => (p.active ? 'var(--studio-text-primary)' : 'var(--studio-text-secondary)')};
+    color: ${(p) =>
+      p.active ? "var(--studio-text-primary)" : "var(--studio-text-secondary)"};
   }
 
   & svg {
@@ -58,24 +60,28 @@ const Tab = styled.button<{ active: boolean }>`
     height: 14px;
     flex-shrink: 0;
   }
-`
+`;
 
 interface AgentTabBarProps {
-  tabs: TabDef[]
-  active: AgentTab
-  onChange: (tab: AgentTab) => void
+  tabs: TabDef[];
+  active: AgentTab;
+  onChange: (tab: AgentTab) => void;
 }
 
 export function AgentTabBar({ tabs, active, onChange }: AgentTabBarProps) {
   return (
     <Bar>
       {tabs.map((tab) => (
-        <Tab key={tab.id} active={active === tab.id} onClick={() => onChange(tab.id)}>
+        <Tab
+          key={tab.id}
+          active={active === tab.id}
+          onClick={() => onChange(tab.id)}
+        >
           {tab.icon}
           {tab.label}
           {tab.badge}
         </Tab>
       ))}
     </Bar>
-  )
+  );
 }

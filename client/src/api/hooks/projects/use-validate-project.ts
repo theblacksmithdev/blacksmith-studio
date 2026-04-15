@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
-import { api } from '@/api'
-import { queryKeys } from '@/api/query-keys'
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/api";
+import { queryKeys } from "@/api/query-keys";
 
 /**
  * Validates a directory path as a potential project.
@@ -8,8 +8,8 @@ import { queryKeys } from '@/api/query-keys'
  */
 export function useValidateProject(path: string | undefined) {
   return useQuery({
-    queryKey: queryKeys.projectValidation(path ?? ''),
+    queryKey: queryKeys.projectValidation(path ?? ""),
     queryFn: () => api.projects.validate({ path: path! }),
     enabled: !!path,
-  })
+  });
 }

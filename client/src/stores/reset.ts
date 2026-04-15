@@ -1,8 +1,8 @@
-import { useChatStore } from './chat-store'
-import { useFileStore } from './file-store'
-import { useRunnerStore } from './runner-store'
-import { useGitStore } from './git-store'
-import { useSessionStore } from './session-store'
+import { useChatStore } from "./chat-store";
+import { useFileStore } from "./file-store";
+import { useRunnerStore } from "./runner-store";
+import { useGitStore } from "./git-store";
+import { useSessionStore } from "./session-store";
 
 /**
  * Reset all project-scoped stores.
@@ -12,24 +12,24 @@ import { useSessionStore } from './session-store'
  * so they don't need manual clearing — each project gets its own cache.
  */
 export function resetProjectStores() {
-  useChatStore.getState().clearMessages()
-  useSessionStore.getState().setActiveSession(null)
+  useChatStore.getState().clearMessages();
+  useSessionStore.getState().setActiveSession(null);
 
   useFileStore.setState({
     tree: null,
     activeTab: null,
     openTabs: [],
     changedFiles: new Set(),
-  })
+  });
 
-  useRunnerStore.setState({ services: [], logs: [] })
+  useRunnerStore.setState({ services: [], logs: [] });
 
   useGitStore.setState({
     initialized: false,
-    branch: '',
+    branch: "",
     changedCount: 0,
-    syncStatus: 'unknown',
+    syncStatus: "unknown",
     ahead: 0,
     behind: 0,
-  })
+  });
 }

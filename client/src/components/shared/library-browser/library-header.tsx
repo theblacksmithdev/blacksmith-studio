@@ -1,8 +1,8 @@
-import { Flex, Box } from '@chakra-ui/react'
-import styled from '@emotion/styled'
-import { ArrowLeft, Plus, Search } from 'lucide-react'
-import { Text, IconButton, Badge } from '@/components/shared/ui'
-import type { ReactNode } from 'react'
+import { Flex, Box } from "@chakra-ui/react";
+import styled from "@emotion/styled";
+import { ArrowLeft, Plus, Search } from "lucide-react";
+import { Text, IconButton, Badge } from "@/components/shared/ui";
+import type { ReactNode } from "react";
 
 const SearchWrap = styled.div`
   display: flex;
@@ -16,8 +16,10 @@ const SearchWrap = styled.div`
   max-width: 480px;
   width: 100%;
 
-  &:focus-within { border-color: var(--studio-border-hover); }
-`
+  &:focus-within {
+    border-color: var(--studio-border-hover);
+  }
+`;
 
 const SearchInput = styled.input`
   border: none;
@@ -29,8 +31,10 @@ const SearchInput = styled.input`
   flex: 1;
   min-width: 0;
 
-  &::placeholder { color: var(--studio-text-muted); }
-`
+  &::placeholder {
+    color: var(--studio-text-muted);
+  }
+`;
 
 const AddBtn = styled.button`
   display: flex;
@@ -53,36 +57,65 @@ const AddBtn = styled.button`
     border-color: var(--studio-border-hover);
     color: var(--studio-text-primary);
   }
-`
+`;
 
 interface LibraryHeaderProps {
-  icon: ReactNode
-  title: string
-  installedCount: number
-  search: string
-  onSearchChange: (v: string) => void
-  resultCount: number
-  totalCount: number
-  customLabel: string
-  onBack: () => void
-  onAddCustom: () => void
+  icon: ReactNode;
+  title: string;
+  installedCount: number;
+  search: string;
+  onSearchChange: (v: string) => void;
+  resultCount: number;
+  totalCount: number;
+  customLabel: string;
+  onBack: () => void;
+  onAddCustom: () => void;
 }
 
-export function LibraryHeader({ icon, title, installedCount, search, onSearchChange, resultCount, totalCount, customLabel, onBack, onAddCustom }: LibraryHeaderProps) {
+export function LibraryHeader({
+  icon,
+  title,
+  installedCount,
+  search,
+  onSearchChange,
+  resultCount,
+  totalCount,
+  customLabel,
+  onBack,
+  onAddCustom,
+}: LibraryHeaderProps) {
   return (
-    <Box css={{ flexShrink: 0, padding: '16px 24px 0' }}>
-      <Flex align="center" justify="space-between" css={{ marginBottom: '20px' }}>
+    <Box css={{ flexShrink: 0, padding: "16px 24px 0" }}>
+      <Flex
+        align="center"
+        justify="space-between"
+        css={{ marginBottom: "20px" }}
+      >
         <Flex align="center" gap="10px">
-          <IconButton variant="ghost" size="sm" onClick={onBack} aria-label="Back">
+          <IconButton
+            variant="ghost"
+            size="sm"
+            onClick={onBack}
+            aria-label="Back"
+          >
             <ArrowLeft size={16} />
           </IconButton>
           <Flex align="center" gap="8px">
             {icon}
-            <Text css={{ fontSize: '15px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
+            <Text
+              css={{
+                fontSize: "15px",
+                fontWeight: 600,
+                color: "var(--studio-text-primary)",
+                letterSpacing: "-0.01em",
+              }}
+            >
               {title}
             </Text>
           </Flex>
-          <Badge variant="default" size="sm">{installedCount} installed</Badge>
+          <Badge variant="default" size="sm">
+            {installedCount} installed
+          </Badge>
         </Flex>
         <AddBtn onClick={onAddCustom}>
           <Plus size={13} /> {customLabel}
@@ -91,15 +124,28 @@ export function LibraryHeader({ icon, title, installedCount, search, onSearchCha
 
       <Flex justify="center">
         <SearchWrap>
-          <Search size={15} style={{ color: 'var(--studio-text-muted)', flexShrink: 0 }} />
-          <SearchInput value={search} onChange={(e) => onSearchChange(e.target.value)} placeholder={`Search ${title.toLowerCase()}...`} />
+          <Search
+            size={15}
+            style={{ color: "var(--studio-text-muted)", flexShrink: 0 }}
+          />
+          <SearchInput
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder={`Search ${title.toLowerCase()}...`}
+          />
           {search && (
-            <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)', flexShrink: 0 }}>
+            <Text
+              css={{
+                fontSize: "12px",
+                color: "var(--studio-text-muted)",
+                flexShrink: 0,
+              }}
+            >
               {resultCount}/{totalCount}
             </Text>
           )}
         </SearchWrap>
       </Flex>
     </Box>
-  )
+  );
 }

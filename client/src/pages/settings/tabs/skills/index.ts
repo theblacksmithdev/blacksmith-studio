@@ -1,1 +1,1 @@
-export { SkillsSettings } from './skills-settings'
+export { SkillsSettings } from "./skills-settings";

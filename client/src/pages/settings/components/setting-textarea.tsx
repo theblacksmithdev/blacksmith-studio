@@ -1,4 +1,4 @@
-import styled from '@emotion/styled'
+import styled from "@emotion/styled";
 
 const StyledTextarea = styled.textarea<{ mono?: boolean }>`
   width: 100%;
@@ -8,7 +8,8 @@ const StyledTextarea = styled.textarea<{ mono?: boolean }>`
   background: var(--studio-bg-surface);
   color: var(--studio-text-primary);
   font-size: 13px;
-  font-family: ${(p) => (p.mono ? "'SF Mono', 'Fira Code', monospace" : 'inherit')};
+  font-family: ${(p) =>
+    p.mono ? "'SF Mono', 'Fira Code', monospace" : "inherit"};
   line-height: 1.5;
   outline: none;
   resize: vertical;
@@ -26,17 +27,23 @@ const StyledTextarea = styled.textarea<{ mono?: boolean }>`
     border-color: var(--studio-border-hover);
     box-shadow: var(--studio-ring-focus);
   }
-`
+`;
 
 interface SettingTextareaProps {
-  value: string
-  placeholder?: string
-  rows?: number
-  mono?: boolean
-  onChange: (value: string) => void
+  value: string;
+  placeholder?: string;
+  rows?: number;
+  mono?: boolean;
+  onChange: (value: string) => void;
 }
 
-export function SettingTextarea({ value, placeholder, rows = 4, mono, onChange }: SettingTextareaProps) {
+export function SettingTextarea({
+  value,
+  placeholder,
+  rows = 4,
+  mono,
+  onChange,
+}: SettingTextareaProps) {
   return (
     <StyledTextarea
       value={value}
@@ -46,5 +53,5 @@ export function SettingTextarea({ value, placeholder, rows = 4, mono, onChange }
       onChange={(e) => onChange(e.target.value)}
       onBlur={(e) => onChange(e.target.value)}
     />
-  )
+  );
 }

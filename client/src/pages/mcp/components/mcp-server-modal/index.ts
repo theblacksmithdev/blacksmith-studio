@@ -1,1 +1,1 @@
-export { McpServerModal } from './mcp-server-modal'
+export { McpServerModal } from "./mcp-server-modal";

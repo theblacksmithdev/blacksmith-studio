@@ -1,1 +1,1 @@
-export { useConfigForm, toPayload } from './use-config-form'
+export { useConfigForm, toPayload } from "./use-config-form";

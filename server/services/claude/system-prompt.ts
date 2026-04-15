@@ -30,4 +30,4 @@ You are being used through Blacksmith Studio, a desktop IDE for building fullsta
 ## Communication
 - Be concise. State what you're doing, not lengthy explanations.
 - When creating multiple files, list them at the end.
-`.trim()
+`.trim();

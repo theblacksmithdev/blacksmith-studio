@@ -1,8 +1,8 @@
-import { Flex } from '@chakra-ui/react'
-import styled from '@emotion/styled'
-import { Link } from 'react-router-dom'
-import { Wand2, Plus, ArrowRight } from 'lucide-react'
-import { Text } from '@/components/shared/ui'
+import { Flex } from "@chakra-ui/react";
+import styled from "@emotion/styled";
+import { Link } from "react-router-dom";
+import { Wand2, Plus, ArrowRight } from "lucide-react";
+import { Text } from "@/components/shared/ui";
 
 const Wrap = styled.div`
   display: flex;
@@ -14,7 +14,7 @@ const Wrap = styled.div`
   border-radius: 10px;
   border: 1px dashed var(--studio-border);
   background: var(--studio-bg-inset);
-`
+`;
 
 const IconWrap = styled.div`
   width: 52px;
@@ -26,7 +26,7 @@ const IconWrap = styled.div`
   align-items: center;
   justify-content: center;
   color: var(--studio-text-muted);
-`
+`;
 
 const PrimaryLink = styled(Link)`
   display: flex;
@@ -43,8 +43,10 @@ const PrimaryLink = styled(Link)`
   font-family: inherit;
   text-decoration: none;
   transition: opacity 0.12s ease;
-  &:hover { opacity: 0.85; }
-`
+  &:hover {
+    opacity: 0.85;
+  }
+`;
 
 const SecondaryLink = styled(Link)`
   display: flex;
@@ -59,23 +61,42 @@ const SecondaryLink = styled(Link)`
   font-family: inherit;
   text-decoration: none;
   transition: color 0.12s ease;
-  &:hover { color: var(--studio-text-primary); }
-`
+  &:hover {
+    color: var(--studio-text-primary);
+  }
+`;
 
 interface SkillsEmptyStateProps {
-  browsePath: string
+  browsePath: string;
 }
 
 export function SkillsEmptyState({ browsePath }: SkillsEmptyStateProps) {
   return (
     <Wrap>
-      <IconWrap><Wand2 size={24} /></IconWrap>
+      <IconWrap>
+        <Wand2 size={24} />
+      </IconWrap>
       <Flex direction="column" gap="6px" align="center">
-        <Text css={{ fontSize: '15px', fontWeight: 600, color: 'var(--studio-text-primary)' }}>
+        <Text
+          css={{
+            fontSize: "15px",
+            fontWeight: 600,
+            color: "var(--studio-text-primary)",
+          }}
+        >
           Teach Claude new skills
         </Text>
-        <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', maxWidth: '340px', lineHeight: 1.6 }}>
-          Skills are reusable prompts that Claude can invoke with a slash command. Create project-specific workflows like deploying, running tests, or generating boilerplate.
+        <Text
+          css={{
+            fontSize: "13px",
+            color: "var(--studio-text-tertiary)",
+            maxWidth: "340px",
+            lineHeight: 1.6,
+          }}
+        >
+          Skills are reusable prompts that Claude can invoke with a slash
+          command. Create project-specific workflows like deploying, running
+          tests, or generating boilerplate.
         </Text>
       </Flex>
       <Flex direction="column" align="center" gap="10px">
@@ -87,5 +108,5 @@ export function SkillsEmptyState({ browsePath }: SkillsEmptyStateProps) {
         </SecondaryLink>
       </Flex>
     </Wrap>
-  )
+  );
 }

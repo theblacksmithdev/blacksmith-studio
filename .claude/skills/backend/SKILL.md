@@ -102,18 +102,19 @@ export class ExampleManager {
 
 ## Existing Service Classes
 
-| Class | File | Responsibility |
-|-------|------|----------------|
-| `ProjectManager` | `server/services/projects.ts` | CRUD projects, SQLite persistence |
-| `SessionManager` | `server/services/sessions.ts` | Chat sessions, message persistence |
-| `SettingsManager` | `server/services/settings.ts` | Key-value settings per project |
-| `ClaudeManager` | `server/services/claude/index.ts` | Spawn Claude CLI, stream responses |
-| `RunnerManager` | `server/services/runner/index.ts` | Spawn dev servers, manage processes |
-| `McpManager` | `server/services/mcp.ts` | Read/write .mcp.json, test connections |
+| Class             | File                              | Responsibility                         |
+| ----------------- | --------------------------------- | -------------------------------------- |
+| `ProjectManager`  | `server/services/projects.ts`     | CRUD projects, SQLite persistence      |
+| `SessionManager`  | `server/services/sessions.ts`     | Chat sessions, message persistence     |
+| `SettingsManager` | `server/services/settings.ts`     | Key-value settings per project         |
+| `ClaudeManager`   | `server/services/claude/index.ts` | Spawn Claude CLI, stream responses     |
+| `RunnerManager`   | `server/services/runner/index.ts` | Spawn dev servers, manage processes    |
+| `McpManager`      | `server/services/mcp.ts`          | Read/write .mcp.json, test connections |
 
 ## IPC Handler Pattern
 
 IPC handlers are thin wrappers that:
+
 1. Validate the request
 2. Resolve the active project
 3. Delegate to the service class
@@ -121,16 +122,16 @@ IPC handlers are thin wrappers that:
 
 ```typescript
 // electron/ipc/example.ts
-import { ipcMain } from 'electron'
-import type { ExampleManager } from '../../server/services/example.js'
-import type { ProjectManager } from '../../server/services/projects.js'
-import { EXAMPLE_LIST, EXAMPLE_ADD, EXAMPLE_REMOVE } from './channels.js'
+import { ipcMain } from "electron";
+import type { ExampleManager } from "../../server/services/example.js";
+import type { ProjectManager } from "../../server/services/projects.js";
+import { EXAMPLE_LIST, EXAMPLE_ADD, EXAMPLE_REMOVE } from "./channels.js";
 
 // Helper: fail fast if no active project
 function requireProject(pm: ProjectManager): { id: string; path: string } {
-  const project = pm.getActive()
-  if (!project) throw new Error('No active project')
-  return { id: project.id, path: project.path }
+  const project = pm.getActive();
+  if (!project) throw new Error("No active project");
+  return { id: project.id, path: project.path };
 }
 
 export function setupExampleIPC(
@@ -139,21 +140,21 @@ export function setupExampleIPC(
 ) {
   // Simple query — synchronous service call
   ipcMain.handle(EXAMPLE_LIST, () => {
-    const { path } = requireProject(projectManager)
-    return exampleManager.getAll(path)
-  })
+    const { path } = requireProject(projectManager);
+    return exampleManager.getAll(path);
+  });
 
   // Mutation — validate input, delegate to service
   ipcMain.handle(EXAMPLE_ADD, (_e, data: { name: string; value: string }) => {
-    const { path } = requireProject(projectManager)
-    exampleManager.add(path, data.name, { value: data.value })
-  })
+    const { path } = requireProject(projectManager);
+    exampleManager.add(path, data.name, { value: data.value });
+  });
 
   // Async operation — await the result
   ipcMain.handle(EXAMPLE_TEST, async (_e, data: { name: string }) => {
-    const { path } = requireProject(projectManager)
-    return exampleManager.test(path, data.name)
-  })
+    const { path } = requireProject(projectManager);
+    return exampleManager.test(path, data.name);
+  });
 }
 ```
 
@@ -171,24 +172,24 @@ For long-running operations (project creation, Claude prompts, server logs):
 ```typescript
 // Fire-and-forget: return immediately, stream events
 ipcMain.handle(LONG_OPERATION, (_e, data) => {
-  const win = getWindow()
+  const win = getWindow();
 
-  const proc = spawn('command', args, { stdio: ['pipe', 'pipe', 'pipe'] })
+  const proc = spawn("command", args, { stdio: ["pipe", "pipe", "pipe"] });
 
-  proc.stdout.on('data', (chunk: Buffer) => {
-    win?.webContents.send(ON_OUTPUT, { line: chunk.toString() })
-  })
+  proc.stdout.on("data", (chunk: Buffer) => {
+    win?.webContents.send(ON_OUTPUT, { line: chunk.toString() });
+  });
 
-  proc.on('close', (code) => {
+  proc.on("close", (code) => {
     if (code === 0) {
-      win?.webContents.send(ON_DONE, { result })
+      win?.webContents.send(ON_DONE, { result });
     } else {
-      win?.webContents.send(ON_ERROR, { error: `Exit code ${code}` })
+      win?.webContents.send(ON_ERROR, { error: `Exit code ${code}` });
     }
-  })
+  });
 
-  return { started: true }  // Return immediately
-})
+  return { started: true }; // Return immediately
+});
 ```
 
 ### Rules:
@@ -273,27 +274,31 @@ Uses Drizzle ORM with better-sqlite3 (synchronous).
 
 ```typescript
 // Schema definition
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 
-export const items = sqliteTable('items', {
-  id: text('id').primaryKey(),
-  projectId: text('project_id').notNull(),
-  name: text('name').notNull(),
-  value: text('value').notNull(),
-  createdAt: text('created_at').notNull(),
-})
+export const items = sqliteTable("items", {
+  id: text("id").primaryKey(),
+  projectId: text("project_id").notNull(),
+  name: text("name").notNull(),
+  value: text("value").notNull(),
+  createdAt: text("created_at").notNull(),
+});
 
 // Usage in service
-import { eq, and } from 'drizzle-orm'
-import { getDatabase } from '../db/index.js'
+import { eq, and } from "drizzle-orm";
+import { getDatabase } from "../db/index.js";
 
 class ItemManager {
-  private get db() { return getDatabase() }
+  private get db() {
+    return getDatabase();
+  }
 
   getAll(projectId: string) {
-    return this.db.select().from(items)
+    return this.db
+      .select()
+      .from(items)
       .where(eq(items.projectId, projectId))
-      .all()
+      .all();
   }
 }
 ```
@@ -305,30 +310,30 @@ For config files like `.mcp.json`, `blacksmith.config.json`:
 ```typescript
 class ConfigManager {
   private configPath(root: string): string {
-    return path.join(root, '.config-file.json')
+    return path.join(root, ".config-file.json");
   }
 
   private read(root: string): ConfigSchema {
-    const filePath = this.configPath(root)
+    const filePath = this.configPath(root);
     if (!fs.existsSync(filePath)) {
       // Seed defaults on first access
-      const defaults = { ...DEFAULT_CONFIG }
-      this.write(root, defaults)
-      return defaults
+      const defaults = { ...DEFAULT_CONFIG };
+      this.write(root, defaults);
+      return defaults;
     }
     try {
-      return JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+      return JSON.parse(fs.readFileSync(filePath, "utf-8"));
     } catch {
-      return { ...DEFAULT_CONFIG }
+      return { ...DEFAULT_CONFIG };
     }
   }
 
   private write(root: string, data: ConfigSchema): void {
     fs.writeFileSync(
       this.configPath(root),
-      JSON.stringify(data, null, 2) + '\n',
-      'utf-8'
-    )
+      JSON.stringify(data, null, 2) + "\n",
+      "utf-8",
+    );
   }
 }
 ```
@@ -367,16 +372,16 @@ main.ts
 
 ```typescript
 // In services: throw descriptive errors
-throw new Error(`MCP server "${name}" already exists`)
-throw new Error('No active project. Select or create a project first.')
+throw new Error(`MCP server "${name}" already exists`);
+throw new Error("No active project. Select or create a project first.");
 
 // In IPC handlers: errors auto-propagate to renderer
 // ipcMain.handle rejects the promise, client sees the error
 
 // For async operations: catch and send error events
-proc.on('error', (err) => {
-  win?.webContents.send(ON_ERROR, { error: err.message })
-})
+proc.on("error", (err) => {
+  win?.webContents.send(ON_ERROR, { error: err.message });
+});
 ```
 
 ## Environment & PATH

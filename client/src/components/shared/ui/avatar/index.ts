@@ -1,2 +1,2 @@
-export { Avatar } from './avatar'
-export type { AvatarSize, AvatarVariant } from './avatar'
+export { Avatar } from "./avatar";
+export type { AvatarSize, AvatarVariant } from "./avatar";

@@ -1,4 +1,4 @@
-import styled from '@emotion/styled'
+import styled from "@emotion/styled";
 
 const StyledSelect = styled.select<{ disabled?: boolean }>`
   padding: 7px 28px 7px 10px;
@@ -25,16 +25,21 @@ const StyledSelect = styled.select<{ disabled?: boolean }>`
     border-color: var(--studio-border-hover);
     box-shadow: var(--studio-ring-focus);
   }
-`
+`;
 
 interface SettingSelectProps {
-  value: string
-  options: { value: string; label: string }[]
-  disabled?: boolean
-  onChange: (value: string) => void
+  value: string;
+  options: { value: string; label: string }[];
+  disabled?: boolean;
+  onChange: (value: string) => void;
 }
 
-export function SettingSelect({ value, options, disabled, onChange }: SettingSelectProps) {
+export function SettingSelect({
+  value,
+  options,
+  disabled,
+  onChange,
+}: SettingSelectProps) {
   return (
     <StyledSelect
       value={value}
@@ -42,8 +47,10 @@ export function SettingSelect({ value, options, disabled, onChange }: SettingSel
       onChange={(e) => onChange(e.target.value)}
     >
       {options.map((opt) => (
-        <option key={opt.value} value={opt.value}>{opt.label}</option>
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
       ))}
     </StyledSelect>
-  )
+  );
 }

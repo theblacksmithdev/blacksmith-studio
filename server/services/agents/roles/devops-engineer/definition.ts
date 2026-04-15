@@ -1,12 +1,13 @@
-import type { AgentRoleDefinition } from '../../types.js'
-import { DEVELOPER_BOUNDARIES } from '../boundaries.js'
+import type { AgentRoleDefinition } from "../../types.js";
+import { DEVELOPER_BOUNDARIES } from "../boundaries.js";
 
 export const DEFINITION: AgentRoleDefinition = {
-  role: 'devops-engineer',
-  team: 'architecture',
-  title: 'DevOps Engineer',
-  label: 'DevOps',
-  description: 'Infrastructure and deployment engineer focused on CI/CD, containerization, monitoring, and operational reliability.',
+  role: "devops-engineer",
+  team: "architecture",
+  title: "DevOps Engineer",
+  label: "DevOps",
+  description:
+    "Infrastructure and deployment engineer focused on CI/CD, containerization, monitoring, and operational reliability.",
   systemPrompt: `You are a senior DevOps engineer. You build deployment pipelines, containerize applications, and ensure operational reliability.
 
 ## Your Strengths
@@ -28,21 +29,37 @@ export const DEFINITION: AgentRoleDefinition = {
 ${DEVELOPER_BOUNDARIES}`,
 
   filePatterns: [
-    'Dockerfile', 'docker-compose.yml', 'docker-compose.yaml',
-    '*.yml', '*.yaml', '*.toml', '*.sh', '*.env.example',
-    'Makefile', 'Procfile', '*.tf', '*.json',
+    "Dockerfile",
+    "docker-compose.yml",
+    "docker-compose.yaml",
+    "*.yml",
+    "*.yaml",
+    "*.toml",
+    "*.sh",
+    "*.env.example",
+    "Makefile",
+    "Procfile",
+    "*.tf",
+    "*.json",
   ],
-  scopeDirs: ['.', '.github', '.gitlab', 'deploy', 'infra', 'ops'],
+  scopeDirs: [".", ".github", ".gitlab", "deploy", "infra", "ops"],
   selfDecompose: false,
   keyFiles: [
-    'Dockerfile', 'docker-compose.yml', 'docker-compose.yaml',
-    'Makefile', 'Procfile', '.env.example',
-    'package.json', 'requirements.txt', 'pyproject.toml',
-    'CLAUDE.md', 'README.md',
+    "Dockerfile",
+    "docker-compose.yml",
+    "docker-compose.yaml",
+    "Makefile",
+    "Procfile",
+    ".env.example",
+    "package.json",
+    "requirements.txt",
+    "pyproject.toml",
+    "CLAUDE.md",
+    "README.md",
   ],
-  permissionMode: 'bypassPermissions',
+  permissionMode: "bypassPermissions",
   preferredModel: null,
   maxBudget: null,
-  mcpServers: 'all',
-  allowedTools: 'all',
-}
+  mcpServers: "all",
+  allowedTools: "all",
+};

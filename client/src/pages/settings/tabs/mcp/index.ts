@@ -1,1 +1,1 @@
-export { McpSettings } from './mcp-settings'
+export { McpSettings } from "./mcp-settings";

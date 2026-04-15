@@ -1,15 +1,22 @@
-import { useState, useEffect } from 'react'
-import styled from '@emotion/styled'
-import { keyframes } from '@emotion/react'
-import { CheckCircle2, XCircle, Loader2, Terminal, Anvil, ArrowRight } from 'lucide-react'
-import { api } from '@/api'
-import { useInstallClaude } from '@/api/hooks/setup'
-import type { SetupStatus } from '@/api/modules/setup'
+import { useState, useEffect } from "react";
+import styled from "@emotion/styled";
+import { keyframes } from "@emotion/react";
+import {
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  Terminal,
+  Anvil,
+  ArrowRight,
+} from "lucide-react";
+import { api } from "@/api";
+import { useInstallClaude } from "@/api/hooks/setup";
+import type { SetupStatus } from "@/api/modules/setup";
 
 const fadeIn = keyframes`
   from { opacity: 0; }
   to   { opacity: 1; }
-`
+`;
 
 const Overlay = styled.div`
   position: fixed;
@@ -20,7 +27,7 @@ const Overlay = styled.div`
   align-items: center;
   justify-content: center;
   animation: ${fadeIn} 0.3s ease;
-`
+`;
 
 const Card = styled.div`
   width: 440px;
@@ -29,7 +36,7 @@ const Card = styled.div`
   border-radius: 20px;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.2);
   overflow: hidden;
-`
+`;
 
 const Header = styled.div`
   display: flex;
@@ -37,7 +44,7 @@ const Header = styled.div`
   align-items: center;
   gap: 12px;
   padding: 32px 32px 20px;
-`
+`;
 
 const LogoWrap = styled.div`
   width: 48px;
@@ -47,7 +54,7 @@ const LogoWrap = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-`
+`;
 
 const Title = styled.h2`
   font-size: 22px;
@@ -55,21 +62,21 @@ const Title = styled.h2`
   color: var(--studio-text-primary);
   letter-spacing: -0.02em;
   text-align: center;
-`
+`;
 
 const Subtitle = styled.p`
   font-size: 14px;
   color: var(--studio-text-tertiary);
   text-align: center;
   line-height: 1.5;
-`
+`;
 
 const Body = styled.div`
   padding: 0 28px 28px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-`
+`;
 
 const CheckRow = styled.div`
   display: flex;
@@ -79,46 +86,46 @@ const CheckRow = styled.div`
   border-radius: 10px;
   border: 1px solid var(--studio-border);
   background: var(--studio-bg-main);
-`
+`;
 
 const CheckInfo = styled.div`
   flex: 1;
-`
+`;
 
 const CheckLabel = styled.div`
   font-size: 14px;
   font-weight: 500;
   color: var(--studio-text-primary);
-`
+`;
 
 const CheckMeta = styled.div`
   font-size: 12px;
   color: var(--studio-text-muted);
   margin-top: 1px;
-`
+`;
 
 const CheckError = styled.div`
   font-size: 12px;
   color: var(--studio-error);
   margin-top: 2px;
-`
+`;
 
 const spin = keyframes`
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
-`
+`;
 
 const Spinner = styled(Loader2)`
   animation: ${spin} 0.8s linear infinite;
   color: var(--studio-text-muted);
   flex-shrink: 0;
-`
+`;
 
 const ActionRow = styled.div`
   display: flex;
   gap: 8px;
   margin-top: 4px;
-`
+`;
 
 const PrimaryBtn = styled.button`
   flex: 1;
@@ -137,9 +144,14 @@ const PrimaryBtn = styled.button`
   font-family: inherit;
   transition: opacity 0.12s ease;
 
-  &:hover { opacity: 0.85; }
-  &:disabled { opacity: 0.5; cursor: default; }
-`
+  &:hover {
+    opacity: 0.85;
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+`;
 
 const SecondaryBtn = styled.button`
   padding: 10px 20px;
@@ -158,87 +170,98 @@ const SecondaryBtn = styled.button`
     border-color: var(--studio-border-hover);
     color: var(--studio-text-primary);
   }
-`
+`;
 
 const CodeBlock = styled.div`
   padding: 10px 14px;
   border-radius: 8px;
   background: var(--studio-bg-surface);
   border: 1px solid var(--studio-border);
-  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Menlo, monospace;
+  font-family: "SF Mono", "Fira Code", "JetBrains Mono", Menlo, monospace;
   font-size: 13px;
   color: var(--studio-text-primary);
   margin-top: 4px;
   user-select: all;
-`
+`;
 
 const StepDots = styled.div`
   display: flex;
   justify-content: center;
   gap: 6px;
   padding: 16px 0;
-`
+`;
 
 const Dot = styled.div<{ active: boolean; done: boolean }>`
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: ${({ active, done }) =>
-    done ? 'var(--studio-accent)' : active ? 'var(--studio-text-secondary)' : 'var(--studio-border)'};
+    done
+      ? "var(--studio-accent)"
+      : active
+        ? "var(--studio-text-secondary)"
+        : "var(--studio-border)"};
   transition: background 0.2s ease;
-`
+`;
 
 /* ── Component ── */
 
-type Step = 'checking' | 'prerequisites' | 'auth' | 'ready'
+type Step = "checking" | "prerequisites" | "auth" | "ready";
 
 interface SetupWizardProps {
-  onComplete: () => void
+  onComplete: () => void;
 }
 
 export function SetupWizard({ onComplete }: SetupWizardProps) {
-  const [step, setStep] = useState<Step>('checking')
-  const [status, setStatus] = useState<SetupStatus | null>(null)
-  const [installError, setInstallError] = useState<string | null>(null)
-  const installMutation = useInstallClaude()
+  const [step, setStep] = useState<Step>("checking");
+  const [status, setStatus] = useState<SetupStatus | null>(null);
+  const [installError, setInstallError] = useState<string | null>(null);
+  const installMutation = useInstallClaude();
 
   const runCheck = async () => {
-    setStep('checking')
-    const result = await api.setup.check()
-    setStatus(result)
+    setStep("checking");
+    const result = await api.setup.check();
+    setStatus(result);
 
     if (!result.node.installed || !result.claude.installed) {
-      setStep('prerequisites')
+      setStep("prerequisites");
     } else if (!result.auth.authenticated) {
-      setStep('auth')
+      setStep("auth");
     } else {
-      setStep('ready')
+      setStep("ready");
     }
-  }
+  };
 
   useEffect(() => {
-    runCheck()
-  }, [])
+    runCheck();
+  }, []);
 
   const handleInstallClaude = async () => {
-    setInstallError(null)
+    setInstallError(null);
     try {
-      const result = await installMutation.mutateAsync()
+      const result = await installMutation.mutateAsync();
       if (result.success) {
-        runCheck()
+        runCheck();
       } else {
-        setInstallError(result.error || 'Installation failed')
+        setInstallError(result.error || "Installation failed");
       }
     } catch {
-      setInstallError('Installation failed')
+      setInstallError("Installation failed");
     }
-  }
+  };
 
   const handleAuthDone = () => {
-    runCheck()
-  }
+    runCheck();
+  };
 
-  const stepIndex = step === 'checking' ? 0 : step === 'prerequisites' ? 0 : step === 'auth' ? 1 : 2
+  const stepIndex =
+    step === "checking"
+      ? 0
+      : step === "prerequisites"
+        ? 0
+        : step === "auth"
+          ? 1
+          : 2;
 
   return (
     <Overlay>
@@ -248,21 +271,22 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
             <Anvil size={22} color="var(--studio-accent-fg)" />
           </LogoWrap>
           <Title>
-            {step === 'checking' && 'Checking prerequisites...'}
-            {step === 'prerequisites' && 'Setup Required'}
-            {step === 'auth' && 'Authenticate with Claude'}
-            {step === 'ready' && 'Ready to go!'}
+            {step === "checking" && "Checking prerequisites..."}
+            {step === "prerequisites" && "Setup Required"}
+            {step === "auth" && "Authenticate with Claude"}
+            {step === "ready" && "Ready to go!"}
           </Title>
           <Subtitle>
-            {step === 'checking' && 'Verifying your development environment.'}
-            {step === 'prerequisites' && 'Some dependencies need to be installed.'}
-            {step === 'auth' && 'Sign in to Claude to start building.'}
-            {step === 'ready' && 'Your environment is all set up.'}
+            {step === "checking" && "Verifying your development environment."}
+            {step === "prerequisites" &&
+              "Some dependencies need to be installed."}
+            {step === "auth" && "Sign in to Claude to start building."}
+            {step === "ready" && "Your environment is all set up."}
           </Subtitle>
         </Header>
 
         <Body>
-          {step === 'checking' && (
+          {step === "checking" && (
             <CheckRow>
               <Spinner size={18} />
               <CheckInfo>
@@ -271,13 +295,20 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
             </CheckRow>
           )}
 
-          {step === 'prerequisites' && status && (
+          {step === "prerequisites" && status && (
             <>
               <CheckRow>
-                {status.node.installed
-                  ? <CheckCircle2 size={18} style={{ color: 'var(--studio-accent)', flexShrink: 0 }} />
-                  : <XCircle size={18} style={{ color: 'var(--studio-error)', flexShrink: 0 }} />
-                }
+                {status.node.installed ? (
+                  <CheckCircle2
+                    size={18}
+                    style={{ color: "var(--studio-accent)", flexShrink: 0 }}
+                  />
+                ) : (
+                  <XCircle
+                    size={18}
+                    style={{ color: "var(--studio-error)", flexShrink: 0 }}
+                  />
+                )}
                 <CheckInfo>
                   <CheckLabel>Node.js (v18+)</CheckLabel>
                   <CheckMeta>
@@ -285,14 +316,20 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
                       ? `${status.node.version} installed`
                       : status.node.version
                         ? `${status.node.version} found — v18+ required`
-                        : 'Not found'}
+                        : "Not found"}
                   </CheckMeta>
                   {!status.node.installed && (
                     <CheckMeta style={{ marginTop: 4 }}>
                       <a
                         href="#"
-                        onClick={(e) => { e.preventDefault(); window.open('https://nodejs.org') }}
-                        style={{ color: 'var(--studio-link)', textDecoration: 'none' }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          window.open("https://nodejs.org");
+                        }}
+                        style={{
+                          color: "var(--studio-link)",
+                          textDecoration: "none",
+                        }}
                       >
                         Download from nodejs.org
                       </a>
@@ -302,23 +339,32 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
               </CheckRow>
 
               <CheckRow>
-                {status.claude.installed
-                  ? <CheckCircle2 size={18} style={{ color: 'var(--studio-accent)', flexShrink: 0 }} />
-                  : installMutation.isPending
-                    ? <Spinner size={18} />
-                    : <XCircle size={18} style={{ color: 'var(--studio-error)', flexShrink: 0 }} />
-                }
+                {status.claude.installed ? (
+                  <CheckCircle2
+                    size={18}
+                    style={{ color: "var(--studio-accent)", flexShrink: 0 }}
+                  />
+                ) : installMutation.isPending ? (
+                  <Spinner size={18} />
+                ) : (
+                  <XCircle
+                    size={18}
+                    style={{ color: "var(--studio-error)", flexShrink: 0 }}
+                  />
+                )}
                 <CheckInfo>
                   <CheckLabel>Claude Code CLI</CheckLabel>
                   <CheckMeta>
                     {status.claude.installed
                       ? `${status.claude.version} installed`
                       : installMutation.isPending
-                        ? 'Installing...'
-                        : 'Required for AI features'}
+                        ? "Installing..."
+                        : "Required for AI features"}
                   </CheckMeta>
                   {!status.claude.installed && !installMutation.isPending && (
-                    <CodeBlock style={{ marginTop: 6 }}>npm install -g @anthropic-ai/claude-code</CodeBlock>
+                    <CodeBlock style={{ marginTop: 6 }}>
+                      npm install -g @anthropic-ai/claude-code
+                    </CodeBlock>
                   )}
                   {installError && <CheckError>{installError}</CheckError>}
                 </CheckInfo>
@@ -330,12 +376,14 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
                     Re-check
                   </SecondaryBtn>
                 )}
-                {!status.claude.installed && !installMutation.isPending && status.node.installed && (
-                  <PrimaryBtn onClick={handleInstallClaude}>
-                    <Terminal size={14} />
-                    Install Claude Code
-                  </PrimaryBtn>
-                )}
+                {!status.claude.installed &&
+                  !installMutation.isPending &&
+                  status.node.installed && (
+                    <PrimaryBtn onClick={handleInstallClaude}>
+                      <Terminal size={14} />
+                      Install Claude Code
+                    </PrimaryBtn>
+                  )}
                 {!status.claude.installed && !installMutation.isPending && (
                   <SecondaryBtn onClick={() => runCheck()}>
                     Re-check
@@ -351,10 +399,13 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
             </>
           )}
 
-          {step === 'auth' && (
+          {step === "auth" && (
             <>
               <CheckRow>
-                <CheckCircle2 size={18} style={{ color: 'var(--studio-accent)', flexShrink: 0 }} />
+                <CheckCircle2
+                  size={18}
+                  style={{ color: "var(--studio-accent)", flexShrink: 0 }}
+                />
                 <CheckInfo>
                   <CheckLabel>Node.js</CheckLabel>
                   <CheckMeta>{status?.node.version}</CheckMeta>
@@ -362,7 +413,10 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
               </CheckRow>
 
               <CheckRow>
-                <CheckCircle2 size={18} style={{ color: 'var(--studio-accent)', flexShrink: 0 }} />
+                <CheckCircle2
+                  size={18}
+                  style={{ color: "var(--studio-accent)", flexShrink: 0 }}
+                />
                 <CheckInfo>
                   <CheckLabel>Claude Code CLI</CheckLabel>
                   <CheckMeta>{status?.claude.version}</CheckMeta>
@@ -370,7 +424,10 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
               </CheckRow>
 
               <CheckRow>
-                <XCircle size={18} style={{ color: 'var(--studio-error)', flexShrink: 0 }} />
+                <XCircle
+                  size={18}
+                  style={{ color: "var(--studio-error)", flexShrink: 0 }}
+                />
                 <CheckInfo>
                   <CheckLabel>Authentication</CheckLabel>
                   <CheckMeta>Run this in your terminal to sign in:</CheckMeta>
@@ -382,17 +439,18 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
                 <PrimaryBtn onClick={handleAuthDone}>
                   I've authenticated
                 </PrimaryBtn>
-                <SecondaryBtn onClick={onComplete}>
-                  Skip
-                </SecondaryBtn>
+                <SecondaryBtn onClick={onComplete}>Skip</SecondaryBtn>
               </ActionRow>
             </>
           )}
 
-          {step === 'ready' && status && (
+          {step === "ready" && status && (
             <>
               <CheckRow>
-                <CheckCircle2 size={18} style={{ color: 'var(--studio-accent)', flexShrink: 0 }} />
+                <CheckCircle2
+                  size={18}
+                  style={{ color: "var(--studio-accent)", flexShrink: 0 }}
+                />
                 <CheckInfo>
                   <CheckLabel>Node.js</CheckLabel>
                   <CheckMeta>{status.node.version}</CheckMeta>
@@ -400,7 +458,10 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
               </CheckRow>
 
               <CheckRow>
-                <CheckCircle2 size={18} style={{ color: 'var(--studio-accent)', flexShrink: 0 }} />
+                <CheckCircle2
+                  size={18}
+                  style={{ color: "var(--studio-accent)", flexShrink: 0 }}
+                />
                 <CheckInfo>
                   <CheckLabel>Claude Code CLI</CheckLabel>
                   <CheckMeta>{status.claude.version}</CheckMeta>
@@ -408,7 +469,10 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
               </CheckRow>
 
               <CheckRow>
-                <CheckCircle2 size={18} style={{ color: 'var(--studio-accent)', flexShrink: 0 }} />
+                <CheckCircle2
+                  size={18}
+                  style={{ color: "var(--studio-accent)", flexShrink: 0 }}
+                />
                 <CheckInfo>
                   <CheckLabel>Authenticated</CheckLabel>
                   <CheckMeta>Ready to use Claude</CheckMeta>
@@ -432,5 +496,5 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
         </StepDots>
       </Card>
     </Overlay>
-  )
+  );
 }

@@ -1,1 +1,1 @@
-export { GlobalSettingsDrawer } from './global-settings-drawer'
+export { GlobalSettingsDrawer } from "./global-settings-drawer";

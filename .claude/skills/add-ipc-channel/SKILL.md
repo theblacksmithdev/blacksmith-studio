@@ -31,5 +31,6 @@ Create a new typed IPC channel for the domain: $ARGUMENTS
 7. **Verify** — Run `npx tsc --noEmit`
 
 ## Naming conventions
+
 - Invoke channels: `{domain}:{action}` (e.g., `projects:list`, `mcp:add`)
 - Subscribe channels: `{domain}:on{Event}` (e.g., `runner:onStatus`, `claude:onMessage`)

@@ -1,34 +1,44 @@
-import {
-  Files,
-  Play,
-  GitBranch,
-  Terminal,
-  Settings,
-} from 'lucide-react'
+import { Files, Play, GitBranch, Terminal, Settings } from "lucide-react";
 import {
   codePath,
   runPath,
   sourceControlPath,
   settingsPath,
-} from '@/router/paths'
+} from "@/router/paths";
 
 export interface NavEntry {
-  id: string
-  icon: typeof Files
-  label: string
-  path: (pid: string) => string
-  match: string
+  id: string;
+  icon: typeof Files;
+  label: string;
+  path: (pid: string) => string;
+  match: string;
 }
 
 export const projectNav: NavEntry[] = [
-  { id: 'code', icon: Files, label: 'Files', path: codePath, match: '/code' },
-  { id: 'git', icon: GitBranch, label: 'Source Control', path: sourceControlPath, match: '/source-control' },
-]
+  { id: "code", icon: Files, label: "Files", path: codePath, match: "/code" },
+  {
+    id: "git",
+    icon: GitBranch,
+    label: "Source Control",
+    path: sourceControlPath,
+    match: "/source-control",
+  },
+];
 
 export const bottomNav: NavEntry[] = [
-  { id: 'run', icon: Play, label: 'Dev Services', path: runPath, match: '/run' },
-]
+  {
+    id: "run",
+    icon: Play,
+    label: "Dev Services",
+    path: runPath,
+    match: "/run",
+  },
+];
 
 export const settingsNav: NavEntry = {
-  id: 'settings', icon: Settings, label: 'Settings', path: settingsPath, match: '/settings',
-}
+  id: "settings",
+  icon: Settings,
+  label: "Settings",
+  path: settingsPath,
+  match: "/settings",
+};

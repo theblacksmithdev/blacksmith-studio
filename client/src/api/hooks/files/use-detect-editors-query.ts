@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
-import { api } from '@/api'
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/api";
 
 /**
  * Detects installed code editors on the system.
@@ -7,8 +7,8 @@ import { api } from '@/api'
  */
 export function useDetectEditorsQuery() {
   return useQuery({
-    queryKey: ['editors'] as const,
+    queryKey: ["editors"] as const,
     queryFn: () => api.files.detectEditors(),
     staleTime: Infinity,
-  })
+  });
 }

@@ -1,39 +1,39 @@
-import type { AgentRole, AgentConfig } from '../types.js'
+import type { AgentRole, AgentConfig } from "../types.js";
 
 /** Options passed to BaseAgent.execute() */
 export interface AgentExecuteOptions {
-  prompt: string
-  projectRoot: string
+  prompt: string;
+  projectRoot: string;
   /** Supply an existing session ID to resume a multi-turn conversation */
-  sessionId?: string
+  sessionId?: string;
   /** If true and sessionId is provided, resume the session instead of creating a new one */
-  resume?: boolean
+  resume?: boolean;
   /** Claude CLI binary path (resolved by ClaudeManager) */
-  claudeBin?: string
+  claudeBin?: string;
   /** Node binary path for correct PATH resolution */
-  nodePath?: string
+  nodePath?: string;
   /** MCP config file path */
-  mcpConfigPath?: string
+  mcpConfigPath?: string;
   /** Per-project custom instructions from settings */
-  projectInstructions?: string
+  projectInstructions?: string;
   /** Per-agent config overrides from settings */
-  agentConfig?: AgentConfig
+  agentConfig?: AgentConfig;
 }
 
 export interface ToolCallRecord {
-  toolId: string
-  toolName: string
-  input: Record<string, unknown>
-  output?: string
+  toolId: string;
+  toolName: string;
+  input: Record<string, unknown>;
+  output?: string;
 }
 
 export interface HandoffDescriptor {
-  targetRole: AgentRole
-  reason: string
-  context: string
+  targetRole: AgentRole;
+  reason: string;
+  context: string;
 }
 
 export interface ValidationResult {
-  valid: boolean
-  reason?: string
+  valid: boolean;
+  reason?: string;
 }

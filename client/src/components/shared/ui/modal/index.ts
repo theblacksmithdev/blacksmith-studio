@@ -1,1 +1,7 @@
-export { Modal, ModalPrimaryButton, ModalSecondaryButton, ModalDangerButton, ModalFooterSpacer } from './modal'
+export {
+  Modal,
+  ModalPrimaryButton,
+  ModalSecondaryButton,
+  ModalDangerButton,
+  ModalFooterSpacer,
+} from "./modal";

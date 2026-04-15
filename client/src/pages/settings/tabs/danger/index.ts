@@ -1,1 +1,1 @@
-export { DangerZone } from './danger-zone'
+export { DangerZone } from "./danger-zone";

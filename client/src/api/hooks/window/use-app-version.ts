@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
-import { api } from '@/api'
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/api";
 
 /**
  * Fetches the app version from the backend.
@@ -7,11 +7,11 @@ import { api } from '@/api'
  */
 export function useAppVersion() {
   return useQuery({
-    queryKey: ['window', 'version'] as const,
+    queryKey: ["window", "version"] as const,
     queryFn: async () => {
-      const state = await api.window.getState()
-      return state.version
+      const state = await api.window.getState();
+      return state.version;
     },
     staleTime: Infinity,
-  })
+  });
 }

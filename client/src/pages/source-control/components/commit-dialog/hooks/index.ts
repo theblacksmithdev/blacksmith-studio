@@ -1,1 +1,1 @@
-export { useCommit } from './use-commit'
+export { useCommit } from "./use-commit";

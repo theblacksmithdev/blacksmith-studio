@@ -1,13 +1,13 @@
-import crypto from 'node:crypto'
-import { spawn } from 'node:child_process'
-import { createNdjsonParser } from '../../claude/ndjson-parser.js'
-import { nodeEnv } from '../../node-env.js'
-import type { AgentExecuteOptions } from '../base/index.js'
-import type { AgentRole, AgentEvent } from '../types.js'
+import crypto from "node:crypto";
+import { spawn } from "node:child_process";
+import { createNdjsonParser } from "../../claude/ndjson-parser.js";
+import { nodeEnv } from "../../node-env.js";
+import type { AgentExecuteOptions } from "../base/index.js";
+import type { AgentRole, AgentEvent } from "../types.js";
 
 /* ── Task Plan Types ── */
 
-export type TaskModel = 'fast' | 'balanced' | 'premium'
+export type TaskModel = "fast" | "balanced" | "premium";
 
 /**
  * Review level determines how much quality gate scrutiny a task receives.
@@ -15,32 +15,32 @@ export type TaskModel = 'fast' | 'balanced' | 'premium'
  * - 'light': One review pass, no test cycle (simple renames, config changes)
  * - 'full': Full review + test cycles (features, complex logic, security-critical code)
  */
-export type ReviewLevel = 'none' | 'light' | 'full'
+export type ReviewLevel = "none" | "light" | "full";
 
 export interface DispatchTask {
-  id: string
-  title: string
+  id: string;
+  title: string;
   /** Brief description of what this task delivers */
-  description: string
-  role: AgentRole
-  prompt: string
+  description: string;
+  role: AgentRole;
+  prompt: string;
   /** IDs of tasks this depends on (must complete first) */
-  dependsOn: string[]
+  dependsOn: string[];
   /** AI model selected by PM based on task complexity */
-  model: TaskModel
+  model: TaskModel;
   /** How much quality gate scrutiny this task needs */
-  reviewLevel: ReviewLevel
+  reviewLevel: ReviewLevel;
 }
 
 export interface DispatchPlan {
   /** 'single' = one agent, 'multi' = ordered tasks, 'clarification' = PM needs more info */
-  mode: 'single' | 'multi' | 'clarification'
+  mode: "single" | "multi" | "clarification";
   /** For single mode: the one task to execute */
-  task?: DispatchTask
+  task?: DispatchTask;
   /** For multi mode: ordered task list */
-  tasks: DispatchTask[]
+  tasks: DispatchTask[];
   /** Brief explanation of the plan, or the PM's question for clarification mode */
-  summary: string
+  summary: string;
 }
 
 /* ── System Prompt ── */
@@ -153,16 +153,24 @@ Respond with ONLY a JSON object. No markdown fences, no explanation.
 }
 
 For "single" mode, populate "task" and set "tasks" to [].
-For "multi" mode, populate "tasks" with each task depending on the previous (strict serial).`
+For "multi" mode, populate "tasks" with each task depending on the previous (strict serial).`;
 
 const VALID_ROLES = new Set<string>([
-  'frontend-engineer', 'backend-engineer', 'fullstack-engineer',
-  'devops-engineer', 'qa-engineer', 'security-engineer',
-  'database-engineer', 'ui-designer', 'technical-writer',
-  'code-reviewer', 'architect', 'product-manager',
-])
+  "frontend-engineer",
+  "backend-engineer",
+  "fullstack-engineer",
+  "devops-engineer",
+  "qa-engineer",
+  "security-engineer",
+  "database-engineer",
+  "ui-designer",
+  "technical-writer",
+  "code-reviewer",
+  "architect",
+  "product-manager",
+]);
 
-type EmitFn = (event: AgentEvent) => void
+type EmitFn = (event: AgentEvent) => void;
 
 /**
  * Use the PM agent (via Claude) to decompose a prompt into a task plan.
@@ -170,104 +178,134 @@ type EmitFn = (event: AgentEvent) => void
  */
 export async function dispatchWithPM(
   prompt: string,
-  baseOptions: Omit<AgentExecuteOptions, 'prompt'>,
+  baseOptions: Omit<AgentExecuteOptions, "prompt">,
   emit?: EmitFn,
 ): Promise<DispatchPlan> {
-  const claudeBin = baseOptions.claudeBin ?? 'claude'
+  const claudeBin = baseOptions.claudeBin ?? "claude";
 
   const args = [
-    '-p', `Analyze this request and produce a task plan:\n\n${prompt}`,
-    '--output-format', 'stream-json',
-    '--verbose',
-    '--append-system-prompt', PM_SYSTEM_PROMPT,
-  ]
+    "-p",
+    `Analyze this request and produce a task plan:\n\n${prompt}`,
+    "--output-format",
+    "stream-json",
+    "--verbose",
+    "--append-system-prompt",
+    PM_SYSTEM_PROMPT,
+  ];
 
   const fullText = await new Promise<string>((resolve, reject) => {
     const proc = spawn(claudeBin, args, {
       cwd: baseOptions.projectRoot,
-      stdio: ['ignore', 'pipe', 'pipe'],
+      stdio: ["ignore", "pipe", "pipe"],
       env: nodeEnv(baseOptions.nodePath),
-    })
+    });
 
-    let text = ''
-    let stderr = ''
-    let firstChunkEmitted = false
+    let text = "";
+    let stderr = "";
+    let firstChunkEmitted = false;
 
-    const emitPM = (type: AgentEvent['data']['type'], data: Record<string, any>) => {
-      if (!emit) return
+    const emitPM = (
+      type: AgentEvent["data"]["type"],
+      data: Record<string, any>,
+    ) => {
+      if (!emit) return;
       emit({
-        type: type as AgentEvent['type'],
-        agentId: 'product-manager',
-        executionId: '',
+        type: type as AgentEvent["type"],
+        agentId: "product-manager",
+        executionId: "",
         timestamp: new Date().toISOString(),
-        data: { type, ...data } as AgentEvent['data'],
-      })
-    }
+        data: { type, ...data } as AgentEvent["data"],
+      });
+    };
 
     const parser = createNdjsonParser((chunk: any) => {
-      if (chunk.type === 'assistant') {
-        for (const b of (chunk.message?.content || [])) {
-          if (b.type === 'text') {
-            text += b.text
+      if (chunk.type === "assistant") {
+        for (const b of chunk.message?.content || []) {
+          if (b.type === "text") {
+            text += b.text;
 
             // Emit status on first chunk
             if (!firstChunkEmitted) {
-              firstChunkEmitted = true
-              emitPM('status', { status: 'executing', message: 'PM is planning tasks...' })
+              firstChunkEmitted = true;
+              emitPM("status", {
+                status: "executing",
+                message: "PM is planning tasks...",
+              });
             }
 
             // Stream partial text as message events
-            emitPM('message', { content: b.text, isPartial: !chunk.stop_reason })
+            emitPM("message", {
+              content: b.text,
+              isPartial: !chunk.stop_reason,
+            });
           }
         }
-      } else if (chunk.type === 'result') {
-        emitPM('activity', { description: `Plan complete — parsing ${text.length} chars` })
+      } else if (chunk.type === "result") {
+        emitPM("activity", {
+          description: `Plan complete — parsing ${text.length} chars`,
+        });
       }
-    })
+    });
 
-    proc.stdout!.on('data', (d: Buffer) => parser.write(d.toString()))
-    proc.stderr!.on('data', (d: Buffer) => {
-      const chunk = d.toString()
-      stderr += chunk
-      if (chunk.trim()) console.log(`[pm-dispatcher] stderr: ${chunk.trim()}`)
-    })
+    proc.stdout!.on("data", (d: Buffer) => parser.write(d.toString()));
+    proc.stderr!.on("data", (d: Buffer) => {
+      const chunk = d.toString();
+      stderr += chunk;
+      if (chunk.trim()) console.log(`[pm-dispatcher] stderr: ${chunk.trim()}`);
+    });
 
-    proc.on('close', (code, signal) => {
-      parser.flush()
+    proc.on("close", (code, signal) => {
+      parser.flush();
 
       // If killed by signal (e.g. SIGTERM), try to use whatever text we collected
       if (signal) {
         if (text.trim()) {
-          console.warn(`[pm-dispatcher] Process killed by ${signal}, using partial response`)
-          resolve(text)
+          console.warn(
+            `[pm-dispatcher] Process killed by ${signal}, using partial response`,
+          );
+          resolve(text);
         } else {
-          reject(new Error(`PM dispatch killed by ${signal} before producing output`))
+          reject(
+            new Error(
+              `PM dispatch killed by ${signal} before producing output`,
+            ),
+          );
         }
-        return
+        return;
       }
 
       if (code !== 0 && code !== null) {
         // Non-zero exit but we have text — try to use it (Claude sometimes exits 1 with valid output)
         if (text.trim()) {
-          console.warn(`[pm-dispatcher] Exit code ${code} but has output, attempting to parse`)
-          resolve(text)
+          console.warn(
+            `[pm-dispatcher] Exit code ${code} but has output, attempting to parse`,
+          );
+          resolve(text);
         } else {
-          reject(new Error(stderr.trim() || `PM dispatch exited with code ${code}`))
+          reject(
+            new Error(stderr.trim() || `PM dispatch exited with code ${code}`),
+          );
         }
       } else {
-        resolve(text)
+        resolve(text);
       }
-    })
+    });
 
-    proc.on('error', (err) => reject(new Error(`PM dispatch spawn failed: ${err.message}`)))
-  })
+    proc.on("error", (err) =>
+      reject(new Error(`PM dispatch spawn failed: ${err.message}`)),
+    );
+  });
 
   if (!fullText.trim()) {
-    throw new Error('PM returned empty response — Claude CLI may not have produced output')
+    throw new Error(
+      "PM returned empty response — Claude CLI may not have produced output",
+    );
   }
 
-  console.log(`[pm-dispatcher] Raw response (${fullText.length} chars): ${fullText.slice(0, 500)}...`)
-  return parsePlan(fullText)
+  console.log(
+    `[pm-dispatcher] Raw response (${fullText.length} chars): ${fullText.slice(0, 500)}...`,
+  );
+  return parsePlan(fullText);
 }
 
 /* ── Two-Phase PM: Task Refinement ── */
@@ -287,7 +325,7 @@ const REFINE_SYSTEM_PROMPT = `You are the lead project manager refining a task p
 - Be concise. Don't pad with generic advice the agent already knows.
 
 ## Output
-Respond with ONLY the refined task prompt text. No JSON, no markdown fences, no explanation — just the prompt the agent should receive.`
+Respond with ONLY the refined task prompt text. No JSON, no markdown fences, no explanation — just the prompt the agent should receive.`;
 
 /**
  * Two-phase PM refinement: refine a task's prompt using artifacts from completed tasks.
@@ -299,96 +337,114 @@ Respond with ONLY the refined task prompt text. No JSON, no markdown fences, no 
 export async function refineTaskPrompt(
   task: DispatchTask,
   artifactSummaries: { role: string; artifactPath: string; title: string }[],
-  baseOptions: Omit<AgentExecuteOptions, 'prompt'>,
+  baseOptions: Omit<AgentExecuteOptions, "prompt">,
   emit?: EmitFn,
 ): Promise<string> {
   // No artifacts to refine against — use original prompt
-  if (artifactSummaries.length === 0) return task.prompt
+  if (artifactSummaries.length === 0) return task.prompt;
 
-  const claudeBin = baseOptions.claudeBin ?? 'claude'
+  const claudeBin = baseOptions.claudeBin ?? "claude";
 
   const artifactContext = artifactSummaries
-    .map((a) => `- ${a.role} completed "${a.title}" → artifact at: ${a.artifactPath}`)
-    .join('\n')
+    .map(
+      (a) =>
+        `- ${a.role} completed "${a.title}" → artifact at: ${a.artifactPath}`,
+    )
+    .join("\n");
 
   const refinementPrompt = [
     `Refine this task prompt for the ${task.role}:`,
-    '',
-    '## Original Task',
+    "",
+    "## Original Task",
     `Title: ${task.title}`,
     `Role: ${task.role}`,
     `Prompt: ${task.prompt}`,
-    '',
-    '## Completed Artifacts (from earlier agents)',
+    "",
+    "## Completed Artifacts (from earlier agents)",
     artifactContext,
-    '',
-    'Rewrite the task prompt to be specific and grounded in these artifacts.',
-  ].join('\n')
+    "",
+    "Rewrite the task prompt to be specific and grounded in these artifacts.",
+  ].join("\n");
 
   const args = [
-    '-p', refinementPrompt,
-    '--output-format', 'stream-json',
-    '--verbose',
-    '--append-system-prompt', REFINE_SYSTEM_PROMPT,
-  ]
+    "-p",
+    refinementPrompt,
+    "--output-format",
+    "stream-json",
+    "--verbose",
+    "--append-system-prompt",
+    REFINE_SYSTEM_PROMPT,
+  ];
 
   const emitPM = (description: string) => {
-    if (!emit) return
+    if (!emit) return;
     emit({
-      type: 'activity' as AgentEvent['type'],
-      agentId: 'product-manager',
-      executionId: '',
+      type: "activity" as AgentEvent["type"],
+      agentId: "product-manager",
+      executionId: "",
       timestamp: new Date().toISOString(),
-      data: { type: 'activity', description } as AgentEvent['data'],
-    })
-  }
+      data: { type: "activity", description } as AgentEvent["data"],
+    });
+  };
 
-  emitPM(`Refining task "${task.title}" with ${artifactSummaries.length} artifact(s)...`)
+  emitPM(
+    `Refining task "${task.title}" with ${artifactSummaries.length} artifact(s)...`,
+  );
 
   try {
     const fullText = await new Promise<string>((resolve, reject) => {
       const proc = spawn(claudeBin, args, {
         cwd: baseOptions.projectRoot,
-        stdio: ['ignore', 'pipe', 'pipe'],
+        stdio: ["ignore", "pipe", "pipe"],
         env: nodeEnv(baseOptions.nodePath),
-      })
+      });
 
-      let text = ''
-      let stderr = ''
+      let text = "";
+      let stderr = "";
 
       const parser = createNdjsonParser((chunk: any) => {
-        if (chunk.type === 'assistant') {
-          for (const b of (chunk.message?.content || [])) {
-            if (b.type === 'text') text += b.text
+        if (chunk.type === "assistant") {
+          for (const b of chunk.message?.content || []) {
+            if (b.type === "text") text += b.text;
           }
         }
-      })
+      });
 
-      proc.stdout!.on('data', (d: Buffer) => parser.write(d.toString()))
-      proc.stderr!.on('data', (d: Buffer) => { stderr += d.toString() })
+      proc.stdout!.on("data", (d: Buffer) => parser.write(d.toString()));
+      proc.stderr!.on("data", (d: Buffer) => {
+        stderr += d.toString();
+      });
 
-      proc.on('close', (code: number | null) => {
-        parser.flush()
-        if (text.trim()) resolve(text.trim())
-        else if (code !== 0) reject(new Error(stderr.trim() || `Refinement exited with code ${code}`))
-        else resolve('')
-      })
+      proc.on("close", (code: number | null) => {
+        parser.flush();
+        if (text.trim()) resolve(text.trim());
+        else if (code !== 0)
+          reject(
+            new Error(stderr.trim() || `Refinement exited with code ${code}`),
+          );
+        else resolve("");
+      });
 
-      proc.on('error', (err: Error) => reject(err))
-    })
+      proc.on("error", (err: Error) => reject(err));
+    });
 
     if (fullText) {
-      console.log(`[pm-dispatcher] Refined task "${task.title}" (${fullText.length} chars)`)
-      emitPM(`Task "${task.title}" refined with artifact context`)
-      return fullText
+      console.log(
+        `[pm-dispatcher] Refined task "${task.title}" (${fullText.length} chars)`,
+      );
+      emitPM(`Task "${task.title}" refined with artifact context`);
+      return fullText;
     }
   } catch (err: any) {
-    console.warn(`[pm-dispatcher] Refinement failed for "${task.title}", using original prompt:`, err.message)
-    emitPM(`Refinement failed — using original prompt for "${task.title}"`)
+    console.warn(
+      `[pm-dispatcher] Refinement failed for "${task.title}", using original prompt:`,
+      err.message,
+    );
+    emitPM(`Refinement failed — using original prompt for "${task.title}"`);
   }
 
   // Fallback to original prompt if refinement fails
-  return task.prompt
+  return task.prompt;
 }
 
 /* ── Adaptive Re-Planning After Spec Tasks ── */
@@ -409,7 +465,7 @@ Respond with ONLY a JSON array of task objects. No markdown, no explanation.
 [
   { "id": "t1", "title": "...", "description": "...", "role": "...", "prompt": "...", "dependsOn": [], "model": "balanced", "reviewLevel": "full" },
   ...
-]`
+]`;
 
 /**
  * Re-plan downstream tasks after a spec-producing agent completes.
@@ -421,236 +477,279 @@ export async function replanDownstream(
   completedTask: DispatchTask,
   artifactPath: string,
   remainingTasks: DispatchTask[],
-  baseOptions: Omit<AgentExecuteOptions, 'prompt'>,
+  baseOptions: Omit<AgentExecuteOptions, "prompt">,
   emit?: EmitFn,
 ): Promise<DispatchTask[]> {
-  if (remainingTasks.length === 0) return []
+  if (remainingTasks.length === 0) return [];
 
-  const claudeBin = baseOptions.claudeBin ?? 'claude'
+  const claudeBin = baseOptions.claudeBin ?? "claude";
 
   const remainingDesc = remainingTasks
-    .map((t, i) => `${i + 1}. [${t.role}] "${t.title}": ${t.prompt.slice(0, 200)}...`)
-    .join('\n')
+    .map(
+      (t, i) =>
+        `${i + 1}. [${t.role}] "${t.title}": ${t.prompt.slice(0, 200)}...`,
+    )
+    .join("\n");
 
   const replanPrompt = [
     `A ${completedTask.role} just completed "${completedTask.title}".`,
     `Their output artifact is at: ${artifactPath}`,
     `Read that file to understand what was produced.`,
-    '',
+    "",
     `The remaining tasks in the pipeline are:`,
     remainingDesc,
-    '',
+    "",
     `Based on the ACTUAL artifact content, re-decompose these remaining tasks.`,
     `Split any oversized tasks into focused subtasks. Adjust model selections.`,
     `Each task prompt must tell the agent exactly what to build and reference the artifact.`,
-  ].join('\n')
+  ].join("\n");
 
   const args = [
-    '-p', replanPrompt,
-    '--output-format', 'stream-json',
-    '--verbose',
-    '--append-system-prompt', REPLAN_SYSTEM_PROMPT,
-  ]
+    "-p",
+    replanPrompt,
+    "--output-format",
+    "stream-json",
+    "--verbose",
+    "--append-system-prompt",
+    REPLAN_SYSTEM_PROMPT,
+  ];
 
   const emitPM = (description: string) => {
-    if (!emit) return
+    if (!emit) return;
     emit({
-      type: 'activity' as AgentEvent['type'],
-      agentId: 'product-manager',
-      executionId: '',
+      type: "activity" as AgentEvent["type"],
+      agentId: "product-manager",
+      executionId: "",
       timestamp: new Date().toISOString(),
-      data: { type: 'activity', description } as AgentEvent['data'],
-    })
-  }
+      data: { type: "activity", description } as AgentEvent["data"],
+    });
+  };
 
-  emitPM(`Re-evaluating plan after ${completedTask.role} completed "${completedTask.title}"...`)
+  emitPM(
+    `Re-evaluating plan after ${completedTask.role} completed "${completedTask.title}"...`,
+  );
 
   try {
     const fullText = await new Promise<string>((resolve, reject) => {
       const proc = spawn(claudeBin, args, {
         cwd: baseOptions.projectRoot,
-        stdio: ['ignore', 'pipe', 'pipe'],
+        stdio: ["ignore", "pipe", "pipe"],
         env: nodeEnv(baseOptions.nodePath),
-      })
+      });
 
-      let text = ''
-      let stderr = ''
+      let text = "";
+      let stderr = "";
 
       const parser = createNdjsonParser((chunk: any) => {
-        if (chunk.type === 'assistant') {
-          for (const b of (chunk.message?.content || [])) {
-            if (b.type === 'text') text += b.text
+        if (chunk.type === "assistant") {
+          for (const b of chunk.message?.content || []) {
+            if (b.type === "text") text += b.text;
           }
         }
-      })
+      });
 
-      proc.stdout!.on('data', (d: Buffer) => parser.write(d.toString()))
-      proc.stderr!.on('data', (d: Buffer) => { stderr += d.toString() })
+      proc.stdout!.on("data", (d: Buffer) => parser.write(d.toString()));
+      proc.stderr!.on("data", (d: Buffer) => {
+        stderr += d.toString();
+      });
 
-      proc.on('close', (code: number | null) => {
-        parser.flush()
-        if (text.trim()) resolve(text.trim())
-        else if (code !== 0) reject(new Error(stderr.trim() || `Re-plan exited with code ${code}`))
-        else resolve('')
-      })
+      proc.on("close", (code: number | null) => {
+        parser.flush();
+        if (text.trim()) resolve(text.trim());
+        else if (code !== 0)
+          reject(
+            new Error(stderr.trim() || `Re-plan exited with code ${code}`),
+          );
+        else resolve("");
+      });
 
-      proc.on('error', (err: Error) => reject(err))
-    })
+      proc.on("error", (err: Error) => reject(err));
+    });
 
     if (!fullText) {
-      emitPM('Re-plan returned empty — keeping original tasks')
-      return remainingTasks
+      emitPM("Re-plan returned empty — keeping original tasks");
+      return remainingTasks;
     }
 
     // Parse JSON array from response
-    const bracketStart = fullText.indexOf('[')
-    const bracketEnd = fullText.lastIndexOf(']')
+    const bracketStart = fullText.indexOf("[");
+    const bracketEnd = fullText.lastIndexOf("]");
 
     if (bracketStart === -1 || bracketEnd <= bracketStart) {
-      console.warn('[pm-dispatcher] Re-plan: no JSON array found, keeping original tasks')
-      emitPM('Re-plan did not produce valid tasks — keeping original plan')
-      return remainingTasks
+      console.warn(
+        "[pm-dispatcher] Re-plan: no JSON array found, keeping original tasks",
+      );
+      emitPM("Re-plan did not produce valid tasks — keeping original plan");
+      return remainingTasks;
     }
 
-    const parsed = JSON.parse(fullText.slice(bracketStart, bracketEnd + 1))
+    const parsed = JSON.parse(fullText.slice(bracketStart, bracketEnd + 1));
     if (!Array.isArray(parsed) || parsed.length === 0) {
-      emitPM('Re-plan returned empty array — keeping original plan')
-      return remainingTasks
+      emitPM("Re-plan returned empty array — keeping original plan");
+      return remainingTasks;
     }
 
-    const prefix = crypto.randomUUID().slice(0, 8)
+    const prefix = crypto.randomUUID().slice(0, 8);
     const VALID_ROLES = new Set<string>([
-      'frontend-engineer', 'backend-engineer', 'fullstack-engineer',
-      'devops-engineer', 'qa-engineer', 'security-engineer',
-      'database-engineer', 'ui-designer', 'technical-writer',
-      'code-reviewer', 'architect', 'product-manager',
-    ])
-    const VALID_MODELS = new Set<TaskModel>(['fast', 'balanced', 'premium'])
-    const VALID_REVIEW_LEVELS = new Set<ReviewLevel>(['none', 'light', 'full'])
+      "frontend-engineer",
+      "backend-engineer",
+      "fullstack-engineer",
+      "devops-engineer",
+      "qa-engineer",
+      "security-engineer",
+      "database-engineer",
+      "ui-designer",
+      "technical-writer",
+      "code-reviewer",
+      "architect",
+      "product-manager",
+    ]);
+    const VALID_MODELS = new Set<TaskModel>(["fast", "balanced", "premium"]);
+    const VALID_REVIEW_LEVELS = new Set<ReviewLevel>(["none", "light", "full"]);
 
-    const newTasks: DispatchTask[] = parsed.map((t: any, i: number) => {
-      const id = `${prefix}-r${i}`
-      return {
-        id,
-        title: t.title ?? `Task ${i + 1}`,
-        description: t.description ?? '',
-        role: VALID_ROLES.has(t.role) ? t.role : 'frontend-engineer',
-        prompt: t.prompt ?? '',
-        dependsOn: i > 0 ? [`${prefix}-r${i - 1}`] : [completedTask.id],
-        model: VALID_MODELS.has(t.model) ? t.model : 'balanced',
-        reviewLevel: VALID_REVIEW_LEVELS.has(t.reviewLevel) ? t.reviewLevel : 'full',
-      }
-    }).filter((t: DispatchTask) => t.prompt.trim())
+    const newTasks: DispatchTask[] = parsed
+      .map((t: any, i: number) => {
+        const id = `${prefix}-r${i}`;
+        return {
+          id,
+          title: t.title ?? `Task ${i + 1}`,
+          description: t.description ?? "",
+          role: VALID_ROLES.has(t.role) ? t.role : "frontend-engineer",
+          prompt: t.prompt ?? "",
+          dependsOn: i > 0 ? [`${prefix}-r${i - 1}`] : [completedTask.id],
+          model: VALID_MODELS.has(t.model) ? t.model : "balanced",
+          reviewLevel: VALID_REVIEW_LEVELS.has(t.reviewLevel)
+            ? t.reviewLevel
+            : "full",
+        };
+      })
+      .filter((t: DispatchTask) => t.prompt.trim());
 
     if (newTasks.length === 0) {
-      emitPM('Re-plan produced no valid tasks — keeping original plan')
-      return remainingTasks
+      emitPM("Re-plan produced no valid tasks — keeping original plan");
+      return remainingTasks;
     }
 
-    emitPM(`Re-plan: ${remainingTasks.length} tasks → ${newTasks.length} tasks`)
-    console.log(`[pm-dispatcher] Re-plan: ${remainingTasks.length} → ${newTasks.length} tasks`)
-    return newTasks
-
+    emitPM(
+      `Re-plan: ${remainingTasks.length} tasks → ${newTasks.length} tasks`,
+    );
+    console.log(
+      `[pm-dispatcher] Re-plan: ${remainingTasks.length} → ${newTasks.length} tasks`,
+    );
+    return newTasks;
   } catch (err: any) {
-    console.warn('[pm-dispatcher] Re-plan failed, keeping original tasks:', err.message)
-    emitPM(`Re-plan failed — continuing with original plan`)
-    return remainingTasks
+    console.warn(
+      "[pm-dispatcher] Re-plan failed, keeping original tasks:",
+      err.message,
+    );
+    emitPM(`Re-plan failed — continuing with original plan`);
+    return remainingTasks;
   }
 }
 
 function parsePlan(raw: string): DispatchPlan {
-  const braceStart = raw.indexOf('{')
-  const braceEnd = raw.lastIndexOf('}')
+  const braceStart = raw.indexOf("{");
+  const braceEnd = raw.lastIndexOf("}");
 
   // No JSON found — the PM is asking a clarification question or responding conversationally
   if (braceStart === -1 || braceEnd <= braceStart) {
-    console.log(`[pm-dispatcher] No JSON in response — treating as clarification`)
+    console.log(
+      `[pm-dispatcher] No JSON in response — treating as clarification`,
+    );
     return {
-      mode: 'clarification',
+      mode: "clarification",
       tasks: [],
       summary: raw.trim(),
-    }
+    };
   }
 
-  const candidate = raw.slice(braceStart, braceEnd + 1)
+  const candidate = raw.slice(braceStart, braceEnd + 1);
 
-  let parsed: any
+  let parsed: any;
   try {
-    parsed = JSON.parse(candidate)
+    parsed = JSON.parse(candidate);
   } catch {
     // JSON-like braces found but invalid JSON — also treat as clarification
-    console.log(`[pm-dispatcher] JSON parse failed — treating as clarification`)
+    console.log(
+      `[pm-dispatcher] JSON parse failed — treating as clarification`,
+    );
     return {
-      mode: 'clarification',
+      mode: "clarification",
       tasks: [],
       summary: raw.trim(),
-    }
+    };
   }
 
-  const mode = parsed.mode === 'single' ? 'single' : 'multi'
-  const summary = parsed.summary ?? ''
+  const mode = parsed.mode === "single" ? "single" : "multi";
+  const summary = parsed.summary ?? "";
 
   // Generate a dispatch prefix so task IDs are globally unique across dispatches
-  const prefix = crypto.randomUUID().slice(0, 8)
-  const idMap = new Map<string, string>() // original PM id → globally unique id
+  const prefix = crypto.randomUUID().slice(0, 8);
+  const idMap = new Map<string, string>(); // original PM id → globally unique id
 
   function validateTask(task: any, index: number): DispatchTask {
     if (!task.role || !VALID_ROLES.has(task.role)) {
-      throw new Error(`Task ${index}: invalid role "${task.role}"`)
+      throw new Error(`Task ${index}: invalid role "${task.role}"`);
     }
     if (!task.prompt) {
-      throw new Error(`Task ${index}: missing prompt`)
+      throw new Error(`Task ${index}: missing prompt`);
     }
-    const originalId = task.id ?? `t${index}`
-    const uniqueId = `${prefix}-${originalId}`
-    idMap.set(originalId, uniqueId)
+    const originalId = task.id ?? `t${index}`;
+    const uniqueId = `${prefix}-${originalId}`;
+    idMap.set(originalId, uniqueId);
 
-    const VALID_MODELS = new Set<TaskModel>(['fast', 'balanced', 'premium'])
-    const model = VALID_MODELS.has(task.model) ? task.model : 'balanced'
+    const VALID_MODELS = new Set<TaskModel>(["fast", "balanced", "premium"]);
+    const model = VALID_MODELS.has(task.model) ? task.model : "balanced";
 
-    const VALID_REVIEW_LEVELS = new Set<ReviewLevel>(['none', 'light', 'full'])
-    const reviewLevel = VALID_REVIEW_LEVELS.has(task.reviewLevel) ? task.reviewLevel : 'full'
+    const VALID_REVIEW_LEVELS = new Set<ReviewLevel>(["none", "light", "full"]);
+    const reviewLevel = VALID_REVIEW_LEVELS.has(task.reviewLevel)
+      ? task.reviewLevel
+      : "full";
 
     return {
       id: uniqueId,
       title: task.title ?? `Task ${index + 1}`,
-      description: task.description ?? '',
+      description: task.description ?? "",
       role: task.role as AgentRole,
       prompt: task.prompt,
       dependsOn: Array.isArray(task.dependsOn) ? task.dependsOn : [],
       model,
       reviewLevel,
-    }
+    };
   }
 
-  if (mode === 'single' && parsed.task) {
-    const task = validateTask(parsed.task, 0)
-    return { mode: 'single', task, tasks: [task], summary }
+  if (mode === "single" && parsed.task) {
+    const task = validateTask(parsed.task, 0);
+    return { mode: "single", task, tasks: [task], summary };
   }
 
-  const tasks = (parsed.tasks || []).map((t: any, i: number) => validateTask(t, i))
+  const tasks = (parsed.tasks || []).map((t: any, i: number) =>
+    validateTask(t, i),
+  );
 
   // Remap dependency references from PM's original IDs to our globally unique IDs
   for (const task of tasks) {
     task.dependsOn = task.dependsOn
       .map((dep: string) => {
-        const mapped = idMap.get(dep)
+        const mapped = idMap.get(dep);
         if (!mapped) {
-          console.warn(`[pm-dispatcher] Task "${task.id}" references unknown dep "${dep}", removing`)
-          return null
+          console.warn(
+            `[pm-dispatcher] Task "${task.id}" references unknown dep "${dep}", removing`,
+          );
+          return null;
         }
-        return mapped
+        return mapped;
       })
-      .filter(Boolean) as string[]
+      .filter(Boolean) as string[];
   }
 
   if (tasks.length === 0) {
-    throw new Error('PM produced an empty task plan')
+    throw new Error("PM produced an empty task plan");
   }
 
   if (tasks.length === 1) {
-    return { mode: 'single', task: tasks[0], tasks, summary }
+    return { mode: "single", task: tasks[0], tasks, summary };
   }
 
-  return { mode: 'multi', tasks, summary }
+  return { mode: "multi", tasks, summary };
 }

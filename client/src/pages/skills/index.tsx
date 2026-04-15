@@ -1,1 +1,1 @@
-export { SkillsBrowserPage as default } from './skills-page'
+export { SkillsBrowserPage as default } from "./skills-page";

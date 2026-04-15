@@ -22,11 +22,19 @@ export function GlobalSettingsDrawer({ onClose }: GlobalSettingsDrawerProps) {
         <Flex direction="column" gap="4px">
           <Flex align="center" gap="6px">
             <Server size={13} style={{ color: "var(--studio-text-muted)" }} />
-            <Text css={{ fontSize: "14px", fontWeight: 600, color: "var(--studio-text-primary)" }}>
+            <Text
+              css={{
+                fontSize: "14px",
+                fontWeight: 600,
+                color: "var(--studio-text-primary)",
+              }}
+            >
               Node.js
             </Text>
           </Flex>
-          <Text css={{ fontSize: "13px", color: "var(--studio-text-tertiary)" }}>
+          <Text
+            css={{ fontSize: "13px", color: "var(--studio-text-tertiary)" }}
+          >
             Runtime for dev servers, CLI tools, and AI agents.
           </Text>
         </Flex>

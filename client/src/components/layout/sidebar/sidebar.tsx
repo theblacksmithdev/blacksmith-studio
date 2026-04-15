@@ -1,17 +1,17 @@
-import styled from '@emotion/styled'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { useUiStore } from '@/stores/ui-store'
-import { useActiveProjectId } from '@/api/hooks/_shared'
-import { SidebarTooltip } from './sidebar-tooltip'
-import { NavButton, NavLabel } from './nav-item'
-import { projectNav, bottomNav } from './nav-config'
-import { RunnerBadge } from './runner-badge'
-import { NewChatButton } from './new-chat-button'
-import { UserMenu } from './user-menu'
-import { Terminal } from 'lucide-react'
+import styled from "@emotion/styled";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useUiStore } from "@/stores/ui-store";
+import { useActiveProjectId } from "@/api/hooks/_shared";
+import { SidebarTooltip } from "./sidebar-tooltip";
+import { NavButton, NavLabel } from "./nav-item";
+import { projectNav, bottomNav } from "./nav-config";
+import { RunnerBadge } from "./runner-badge";
+import { NewChatButton } from "./new-chat-button";
+import { UserMenu } from "./user-menu";
+import { Terminal } from "lucide-react";
 
-const COLLAPSED_WIDTH = 56
-const EXPANDED_WIDTH = 210
+const COLLAPSED_WIDTH = 56;
+const EXPANDED_WIDTH = 210;
 
 const Nav = styled.nav<{ expanded: boolean }>`
   width: ${({ expanded }) => (expanded ? EXPANDED_WIDTH : COLLAPSED_WIDTH)}px;
@@ -24,37 +24,36 @@ const Nav = styled.nav<{ expanded: boolean }>`
   padding: 10px 8px;
   transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
-`
+`;
 
 const Section = styled.div`
   display: flex;
   flex-direction: column;
   gap: 2px;
-`
+`;
 
 const Spacer = styled.div`
   flex: 1;
-`
+`;
 
 const Divider = styled.div`
   height: 1px;
   background: var(--studio-border);
   margin: 6px 4px;
   flex-shrink: 0;
-`
+`;
 
 export function Sidebar() {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const pid = useActiveProjectId()
-  const expanded = useUiStore((s) => s.sidebarExpanded)
-  const terminalOpen = useUiStore((s) => s.terminalOpen)
-  const toggleTerminal = useUiStore((s) => s.toggleTerminal)
-  const pathname = location.pathname
-  const isInsideProject = pid && pathname.startsWith(`/${pid}`)
+  const navigate = useNavigate();
+  const location = useLocation();
+  const pid = useActiveProjectId();
+  const expanded = useUiStore((s) => s.sidebarExpanded);
+  const terminalOpen = useUiStore((s) => s.terminalOpen);
+  const toggleTerminal = useUiStore((s) => s.toggleTerminal);
+  const pathname = location.pathname;
+  const isInsideProject = pid && pathname.startsWith(`/${pid}`);
 
-  const isActive = (match: string) =>
-    pathname.includes(match)
+  const isActive = (match: string) => pathname.includes(match);
 
   return (
     <Nav expanded={expanded}>
@@ -94,7 +93,7 @@ export function Sidebar() {
                 >
                   <Icon size={18} style={{ flexShrink: 0 }} />
                   <NavLabel visible={expanded}>{label}</NavLabel>
-                  {id === 'run' && <RunnerBadge />}
+                  {id === "run" && <RunnerBadge />}
                 </NavButton>
               </SidebarTooltip>
             ))}
@@ -109,7 +108,6 @@ export function Sidebar() {
                 <NavLabel visible={expanded}>Terminal</NavLabel>
               </NavButton>
             </SidebarTooltip>
-
           </Section>
         </>
       ) : (
@@ -120,5 +118,5 @@ export function Sidebar() {
 
       <UserMenu expanded={expanded} />
     </Nav>
-  )
+  );
 }

@@ -1,12 +1,13 @@
-import type { AgentRoleDefinition } from '../../types.js'
-import { DEVELOPER_BOUNDARIES } from '../boundaries.js'
+import type { AgentRoleDefinition } from "../../types.js";
+import { DEVELOPER_BOUNDARIES } from "../boundaries.js";
 
 export const DEFINITION: AgentRoleDefinition = {
-  role: 'backend-engineer',
-  team: 'engineering',
-  title: 'Backend Engineer',
-  label: 'Backend',
-  description: 'Senior Django/Python engineer specializing in API design, data modeling, business logic, and backend architecture.',
+  role: "backend-engineer",
+  team: "engineering",
+  title: "Backend Engineer",
+  label: "Backend",
+  description:
+    "Senior Django/Python engineer specializing in API design, data modeling, business logic, and backend architecture.",
   systemPrompt: `You are a senior backend engineer with deep expertise in Django, Django REST Framework, and Python.
 
 ## Your Strengths
@@ -32,19 +33,33 @@ When an architect or database engineer has worked before you, their specificatio
 ${DEVELOPER_BOUNDARIES}`,
 
   filePatterns: [
-    '*.py', '*.txt', '*.cfg', '*.toml', '*.ini', '*.yml', '*.yaml',
-    '*.sql', '*.json',
+    "*.py",
+    "*.txt",
+    "*.cfg",
+    "*.toml",
+    "*.ini",
+    "*.yml",
+    "*.yaml",
+    "*.sql",
+    "*.json",
   ],
-  scopeDirs: ['backend', 'server', 'api', '.'],
+  scopeDirs: ["backend", "server", "api", "."],
   selfDecompose: false,
   keyFiles: [
-    'requirements.txt', 'pyproject.toml', 'setup.cfg', 'manage.py',
-    'settings.py', 'urls.py', 'conftest.py',
-    'CLAUDE.md', 'README.md', 'package.json',
+    "requirements.txt",
+    "pyproject.toml",
+    "setup.cfg",
+    "manage.py",
+    "settings.py",
+    "urls.py",
+    "conftest.py",
+    "CLAUDE.md",
+    "README.md",
+    "package.json",
   ],
-  permissionMode: 'bypassPermissions',
+  permissionMode: "bypassPermissions",
   preferredModel: null,
   maxBudget: null,
-  mcpServers: 'all',
-  allowedTools: 'all',
-}
+  mcpServers: "all",
+  allowedTools: "all",
+};

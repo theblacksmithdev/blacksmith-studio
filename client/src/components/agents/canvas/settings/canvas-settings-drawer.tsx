@@ -1,23 +1,38 @@
-import { Drawer } from '@/components/shared/drawer'
-import { EDGE_TYPE_OPTIONS, type CanvasSettings, type EdgeType } from './types'
+import { Drawer } from "@/components/shared/drawer";
+import { EDGE_TYPE_OPTIONS, type CanvasSettings, type EdgeType } from "./types";
 import {
-  Section, SectionTitle, Row, RowLabel,
-  SliderWrap, SliderValue, Slider,
-  SegmentRow, SegmentBtn, ToggleTrack,
-  ResetBtn, Divider,
-} from './styles'
+  Section,
+  SectionTitle,
+  Row,
+  RowLabel,
+  SliderWrap,
+  SliderValue,
+  Slider,
+  SegmentRow,
+  SegmentBtn,
+  ToggleTrack,
+  ResetBtn,
+  Divider,
+} from "./styles";
 
 interface CanvasSettingsDrawerProps {
-  canvas: CanvasSettings
-  onUpdate: <K extends keyof CanvasSettings>(key: K, value: CanvasSettings[K]) => void
-  onReset: () => void
-  onClose: () => void
+  canvas: CanvasSettings;
+  onUpdate: <K extends keyof CanvasSettings>(
+    key: K,
+    value: CanvasSettings[K],
+  ) => void;
+  onReset: () => void;
+  onClose: () => void;
 }
 
-export function CanvasSettingsDrawer({ canvas, onUpdate, onReset, onClose }: CanvasSettingsDrawerProps) {
+export function CanvasSettingsDrawer({
+  canvas,
+  onUpdate,
+  onReset,
+  onClose,
+}: CanvasSettingsDrawerProps) {
   return (
     <Drawer title="Canvas Settings" onClose={onClose} size="320px">
-
       {/* ── Edges ── */}
       <Section>
         <SectionTitle>Edges</SectionTitle>
@@ -30,7 +45,7 @@ export function CanvasSettingsDrawer({ canvas, onUpdate, onReset, onClose }: Can
             <SegmentBtn
               key={opt.value}
               $active={canvas.edgeType === opt.value}
-              onClick={() => onUpdate('edgeType', opt.value as EdgeType)}
+              onClick={() => onUpdate("edgeType", opt.value as EdgeType)}
             >
               {opt.label}
             </SegmentBtn>
@@ -46,7 +61,7 @@ export function CanvasSettingsDrawer({ canvas, onUpdate, onReset, onClose }: Can
               max={4}
               step={0.5}
               value={canvas.edgeWidth}
-              onChange={(e) => onUpdate('edgeWidth', Number(e.target.value))}
+              onChange={(e) => onUpdate("edgeWidth", Number(e.target.value))}
             />
             <SliderValue>{canvas.edgeWidth}px</SliderValue>
           </SliderWrap>
@@ -61,7 +76,9 @@ export function CanvasSettingsDrawer({ canvas, onUpdate, onReset, onClose }: Can
               max={4}
               step={0.5}
               value={canvas.edgeActiveWidth}
-              onChange={(e) => onUpdate('edgeActiveWidth', Number(e.target.value))}
+              onChange={(e) =>
+                onUpdate("edgeActiveWidth", Number(e.target.value))
+              }
             />
             <SliderValue>{canvas.edgeActiveWidth}px</SliderValue>
           </SliderWrap>
@@ -76,7 +93,7 @@ export function CanvasSettingsDrawer({ canvas, onUpdate, onReset, onClose }: Can
               max={1}
               step={0.05}
               value={canvas.edgeOpacity}
-              onChange={(e) => onUpdate('edgeOpacity', Number(e.target.value))}
+              onChange={(e) => onUpdate("edgeOpacity", Number(e.target.value))}
             />
             <SliderValue>{Math.round(canvas.edgeOpacity * 100)}%</SliderValue>
           </SliderWrap>
@@ -84,7 +101,10 @@ export function CanvasSettingsDrawer({ canvas, onUpdate, onReset, onClose }: Can
 
         <Row>
           <RowLabel>Animate active</RowLabel>
-          <ToggleTrack $on={canvas.edgeAnimated} onClick={() => onUpdate('edgeAnimated', !canvas.edgeAnimated)} />
+          <ToggleTrack
+            $on={canvas.edgeAnimated}
+            onClick={() => onUpdate("edgeAnimated", !canvas.edgeAnimated)}
+          />
         </Row>
       </Section>
 
@@ -96,7 +116,10 @@ export function CanvasSettingsDrawer({ canvas, onUpdate, onReset, onClose }: Can
 
         <Row>
           <RowLabel>Show dots</RowLabel>
-          <ToggleTrack $on={canvas.showBackground} onClick={() => onUpdate('showBackground', !canvas.showBackground)} />
+          <ToggleTrack
+            $on={canvas.showBackground}
+            onClick={() => onUpdate("showBackground", !canvas.showBackground)}
+          />
         </Row>
 
         {canvas.showBackground && (
@@ -110,7 +133,9 @@ export function CanvasSettingsDrawer({ canvas, onUpdate, onReset, onClose }: Can
                   max={60}
                   step={4}
                   value={canvas.backgroundGap}
-                  onChange={(e) => onUpdate('backgroundGap', Number(e.target.value))}
+                  onChange={(e) =>
+                    onUpdate("backgroundGap", Number(e.target.value))
+                  }
                 />
                 <SliderValue>{canvas.backgroundGap}</SliderValue>
               </SliderWrap>
@@ -125,7 +150,9 @@ export function CanvasSettingsDrawer({ canvas, onUpdate, onReset, onClose }: Can
                   max={2}
                   step={0.1}
                   value={canvas.backgroundSize}
-                  onChange={(e) => onUpdate('backgroundSize', Number(e.target.value))}
+                  onChange={(e) =>
+                    onUpdate("backgroundSize", Number(e.target.value))
+                  }
                 />
                 <SliderValue>{canvas.backgroundSize}</SliderValue>
               </SliderWrap>
@@ -142,7 +169,10 @@ export function CanvasSettingsDrawer({ canvas, onUpdate, onReset, onClose }: Can
 
         <Row>
           <RowLabel>Snap to grid</RowLabel>
-          <ToggleTrack $on={canvas.snapToGrid} onClick={() => onUpdate('snapToGrid', !canvas.snapToGrid)} />
+          <ToggleTrack
+            $on={canvas.snapToGrid}
+            onClick={() => onUpdate("snapToGrid", !canvas.snapToGrid)}
+          />
         </Row>
 
         {canvas.snapToGrid && (
@@ -155,7 +185,9 @@ export function CanvasSettingsDrawer({ canvas, onUpdate, onReset, onClose }: Can
                 max={50}
                 step={5}
                 value={canvas.snapGridSize}
-                onChange={(e) => onUpdate('snapGridSize', Number(e.target.value))}
+                onChange={(e) =>
+                  onUpdate("snapGridSize", Number(e.target.value))
+                }
               />
               <SliderValue>{canvas.snapGridSize}</SliderValue>
             </SliderWrap>
@@ -167,5 +199,5 @@ export function CanvasSettingsDrawer({ canvas, onUpdate, onReset, onClose }: Can
 
       <ResetBtn onClick={onReset}>Reset to defaults</ResetBtn>
     </Drawer>
-  )
+  );
 }

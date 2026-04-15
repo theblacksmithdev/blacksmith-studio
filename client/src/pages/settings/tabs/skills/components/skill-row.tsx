@@ -1,8 +1,8 @@
-import { Flex, Box } from '@chakra-ui/react'
-import styled from '@emotion/styled'
-import { Wand2, Trash2 } from 'lucide-react'
-import { Text, Badge, IconButton, Tooltip } from '@/components/shared/ui'
-import type { SkillEntry } from '@/api/modules/skills'
+import { Flex, Box } from "@chakra-ui/react";
+import styled from "@emotion/styled";
+import { Wand2, Trash2 } from "lucide-react";
+import { Text, Badge, IconButton, Tooltip } from "@/components/shared/ui";
+import type { SkillEntry } from "@/api/modules/skills";
 
 const Row = styled.button`
   display: flex;
@@ -18,41 +18,62 @@ const Row = styled.button`
   font-family: inherit;
   transition: background 0.1s ease;
 
-  &:last-child { border-bottom: none; }
+  &:last-child {
+    border-bottom: none;
+  }
   &:hover {
     background: var(--studio-bg-surface);
-    .skill-delete { opacity: 1; }
+    .skill-delete {
+      opacity: 1;
+    }
   }
-`
+`;
 
 const DeleteBtn = styled.div`
   opacity: 0;
   transition: opacity 0.1s ease;
-`
+`;
 
 interface SkillRowProps {
-  skill: SkillEntry
-  onEdit: () => void
-  onDelete: () => void
+  skill: SkillEntry;
+  onEdit: () => void;
+  onDelete: () => void;
 }
 
 export function SkillRow({ skill, onEdit, onDelete }: SkillRowProps) {
   return (
     <Row onClick={onEdit}>
-      <Wand2 size={14} style={{ color: 'var(--studio-text-muted)', flexShrink: 0 }} />
+      <Wand2
+        size={14}
+        style={{ color: "var(--studio-text-muted)", flexShrink: 0 }}
+      />
 
       <Box css={{ flex: 1, minWidth: 0 }}>
         <Flex align="center" gap="6px">
-          <Text css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-text-primary)' }}>
+          <Text
+            css={{
+              fontSize: "13px",
+              fontWeight: 500,
+              color: "var(--studio-text-primary)",
+            }}
+          >
             {skill.name}
           </Text>
-          <Badge variant="default" size="sm">/{skill.name}</Badge>
+          <Badge variant="default" size="sm">
+            /{skill.name}
+          </Badge>
         </Flex>
         {skill.description && (
-          <Text css={{
-            fontSize: '12px', color: 'var(--studio-text-tertiary)', marginTop: '1px',
-            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          }}>
+          <Text
+            css={{
+              fontSize: "12px",
+              color: "var(--studio-text-tertiary)",
+              marginTop: "1px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
             {skill.description}
           </Text>
         )}
@@ -64,12 +85,15 @@ export function SkillRow({ skill, onEdit, onDelete }: SkillRowProps) {
             variant="ghost"
             size="xs"
             aria-label="Remove"
-            onClick={(e: React.MouseEvent) => { e.stopPropagation(); onDelete() }}
+            onClick={(e: React.MouseEvent) => {
+              e.stopPropagation();
+              onDelete();
+            }}
           >
             <Trash2 size={13} />
           </IconButton>
         </DeleteBtn>
       </Tooltip>
     </Row>
-  )
+  );
 }

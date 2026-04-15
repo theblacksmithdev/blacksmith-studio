@@ -1,5 +1,5 @@
-import { useMutation } from '@tanstack/react-query'
-import { api } from '@/api'
+import { useMutation } from "@tanstack/react-query";
+import { api } from "@/api";
 
 /**
  * Cancels all running agents.
@@ -7,5 +7,5 @@ import { api } from '@/api'
 export function useAgentCancelAll() {
   return useMutation({
     mutationFn: () => api.agents.cancelAll(),
-  })
+  });
 }

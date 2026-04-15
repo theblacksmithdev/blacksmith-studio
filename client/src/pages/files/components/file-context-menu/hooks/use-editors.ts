@@ -1,1 +1,1 @@
-export { useEditors } from '@/pages/files/hooks/use-editors'
+export { useEditors } from "@/pages/files/hooks/use-editors";

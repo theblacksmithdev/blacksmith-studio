@@ -1,7 +1,7 @@
-import { Flex } from '@chakra-ui/react'
-import styled from '@emotion/styled'
-import { BookOpen, Plus } from 'lucide-react'
-import { Text } from '@/components/shared/ui'
+import { Flex } from "@chakra-ui/react";
+import styled from "@emotion/styled";
+import { BookOpen, Plus } from "lucide-react";
+import { Text } from "@/components/shared/ui";
 
 const Wrap = styled.div`
   display: flex;
@@ -13,7 +13,7 @@ const Wrap = styled.div`
   border-radius: 10px;
   border: 1px dashed var(--studio-border);
   background: var(--studio-bg-inset);
-`
+`;
 
 const IconWrap = styled.div`
   width: 52px;
@@ -25,7 +25,7 @@ const IconWrap = styled.div`
   align-items: center;
   justify-content: center;
   color: var(--studio-text-muted);
-`
+`;
 
 const PrimaryBtn = styled.button`
   display: flex;
@@ -41,28 +41,47 @@ const PrimaryBtn = styled.button`
   cursor: pointer;
   font-family: inherit;
   transition: opacity 0.12s ease;
-  &:hover { opacity: 0.85; }
-`
+  &:hover {
+    opacity: 0.85;
+  }
+`;
 
 interface KnowledgeEmptyStateProps {
-  onCreate: () => void
+  onCreate: () => void;
 }
 
 export function KnowledgeEmptyState({ onCreate }: KnowledgeEmptyStateProps) {
   return (
     <Wrap>
-      <IconWrap><BookOpen size={24} /></IconWrap>
+      <IconWrap>
+        <BookOpen size={24} />
+      </IconWrap>
       <Flex direction="column" gap="6px" align="center">
-        <Text css={{ fontSize: '15px', fontWeight: 600, color: 'var(--studio-text-primary)' }}>
+        <Text
+          css={{
+            fontSize: "15px",
+            fontWeight: 600,
+            color: "var(--studio-text-primary)",
+          }}
+        >
           Give Claude context
         </Text>
-        <Text css={{ fontSize: '13px', color: 'var(--studio-text-tertiary)', maxWidth: '340px', lineHeight: 1.6 }}>
-          Add markdown documents that Claude reads on every conversation — project requirements, architecture decisions, API specs, and coding conventions.
+        <Text
+          css={{
+            fontSize: "13px",
+            color: "var(--studio-text-tertiary)",
+            maxWidth: "340px",
+            lineHeight: 1.6,
+          }}
+        >
+          Add markdown documents that Claude reads on every conversation —
+          project requirements, architecture decisions, API specs, and coding
+          conventions.
         </Text>
       </Flex>
       <PrimaryBtn onClick={onCreate}>
         <Plus size={13} /> Create Document
       </PrimaryBtn>
     </Wrap>
-  )
+  );
 }

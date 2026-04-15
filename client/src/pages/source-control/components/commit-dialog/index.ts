@@ -1,1 +1,1 @@
-export { CommitDialog } from './commit-dialog'
+export { CommitDialog } from "./commit-dialog";

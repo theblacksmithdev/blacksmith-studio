@@ -1,2 +1,2 @@
-export { Text } from './typography'
-export type { TextVariant, TextColor } from './typography'
+export { Text } from "./typography";
+export type { TextVariant, TextColor } from "./typography";

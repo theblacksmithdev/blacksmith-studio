@@ -1,17 +1,19 @@
-import { useQuery } from '@tanstack/react-query'
-import { api } from '@/api'
-import { useProjectKeys, useActiveProjectId } from '../_shared'
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/api";
+import { useProjectKeys, useActiveProjectId } from "../_shared";
 
 /**
  * Fetches chat messages for a conversation (or all messages if no conversationId).
  */
 export function useAgentChatQuery(conversationId?: string) {
-  const keys = useProjectKeys()
-  const projectId = useActiveProjectId()
+  const keys = useProjectKeys();
+  const projectId = useActiveProjectId();
 
   return useQuery({
-    queryKey: conversationId ? keys.agentChat(conversationId) : [...keys.agents, 'chat'] as const,
+    queryKey: conversationId
+      ? keys.agentChat(conversationId)
+      : ([...keys.agents, "chat"] as const),
     queryFn: () => api.agents.listChat(projectId!, conversationId),
     enabled: !!projectId,
-  })
+  });
 }

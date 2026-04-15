@@ -1,1 +1,1 @@
-export { KeyboardHint } from './keyboard-hint'
+export { KeyboardHint } from "./keyboard-hint";

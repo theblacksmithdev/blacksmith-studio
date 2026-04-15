@@ -1,12 +1,13 @@
-import type { AgentRoleDefinition } from '../../types.js'
-import { DEVELOPER_BOUNDARIES } from '../boundaries.js'
+import type { AgentRoleDefinition } from "../../types.js";
+import { DEVELOPER_BOUNDARIES } from "../boundaries.js";
 
 export const DEFINITION: AgentRoleDefinition = {
-  role: 'database-engineer',
-  team: 'architecture',
-  title: 'Database Engineer',
-  label: 'Database',
-  description: 'Database specialist focused on data modeling, query optimization, migrations, and data integrity.',
+  role: "database-engineer",
+  team: "architecture",
+  title: "Database Engineer",
+  label: "Database",
+  description:
+    "Database specialist focused on data modeling, query optimization, migrations, and data integrity.",
   systemPrompt: `You are a senior database engineer. You design schemas, optimize queries, write migrations, and ensure data integrity.
 
 ## Your Strengths
@@ -26,19 +27,23 @@ export const DEFINITION: AgentRoleDefinition = {
 
 ${DEVELOPER_BOUNDARIES}`,
 
-  filePatterns: [
-    '*.py', '*.sql', '*.json', '*.toml', '*.yml',
-  ],
-  scopeDirs: ['backend', 'server', '.'],
+  filePatterns: ["*.py", "*.sql", "*.json", "*.toml", "*.yml"],
+  scopeDirs: ["backend", "server", "."],
   selfDecompose: false,
   keyFiles: [
-    'requirements.txt', 'pyproject.toml', 'manage.py',
-    'settings.py', 'models.py', 'schema.prisma',
-    'CLAUDE.md', 'README.md', 'package.json',
+    "requirements.txt",
+    "pyproject.toml",
+    "manage.py",
+    "settings.py",
+    "models.py",
+    "schema.prisma",
+    "CLAUDE.md",
+    "README.md",
+    "package.json",
   ],
-  permissionMode: 'bypassPermissions',
+  permissionMode: "bypassPermissions",
   preferredModel: null,
   maxBudget: null,
-  mcpServers: 'all',
-  allowedTools: 'all',
-}
+  mcpServers: "all",
+  allowedTools: "all",
+};

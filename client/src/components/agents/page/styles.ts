@@ -1,17 +1,17 @@
-import styled from '@emotion/styled'
+import styled from "@emotion/styled";
 
 export const Layout = styled.div`
   position: relative;
   height: 100%;
   overflow: hidden;
   background: var(--studio-bg-main);
-`
+`;
 
 export const CanvasPanel = styled.div`
   width: 100%;
   height: 100%;
   position: relative;
-`
+`;
 
 /* ── Floating action buttons ── */
 
@@ -21,9 +21,12 @@ const FloatingBase = styled.button<{ $active?: boolean }>`
   gap: 6px;
   padding: 8px 14px;
   border-radius: 10px;
-  border: 1px solid ${({ $active }) => $active ? 'var(--studio-green-border)' : 'var(--studio-border)'};
+  border: 1px solid
+    ${({ $active }) =>
+      $active ? "var(--studio-green-border)" : "var(--studio-border)"};
   background: var(--studio-bg-surface);
-  color: ${({ $active }) => $active ? 'var(--studio-green)' : 'var(--studio-text-secondary)'};
+  color: ${({ $active }) =>
+    $active ? "var(--studio-green)" : "var(--studio-text-secondary)"};
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -36,11 +39,11 @@ const FloatingBase = styled.button<{ $active?: boolean }>`
     background: var(--studio-bg-hover);
     color: var(--studio-text-primary);
   }
-`
+`;
 
 export const TasksBtn = styled(FloatingBase)<{ $hasTasks: boolean }>`
-  opacity: ${({ $hasTasks }) => $hasTasks ? 1 : 0.5};
-`
+  opacity: ${({ $hasTasks }) => ($hasTasks ? 1 : 0.5)};
+`;
 
 export const StopBtn = styled.button`
   display: flex;
@@ -62,7 +65,7 @@ export const StopBtn = styled.button`
     background: var(--studio-error-subtle);
     border-color: rgba(239, 68, 68, 0.4);
   }
-`
+`;
 
 export const ButtonGroup = styled.div`
   position: absolute;
@@ -71,9 +74,9 @@ export const ButtonGroup = styled.div`
   z-index: 10;
   display: flex;
   gap: 6px;
-`
+`;
 
-export const ChatBtn = styled(FloatingBase)``
+export const ChatBtn = styled(FloatingBase)``;
 
 export const Badge = styled.span`
   font-size: 11px;
@@ -82,7 +85,7 @@ export const Badge = styled.span`
   border-radius: 8px;
   background: var(--studio-bg-hover);
   color: var(--studio-text-muted);
-`
+`;
 
 export const UnreadDot = styled.span`
   width: 6px;
@@ -90,4 +93,4 @@ export const UnreadDot = styled.span`
   border-radius: 50%;
   background: var(--studio-green);
   flex-shrink: 0;
-`
+`;

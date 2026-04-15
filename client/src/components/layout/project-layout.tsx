@@ -1,28 +1,28 @@
-import { useEffect } from 'react'
-import styled from '@emotion/styled'
-import { Outlet, useNavigate } from 'react-router-dom'
-import { useProjectQuery } from '@/api/hooks/projects'
-import { useActiveProjectId } from '@/api/hooks/_shared'
-import { useRunnerListener } from '@/hooks/use-runner'
-import { useGitListener } from '@/hooks/use-git'
-import { useUiStore } from '@/stores/ui-store'
-import { SplitPanel } from '@/components/shared/layout'
-import { RunnerDock } from '@/components/runner/dock'
-import { TerminalPanel } from '@/components/terminal'
-import { Sidebar } from './sidebar'
-import { ProjectTitleBar } from './title-bar'
+import { useEffect } from "react";
+import styled from "@emotion/styled";
+import { Outlet, useNavigate } from "react-router-dom";
+import { useProjectQuery } from "@/api/hooks/projects";
+import { useActiveProjectId } from "@/api/hooks/_shared";
+import { useRunnerListener } from "@/hooks/use-runner";
+import { useGitListener } from "@/hooks/use-git";
+import { useUiStore } from "@/stores/ui-store";
+import { SplitPanel } from "@/components/shared/layout";
+import { RunnerDock } from "@/components/runner/dock";
+import { TerminalPanel } from "@/components/terminal";
+import { Sidebar } from "./sidebar";
+import { ProjectTitleBar } from "./title-bar";
 
 const Root = styled.div`
   display: flex;
   flex-direction: column;
   height: 100vh;
-`
+`;
 
 const Body = styled.div`
   flex: 1;
   display: flex;
   min-height: 0;
-`
+`;
 
 const Main = styled.div`
   flex: 1;
@@ -30,7 +30,7 @@ const Main = styled.div`
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-`
+`;
 
 const Content = styled.div`
   flex: 1;
@@ -38,43 +38,43 @@ const Content = styled.div`
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
-`
+`;
 
 export function ProjectLayout() {
-  const projectId = useActiveProjectId()
-  const { data: project, isLoading, isError } = useProjectQuery(projectId)
-  const navigate = useNavigate()
-  const terminalOpen = useUiStore((s) => s.terminalOpen)
+  const projectId = useActiveProjectId();
+  const { data: project, isLoading, isError } = useProjectQuery(projectId);
+  const navigate = useNavigate();
+  const terminalOpen = useUiStore((s) => s.terminalOpen);
 
-  useRunnerListener()
-  useGitListener()
+  useRunnerListener();
+  useGitListener();
 
   // Keyboard shortcut: Ctrl+` / Cmd+` to toggle terminal
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === '`') {
-        e.preventDefault()
-        useUiStore.getState().toggleTerminal()
+      if ((e.ctrlKey || e.metaKey) && e.key === "`") {
+        e.preventDefault();
+        useUiStore.getState().toggleTerminal();
       }
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [])
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   // Project not found — navigate home
   useEffect(() => {
     if (isError) {
-      navigate('/', { replace: true })
+      navigate("/", { replace: true });
     }
-  }, [isError])
+  }, [isError]);
 
-  const isReady = !!project && !isLoading
+  const isReady = !!project && !isLoading;
 
   const mainContent = (
     <Content>
       <Outlet />
     </Content>
-  )
+  );
 
   if (!isReady) {
     return (
@@ -82,10 +82,12 @@ export function ProjectLayout() {
         <ProjectTitleBar />
         <Body>
           <Sidebar />
-          <Main><Content /></Main>
+          <Main>
+            <Content />
+          </Main>
         </Body>
       </Root>
-    )
+    );
   }
 
   return (
@@ -106,10 +108,12 @@ export function ProjectLayout() {
             >
               <TerminalPanel />
             </SplitPanel>
-          ) : mainContent}
+          ) : (
+            mainContent
+          )}
         </Main>
       </Body>
       <RunnerDock />
     </Root>
-  )
+  );
 }

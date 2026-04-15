@@ -1,5 +1,5 @@
-import { useMutation } from '@tanstack/react-query'
-import { api } from '@/api'
+import { useMutation } from "@tanstack/react-query";
+import { api } from "@/api";
 
 /**
  * Cancels the current project build.
@@ -7,5 +7,5 @@ import { api } from '@/api'
 export function useAgentBuildCancel() {
   return useMutation({
     mutationFn: () => api.agents.buildCancel(),
-  })
+  });
 }

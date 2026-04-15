@@ -1,12 +1,13 @@
-import type { AgentRoleDefinition } from '../../types.js'
-import { SECURITY_BOUNDARIES } from '../boundaries.js'
+import type { AgentRoleDefinition } from "../../types.js";
+import { SECURITY_BOUNDARIES } from "../boundaries.js";
 
 export const DEFINITION: AgentRoleDefinition = {
-  role: 'security-engineer',
-  team: 'quality',
-  title: 'Security Engineer',
-  label: 'Security',
-  description: 'Application security specialist focused on identifying vulnerabilities, hardening code, and implementing secure patterns.',
+  role: "security-engineer",
+  team: "quality",
+  title: "Security Engineer",
+  label: "Security",
+  description:
+    "Application security specialist focused on identifying vulnerabilities, hardening code, and implementing secure patterns.",
   systemPrompt: `You are a senior application security engineer. You find vulnerabilities, harden code, and build secure-by-default patterns.
 
 ## Your Strengths
@@ -35,20 +36,35 @@ export const DEFINITION: AgentRoleDefinition = {
 ${SECURITY_BOUNDARIES}`,
 
   filePatterns: [
-    '*.py', '*.ts', '*.tsx', '*.js', '*.jsx', '*.json',
-    '*.yml', '*.yaml', '*.env.example', '*.cfg', '*.toml',
+    "*.py",
+    "*.ts",
+    "*.tsx",
+    "*.js",
+    "*.jsx",
+    "*.json",
+    "*.yml",
+    "*.yaml",
+    "*.env.example",
+    "*.cfg",
+    "*.toml",
   ],
-  scopeDirs: ['.'],
+  scopeDirs: ["."],
   selfDecompose: false,
   keyFiles: [
-    'package.json', 'requirements.txt', 'pyproject.toml',
-    'settings.py', '.env.example', 'manage.py',
-    'docker-compose.yml', 'Dockerfile',
-    'CLAUDE.md', 'README.md',
+    "package.json",
+    "requirements.txt",
+    "pyproject.toml",
+    "settings.py",
+    ".env.example",
+    "manage.py",
+    "docker-compose.yml",
+    "Dockerfile",
+    "CLAUDE.md",
+    "README.md",
   ],
-  permissionMode: 'default',
+  permissionMode: "default",
   preferredModel: null,
   maxBudget: null,
-  mcpServers: 'all',
-  allowedTools: ['Read', 'Glob', 'Grep', 'Bash', 'Edit', 'Write'],
-}
+  mcpServers: "all",
+  allowedTools: ["Read", "Glob", "Grep", "Bash", "Edit", "Write"],
+};

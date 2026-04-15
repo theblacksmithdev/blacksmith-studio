@@ -1,223 +1,265 @@
-import fs from 'node:fs'
-import path from 'node:path'
-import { spawn } from 'node:child_process'
-import { nodeEnv } from './node-env.js'
+import fs from "node:fs";
+import path from "node:path";
+import { spawn } from "node:child_process";
+import { nodeEnv } from "./node-env.js";
 
 /* ── Types ── */
 
 export interface McpServerStdio {
-  command: string
-  args?: string[]
-  env?: Record<string, string>
+  command: string;
+  args?: string[];
+  env?: Record<string, string>;
 }
 
 export interface McpServerHttp {
-  url: string
-  headers?: Record<string, string>
+  url: string;
+  headers?: Record<string, string>;
 }
 
-export type McpServerConfig = McpServerStdio | McpServerHttp
+export type McpServerConfig = McpServerStdio | McpServerHttp;
 
-export type McpTransport = 'stdio' | 'http'
+export type McpTransport = "stdio" | "http";
 
 export interface McpServerEntry {
-  name: string
-  transport: McpTransport
-  config: McpServerConfig
-  enabled: boolean
-  status: 'unknown' | 'connected' | 'error' | 'disconnected'
-  error?: string
+  name: string;
+  transport: McpTransport;
+  config: McpServerConfig;
+  enabled: boolean;
+  status: "unknown" | "connected" | "error" | "disconnected";
+  error?: string;
 }
 
 interface McpFileSchema {
-  mcpServers: Record<string, McpServerConfig>
+  mcpServers: Record<string, McpServerConfig>;
 }
 
 /* ── Default servers ── */
 
 const DEFAULT_SERVERS: Record<string, McpServerConfig> = {
-  'chakra-ui-docs': {
-    command: 'npx',
-    args: ['-y', 'mcp-docs-server', '--url', 'https://www.chakra-ui.com/docs', '--name', 'chakra-ui-docs'],
+  "chakra-ui-docs": {
+    command: "npx",
+    args: [
+      "-y",
+      "mcp-docs-server",
+      "--url",
+      "https://www.chakra-ui.com/docs",
+      "--name",
+      "chakra-ui-docs",
+    ],
   },
-  'react-docs': {
-    command: 'npx',
-    args: ['-y', 'mcp-docs-server', '--url', 'https://react.dev', '--name', 'react-docs'],
+  "react-docs": {
+    command: "npx",
+    args: [
+      "-y",
+      "mcp-docs-server",
+      "--url",
+      "https://react.dev",
+      "--name",
+      "react-docs",
+    ],
   },
-  'django-docs': {
-    command: 'npx',
-    args: ['-y', 'mcp-docs-server', '--url', 'https://docs.djangoproject.com/en/5.1/', '--name', 'django-docs'],
+  "django-docs": {
+    command: "npx",
+    args: [
+      "-y",
+      "mcp-docs-server",
+      "--url",
+      "https://docs.djangoproject.com/en/5.1/",
+      "--name",
+      "django-docs",
+    ],
   },
   filesystem: {
-    command: 'npx',
-    args: ['-y', '@modelcontextprotocol/server-filesystem', '.'],
+    command: "npx",
+    args: ["-y", "@modelcontextprotocol/server-filesystem", "."],
   },
   figma: {
-    command: 'npx',
-    args: ['-y', 'figma-developer-mcp', '--stdio'],
-    env: { FIGMA_API_KEY: '' },
+    command: "npx",
+    args: ["-y", "figma-developer-mcp", "--stdio"],
+    env: { FIGMA_API_KEY: "" },
   },
-}
+};
 
 /* ── Manager ── */
 
 export class McpManager {
-  private errors = new Map<string, string>()
+  private errors = new Map<string, string>();
 
   private configPath(projectRoot: string): string {
-    return path.join(projectRoot, '.mcp.json')
+    return path.join(projectRoot, ".mcp.json");
   }
 
   private read(projectRoot: string): McpFileSchema {
-    const filePath = this.configPath(projectRoot)
+    const filePath = this.configPath(projectRoot);
     if (!fs.existsSync(filePath)) {
       // Seed with default servers on first access
-      const defaults: McpFileSchema = { mcpServers: { ...DEFAULT_SERVERS } }
-      this.write(projectRoot, defaults)
-      return defaults
+      const defaults: McpFileSchema = { mcpServers: { ...DEFAULT_SERVERS } };
+      this.write(projectRoot, defaults);
+      return defaults;
     }
     try {
-      return JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+      return JSON.parse(fs.readFileSync(filePath, "utf-8"));
     } catch {
-      return { mcpServers: {} }
+      return { mcpServers: {} };
     }
   }
 
   private write(projectRoot: string, data: McpFileSchema): void {
-    const filePath = this.configPath(projectRoot)
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + '\n', 'utf-8')
+    const filePath = this.configPath(projectRoot);
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + "\n", "utf-8");
   }
 
   private getTransport(config: McpServerConfig): McpTransport {
-    return 'url' in config ? 'http' : 'stdio'
+    return "url" in config ? "http" : "stdio";
   }
 
   list(projectRoot: string, disabledServers: string[] = []): McpServerEntry[] {
-    const data = this.read(projectRoot)
-    const disabledSet = new Set(disabledServers)
+    const data = this.read(projectRoot);
+    const disabledSet = new Set(disabledServers);
 
     return Object.entries(data.mcpServers).map(([name, config]) => {
-      const enabled = !disabledSet.has(name)
-      const lastError = this.errors.get(name)
+      const enabled = !disabledSet.has(name);
+      const lastError = this.errors.get(name);
 
       return {
         name,
         transport: this.getTransport(config),
         config,
         enabled,
-        status: !enabled ? 'disconnected' : lastError ? 'error' : 'unknown',
+        status: !enabled ? "disconnected" : lastError ? "error" : "unknown",
         error: lastError,
-      }
-    })
+      };
+    });
   }
 
   add(projectRoot: string, name: string, config: McpServerConfig): void {
-    const data = this.read(projectRoot)
+    const data = this.read(projectRoot);
     if (data.mcpServers[name]) {
-      throw new Error(`MCP server "${name}" already exists`)
+      throw new Error(`MCP server "${name}" already exists`);
     }
-    data.mcpServers[name] = config
-    this.write(projectRoot, data)
+    data.mcpServers[name] = config;
+    this.write(projectRoot, data);
   }
 
   update(projectRoot: string, name: string, config: McpServerConfig): void {
-    const data = this.read(projectRoot)
+    const data = this.read(projectRoot);
     if (!data.mcpServers[name]) {
-      throw new Error(`MCP server "${name}" not found`)
+      throw new Error(`MCP server "${name}" not found`);
     }
-    data.mcpServers[name] = config
-    this.errors.delete(name)
-    this.write(projectRoot, data)
+    data.mcpServers[name] = config;
+    this.errors.delete(name);
+    this.write(projectRoot, data);
   }
 
   remove(projectRoot: string, name: string): void {
-    const data = this.read(projectRoot)
-    delete data.mcpServers[name]
-    this.errors.delete(name)
-    this.write(projectRoot, data)
+    const data = this.read(projectRoot);
+    delete data.mcpServers[name];
+    this.errors.delete(name);
+    this.write(projectRoot, data);
   }
 
-  async testConnection(projectRoot: string, name: string, nodePath?: string): Promise<{ ok: boolean; error?: string }> {
-    const data = this.read(projectRoot)
-    const config = data.mcpServers[name]
+  async testConnection(
+    projectRoot: string,
+    name: string,
+    nodePath?: string,
+  ): Promise<{ ok: boolean; error?: string }> {
+    const data = this.read(projectRoot);
+    const config = data.mcpServers[name];
     if (!config) {
-      return { ok: false, error: `Server "${name}" not found` }
+      return { ok: false, error: `Server "${name}" not found` };
     }
 
-    if ('url' in config) {
-      return this.testHttp(config as McpServerHttp, name)
+    if ("url" in config) {
+      return this.testHttp(config as McpServerHttp, name);
     }
-    return this.testStdio(config as McpServerStdio, name, nodePath)
+    return this.testStdio(config as McpServerStdio, name, nodePath);
   }
 
-  private async testHttp(config: McpServerHttp, name: string): Promise<{ ok: boolean; error?: string }> {
+  private async testHttp(
+    config: McpServerHttp,
+    name: string,
+  ): Promise<{ ok: boolean; error?: string }> {
     try {
-      const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 5000)
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
       const res = await fetch(config.url, {
         signal: controller.signal,
         headers: config.headers,
-      })
-      clearTimeout(timeout)
+      });
+      clearTimeout(timeout);
 
       if (res.ok || res.status === 405) {
-        this.errors.delete(name)
-        return { ok: true }
+        this.errors.delete(name);
+        return { ok: true };
       }
-      const err = `HTTP ${res.status}`
-      this.errors.set(name, err)
-      return { ok: false, error: err }
+      const err = `HTTP ${res.status}`;
+      this.errors.set(name, err);
+      return { ok: false, error: err };
     } catch (e: any) {
-      const err = e.name === 'AbortError' ? 'Connection timed out' : (e.message || 'Connection failed')
-      this.errors.set(name, err)
-      return { ok: false, error: err }
+      const err =
+        e.name === "AbortError"
+          ? "Connection timed out"
+          : e.message || "Connection failed";
+      this.errors.set(name, err);
+      return { ok: false, error: err };
     }
   }
 
-  testStdio(config: McpServerStdio, name: string, nodePath?: string): Promise<{ ok: boolean; error?: string }> {
+  testStdio(
+    config: McpServerStdio,
+    name: string,
+    nodePath?: string,
+  ): Promise<{ ok: boolean; error?: string }> {
     return new Promise((resolve) => {
       try {
         const proc = spawn(config.command, config.args || [], {
-          stdio: ['pipe', 'pipe', 'pipe'],
+          stdio: ["pipe", "pipe", "pipe"],
           env: nodeEnv(nodePath, config.env),
           shell: true,
-        })
+        });
 
-        let resolved = false
-        let stderr = ''
+        let resolved = false;
+        let stderr = "";
 
         const done = (ok: boolean, error?: string) => {
-          if (resolved) return
-          resolved = true
-          try { proc.kill() } catch { /* already dead */ }
-          if (ok) {
-            this.errors.delete(name)
-          } else if (error) {
-            this.errors.set(name, error)
+          if (resolved) return;
+          resolved = true;
+          try {
+            proc.kill();
+          } catch {
+            /* already dead */
           }
-          resolve({ ok, error })
-        }
+          if (ok) {
+            this.errors.delete(name);
+          } else if (error) {
+            this.errors.set(name, error);
+          }
+          resolve({ ok, error });
+        };
 
-        proc.stderr.on('data', (chunk: Buffer) => { stderr += chunk.toString() })
+        proc.stderr.on("data", (chunk: Buffer) => {
+          stderr += chunk.toString();
+        });
 
         // If the process crashes immediately, it failed
-        proc.on('close', (code) => {
+        proc.on("close", (code) => {
           if (!resolved) {
-            const lastLine = stderr.trim().split('\n').pop() || `Exit code ${code}`
-            done(code === 0, code !== 0 ? lastLine : undefined)
+            const lastLine =
+              stderr.trim().split("\n").pop() || `Exit code ${code}`;
+            done(code === 0, code !== 0 ? lastLine : undefined);
           }
-        })
+        });
 
-        proc.on('error', (err) => done(false, err.message))
+        proc.on("error", (err) => done(false, err.message));
 
         // If the process is still alive after 2s, the server started successfully
-        setTimeout(() => done(true), 2000)
+        setTimeout(() => done(true), 2000);
       } catch (e: any) {
-        const err = e.message || 'Failed to spawn process'
-        this.errors.set(name, err)
-        resolve({ ok: false, error: err })
+        const err = e.message || "Failed to spawn process";
+        this.errors.set(name, err);
+        resolve({ ok: false, error: err });
       }
-    })
+    });
   }
 
   /**
@@ -225,34 +267,44 @@ export class McpManager {
    * If all servers are enabled, returns the original .mcp.json path.
    * If no servers are enabled, returns undefined.
    */
-  getEnabledConfigPath(projectRoot: string, disabledServers: string[] = []): string | undefined {
-    const data = this.read(projectRoot)
-    const serverNames = Object.keys(data.mcpServers)
-    if (serverNames.length === 0) return undefined
+  getEnabledConfigPath(
+    projectRoot: string,
+    disabledServers: string[] = [],
+  ): string | undefined {
+    const data = this.read(projectRoot);
+    const serverNames = Object.keys(data.mcpServers);
+    if (serverNames.length === 0) return undefined;
 
-    const disabledSet = new Set(disabledServers)
-    const enabledServers: Record<string, McpServerConfig> = {}
+    const disabledSet = new Set(disabledServers);
+    const enabledServers: Record<string, McpServerConfig> = {};
 
     for (const [name, config] of Object.entries(data.mcpServers)) {
       if (!disabledSet.has(name)) {
-        enabledServers[name] = config
+        enabledServers[name] = config;
       }
     }
 
-    if (Object.keys(enabledServers).length === 0) return undefined
+    if (Object.keys(enabledServers).length === 0) return undefined;
 
     // If nothing is disabled, return original file
-    if (disabledSet.size === 0 || Object.keys(enabledServers).length === serverNames.length) {
-      return this.configPath(projectRoot)
+    if (
+      disabledSet.size === 0 ||
+      Object.keys(enabledServers).length === serverNames.length
+    ) {
+      return this.configPath(projectRoot);
     }
 
     // Write filtered config to temp location
-    const studioDir = path.join(projectRoot, '.blacksmith-studio')
+    const studioDir = path.join(projectRoot, ".blacksmith-studio");
     if (!fs.existsSync(studioDir)) {
-      fs.mkdirSync(studioDir, { recursive: true })
+      fs.mkdirSync(studioDir, { recursive: true });
     }
-    const filteredPath = path.join(studioDir, 'mcp-active.json')
-    fs.writeFileSync(filteredPath, JSON.stringify({ mcpServers: enabledServers }, null, 2) + '\n', 'utf-8')
-    return filteredPath
+    const filteredPath = path.join(studioDir, "mcp-active.json");
+    fs.writeFileSync(
+      filteredPath,
+      JSON.stringify({ mcpServers: enabledServers }, null, 2) + "\n",
+      "utf-8",
+    );
+    return filteredPath;
   }
 }

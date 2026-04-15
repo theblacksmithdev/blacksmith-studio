@@ -1,12 +1,12 @@
-import crypto from 'node:crypto'
-import fs from 'node:fs'
-import path from 'node:path'
-import { spawn } from 'node:child_process'
-import { createNdjsonParser } from '../../claude/ndjson-parser.js'
-import { nodeEnv } from '../../node-env.js'
-import type { AgentExecuteOptions } from '../base/index.js'
-import type { AgentRole } from '../types.js'
-import type { BuildPlan, BuildPhase, BuildTask } from './types.js'
+import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
+import { spawn } from "node:child_process";
+import { createNdjsonParser } from "../../claude/ndjson-parser.js";
+import { nodeEnv } from "../../node-env.js";
+import type { AgentExecuteOptions } from "../base/index.js";
+import type { AgentRole } from "../types.js";
+import type { BuildPlan, BuildPhase, BuildTask } from "./types.js";
 
 const PLANNING_SYSTEM_PROMPT = `You are a technical project planner. Given product requirements, you produce a structured JSON build plan that a team of AI agents will execute to build the application.
 
@@ -73,208 +73,251 @@ Respond with ONLY a JSON object (no markdown, no explanation) matching this exac
       ]
     }
   ]
-}`
+}`;
 
 const VALID_ROLES = new Set<string>([
-  'frontend-engineer', 'backend-engineer', 'fullstack-engineer',
-  'devops-engineer', 'qa-engineer', 'security-engineer',
-  'database-engineer', 'ui-designer', 'technical-writer',
-  'code-reviewer', 'architect', 'product-manager',
-])
+  "frontend-engineer",
+  "backend-engineer",
+  "fullstack-engineer",
+  "devops-engineer",
+  "qa-engineer",
+  "security-engineer",
+  "database-engineer",
+  "ui-designer",
+  "technical-writer",
+  "code-reviewer",
+  "architect",
+  "product-manager",
+]);
 
 /**
  * Generate a structured build plan from requirements by spawning Claude.
  */
 export async function generatePlan(
   requirements: string,
-  baseOptions: Omit<AgentExecuteOptions, 'prompt'>,
+  baseOptions: Omit<AgentExecuteOptions, "prompt">,
 ): Promise<BuildPlan> {
-  const existingContext = scanProjectState(baseOptions.projectRoot)
+  const existingContext = scanProjectState(baseOptions.projectRoot);
 
   const prompt = [
-    'Generate a build plan for the following project requirements.',
-    'Respond with ONLY the JSON plan object — no markdown fences, no explanation.',
-    '',
-    existingContext ? `## Existing Project State\n${existingContext}\n` : '',
-    '## Requirements',
-    '',
+    "Generate a build plan for the following project requirements.",
+    "Respond with ONLY the JSON plan object — no markdown fences, no explanation.",
+    "",
+    existingContext ? `## Existing Project State\n${existingContext}\n` : "",
+    "## Requirements",
+    "",
     requirements,
-  ].filter(Boolean).join('\n')
-
-  const claudeBin = baseOptions.claudeBin ?? 'claude'
-  const args = [
-    '-p', prompt,
-    '--output-format', 'stream-json',
-    '--verbose',
-    '--permission-mode', 'default',
-    '--append-system-prompt', PLANNING_SYSTEM_PROMPT,
   ]
+    .filter(Boolean)
+    .join("\n");
+
+  const claudeBin = baseOptions.claudeBin ?? "claude";
+  const args = [
+    "-p",
+    prompt,
+    "--output-format",
+    "stream-json",
+    "--verbose",
+    "--permission-mode",
+    "default",
+    "--append-system-prompt",
+    PLANNING_SYSTEM_PROMPT,
+  ];
 
   const fullText = await new Promise<string>((resolve, reject) => {
     const proc = spawn(claudeBin, args, {
       cwd: baseOptions.projectRoot,
-      stdio: ['ignore', 'pipe', 'pipe'],
+      stdio: ["ignore", "pipe", "pipe"],
       env: nodeEnv(baseOptions.nodePath),
-    })
+    });
 
-    let text = ''
-    let stderr = ''
+    let text = "";
+    let stderr = "";
 
     const parser = createNdjsonParser((chunk: any) => {
-      if (chunk.type === 'assistant') {
-        for (const b of (chunk.message?.content || [])) {
-          if (b.type === 'text') text += b.text
+      if (chunk.type === "assistant") {
+        for (const b of chunk.message?.content || []) {
+          if (b.type === "text") text += b.text;
         }
       }
-    })
+    });
 
-    proc.stdout!.on('data', (d: Buffer) => parser.write(d.toString()))
-    proc.stderr!.on('data', (d: Buffer) => { stderr += d.toString() })
+    proc.stdout!.on("data", (d: Buffer) => parser.write(d.toString()));
+    proc.stderr!.on("data", (d: Buffer) => {
+      stderr += d.toString();
+    });
 
-    proc.on('close', (code, signal) => {
-      parser.flush()
+    proc.on("close", (code, signal) => {
+      parser.flush();
 
       if (signal) {
         if (text.trim()) {
-          console.warn(`[planner] Process killed by ${signal}, using partial response`)
-          resolve(text)
+          console.warn(
+            `[planner] Process killed by ${signal}, using partial response`,
+          );
+          resolve(text);
         } else {
-          reject(new Error(`Planning killed by ${signal} before producing output`))
+          reject(
+            new Error(`Planning killed by ${signal} before producing output`),
+          );
         }
-        return
+        return;
       }
 
       if (code !== 0 && code !== null) {
         if (text.trim()) {
-          console.warn(`[planner] Exit code ${code} but has output, attempting to parse`)
-          resolve(text)
+          console.warn(
+            `[planner] Exit code ${code} but has output, attempting to parse`,
+          );
+          resolve(text);
         } else {
-          reject(new Error(stderr.trim() || `Planning process exited with code ${code}`))
+          reject(
+            new Error(
+              stderr.trim() || `Planning process exited with code ${code}`,
+            ),
+          );
         }
       } else {
-        resolve(text)
+        resolve(text);
       }
-    })
+    });
 
-    proc.on('error', (err) => reject(new Error(`Planning spawn failed: ${err.message}`)))
-  })
+    proc.on("error", (err) =>
+      reject(new Error(`Planning spawn failed: ${err.message}`)),
+    );
+  });
 
-  return parsePlan(fullText)
+  return parsePlan(fullText);
 }
 
 /** Quick scan of what already exists in the project directory. */
 function scanProjectState(projectRoot: string): string {
-  const lines: string[] = []
+  const lines: string[] = [];
 
   try {
-    const entries = fs.readdirSync(projectRoot).filter((e) => !e.startsWith('.'))
+    const entries = fs
+      .readdirSync(projectRoot)
+      .filter((e) => !e.startsWith("."));
     if (entries.length === 0) {
-      lines.push('The project directory is empty. Plan should include scaffolding.')
-      return lines.join('\n')
+      lines.push(
+        "The project directory is empty. Plan should include scaffolding.",
+      );
+      return lines.join("\n");
     }
 
-    lines.push('Project directory already contains:')
+    lines.push("Project directory already contains:");
     for (const entry of entries.slice(0, 30)) {
-      const stat = fs.statSync(path.join(projectRoot, entry))
-      lines.push(`  ${stat.isDirectory() ? entry + '/' : entry}`)
+      const stat = fs.statSync(path.join(projectRoot, entry));
+      lines.push(`  ${stat.isDirectory() ? entry + "/" : entry}`);
     }
-  } catch { /* empty */ }
+  } catch {
+    /* empty */
+  }
 
-  for (const f of ['package.json', 'requirements.txt', 'manage.py', 'blacksmith.config.json']) {
-    const filePath = path.join(projectRoot, f)
+  for (const f of [
+    "package.json",
+    "requirements.txt",
+    "manage.py",
+    "blacksmith.config.json",
+  ]) {
+    const filePath = path.join(projectRoot, f);
     if (fs.existsSync(filePath)) {
       try {
-        const content = fs.readFileSync(filePath, 'utf-8')
+        const content = fs.readFileSync(filePath, "utf-8");
         if (content.length < 4096) {
-          lines.push(`\n### ${f}\n\`\`\`\n${content.trim()}\n\`\`\``)
+          lines.push(`\n### ${f}\n\`\`\`\n${content.trim()}\n\`\`\``);
         }
-      } catch { /* skip */ }
+      } catch {
+        /* skip */
+      }
     }
   }
 
-  return lines.join('\n')
+  return lines.join("\n");
 }
 
 /** Parse and validate a raw Claude response into a BuildPlan. */
 function parsePlan(raw: string): BuildPlan {
-  const braceStart = raw.indexOf('{')
-  const braceEnd = raw.lastIndexOf('}')
+  const braceStart = raw.indexOf("{");
+  const braceEnd = raw.lastIndexOf("}");
 
   if (braceStart === -1 || braceEnd <= braceStart) {
-    throw new Error('No JSON object found in planner response')
+    throw new Error("No JSON object found in planner response");
   }
 
-  let parsed: any
+  let parsed: any;
   try {
-    parsed = JSON.parse(raw.slice(braceStart, braceEnd + 1))
+    parsed = JSON.parse(raw.slice(braceStart, braceEnd + 1));
   } catch {
-    throw new Error('Failed to parse build plan JSON from planner response')
+    throw new Error("Failed to parse build plan JSON from planner response");
   }
 
   if (!parsed.phases || !Array.isArray(parsed.phases)) {
-    throw new Error('Plan missing "phases" array')
+    throw new Error('Plan missing "phases" array');
   }
 
-  let totalTasks = 0
-  const allTaskIds = new Set<string>()
+  let totalTasks = 0;
+  const allTaskIds = new Set<string>();
 
   const phases: BuildPhase[] = parsed.phases.map((phase: any, pi: number) => {
     if (!phase.tasks || !Array.isArray(phase.tasks)) {
-      throw new Error(`Phase ${pi} missing "tasks" array`)
+      throw new Error(`Phase ${pi} missing "tasks" array`);
     }
 
     const tasks: BuildTask[] = phase.tasks.map((task: any, ti: number) => {
       if (!task.role || !VALID_ROLES.has(task.role)) {
-        throw new Error(`Phase ${pi}, task ${ti}: invalid role "${task.role}"`)
+        throw new Error(`Phase ${pi}, task ${ti}: invalid role "${task.role}"`);
       }
       if (!task.prompt) {
-        throw new Error(`Phase ${pi}, task ${ti}: missing "prompt"`)
+        throw new Error(`Phase ${pi}, task ${ti}: missing "prompt"`);
       }
 
-      const id = task.id ?? `p${pi}-t${ti}`
+      const id = task.id ?? `p${pi}-t${ti}`;
       if (allTaskIds.has(id)) {
-        throw new Error(`Duplicate task ID: "${id}"`)
+        throw new Error(`Duplicate task ID: "${id}"`);
       }
-      allTaskIds.add(id)
-      totalTasks++
+      allTaskIds.add(id);
+      totalTasks++;
 
       return {
         id,
         title: task.title ?? `Task ${ti + 1}`,
-        description: task.description ?? '',
+        description: task.description ?? "",
         role: task.role as AgentRole,
         prompt: task.prompt,
         dependsOn: Array.isArray(task.dependsOn) ? task.dependsOn : [],
-      }
-    })
+      };
+    });
 
     return {
       id: phase.id ?? `phase-${pi}`,
       name: phase.name ?? `Phase ${pi + 1}`,
-      description: phase.description ?? '',
+      description: phase.description ?? "",
       verify: phase.verify === true,
       tasks,
-    }
-  })
+    };
+  });
 
   // Validate dependency references
   for (const phase of phases) {
     for (const task of phase.tasks) {
       task.dependsOn = task.dependsOn.filter((dep) => {
         if (!allTaskIds.has(dep)) {
-          console.warn(`[planner] Task "${task.id}" references unknown dependency "${dep}", removing`)
-          return false
+          console.warn(
+            `[planner] Task "${task.id}" references unknown dependency "${dep}", removing`,
+          );
+          return false;
         }
-        return true
-      })
+        return true;
+      });
     }
   }
 
   return {
     id: crypto.randomUUID(),
-    name: parsed.name ?? 'Untitled Project',
-    summary: parsed.summary ?? '',
+    name: parsed.name ?? "Untitled Project",
+    summary: parsed.summary ?? "",
     phases,
     totalTasks,
-  }
+  };
 }

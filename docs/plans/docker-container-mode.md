@@ -33,24 +33,28 @@ Host (macOS/Windows/Linux)
 ## Implementation Phases
 
 ### Phase 1: Docker service layer
+
 1. `server/services/docker/types.ts` — DockerConfig, ContainerState types
 2. `server/services/docker/check-installed.ts` — detect Docker + daemon status
 3. `server/services/docker/generate-dockerfile.ts` — generate Dockerfile + compose
 4. `server/services/docker/index.ts` — DockerManager (build, start, stop, exec, getState)
 
 ### Phase 2: CommandExecutor abstraction
+
 5. `server/services/runner/executor.ts` — interface + HostExecutor + DockerExecutor
 6. Modify `spawn-backend.ts` — accept executor parameter
 7. Modify `spawn-frontend.ts` — accept executor parameter
 8. Modify `runner/index.ts` — select executor based on Docker state
 
 ### Phase 3: Config + IPC
+
 9. Extend `runner/config.ts` — read `docker` section from blacksmith.config.json
 10. `electron/ipc/docker.ts` — IPC handlers (checkInstalled, start, stop, rebuild, getState)
 11. Add channels to `channels.ts` + allowlist
 12. Wire into `main.ts` — instantiate DockerManager, detect at startup
 
 ### Phase 4: Client API + UI
+
 13. `api/modules/docker.ts` — typed API module
 14. `hooks/use-docker.ts` — React Query hook
 15. Settings section — "Docker" under Project group (toggle, base image, services, rebuild)
@@ -58,12 +62,14 @@ Host (macOS/Windows/Linux)
 17. Setup wizard — detect Docker alongside Node/Claude
 
 ### Phase 5: Claude integration
+
 18. Update system prompt — conditional Docker instructions
 19. Instruct Claude to use `docker exec {containerName}` for runtime commands
 
 ## Config format
 
 `blacksmith.config.json`:
+
 ```json
 {
   "backend": { "port": 8000 },
@@ -80,6 +86,7 @@ Host (macOS/Windows/Linux)
 ## Generated files
 
 `.blacksmith-studio/Dockerfile`:
+
 ```dockerfile
 FROM node:20-slim
 RUN apt-get update && apt-get install -y python3 python3-venv python3-pip
@@ -91,6 +98,7 @@ RUN cd /tmp/frontend && npm ci
 ```
 
 `.blacksmith-studio/docker-compose.yml` (when services configured):
+
 ```yaml
 services:
   app:
@@ -107,6 +115,7 @@ services:
 ## Critical files to create/modify
 
 ### New files
+
 - `server/services/docker/types.ts` — DockerConfig, ContainerState types
 - `server/services/docker/check-installed.ts` — detect Docker + daemon
 - `server/services/docker/generate-dockerfile.ts` — Dockerfile + compose generator
@@ -118,6 +127,7 @@ services:
 - `client/src/components/settings/sections/docker-settings.tsx` — settings UI
 
 ### Modified files
+
 - `server/services/runner/spawn-backend.ts` — accept executor param
 - `server/services/runner/spawn-frontend.ts` — accept executor param
 - `server/services/runner/index.ts` — container lifecycle, executor selection
@@ -128,6 +138,7 @@ services:
 - `server/services/claude/system-prompt.ts` — conditional Docker instructions
 
 ## Verification checklist
+
 1. Docker not installed → toggle disabled with install message
 2. Enable Docker → Dockerfile generated, container built, services start inside container
 3. Disable Docker → falls back to host mode seamlessly
@@ -138,7 +149,9 @@ services:
 8. Works on macOS, Windows (WSL2), Linux
 
 ## macOS performance note
+
 Volume mounts on macOS can be slow with large `node_modules`. Mitigation: use a named volume overlay for `node_modules` inside the container so it's not synced back to host. The `frontend/node_modules` directory in the container is a separate Docker volume, not part of the bind mount.
 
 ## Orphan container cleanup
+
 On app startup, check for running containers named `blacksmith-*` and offer to stop orphans from crashed sessions.

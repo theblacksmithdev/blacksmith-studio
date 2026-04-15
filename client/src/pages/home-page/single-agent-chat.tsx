@@ -1,8 +1,8 @@
-import { HomePageView } from './components/home-page-view'
-import { useSingleAgentChat } from './hooks/use-single-agent-chat'
+import { HomePageView } from "./components/home-page-view";
+import { useSingleAgentChat } from "./hooks/use-single-agent-chat";
 
 export function SingleAgentChat() {
-  const props = useSingleAgentChat()
+  const props = useSingleAgentChat();
 
-  return <HomePageView mode="chat" {...props} />
+  return <HomePageView mode="chat" {...props} />;
 }

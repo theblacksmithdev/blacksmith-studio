@@ -1,6 +1,6 @@
-import { useParams, useNavigate } from 'react-router-dom'
-import { useCallback } from 'react'
-import { runServicePath } from '@/router/paths'
+import { useParams, useNavigate } from "react-router-dom";
+import { useCallback } from "react";
+import { runServicePath } from "@/router/paths";
 
 /**
  * Single source of truth for the active service in the runner page.
@@ -12,16 +12,24 @@ import { runServicePath } from '@/router/paths'
  * - `isSelected(id)`: check if a given service is the active one
  */
 export function useActiveService() {
-  const { projectId = '', configId } = useParams<{ projectId: string; configId: string }>()
-  const navigate = useNavigate()
+  const { projectId = "", configId } = useParams<{
+    projectId: string;
+    configId: string;
+  }>();
+  const navigate = useNavigate();
 
-  const activeId = configId && configId !== 'all' ? configId : null
+  const activeId = configId && configId !== "all" ? configId : null;
 
-  const selectService = useCallback((id: string | null) => {
-    navigate(id ? runServicePath(projectId, id) : runServicePath(projectId, 'all'))
-  }, [navigate, projectId])
+  const selectService = useCallback(
+    (id: string | null) => {
+      navigate(
+        id ? runServicePath(projectId, id) : runServicePath(projectId, "all"),
+      );
+    },
+    [navigate, projectId],
+  );
 
-  const isSelected = useCallback((id: string) => activeId === id, [activeId])
+  const isSelected = useCallback((id: string) => activeId === id, [activeId]);
 
-  return { activeId, selectService, isSelected }
+  return { activeId, selectService, isSelected };
 }

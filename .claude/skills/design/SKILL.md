@@ -15,47 +15,62 @@ Blacksmith Studio uses **Chakra UI v3** as its primary design system. Always use
 
 ```tsx
 // BEST — use design system components
-import { Text, Button, Badge, Card, Input, Avatar, StatusDot, Chip, Divider, IconButton } from '@/components/shared/ui'
+import {
+  Text,
+  Button,
+  Badge,
+  Card,
+  Input,
+  Avatar,
+  StatusDot,
+  Chip,
+  Divider,
+  IconButton,
+} from "@/components/shared/ui";
 
 <Card variant="interactive">
   <Text variant="title">Panel Title</Text>
-  <Text variant="body" color="secondary">Description here</Text>
-  <Button variant="primary" size="md">Save</Button>
-</Card>
+  <Text variant="body" color="secondary">
+    Description here
+  </Text>
+  <Button variant="primary" size="md">
+    Save
+  </Button>
+</Card>;
 
 // GOOD — use Chakra for layout
-import { Box, Flex, VStack, HStack } from '@chakra-ui/react'
+import { Box, Flex, VStack, HStack } from "@chakra-ui/react";
 
 <VStack gap={4} align="stretch">
   <Text variant="subtitle">Section</Text>
   <Input placeholder="Enter value..." />
   <Button>Save</Button>
-</VStack>
+</VStack>;
 
 // ONLY when Chakra doesn't cover it — use Emotion styled
-import styled from '@emotion/styled'
+import styled from "@emotion/styled";
 
 const CustomToggle = styled.button<{ active: boolean }>`
   /* complex variant logic that Chakra can't express cleanly */
-`
+`;
 ```
 
 ## When to use what
 
-| Need | Use | Why |
-|------|-----|-----|
-| Layout (flex, grid, spacing) | Chakra `Box`, `Flex`, `HStack`, `VStack`, `Grid` | Built-in responsive + gap props |
-| Typography | Chakra `Text`, `Heading` | Consistent font sizing |
-| Form inputs | Chakra `Input`, `Textarea`, `Field`, `NativeSelect` | Accessible, styled |
-| Buttons | Chakra `Button` or shared `PrimaryButton`/`SecondaryButton` | Consistent variants |
-| Dialogs/Modals | Shared `Modal` from `@/components/shared/modal` | Portal, backdrop, header/footer pattern |
-| Confirmations | Shared `ConfirmDialog` from `@/components/shared/confirm-dialog` | Consistent destructive action UX |
-| Tooltips | Shared `Tooltip` from `@/components/shared/tooltip` | Styled to match theme |
-| Resizable panels | Chakra `Splitter` | Built-in drag + keyboard support |
-| Toggles | Shared `Toggle` from `@/components/shared/form-controls` | iOS-style switch |
-| Form fields | Shared `FormField`, `FormLabel`, `FormInput`, etc. from `@/components/shared/form-controls` | Consistent form layout |
-| Badges | Shared `Badge` from `@/components/shared/form-controls` | Status tags with variants |
-| Custom interactive components | Emotion `styled` | Complex hover/active/variant states |
+| Need                          | Use                                                                                         | Why                                     |
+| ----------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------- |
+| Layout (flex, grid, spacing)  | Chakra `Box`, `Flex`, `HStack`, `VStack`, `Grid`                                            | Built-in responsive + gap props         |
+| Typography                    | Chakra `Text`, `Heading`                                                                    | Consistent font sizing                  |
+| Form inputs                   | Chakra `Input`, `Textarea`, `Field`, `NativeSelect`                                         | Accessible, styled                      |
+| Buttons                       | Chakra `Button` or shared `PrimaryButton`/`SecondaryButton`                                 | Consistent variants                     |
+| Dialogs/Modals                | Shared `Modal` from `@/components/shared/modal`                                             | Portal, backdrop, header/footer pattern |
+| Confirmations                 | Shared `ConfirmDialog` from `@/components/shared/confirm-dialog`                            | Consistent destructive action UX        |
+| Tooltips                      | Shared `Tooltip` from `@/components/shared/tooltip`                                         | Styled to match theme                   |
+| Resizable panels              | Chakra `Splitter`                                                                           | Built-in drag + keyboard support        |
+| Toggles                       | Shared `Toggle` from `@/components/shared/form-controls`                                    | iOS-style switch                        |
+| Form fields                   | Shared `FormField`, `FormLabel`, `FormInput`, etc. from `@/components/shared/form-controls` | Consistent form layout                  |
+| Badges                        | Shared `Badge` from `@/components/shared/form-controls`                                     | Status tags with variants               |
+| Custom interactive components | Emotion `styled`                                                                            | Complex hover/active/variant states     |
 
 ## Shared Components Library
 
@@ -76,7 +91,12 @@ shared/
 ### Using the shared Modal
 
 ```tsx
-import { Modal, PrimaryButton, GhostButton, FooterSpacer } from '@/components/shared/modal'
+import {
+  Modal,
+  PrimaryButton,
+  GhostButton,
+  FooterSpacer,
+} from "@/components/shared/modal";
 
 <Modal
   title="Add Server"
@@ -86,40 +106,55 @@ import { Modal, PrimaryButton, GhostButton, FooterSpacer } from '@/components/sh
     <>
       <FooterSpacer />
       <GhostButton onClick={handleClose}>Cancel</GhostButton>
-      <PrimaryButton onClick={handleSave} disabled={!isValid}>Save</PrimaryButton>
+      <PrimaryButton onClick={handleSave} disabled={!isValid}>
+        Save
+      </PrimaryButton>
     </>
   }
 >
   {/* body content */}
-</Modal>
+</Modal>;
 ```
 
 ### Using the shared ConfirmDialog
 
 ```tsx
-import { ConfirmDialog } from '@/components/shared/confirm-dialog'
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 
-{showConfirm && (
-  <ConfirmDialog
-    message="Delete this server?"
-    description="This action cannot be undone."
-    confirmLabel="Delete"
-    onConfirm={handleDelete}
-    onCancel={() => setShowConfirm(false)}
-  />
-)}
+{
+  showConfirm && (
+    <ConfirmDialog
+      message="Delete this server?"
+      description="This action cannot be undone."
+      confirmLabel="Delete"
+      onConfirm={handleDelete}
+      onCancel={() => setShowConfirm(false)}
+    />
+  );
+}
 ```
 
 ### Using shared form controls
 
 ```tsx
-import { FormField, FormLabel, FormInput, FormHint, Toggle, Badge } from '@/components/shared/form-controls'
+import {
+  FormField,
+  FormLabel,
+  FormInput,
+  FormHint,
+  Toggle,
+  Badge,
+} from "@/components/shared/form-controls";
 
 <FormField>
   <FormLabel>Server Name</FormLabel>
-  <FormInput value={name} onChange={e => setName(e.target.value)} placeholder="e.g. github" />
+  <FormInput
+    value={name}
+    onChange={(e) => setName(e.target.value)}
+    placeholder="e.g. github"
+  />
   <FormHint>Alphanumeric and hyphens only</FormHint>
-</FormField>
+</FormField>;
 ```
 
 ## Chakra UI Component Usage
@@ -146,10 +181,13 @@ import { FormField, FormLabel, FormInput, FormHint, Toggle, Badge } from '@/comp
 ### Chakra Splitter (resizable panels)
 
 ```tsx
-import { Splitter } from '@chakra-ui/react'
+import { Splitter } from "@chakra-ui/react";
 
 <Splitter.Root
-  panels={[{ id: 'main', minSize: 30 }, { id: 'side', minSize: 20 }]}
+  panels={[
+    { id: "main", minSize: 30 },
+    { id: "side", minSize: 20 },
+  ]}
   defaultSize={[60, 40]}
   orientation="horizontal"
   onResizeEnd={(details) => saveSplit(details.size)}
@@ -157,13 +195,13 @@ import { Splitter } from '@chakra-ui/react'
   <Splitter.Panel id="main">{mainContent}</Splitter.Panel>
   <Splitter.ResizeTrigger id="main:side" css={resizeTriggerCss} />
   <Splitter.Panel id="side">{sideContent}</Splitter.Panel>
-</Splitter.Root>
+</Splitter.Root>;
 ```
 
 ### Chakra Dialog
 
 ```tsx
-import { Dialog } from '@chakra-ui/react'
+import { Dialog } from "@chakra-ui/react";
 
 // Prefer shared Modal component over raw Dialog for consistency
 // Use Dialog directly only for Chakra-specific features (animations, focus trapping)
@@ -217,53 +255,63 @@ Utilities:
 All components use Chakra UI as base. Import from `@/components/shared/ui`.
 
 ### Text
+
 `<Text variant="body" color="secondary">...</Text>`
 Variants: `display` (32px) | `heading` (24px) | `title` (17px) | `subtitle` (15px) | `body` (14px) | `bodySmall` (13px) | `label` (12px) | `caption` (11px) | `tiny` (10px) | `code` | `codeBlock` | `sectionLabel`
 Color: `primary` | `secondary` | `tertiary` | `muted` | `error` | `success` | `inherit`
 Props: `truncate`, `as`
 
 ### Button
+
 `<Button variant="primary" size="md">Save</Button>`
 Variants: `primary` | `secondary` | `ghost` | `danger`
 Sizes: `sm` | `md` | `lg`
 
 ### IconButton
+
 `<IconButton variant="ghost" size="sm"><X /></IconButton>`
 Variants: `default` | `ghost` | `danger`
 Sizes: `xs` | `sm` | `md`
 
 ### Badge
+
 `<Badge variant="success" size="sm">Active</Badge>`
 Variants: `default` | `success` | `error` | `warning` | `info` | `outline`
 Sizes: `sm` | `md`
 
 ### StatusDot
+
 `<StatusDot status="active" size="sm" />`
 Status: `idle` | `active` | `done` | `error`
 Sizes: `xs` | `sm` | `md`
 Props: `animated` (pulse on active, default true)
 
 ### Card
+
 `<Card variant="interactive">...</Card>`
 Variants: `default` | `interactive` (hover) | `inset` | `glass` (blur)
 Props: `p` (override padding)
 
 ### Divider
+
 `<Divider variant="fade" spacing="12px" />`
 Variants: `full` | `fade` (gradient) | `short` (centered 40px)
 Props: `spacing`
 
 ### Input
+
 `<Input size="md" placeholder="Search..." />`
 Sizes: `sm` | `md`
 Focus ring and border states built in.
 
 ### Avatar
+
 `<Avatar size="sm" variant="active" icon={<Server />} />`
 Variants: `default` | `active` (green) | `user` (accent)
 Sizes: `xs` | `sm` | `md` | `lg`
 
 ### Chip
+
 `<Chip variant="default" onClick={fn}>Quick action</Chip>`
 Variants: `default` | `active` | `success`
 
@@ -309,6 +357,7 @@ shadows.focus // var(--studio-ring-focus)
 **Rule: Use tokens instead of magic numbers.** If you need `padding: '16px'`, write `padding: spacing.lg`. If you need `borderRadius: '10px'`, write `borderRadius: radii.lg`.
 
 **Monochrome design language:**
+
 - Status indicators use `--studio-accent` (not green)
 - Active states use background changes, not color changes
 - `--studio-green` is the brand accent — used for AI/agent indicators and highlights
@@ -366,13 +415,17 @@ Gap:           24 / 16 / 12 / 8 / 6 / 4px
 ## Interactive States
 
 ```css
-transition: all 0.12s ease;                             /* standard */
-transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1);  /* spring */
-animation: fadeIn 0.15s ease;                            /* entrance */
+transition: all 0.12s ease; /* standard */
+transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1); /* spring */
+animation: fadeIn 0.15s ease; /* entrance */
 
-/* Hover */     background: var(--studio-bg-hover);
-/* Disabled */  opacity: 0.5; cursor: default;
-/* Focus */     border-color: var(--studio-border-hover);
+/* Hover */
+background: var(--studio-bg-hover);
+/* Disabled */
+opacity: 0.5;
+cursor: default;
+/* Focus */
+border-color: var(--studio-border-hover);
 ```
 
 ## Icons

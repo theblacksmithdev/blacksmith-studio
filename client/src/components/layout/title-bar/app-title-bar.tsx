@@ -1,11 +1,11 @@
-import { useState } from 'react'
-import { Settings } from 'lucide-react'
-import { TitleBarShell, TitleText, NavBtn } from './title-bar-shell'
-import { Tooltip } from '@/components/shared/tooltip'
-import { GlobalSettingsDrawer } from './global-settings'
+import { useState } from "react";
+import { Settings } from "lucide-react";
+import { TitleBarShell, TitleText, NavBtn } from "./title-bar-shell";
+import { Tooltip } from "@/components/shared/tooltip";
+import { GlobalSettingsDrawer } from "./global-settings";
 
 export function AppTitleBar() {
-  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
     <>
@@ -19,7 +19,9 @@ export function AppTitleBar() {
           </Tooltip>
         }
       />
-      {settingsOpen && <GlobalSettingsDrawer onClose={() => setSettingsOpen(false)} />}
+      {settingsOpen && (
+        <GlobalSettingsDrawer onClose={() => setSettingsOpen(false)} />
+      )}
     </>
-  )
+  );
 }

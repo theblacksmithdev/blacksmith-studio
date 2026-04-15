@@ -1,4 +1,4 @@
-import styled from '@emotion/styled'
+import styled from "@emotion/styled";
 
 export const CanvasWrap = styled.div`
   width: 100%;
@@ -62,4 +62,4 @@ export const CanvasWrap = styled.div`
   .react-flow__pane {
     cursor: default;
   }
-`
+`;

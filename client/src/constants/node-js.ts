@@ -1,1 +1,1 @@
-export const MIN_NODE_MAJOR = 20
+export const MIN_NODE_MAJOR = 20;

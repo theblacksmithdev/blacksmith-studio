@@ -1,48 +1,67 @@
-import { useState, useCallback } from 'react'
-import { Box, Flex } from '@chakra-ui/react'
-import { useQueryClient } from '@tanstack/react-query'
-import { GitBranch, GitCommitHorizontal, RefreshCw, History } from 'lucide-react'
-import { useGitChangedFilesQuery, useGitHistoryQuery, useGitStatusQuery, useGitInit } from '@/api/hooks/git'
-import { useProjectKeys } from '@/api/hooks/_shared'
-import { useGitStore, selectBranchLabel } from '@/stores/git-store'
-import { Text, Badge, Button, IconButton, Tooltip, EmptyState, spacing, radii } from '@/components/shared/ui'
-import { SplitPanel } from '@/components/shared/layout'
-import { ChangedFilesList } from './changed-files'
-import { DiffViewer } from './diff-viewer'
-import { CommitDialog } from './commit-dialog'
-import { HistoryTimeline } from './history-timeline'
-import { BranchSwitcher } from './branch-switcher'
-import { SyncButton } from './sync-button'
-import { CommitDetailDrawer } from './commit-detail'
+import { useState, useCallback } from "react";
+import { Box, Flex } from "@chakra-ui/react";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  GitBranch,
+  GitCommitHorizontal,
+  RefreshCw,
+  History,
+} from "lucide-react";
+import {
+  useGitChangedFilesQuery,
+  useGitHistoryQuery,
+  useGitStatusQuery,
+  useGitInit,
+} from "@/api/hooks/git";
+import { useProjectKeys } from "@/api/hooks/_shared";
+import { useGitStore, selectBranchLabel } from "@/stores/git-store";
+import {
+  Text,
+  Badge,
+  Button,
+  IconButton,
+  Tooltip,
+  EmptyState,
+  spacing,
+  radii,
+} from "@/components/shared/ui";
+import { SplitPanel } from "@/components/shared/layout";
+import { ChangedFilesList } from "./changed-files";
+import { DiffViewer } from "./diff-viewer";
+import { CommitDialog } from "./commit-dialog";
+import { HistoryTimeline } from "./history-timeline";
+import { BranchSwitcher } from "./branch-switcher";
+import { SyncButton } from "./sync-button";
+import { CommitDetailDrawer } from "./commit-detail";
 
 export function SourceControlView() {
-  const [selectedFile, setSelectedFile] = useState<string>()
-  const [showCommitDialog, setShowCommitDialog] = useState(false)
-  const [showBranches, setShowBranches] = useState(false)
-  const [selectedCommit, setSelectedCommit] = useState<string | null>(null)
+  const [selectedFile, setSelectedFile] = useState<string>();
+  const [showCommitDialog, setShowCommitDialog] = useState(false);
+  const [showBranches, setShowBranches] = useState(false);
+  const [selectedCommit, setSelectedCommit] = useState<string | null>(null);
 
-  const qc = useQueryClient()
-  const keys = useProjectKeys()
-  const status = useGitStatusQuery()
-  const changedFiles = useGitChangedFilesQuery()
-  const history = useGitHistoryQuery()
-  const initGit = useGitInit()
+  const qc = useQueryClient();
+  const keys = useProjectKeys();
+  const status = useGitStatusQuery();
+  const changedFiles = useGitChangedFilesQuery();
+  const history = useGitHistoryQuery();
+  const initGit = useGitInit();
 
   const invalidateAll = useCallback(() => {
-    qc.invalidateQueries({ queryKey: keys.gitStatus })
-    qc.invalidateQueries({ queryKey: keys.gitChangedFiles })
-    qc.invalidateQueries({ queryKey: keys.gitHistory })
-    qc.invalidateQueries({ queryKey: keys.gitBranches })
-    qc.invalidateQueries({ queryKey: keys.gitSyncStatus })
-  }, [qc, keys])
+    qc.invalidateQueries({ queryKey: keys.gitStatus });
+    qc.invalidateQueries({ queryKey: keys.gitChangedFiles });
+    qc.invalidateQueries({ queryKey: keys.gitHistory });
+    qc.invalidateQueries({ queryKey: keys.gitBranches });
+    qc.invalidateQueries({ queryKey: keys.gitSyncStatus });
+  }, [qc, keys]);
 
-  const branchLabel = useGitStore(selectBranchLabel)
-  const changedCount = useGitStore((s) => s.changedCount)
+  const branchLabel = useGitStore(selectBranchLabel);
+  const changedCount = useGitStore((s) => s.changedCount);
 
   // Not a git repo — show init state
   if (status.data && !status.data.initialized) {
     return (
-      <Flex css={{ height: '100%', background: 'var(--studio-bg-main)' }}>
+      <Flex css={{ height: "100%", background: "var(--studio-bg-main)" }}>
         <EmptyState
           icon={<History />}
           title="Initialize Git Repository"
@@ -54,29 +73,32 @@ export function SourceControlView() {
             onClick={() => initGit.mutateAsync().then(() => invalidateAll())}
             disabled={initGit.isPending}
           >
-            {initGit.isPending ? 'Initializing...' : 'Initialize Repository'}
+            {initGit.isPending ? "Initializing..." : "Initialize Repository"}
           </Button>
         </EmptyState>
       </Flex>
-    )
+    );
   }
 
   const handleCommitted = () => {
-    setShowCommitDialog(false)
-    setSelectedFile(undefined)
-    invalidateAll()
-  }
+    setShowCommitDialog(false);
+    setSelectedFile(undefined);
+    invalidateAll();
+  };
 
   return (
-    <Flex direction="column" css={{ height: '100%', background: 'var(--studio-bg-main)' }}>
+    <Flex
+      direction="column"
+      css={{ height: "100%", background: "var(--studio-bg-main)" }}
+    >
       {/* ── Header ── */}
       <Flex
         align="center"
         justify="space-between"
         css={{
           padding: `${spacing.sm} ${spacing.lg}`,
-          borderBottom: '1px solid var(--studio-border)',
-          background: 'var(--studio-bg-sidebar)',
+          borderBottom: "1px solid var(--studio-border)",
+          background: "var(--studio-bg-sidebar)",
           flexShrink: 0,
         }}
       >
@@ -89,33 +111,40 @@ export function SourceControlView() {
             css={{
               padding: `${spacing.xs} ${spacing.sm}`,
               borderRadius: radii.md,
-              border: '1px solid var(--studio-border)',
-              background: 'var(--studio-bg-main)',
-              color: 'var(--studio-text-secondary)',
-              cursor: 'pointer',
+              border: "1px solid var(--studio-border)",
+              background: "var(--studio-bg-main)",
+              color: "var(--studio-text-secondary)",
+              cursor: "pointer",
               fontFamily: "'SF Mono', 'Fira Code', monospace",
-              fontSize: '12px',
+              fontSize: "12px",
               fontWeight: 500,
-              transition: 'all 0.12s ease',
-              '&:hover': {
-                borderColor: 'var(--studio-border-hover)',
-                color: 'var(--studio-text-primary)',
+              transition: "all 0.12s ease",
+              "&:hover": {
+                borderColor: "var(--studio-border-hover)",
+                color: "var(--studio-text-primary)",
               },
             }}
           >
             <GitBranch size={12} />
-            {branchLabel || '...'}
+            {branchLabel || "..."}
           </Flex>
 
           {changedCount > 0 && (
-            <Badge variant="warning" size="sm">{changedCount} changed</Badge>
+            <Badge variant="warning" size="sm">
+              {changedCount} changed
+            </Badge>
           )}
         </Flex>
 
         <Flex align="center" gap={spacing.xs}>
           <SyncButton />
           <Tooltip content="Refresh">
-            <IconButton variant="ghost" size="sm" onClick={() => invalidateAll()} aria-label="Refresh">
+            <IconButton
+              variant="ghost"
+              size="sm"
+              onClick={() => invalidateAll()}
+              aria-label="Refresh"
+            >
               <RefreshCw />
             </IconButton>
           </Tooltip>
@@ -139,24 +168,57 @@ export function SourceControlView() {
             /* ── Top: horizontal split (files | diff) ── */
             <SplitPanel
               left={
-                <Flex direction="column" css={{ height: '100%', background: 'var(--studio-bg-sidebar)' }}>
-                  <Flex align="center" justify="space-between" css={{ padding: `${spacing.sm} ${spacing.md}`, flexShrink: 0 }}>
-                    <Text variant="tiny" color="muted">Changes</Text>
+                <Flex
+                  direction="column"
+                  css={{
+                    height: "100%",
+                    background: "var(--studio-bg-sidebar)",
+                  }}
+                >
+                  <Flex
+                    align="center"
+                    justify="space-between"
+                    css={{
+                      padding: `${spacing.sm} ${spacing.md}`,
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Text variant="tiny" color="muted">
+                      Changes
+                    </Text>
                     {changedFiles.total > 0 && (
-                      <Badge variant="default" size="sm">{changedFiles.total}</Badge>
+                      <Badge variant="default" size="sm">
+                        {changedFiles.total}
+                      </Badge>
                     )}
                   </Flex>
-                  <Box css={{ flex: 1, minHeight: 0, padding: `0 ${spacing.xs} ${spacing.sm}` }}>
+                  <Box
+                    css={{
+                      flex: 1,
+                      minHeight: 0,
+                      padding: `0 ${spacing.xs} ${spacing.sm}`,
+                    }}
+                  >
                     {changedFiles.isLoading ? (
-                      <Flex align="center" justify="center" css={{ height: '80px' }}>
-                        <Text variant="caption" color="muted">Loading...</Text>
+                      <Flex
+                        align="center"
+                        justify="center"
+                        css={{ height: "80px" }}
+                      >
+                        <Text variant="caption" color="muted">
+                          Loading...
+                        </Text>
                       </Flex>
                     ) : (
                       <ChangedFilesList
                         files={changedFiles.data}
                         selectedPath={selectedFile}
                         onSelect={setSelectedFile}
-                        onLoadMore={changedFiles.hasNextPage ? () => changedFiles.fetchNextPage() : undefined}
+                        onLoadMore={
+                          changedFiles.hasNextPage
+                            ? () => changedFiles.fetchNextPage()
+                            : undefined
+                        }
                         isLoadingMore={changedFiles.isFetchingNextPage}
                       />
                     )}
@@ -168,7 +230,10 @@ export function SourceControlView() {
               maxWidth={400}
               storageKey="sourceControl.filesWidth"
             >
-              <DiffViewer filePath={selectedFile} onClose={() => setSelectedFile(undefined)} />
+              <DiffViewer
+                filePath={selectedFile}
+                onClose={() => setSelectedFile(undefined)}
+              />
             </SplitPanel>
           }
           defaultWidth={400}
@@ -177,20 +242,45 @@ export function SourceControlView() {
           storageKey="sourceControl.historyHeight"
         >
           {/* ── Bottom: commit history ── */}
-          <Flex direction="column" css={{ height: '100%', borderTop: '1px solid var(--studio-border)' }}>
-            <Flex align="center" gap={spacing.xs} css={{ padding: `${spacing.sm} ${spacing.lg}`, flexShrink: 0 }}>
-              <Text variant="tiny" color="muted">Commit History</Text>
+          <Flex
+            direction="column"
+            css={{
+              height: "100%",
+              borderTop: "1px solid var(--studio-border)",
+            }}
+          >
+            <Flex
+              align="center"
+              gap={spacing.xs}
+              css={{ padding: `${spacing.sm} ${spacing.lg}`, flexShrink: 0 }}
+            >
+              <Text variant="tiny" color="muted">
+                Commit History
+              </Text>
               {history.data && history.data.length > 0 && (
-                <Badge variant="default" size="sm">{history.data.length}</Badge>
+                <Badge variant="default" size="sm">
+                  {history.data.length}
+                </Badge>
               )}
             </Flex>
-            <Box css={{ flex: 1, overflowY: 'auto', padding: `0 ${spacing.lg} ${spacing.md}` }}>
+            <Box
+              css={{
+                flex: 1,
+                overflowY: "auto",
+                padding: `0 ${spacing.lg} ${spacing.md}`,
+              }}
+            >
               {history.isLoading ? (
-                <Flex align="center" justify="center" css={{ height: '60px' }}>
-                  <Text variant="caption" color="muted">Loading...</Text>
+                <Flex align="center" justify="center" css={{ height: "60px" }}>
+                  <Text variant="caption" color="muted">
+                    Loading...
+                  </Text>
                 </Flex>
               ) : (
-                <HistoryTimeline entries={history.data ?? []} onSelect={setSelectedCommit} />
+                <HistoryTimeline
+                  entries={history.data ?? []}
+                  onSelect={setSelectedCommit}
+                />
               )}
             </Box>
           </Flex>
@@ -210,8 +300,11 @@ export function SourceControlView() {
       )}
 
       {selectedCommit && (
-        <CommitDetailDrawer hash={selectedCommit} onClose={() => setSelectedCommit(null)} />
+        <CommitDetailDrawer
+          hash={selectedCommit}
+          onClose={() => setSelectedCommit(null)}
+        />
       )}
     </Flex>
-  )
+  );
 }

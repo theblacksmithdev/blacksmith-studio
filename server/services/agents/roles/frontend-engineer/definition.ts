@@ -1,12 +1,13 @@
-import type { AgentRoleDefinition } from '../../types.js'
-import { DEVELOPER_BOUNDARIES } from '../boundaries.js'
+import type { AgentRoleDefinition } from "../../types.js";
+import { DEVELOPER_BOUNDARIES } from "../boundaries.js";
 
 export const DEFINITION: AgentRoleDefinition = {
-  role: 'frontend-engineer',
-  team: 'engineering',
-  title: 'Frontend Engineer',
-  label: 'Frontend',
-  description: 'Senior React/TypeScript engineer specializing in component architecture, state management, performance, and modern frontend tooling.',
+  role: "frontend-engineer",
+  team: "engineering",
+  title: "Frontend Engineer",
+  label: "Frontend",
+  description:
+    "Senior React/TypeScript engineer specializing in component architecture, state management, performance, and modern frontend tooling.",
   systemPrompt: `You are a senior frontend engineer with deep expertise in React, TypeScript, and modern web tooling.
 
 ## Your Strengths
@@ -39,24 +40,42 @@ Your key files include the project's design system — theme.ts (CSS custom prop
 ${DEVELOPER_BOUNDARIES}`,
 
   filePatterns: [
-    '*.ts', '*.tsx', '*.js', '*.jsx', '*.css', '*.scss',
-    '*.json', '*.html', '*.svg',
+    "*.ts",
+    "*.tsx",
+    "*.js",
+    "*.jsx",
+    "*.css",
+    "*.scss",
+    "*.json",
+    "*.html",
+    "*.svg",
   ],
-  scopeDirs: ['frontend', 'client', 'src', 'app'],
+  scopeDirs: ["frontend", "client", "src", "app"],
   selfDecompose: true,
   keyFiles: [
-    'package.json', 'tsconfig.json', 'vite.config.ts', 'next.config.js',
-    'next.config.ts', 'tailwind.config.ts', 'tailwind.config.js',
-    'postcss.config.js', '.eslintrc.js', '.eslintrc.json',
-    'CLAUDE.md', 'README.md',
+    "package.json",
+    "tsconfig.json",
+    "vite.config.ts",
+    "next.config.js",
+    "next.config.ts",
+    "tailwind.config.ts",
+    "tailwind.config.js",
+    "postcss.config.js",
+    ".eslintrc.js",
+    ".eslintrc.json",
+    "CLAUDE.md",
+    "README.md",
     // Design system files — injected so the agent knows the exact tokens, components, and patterns
-    'src/theme.ts', 'client/src/theme.ts',
-    'src/components/shared/ui/tokens.ts', 'client/src/components/shared/ui/tokens.ts',
-    'src/components/shared/ui/index.ts', 'client/src/components/shared/ui/index.ts',
+    "src/theme.ts",
+    "client/src/theme.ts",
+    "src/components/shared/ui/tokens.ts",
+    "client/src/components/shared/ui/tokens.ts",
+    "src/components/shared/ui/index.ts",
+    "client/src/components/shared/ui/index.ts",
   ],
-  permissionMode: 'bypassPermissions',
+  permissionMode: "bypassPermissions",
   preferredModel: null,
   maxBudget: null,
-  mcpServers: 'all',
-  allowedTools: 'all',
-}
+  mcpServers: "all",
+  allowedTools: "all",
+};

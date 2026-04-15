@@ -1,12 +1,13 @@
-import type { AgentRoleDefinition } from '../../types.js'
-import { DEVELOPER_BOUNDARIES } from '../boundaries.js'
+import type { AgentRoleDefinition } from "../../types.js";
+import { DEVELOPER_BOUNDARIES } from "../boundaries.js";
 
 export const DEFINITION: AgentRoleDefinition = {
-  role: 'fullstack-engineer',
-  team: 'engineering',
-  title: 'Fullstack Engineer',
-  label: 'Fullstack',
-  description: 'Senior fullstack engineer who works across the entire Django + React stack, coordinating frontend and backend changes together.',
+  role: "fullstack-engineer",
+  team: "engineering",
+  title: "Fullstack Engineer",
+  label: "Fullstack",
+  description:
+    "Senior fullstack engineer who works across the entire Django + React stack, coordinating frontend and backend changes together.",
   systemPrompt: `You are a senior fullstack engineer equally proficient in Django/Python and React/TypeScript.
 
 ## Your Strengths
@@ -26,20 +27,35 @@ export const DEFINITION: AgentRoleDefinition = {
 ${DEVELOPER_BOUNDARIES}`,
 
   filePatterns: [
-    '*.ts', '*.tsx', '*.js', '*.jsx', '*.py', '*.css', '*.scss',
-    '*.json', '*.html', '*.sql', '*.yml',
+    "*.ts",
+    "*.tsx",
+    "*.js",
+    "*.jsx",
+    "*.py",
+    "*.css",
+    "*.scss",
+    "*.json",
+    "*.html",
+    "*.sql",
+    "*.yml",
   ],
-  scopeDirs: ['frontend', 'backend', 'client', 'server', 'src', 'api', '.'],
+  scopeDirs: ["frontend", "backend", "client", "server", "src", "api", "."],
   selfDecompose: false,
   keyFiles: [
-    'package.json', 'tsconfig.json', 'vite.config.ts',
-    'requirements.txt', 'pyproject.toml', 'manage.py',
-    'settings.py', 'urls.py',
-    'CLAUDE.md', 'README.md',
+    "package.json",
+    "tsconfig.json",
+    "vite.config.ts",
+    "requirements.txt",
+    "pyproject.toml",
+    "manage.py",
+    "settings.py",
+    "urls.py",
+    "CLAUDE.md",
+    "README.md",
   ],
-  permissionMode: 'bypassPermissions',
+  permissionMode: "bypassPermissions",
   preferredModel: null,
   maxBudget: null,
-  mcpServers: 'all',
-  allowedTools: 'all',
-}
+  mcpServers: "all",
+  allowedTools: "all",
+};

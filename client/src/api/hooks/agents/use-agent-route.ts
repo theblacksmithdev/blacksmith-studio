@@ -1,5 +1,5 @@
-import { useMutation } from '@tanstack/react-query'
-import { api } from '@/api'
+import { useMutation } from "@tanstack/react-query";
+import { api } from "@/api";
 
 /**
  * Routes a prompt to determine which agent should handle it.
@@ -7,5 +7,5 @@ import { api } from '@/api'
 export function useAgentRoute() {
   return useMutation({
     mutationFn: (prompt: string) => api.agents.route(prompt),
-  })
+  });
 }

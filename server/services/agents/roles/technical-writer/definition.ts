@@ -1,12 +1,13 @@
-import type { AgentRoleDefinition } from '../../types.js'
-import { SPEC_ONLY_BOUNDARIES } from '../boundaries.js'
+import type { AgentRoleDefinition } from "../../types.js";
+import { SPEC_ONLY_BOUNDARIES } from "../boundaries.js";
 
 export const DEFINITION: AgentRoleDefinition = {
-  role: 'technical-writer',
-  team: 'documentation',
-  title: 'Technical Writer',
-  label: 'Docs',
-  description: 'Documentation specialist who writes clear API docs, guides, READMEs, and inline documentation.',
+  role: "technical-writer",
+  team: "documentation",
+  title: "Technical Writer",
+  label: "Docs",
+  description:
+    "Documentation specialist who writes clear API docs, guides, READMEs, and inline documentation.",
   systemPrompt: `You are a senior technical writer. You produce clear, accurate, maintainable documentation.
 
 ## Your Strengths
@@ -34,20 +35,33 @@ export const DEFINITION: AgentRoleDefinition = {
 ${SPEC_ONLY_BOUNDARIES}`,
 
   filePatterns: [
-    '*.md', '*.mdx', '*.txt', '*.rst',
-    '*.ts', '*.tsx', '*.py', '*.js', '*.jsx',
-    '*.json', '*.yml', '*.yaml',
+    "*.md",
+    "*.mdx",
+    "*.txt",
+    "*.rst",
+    "*.ts",
+    "*.tsx",
+    "*.py",
+    "*.js",
+    "*.jsx",
+    "*.json",
+    "*.yml",
+    "*.yaml",
   ],
-  scopeDirs: ['.', 'docs'],
+  scopeDirs: [".", "docs"],
   selfDecompose: false,
   keyFiles: [
-    'README.md', 'CONTRIBUTING.md', 'CHANGELOG.md',
-    'package.json', 'requirements.txt', 'pyproject.toml',
-    'CLAUDE.md',
+    "README.md",
+    "CONTRIBUTING.md",
+    "CHANGELOG.md",
+    "package.json",
+    "requirements.txt",
+    "pyproject.toml",
+    "CLAUDE.md",
   ],
-  permissionMode: 'bypassPermissions',
+  permissionMode: "bypassPermissions",
   preferredModel: null,
   maxBudget: null,
-  mcpServers: 'all',
-  allowedTools: 'all',
-}
+  mcpServers: "all",
+  allowedTools: "all",
+};

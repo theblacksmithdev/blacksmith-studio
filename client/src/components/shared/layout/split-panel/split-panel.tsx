@@ -1,5 +1,11 @@
-import { useRef, useState, useCallback, useEffect, type ReactNode } from 'react'
-import { Flex, Box } from '@chakra-ui/react'
+import {
+  useRef,
+  useState,
+  useCallback,
+  useEffect,
+  type ReactNode,
+} from "react";
+import { Flex, Box } from "@chakra-ui/react";
 
 /**
  * SplitPanel — Resizable two-pane layout built on Chakra UI.
@@ -15,20 +21,20 @@ import { Flex, Box } from '@chakra-ui/react'
  *   />
  */
 
-export type SplitDirection = 'horizontal' | 'vertical'
+export type SplitDirection = "horizontal" | "vertical";
 
 interface SplitPanelProps {
   /** Left / top panel content */
-  left: ReactNode
+  left: ReactNode;
   /** Right / bottom panel content (main area) */
-  children: ReactNode
-  defaultWidth?: number
-  minWidth?: number
-  maxWidth?: number
-  storageKey?: string
-  direction?: SplitDirection
+  children: ReactNode;
+  defaultWidth?: number;
+  minWidth?: number;
+  maxWidth?: number;
+  storageKey?: string;
+  direction?: SplitDirection;
   /** When true, children (right/bottom) is the fixed-size panel instead of left (top). */
-  reverse?: boolean
+  reverse?: boolean;
 }
 
 export function SplitPanel({
@@ -38,82 +44,88 @@ export function SplitPanel({
   minWidth = 160,
   maxWidth = 480,
   storageKey,
-  direction = 'horizontal',
+  direction = "horizontal",
   reverse = false,
 }: SplitPanelProps) {
-  const isVertical = direction === 'vertical'
+  const isVertical = direction === "vertical";
 
   const [size, setSize] = useState(() => {
     if (storageKey) {
-      const saved = localStorage.getItem(storageKey)
+      const saved = localStorage.getItem(storageKey);
       if (saved) {
-        const n = parseInt(saved, 10)
-        if (!isNaN(n) && n >= minWidth && n <= maxWidth) return n
+        const n = parseInt(saved, 10);
+        if (!isNaN(n) && n >= minWidth && n <= maxWidth) return n;
       }
     }
-    return defaultWidth
-  })
+    return defaultWidth;
+  });
 
-  const [dragging, setDragging] = useState(false)
-  const startRef = useRef({ pos: 0, size: 0 })
+  const [dragging, setDragging] = useState(false);
+  const startRef = useRef({ pos: 0, size: 0 });
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault()
-    setDragging(true)
-    startRef.current = {
-      pos: isVertical ? e.clientY : e.clientX,
-      size,
-    }
-  }, [size, isVertical])
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      setDragging(true);
+      startRef.current = {
+        pos: isVertical ? e.clientY : e.clientX,
+        size,
+      };
+    },
+    [size, isVertical],
+  );
 
   useEffect(() => {
-    if (!dragging) return
+    if (!dragging) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       const raw = isVertical
         ? e.clientY - startRef.current.pos
-        : e.clientX - startRef.current.pos
-      const delta = reverse ? -raw : raw
-      const next = Math.max(minWidth, Math.min(maxWidth, startRef.current.size + delta))
-      setSize(next)
-    }
+        : e.clientX - startRef.current.pos;
+      const delta = reverse ? -raw : raw;
+      const next = Math.max(
+        minWidth,
+        Math.min(maxWidth, startRef.current.size + delta),
+      );
+      setSize(next);
+    };
 
     const handleMouseUp = () => {
-      setDragging(false)
-    }
+      setDragging(false);
+    };
 
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
-    document.body.style.userSelect = 'none'
-    document.body.style.cursor = isVertical ? 'row-resize' : 'col-resize'
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    document.body.style.userSelect = "none";
+    document.body.style.cursor = isVertical ? "row-resize" : "col-resize";
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
-      document.body.style.userSelect = ''
-      document.body.style.cursor = ''
-    }
-  }, [dragging, minWidth, maxWidth, isVertical])
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.userSelect = "";
+      document.body.style.cursor = "";
+    };
+  }, [dragging, minWidth, maxWidth, isVertical]);
 
   useEffect(() => {
     if (storageKey && !dragging) {
-      localStorage.setItem(storageKey, String(size))
+      localStorage.setItem(storageKey, String(size));
     }
-  }, [size, storageKey, dragging])
+  }, [size, storageKey, dragging]);
 
   const fixedPanel = (
     <Box
       css={{
         flexShrink: 0,
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
         ...(isVertical ? { height: size } : { width: size }),
       }}
     >
       {reverse ? children : left}
     </Box>
-  )
+  );
 
   const flexPanel = (
     <Box
@@ -121,67 +133,86 @@ export function SplitPanel({
         flex: 1,
         minWidth: 0,
         minHeight: 0,
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       {reverse ? left : children}
     </Box>
-  )
+  );
 
   const separator = (
     <Box
       css={{
-        position: 'relative',
+        position: "relative",
         flexShrink: 0,
         ...(isVertical
-          ? { width: '100%', height: 0, borderTop: `1px solid ${dragging ? 'var(--studio-border-hover)' : 'var(--studio-border)'}` }
-          : { height: '100%', width: 0, borderLeft: `1px solid ${dragging ? 'var(--studio-border-hover)' : 'var(--studio-border)'}` }
-        ),
-        transition: dragging ? 'none' : 'border-color 0.15s ease',
+          ? {
+              width: "100%",
+              height: 0,
+              borderTop: `1px solid ${dragging ? "var(--studio-border-hover)" : "var(--studio-border)"}`,
+            }
+          : {
+              height: "100%",
+              width: 0,
+              borderLeft: `1px solid ${dragging ? "var(--studio-border-hover)" : "var(--studio-border)"}`,
+            }),
+        transition: dragging ? "none" : "border-color 0.15s ease",
       }}
     >
       <Box
         onMouseDown={handleMouseDown}
         css={{
-          position: 'absolute',
+          position: "absolute",
           zIndex: 2,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
           ...(isVertical
-            ? { left: 0, right: 0, top: '-5px', height: '9px', cursor: 'row-resize' }
-            : { top: 0, bottom: 0, left: '-5px', width: '9px', cursor: 'col-resize' }
-          ),
-          '&:hover .split-knob': { opacity: 1 },
+            ? {
+                left: 0,
+                right: 0,
+                top: "-5px",
+                height: "9px",
+                cursor: "row-resize",
+              }
+            : {
+                top: 0,
+                bottom: 0,
+                left: "-5px",
+                width: "9px",
+                cursor: "col-resize",
+              }),
+          "&:hover .split-knob": { opacity: 1 },
         }}
       >
         <Box
           className="split-knob"
           css={{
-            borderRadius: '4px',
-            background: dragging ? 'var(--studio-text-muted)' : 'var(--studio-border-hover)',
+            borderRadius: "4px",
+            background: dragging
+              ? "var(--studio-text-muted)"
+              : "var(--studio-border-hover)",
             opacity: dragging ? 1 : 0,
-            transition: 'opacity 0.15s ease',
+            transition: "opacity 0.15s ease",
             ...(isVertical
-              ? { width: '32px', height: '4px' }
-              : { width: '4px', height: '32px' }
-            ),
+              ? { width: "32px", height: "4px" }
+              : { width: "4px", height: "32px" }),
           }}
         />
       </Box>
     </Box>
-  )
+  );
 
   return (
     <Flex
-      direction={isVertical ? 'column' : 'row'}
-      css={{ height: '100%', width: '100%', overflow: 'hidden' }}
+      direction={isVertical ? "column" : "row"}
+      css={{ height: "100%", width: "100%", overflow: "hidden" }}
     >
       {reverse ? flexPanel : fixedPanel}
       {separator}
       {reverse ? fixedPanel : flexPanel}
     </Flex>
-  )
+  );
 }

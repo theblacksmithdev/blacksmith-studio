@@ -1,28 +1,28 @@
-import { useRef, useEffect, useCallback, type ReactNode } from 'react'
-import { useVirtualizer } from '@tanstack/react-virtual'
-import { Box } from '@chakra-ui/react'
+import { useRef, useEffect, useCallback, type ReactNode } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { Box } from "@chakra-ui/react";
 
 export interface InfiniteScrollListProps<T> {
   /** The full data array */
-  items: T[]
+  items: T[];
   /** Estimated height of each row in pixels */
-  estimateSize?: number
+  estimateSize?: number;
   /** Render function for each item */
-  renderItem: (item: T, index: number) => ReactNode
+  renderItem: (item: T, index: number) => ReactNode;
   /** Number of items to render beyond the visible area */
-  overscan?: number
+  overscan?: number;
   /** Called when the user scrolls near the bottom */
-  onLoadMore?: () => void
+  onLoadMore?: () => void;
   /** Distance from bottom (in px) to trigger onLoadMore */
-  loadMoreThreshold?: number
+  loadMoreThreshold?: number;
   /** Whether more data is currently loading */
-  isLoadingMore?: boolean
+  isLoadingMore?: boolean;
   /** Custom footer rendered at the bottom when loading more */
-  loadingFooter?: ReactNode
+  loadingFooter?: ReactNode;
   /** Gap between items in pixels */
-  gap?: number
+  gap?: number;
   /** CSS class for the scroll container */
-  className?: string
+  className?: string;
 }
 
 export function InfiniteScrollList<T>({
@@ -37,7 +37,7 @@ export function InfiniteScrollList<T>({
   gap = 0,
   className,
 }: InfiniteScrollListProps<T>) {
-  const parentRef = useRef<HTMLDivElement>(null)
+  const parentRef = useRef<HTMLDivElement>(null);
 
   const virtualizer = useVirtualizer({
     count: items.length,
@@ -45,48 +45,59 @@ export function InfiniteScrollList<T>({
     estimateSize: () => estimateSize,
     overscan,
     gap,
-  })
+  });
 
   const handleScroll = useCallback(() => {
-    if (!onLoadMore || isLoadingMore) return
-    const el = parentRef.current
-    if (!el) return
-    const { scrollTop, scrollHeight, clientHeight } = el
+    if (!onLoadMore || isLoadingMore) return;
+    const el = parentRef.current;
+    if (!el) return;
+    const { scrollTop, scrollHeight, clientHeight } = el;
     if (scrollHeight - scrollTop - clientHeight < loadMoreThreshold) {
-      onLoadMore()
+      onLoadMore();
     }
-  }, [onLoadMore, isLoadingMore, loadMoreThreshold])
+  }, [onLoadMore, isLoadingMore, loadMoreThreshold]);
 
   useEffect(() => {
-    const el = parentRef.current
-    if (!el || !onLoadMore) return
-    el.addEventListener('scroll', handleScroll, { passive: true })
-    return () => el.removeEventListener('scroll', handleScroll)
-  }, [handleScroll, onLoadMore])
+    const el = parentRef.current;
+    if (!el || !onLoadMore) return;
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [handleScroll, onLoadMore]);
 
   return (
     <Box
       ref={parentRef}
       className={className}
       css={{
-        height: '100%',
-        overflow: 'auto',
-        '&::-webkit-scrollbar': { width: '6px' },
-        '&::-webkit-scrollbar-thumb': { background: 'rgba(128,128,128,0.15)', borderRadius: '3px' },
-        '&::-webkit-scrollbar-thumb:hover': { background: 'rgba(128,128,128,0.25)' },
+        height: "100%",
+        overflow: "auto",
+        "&::-webkit-scrollbar": { width: "6px" },
+        "&::-webkit-scrollbar-thumb": {
+          background: "rgba(128,128,128,0.15)",
+          borderRadius: "3px",
+        },
+        "&::-webkit-scrollbar-thumb:hover": {
+          background: "rgba(128,128,128,0.25)",
+        },
       }}
     >
-      <Box css={{ height: virtualizer.getTotalSize(), width: '100%', position: 'relative' }}>
+      <Box
+        css={{
+          height: virtualizer.getTotalSize(),
+          width: "100%",
+          position: "relative",
+        }}
+      >
         {virtualizer.getVirtualItems().map((virtualRow) => (
           <Box
             key={virtualRow.key}
             data-index={virtualRow.index}
             ref={virtualizer.measureElement}
             css={{
-              position: 'absolute',
+              position: "absolute",
               top: 0,
               left: 0,
-              width: '100%',
+              width: "100%",
               transform: `translateY(${virtualRow.start}px)`,
             }}
           >
@@ -96,10 +107,8 @@ export function InfiniteScrollList<T>({
       </Box>
 
       {isLoadingMore && loadingFooter && (
-        <Box css={{ padding: '8px 0' }}>
-          {loadingFooter}
-        </Box>
+        <Box css={{ padding: "8px 0" }}>{loadingFooter}</Box>
       )}
     </Box>
-  )
+  );
 }

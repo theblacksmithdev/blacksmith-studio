@@ -1,27 +1,32 @@
-import { Box, VStack, Text } from '@chakra-ui/react'
-import type { ReactNode } from 'react'
+import { Box, VStack, Text } from "@chakra-ui/react";
+import type { ReactNode } from "react";
 
 interface EmptyStateProps {
-  icon?: ReactNode
-  title: string
-  description?: string
-  action?: ReactNode
+  icon?: ReactNode;
+  title: string;
+  description?: string;
+  action?: ReactNode;
 }
 
-export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
+export function EmptyState({
+  icon,
+  title,
+  description,
+  action,
+}: EmptyStateProps) {
   return (
     <VStack gap={4} py={20}>
       {icon && (
         <Box
           css={{
-            color: 'var(--studio-text-tertiary)',
-            background: 'var(--studio-border)',
-            width: '72px',
-            height: '72px',
-            borderRadius: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            color: "var(--studio-text-tertiary)",
+            background: "var(--studio-border)",
+            width: "72px",
+            height: "72px",
+            borderRadius: "16px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           {icon}
@@ -31,9 +36,9 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
         <Text
           css={{
             fontWeight: 600,
-            fontSize: '17px',
-            color: 'var(--studio-text-secondary)',
-            letterSpacing: '-0.01em',
+            fontSize: "17px",
+            color: "var(--studio-text-secondary)",
+            letterSpacing: "-0.01em",
           }}
         >
           {title}
@@ -41,10 +46,10 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
         {description && (
           <Text
             css={{
-              fontSize: '14px',
-              textAlign: 'center',
-              maxWidth: '320px',
-              color: 'var(--studio-text-tertiary)',
+              fontSize: "14px",
+              textAlign: "center",
+              maxWidth: "320px",
+              color: "var(--studio-text-tertiary)",
               lineHeight: 1.6,
             }}
           >
@@ -54,5 +59,5 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
       </VStack>
       {action}
     </VStack>
-  )
+  );
 }

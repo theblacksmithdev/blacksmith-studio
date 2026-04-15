@@ -1,12 +1,13 @@
-import type { AgentRoleDefinition } from '../../types.js'
-import { QA_BOUNDARIES } from '../boundaries.js'
+import type { AgentRoleDefinition } from "../../types.js";
+import { QA_BOUNDARIES } from "../boundaries.js";
 
 export const DEFINITION: AgentRoleDefinition = {
-  role: 'qa-engineer',
-  team: 'quality',
-  title: 'QA Engineer',
-  label: 'QA',
-  description: 'Test engineer specializing in writing comprehensive test suites, identifying edge cases, and ensuring software reliability.',
+  role: "qa-engineer",
+  team: "quality",
+  title: "QA Engineer",
+  label: "QA",
+  description:
+    "Test engineer specializing in writing comprehensive test suites, identifying edge cases, and ensuring software reliability.",
   systemPrompt: `You are a senior QA engineer who writes tests, identifies edge cases, and ensures software reliability.
 
 ## Your Strengths
@@ -42,20 +43,25 @@ Previous agents' work (design specs, architecture decisions, implementation summ
 
 ${QA_BOUNDARIES}`,
 
-  filePatterns: [
-    '*.py', '*.ts', '*.tsx', '*.js', '*.jsx', '*.json', '*.cfg',
-  ],
-  scopeDirs: ['.'],
+  filePatterns: ["*.py", "*.ts", "*.tsx", "*.js", "*.jsx", "*.json", "*.cfg"],
+  scopeDirs: ["."],
   selfDecompose: false,
   keyFiles: [
-    'package.json', 'requirements.txt', 'pyproject.toml',
-    'jest.config.ts', 'jest.config.js', 'vitest.config.ts',
-    'pytest.ini', 'setup.cfg', 'conftest.py',
-    'CLAUDE.md', 'README.md',
+    "package.json",
+    "requirements.txt",
+    "pyproject.toml",
+    "jest.config.ts",
+    "jest.config.js",
+    "vitest.config.ts",
+    "pytest.ini",
+    "setup.cfg",
+    "conftest.py",
+    "CLAUDE.md",
+    "README.md",
   ],
-  permissionMode: 'bypassPermissions',
+  permissionMode: "bypassPermissions",
   preferredModel: null,
   maxBudget: null,
-  mcpServers: 'all',
-  allowedTools: 'all',
-}
+  mcpServers: "all",
+  allowedTools: "all",
+};

@@ -1,12 +1,13 @@
-import type { AgentRoleDefinition } from '../../types.js'
-import { SPEC_ONLY_BOUNDARIES } from '../boundaries.js'
+import type { AgentRoleDefinition } from "../../types.js";
+import { SPEC_ONLY_BOUNDARIES } from "../boundaries.js";
 
 export const DEFINITION: AgentRoleDefinition = {
-  role: 'architect',
-  team: 'architecture',
-  title: 'Software Architect',
-  label: 'Architecture',
-  description: 'Senior architect who designs system structures, evaluates trade-offs, and defines technical strategies for the project.',
+  role: "architect",
+  team: "architecture",
+  title: "Software Architect",
+  label: "Architecture",
+  description:
+    "Senior architect who designs system structures, evaluates trade-offs, and defines technical strategies for the project.",
   systemPrompt: `You are a senior software architect. You design systems, evaluate trade-offs, and make structural decisions that shape the project long-term.
 
 ## Your Strengths
@@ -37,20 +38,34 @@ Your design proposals are saved as artifact files that downstream engineers (bac
 ${SPEC_ONLY_BOUNDARIES}`,
 
   filePatterns: [
-    '*.ts', '*.tsx', '*.py', '*.json', '*.yml', '*.yaml',
-    '*.toml', '*.md', '*.sql',
+    "*.ts",
+    "*.tsx",
+    "*.py",
+    "*.json",
+    "*.yml",
+    "*.yaml",
+    "*.toml",
+    "*.md",
+    "*.sql",
   ],
-  scopeDirs: ['.'],
+  scopeDirs: ["."],
   selfDecompose: false,
   keyFiles: [
-    'package.json', 'requirements.txt', 'pyproject.toml',
-    'tsconfig.json', 'manage.py', 'settings.py',
-    'docker-compose.yml', 'Dockerfile', 'Makefile',
-    'CLAUDE.md', 'README.md',
+    "package.json",
+    "requirements.txt",
+    "pyproject.toml",
+    "tsconfig.json",
+    "manage.py",
+    "settings.py",
+    "docker-compose.yml",
+    "Dockerfile",
+    "Makefile",
+    "CLAUDE.md",
+    "README.md",
   ],
-  permissionMode: 'default',
+  permissionMode: "default",
   preferredModel: null,
   maxBudget: null,
-  mcpServers: 'all',
-  allowedTools: ['Read', 'Glob', 'Grep', 'Bash', 'Write'],
-}
+  mcpServers: "all",
+  allowedTools: ["Read", "Glob", "Grep", "Bash", "Write"],
+};

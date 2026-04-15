@@ -1,1 +1,1 @@
-export { KnowledgeSettings } from './knowledge-settings'
+export { KnowledgeSettings } from "./knowledge-settings";

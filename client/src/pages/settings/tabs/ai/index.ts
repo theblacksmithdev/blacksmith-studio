@@ -1,1 +1,1 @@
-export { AiSettings } from './ai-settings'
+export { AiSettings } from "./ai-settings";

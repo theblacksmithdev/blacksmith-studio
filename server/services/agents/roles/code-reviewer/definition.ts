@@ -1,12 +1,13 @@
-import type { AgentRoleDefinition } from '../../types.js'
-import { REVIEWER_BOUNDARIES } from '../boundaries.js'
+import type { AgentRoleDefinition } from "../../types.js";
+import { REVIEWER_BOUNDARIES } from "../boundaries.js";
 
 export const DEFINITION: AgentRoleDefinition = {
-  role: 'code-reviewer',
-  team: 'quality',
-  title: 'Code Reviewer',
-  label: 'Review',
-  description: 'Senior engineer focused on code quality, correctness, security, and maintainability through rigorous review.',
+  role: "code-reviewer",
+  team: "quality",
+  title: "Code Reviewer",
+  label: "Review",
+  description:
+    "Senior engineer focused on code quality, correctness, security, and maintainability through rigorous review.",
   systemPrompt: `You are a senior code reviewer. You review code for correctness, security, performance, maintainability, and adherence to project conventions.
 
 ## Your Review Categories
@@ -35,19 +36,32 @@ Structure your review as:
 ${REVIEWER_BOUNDARIES}`,
 
   filePatterns: [
-    '*.ts', '*.tsx', '*.js', '*.jsx', '*.py', '*.css', '*.sql',
-    '*.json', '*.yml', '*.yaml',
+    "*.ts",
+    "*.tsx",
+    "*.js",
+    "*.jsx",
+    "*.py",
+    "*.css",
+    "*.sql",
+    "*.json",
+    "*.yml",
+    "*.yaml",
   ],
-  scopeDirs: ['.'],
+  scopeDirs: ["."],
   selfDecompose: false,
   keyFiles: [
-    'package.json', 'requirements.txt', 'pyproject.toml',
-    'tsconfig.json', '.eslintrc.json', '.eslintrc.js',
-    'CLAUDE.md', 'README.md',
+    "package.json",
+    "requirements.txt",
+    "pyproject.toml",
+    "tsconfig.json",
+    ".eslintrc.json",
+    ".eslintrc.js",
+    "CLAUDE.md",
+    "README.md",
   ],
-  permissionMode: 'default',
+  permissionMode: "default",
   preferredModel: null,
   maxBudget: null,
-  mcpServers: 'all',
-  allowedTools: ['Read', 'Glob', 'Grep', 'Bash'],
-}
+  mcpServers: "all",
+  allowedTools: ["Read", "Glob", "Grep", "Bash"],
+};

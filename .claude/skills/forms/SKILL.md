@@ -11,19 +11,28 @@ All forms in Blacksmith Studio MUST use **React Hook Form** with **Zod** validat
 
 ```tsx
 // BAD — never do this
-const [name, setName] = useState('')
-const [email, setEmail] = useState('')
-const handleSubmit = () => { api.save({ name, email }) }
+const [name, setName] = useState("");
+const [email, setEmail] = useState("");
+const handleSubmit = () => {
+  api.save({ name, email });
+};
 
 // GOOD — always do this
-const schema = z.object({ name: z.string().min(1), email: z.string().email() })
-const { register, handleSubmit, formState: { errors } } = useForm({ resolver: zodResolver(schema) })
-const onSubmit = (data) => { api.save(data) }
+const schema = z.object({ name: z.string().min(1), email: z.string().email() });
+const {
+  register,
+  handleSubmit,
+  formState: { errors },
+} = useForm({ resolver: zodResolver(schema) });
+const onSubmit = (data) => {
+  api.save(data);
+};
 ```
 
 ## Dependencies
 
 Both are already installed:
+
 ```
 react-hook-form    — form state management
 @hookform/resolvers — connects Zod to RHF
@@ -33,19 +42,19 @@ zod                — schema validation
 ## Standard Pattern
 
 ```tsx
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { FormField, FormInput } from '@/components/shared/form-controls'
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { FormField, FormInput } from "@/components/shared/form-controls";
 
 // 1. Define schema
 const schema = z.object({
-  name: z.string().min(1, 'Name is required'),
+  name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
   port: z.coerce.number().min(1000).max(65535),
-})
+});
 
-type FormData = z.infer<typeof schema>
+type FormData = z.infer<typeof schema>;
 
 // 2. Initialize form
 function MyForm({ onSave, onClose }: Props) {
@@ -59,32 +68,34 @@ function MyForm({ onSave, onClose }: Props) {
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      name: '',
-      description: '',
+      name: "",
+      description: "",
       port: 8000,
     },
-  })
+  });
 
   // 3. Submit handler receives validated data
   const onSubmit = async (data: FormData) => {
-    await api.doSomething(data)
-    onClose()
-  }
+    await api.doSomething(data);
+    onClose();
+  };
 
   // 4. Render with register
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <FormField label="Name" error={errors.name?.message}>
-        <input {...register('name')} placeholder="Enter name" />
+        <input {...register("name")} placeholder="Enter name" />
       </FormField>
 
       <FormField label="Port" error={errors.port?.message}>
-        <input {...register('port', { valueAsNumber: true })} type="number" />
+        <input {...register("port", { valueAsNumber: true })} type="number" />
       </FormField>
 
-      <button type="submit" disabled={isSubmitting}>Save</button>
+      <button type="submit" disabled={isSubmitting}>
+        Save
+      </button>
     </form>
-  )
+  );
 }
 ```
 
@@ -93,15 +104,19 @@ function MyForm({ onSave, onClose }: Props) {
 Use the shared `FormField` from `@/components/shared/form-controls` for labels, hints, and errors:
 
 ```tsx
-import { FormField } from '@/components/shared/form-controls'
+import { FormField } from "@/components/shared/form-controls";
 
-<FormField label="Server Name" hint="Lowercase with hyphens" error={errors.name?.message}>
+<FormField
+  label="Server Name"
+  hint="Lowercase with hyphens"
+  error={errors.name?.message}
+>
   <input
-    {...register('name')}
+    {...register("name")}
     placeholder="e.g. my-server"
     style={inputStyles}
   />
-</FormField>
+</FormField>;
 ```
 
 ## With Chakra UI Inputs
@@ -134,15 +149,22 @@ import { Input, Textarea, NativeSelect } from '@chakra-ui/react'
 ```tsx
 function AddServerModal({ onSave, onClose }: Props) {
   const schema = z.object({
-    name: z.string().min(1, 'Required').regex(/^[a-z0-9-]+$/, 'Lowercase and hyphens only'),
-    command: z.string().min(1, 'Required'),
+    name: z
+      .string()
+      .min(1, "Required")
+      .regex(/^[a-z0-9-]+$/, "Lowercase and hyphens only"),
+    command: z.string().min(1, "Required"),
     args: z.string().optional(),
-  })
+  });
 
-  const { register, handleSubmit, formState: { errors, isValid } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm({
     resolver: zodResolver(schema),
-    mode: 'onChange', // validate on every change for real-time feedback
-  })
+    mode: "onChange", // validate on every change for real-time feedback
+  });
 
   return (
     <Modal
@@ -160,14 +182,14 @@ function AddServerModal({ onSave, onClose }: Props) {
     >
       <VStack gap={4} align="stretch">
         <FormField label="Name" error={errors.name?.message}>
-          <Input {...register('name')} placeholder="server-name" />
+          <Input {...register("name")} placeholder="server-name" />
         </FormField>
         <FormField label="Command" error={errors.command?.message}>
-          <Input {...register('command')} placeholder="npx" />
+          <Input {...register("command")} placeholder="npx" />
         </FormField>
       </VStack>
     </Modal>
-  )
+  );
 }
 ```
 
@@ -175,31 +197,33 @@ function AddServerModal({ onSave, onClose }: Props) {
 
 ```tsx
 // Required string
-z.string().min(1, 'Required')
+z.string().min(1, "Required");
 
 // Optional string
-z.string().optional()
+z.string().optional();
 
 // Name with format constraint
-z.string().min(1).regex(/^[a-z0-9-]+$/, 'Lowercase letters, numbers, and hyphens only')
+z.string()
+  .min(1)
+  .regex(/^[a-z0-9-]+$/, "Lowercase letters, numbers, and hyphens only");
 
 // URL
-z.string().url('Must be a valid URL')
+z.string().url("Must be a valid URL");
 
 // Port number
-z.coerce.number().min(1000).max(65535)
+z.coerce.number().min(1000).max(65535);
 
 // Email
-z.string().email('Invalid email')
+z.string().email("Invalid email");
 
 // Optional number with null
-z.coerce.number().nullable().optional()
+z.coerce.number().nullable().optional();
 
 // Enum
-z.enum(['stdio', 'http'])
+z.enum(["stdio", "http"]);
 
 // Key-value pairs
-z.array(z.object({ key: z.string(), value: z.string() }))
+z.array(z.object({ key: z.string(), value: z.string() }));
 ```
 
 ## Editing Existing Data
@@ -213,7 +237,7 @@ function EditForm({ existing }: { existing: Item }) {
       description: existing.description,
       port: existing.port,
     },
-  })
+  });
   // ...
 }
 ```
@@ -240,18 +264,20 @@ setValue('name', 'auto-generated-name', { shouldValidate: true })
 ## Dynamic Fields (Key-Value Pairs)
 
 ```tsx
-import { useFieldArray } from 'react-hook-form'
+import { useFieldArray } from "react-hook-form";
 
 const schema = z.object({
-  env: z.array(z.object({
-    key: z.string().min(1),
-    value: z.string(),
-  })),
-})
+  env: z.array(
+    z.object({
+      key: z.string().min(1),
+      value: z.string(),
+    }),
+  ),
+});
 
 function EnvEditor() {
-  const { control, register } = useForm({ resolver: zodResolver(schema) })
-  const { fields, append, remove } = useFieldArray({ control, name: 'env' })
+  const { control, register } = useForm({ resolver: zodResolver(schema) });
+  const { fields, append, remove } = useFieldArray({ control, name: "env" });
 
   return (
     <>
@@ -264,11 +290,11 @@ function EnvEditor() {
           </IconButton>
         </HStack>
       ))}
-      <Button onClick={() => append({ key: '', value: '' })}>
+      <Button onClick={() => append({ key: "", value: "" })}>
         Add Variable
       </Button>
     </>
-  )
+  );
 }
 ```
 

@@ -1,12 +1,12 @@
-import { Flex } from '@chakra-ui/react'
-import { useAiSettings } from './hooks/use-ai-settings'
-import { ProviderSection } from './components/provider-section'
-import { ModelSelector } from './components/model-selector'
-import { BehaviorSection } from './components/behavior-section'
-import { CustomInstructionsSection } from './components/custom-instructions-section'
+import { Flex } from "@chakra-ui/react";
+import { useAiSettings } from "./hooks/use-ai-settings";
+import { ProviderSection } from "./components/provider-section";
+import { ModelSelector } from "./components/model-selector";
+import { BehaviorSection } from "./components/behavior-section";
+import { CustomInstructionsSection } from "./components/custom-instructions-section";
 
 export function AiSettings() {
-  const ai = useAiSettings()
+  const ai = useAiSettings();
 
   return (
     <Flex direction="column" gap="28px">
@@ -23,5 +23,5 @@ export function AiSettings() {
         onChange={ai.setCustomInstructions}
       />
     </Flex>
-  )
+  );
 }

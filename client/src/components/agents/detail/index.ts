@@ -1,1 +1,1 @@
-export { AgentDetail } from './agent-detail'
+export { AgentDetail } from "./agent-detail";

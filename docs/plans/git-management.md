@@ -6,17 +6,17 @@ Users (including non-technical founders) need to save, track, and sync their pro
 
 ## Friendly Language
 
-| Git Concept | Blacksmith Language | Where Shown |
-|---|---|---|
-| commit | **Checkpoint** | Everywhere |
-| branch | **Version** | Everywhere |
-| main/master | **Production** | Version switcher |
-| push + pull | **Sync** | Sync button |
-| staging area | **Selected files** | Save panel |
-| merge | **Apply changes** | Version actions |
-| conflict | **Overlapping changes** | Conflict resolver |
-| diff | **What changed** | Change viewer |
-| remote | **Cloud backup** | Sync status |
+| Git Concept  | Blacksmith Language     | Where Shown       |
+| ------------ | ----------------------- | ----------------- |
+| commit       | **Checkpoint**          | Everywhere        |
+| branch       | **Version**             | Everywhere        |
+| main/master  | **Production**          | Version switcher  |
+| push + pull  | **Sync**                | Sync button       |
+| staging area | **Selected files**      | Save panel        |
+| merge        | **Apply changes**       | Version actions   |
+| conflict     | **Overlapping changes** | Conflict resolver |
+| diff         | **What changed**        | Change viewer     |
+| remote       | **Cloud backup**        | Sync status       |
 
 ## Library: `simple-git`
 
@@ -79,6 +79,7 @@ git:onStatusChange (subscribe)
 ## UI Components
 
 ### 1. Status indicator (title bar)
+
 Always visible: current version name + changed file count badge + sync icon
 
 ```
@@ -169,6 +170,7 @@ If conflicts: "Overlapping changes found" → Claude-assisted resolver
 ### 6. File browser enhancement
 
 Add git status indicators to file tree nodes:
+
 - **M** (orange) — modified since last checkpoint
 - **A** (green) — new file
 - **D** (red) — deleted
@@ -185,39 +187,46 @@ Add git status indicators to file tree nodes:
 ## Implementation Phases
 
 ### Phase 1: Foundation
+
 1. `npm install simple-git`
 2. `server/services/git.ts` — GitManager
 3. `electron/ipc/git.ts` — handlers
 4. Channels + wiring in main.ts
 
 ### Phase 2: Client plumbing
+
 5. `api/modules/git.ts`
 6. `stores/git-store.ts`
 7. `hooks/use-git.ts`
 
 ### Phase 3: Status + nav
+
 8. Branch indicator in title bar
 9. "Checkpoints" in sidebar nav
 10. Mount git listener in ProjectLayout
 
 ### Phase 4: Checkpoints page
+
 11. Changed files list with status badges
 12. Visual diff with Monaco DiffEditor
 13. Save checkpoint dialog with auto-generate
 14. History timeline
 
 ### Phase 5: Versions + sync
+
 15. Version switcher
 16. Create/switch/apply versions
 17. Sync button with status
 18. Conflict resolution with Claude
 
 ### Phase 6: Integration
+
 19. File browser git status indicators
 20. Git context in Claude prompts
 21. "No git? Enable project history" prompt
 
 ## Critical files
+
 - `server/services/git.ts` (new)
 - `electron/ipc/git.ts` (new)
 - `client/src/stores/git-store.ts` (new)

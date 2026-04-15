@@ -1,2 +1,2 @@
-export { Input } from './input'
-export type { InputSize } from './input'
+export { Input } from "./input";
+export type { InputSize } from "./input";

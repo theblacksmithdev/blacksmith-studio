@@ -1,9 +1,9 @@
-import styled from '@emotion/styled'
-import { FolderOpen, ArrowRight } from 'lucide-react'
-import { Text, Avatar, spacing } from '@/components/shared/ui'
-import type { Project } from '@/api/types'
-import { Link } from 'react-router-dom'
-import { projectHome } from '@/router/paths'
+import styled from "@emotion/styled";
+import { FolderOpen, ArrowRight } from "lucide-react";
+import { Text, Avatar, spacing } from "@/components/shared/ui";
+import type { Project } from "@/api/types";
+import { Link } from "react-router-dom";
+import { projectHome } from "@/router/paths";
 
 const Root = styled(Link)`
   display: flex;
@@ -18,7 +18,9 @@ const Root = styled(Link)`
   font-family: inherit;
   transition: all 0.12s ease;
 
-  &:last-child { border-bottom: none; }
+  &:last-child {
+    border-bottom: none;
+  }
 
   &:hover {
     background: var(--studio-bg-surface);
@@ -28,12 +30,12 @@ const Root = styled(Link)`
       transform: translateX(0);
     }
   }
-`
+`;
 
 const Body = styled.div`
   flex: 1;
   min-width: 0;
-`
+`;
 
 const Arrow = styled.div`
   opacity: 0;
@@ -42,10 +44,10 @@ const Arrow = styled.div`
   color: var(--studio-text-muted);
   flex-shrink: 0;
   display: flex;
-`
+`;
 
 interface ProjectCardProps {
-  project: Project
+  project: Project;
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
@@ -53,10 +55,22 @@ export function ProjectCard({ project }: ProjectCardProps) {
     <Root to={projectHome(project.id)}>
       <Avatar size="sm" variant="default" icon={<FolderOpen />} />
       <Body>
-        <Text variant="label" css={{ display: 'block', color: 'var(--studio-text-primary)', fontWeight: 500 }}>
+        <Text
+          variant="label"
+          css={{
+            display: "block",
+            color: "var(--studio-text-primary)",
+            fontWeight: 500,
+          }}
+        >
           {project.name}
         </Text>
-        <Text variant="caption" color="muted" truncate css={{ display: 'block', marginTop: '1px' }}>
+        <Text
+          variant="caption"
+          color="muted"
+          truncate
+          css={{ display: "block", marginTop: "1px" }}
+        >
           {project.path}
         </Text>
       </Body>
@@ -64,6 +78,5 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <ArrowRight size={14} />
       </Arrow>
     </Root>
-
-  )
+  );
 }

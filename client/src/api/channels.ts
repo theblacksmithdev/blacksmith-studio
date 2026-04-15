@@ -1,16 +1,16 @@
-import { claude } from './modules/claude'
-import { projects } from './modules/projects'
-import { files } from './modules/files'
-import { runner } from './modules/runner'
-import { git } from './modules/git'
-import { terminal } from './modules/terminal'
-import { agents } from './modules/agents'
-import { windowApi } from './modules/window'
+import { claude } from "./modules/claude";
+import { projects } from "./modules/projects";
+import { files } from "./modules/files";
+import { runner } from "./modules/runner";
+import { git } from "./modules/git";
+import { terminal } from "./modules/terminal";
+import { agents } from "./modules/agents";
+import { windowApi } from "./modules/window";
 
 /**
  * A subscribe function: takes a callback, returns an unsubscribe function.
  */
-type SubscribeFn<T> = (cb: (data: T) => void) => () => void
+type SubscribeFn<T> = (cb: (data: T) => void) => () => void;
 
 /**
  * Registry of all subscription (push) channels.
@@ -28,57 +28,61 @@ type SubscribeFn<T> = (cb: (data: T) => void) => () => void
  */
 export const channels = {
   // Claude
-  'claude:message': claude.onMessage,
-  'claude:toolUse': claude.onToolUse,
-  'claude:done': claude.onDone,
-  'claude:error': claude.onError,
+  "claude:message": claude.onMessage,
+  "claude:toolUse": claude.onToolUse,
+  "claude:done": claude.onDone,
+  "claude:error": claude.onError,
 
   // Projects
-  'projects:createOutput': projects.onCreateOutput,
-  'projects:createDone': projects.onCreateDone,
-  'projects:createError': projects.onCreateError,
+  "projects:createOutput": projects.onCreateOutput,
+  "projects:createDone": projects.onCreateDone,
+  "projects:createError": projects.onCreateError,
 
   // Files
-  'files:changed': files.onChanged,
+  "files:changed": files.onChanged,
 
   // Runner
-  'runner:status': runner.onStatus,
-  'runner:output': runner.onOutput,
+  "runner:status": runner.onStatus,
+  "runner:output": runner.onOutput,
 
   // Git
-  'git:statusChange': git.onStatusChange,
+  "git:statusChange": git.onStatusChange,
 
   // Terminal
-  'terminal:output': terminal.onOutput,
-  'terminal:exit': terminal.onExit,
+  "terminal:output": terminal.onOutput,
+  "terminal:exit": terminal.onExit,
 
   // Agents
-  'agents:event': agents.onEvent,
-  'agents:workflowEvent': agents.onWorkflowEvent,
-  'agents:buildEvent': agents.onBuildEvent,
-  'agents:inputRequest': agents.onInputRequest,
+  "agents:event": agents.onEvent,
+  "agents:workflowEvent": agents.onWorkflowEvent,
+  "agents:buildEvent": agents.onBuildEvent,
+  "agents:inputRequest": agents.onInputRequest,
 
   // Window
-  'window:fullscreen': windowApi.onFullscreen,
-} as const
+  "window:fullscreen": windowApi.onFullscreen,
+} as const;
 
 /** Channel key — one of the registered subscription channels */
-export type ChannelKey = keyof typeof channels
+export type ChannelKey = keyof typeof channels;
 
 /**
  * Infer the data type for a given channel.
  * Works for both direct subscribe functions and factory functions.
  */
 export type ChannelData<K extends ChannelKey> =
-  (typeof channels)[K] extends SubscribeFn<infer D> ? D
-  : (typeof channels)[K] extends (...args: any[]) => SubscribeFn<infer D> ? D
-  : never
+  (typeof channels)[K] extends SubscribeFn<infer D>
+    ? D
+    : (typeof channels)[K] extends (...args: any[]) => SubscribeFn<infer D>
+      ? D
+      : never;
 
 /**
  * Infer the argument types for a factory channel.
  * Returns `[]` for direct subscribe functions (no args needed).
  */
 export type ChannelArgs<K extends ChannelKey> =
-  (typeof channels)[K] extends SubscribeFn<any> ? []
-  : (typeof channels)[K] extends (...args: infer A) => SubscribeFn<any> ? A
-  : never
+  (typeof channels)[K] extends SubscribeFn<any>
+    ? []
+    : (typeof channels)[K] extends (...args: infer A) => SubscribeFn<any>
+      ? A
+      : never;

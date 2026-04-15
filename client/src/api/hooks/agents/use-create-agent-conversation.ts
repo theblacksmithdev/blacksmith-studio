@@ -1,19 +1,20 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '@/api'
-import { useProjectKeys, useActiveProjectId } from '../_shared'
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/api";
+import { useProjectKeys, useActiveProjectId } from "../_shared";
 
 /**
  * Creates a new agent conversation. Invalidates conversations list on success.
  */
 export function useCreateAgentConversation() {
-  const qc = useQueryClient()
-  const keys = useProjectKeys()
-  const projectId = useActiveProjectId()
+  const qc = useQueryClient();
+  const keys = useProjectKeys();
+  const projectId = useActiveProjectId();
 
   return useMutation({
-    mutationFn: (title?: string) => api.agents.createConversation(projectId!, title),
+    mutationFn: (title?: string) =>
+      api.agents.createConversation(projectId!, title),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: keys.agentConversations })
+      qc.invalidateQueries({ queryKey: keys.agentConversations });
     },
-  })
+  });
 }

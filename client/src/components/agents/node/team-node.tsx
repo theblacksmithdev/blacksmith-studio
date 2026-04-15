@@ -1,19 +1,21 @@
-import { memo } from 'react'
-import { Handle, Position, type NodeProps } from '@xyflow/react'
-import { Users } from 'lucide-react'
-import type { TeamNodeData } from './types'
-import { handleStyle } from './styles'
-import styled from '@emotion/styled'
+import { memo } from "react";
+import { Handle, Position, type NodeProps } from "@xyflow/react";
+import { Users } from "lucide-react";
+import type { TeamNodeData } from "./types";
+import { handleStyle } from "./styles";
+import styled from "@emotion/styled";
 
 const Wrapper = styled.div<{ $hasActivity: boolean }>`
   width: 180px;
   padding: 14px 16px;
   border-radius: 14px;
   background: var(--studio-bg-surface);
-  border: 1px solid ${({ $hasActivity }) =>
-    $hasActivity ? 'var(--studio-green)' : 'var(--studio-border)'};
-  border-top: 2px solid ${({ $hasActivity }) =>
-    $hasActivity ? 'var(--studio-green)' : 'var(--studio-border-hover)'};
+  border: 1px solid
+    ${({ $hasActivity }) =>
+      $hasActivity ? "var(--studio-green)" : "var(--studio-border)"};
+  border-top: 2px solid
+    ${({ $hasActivity }) =>
+      $hasActivity ? "var(--studio-green)" : "var(--studio-border-hover)"};
   cursor: grab;
   transition: all 0.15s ease;
   position: relative;
@@ -29,14 +31,14 @@ const Wrapper = styled.div<{ $hasActivity: boolean }>`
     cursor: grabbing;
     transform: translateY(0);
   }
-`
+`;
 
 const Header = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
   margin-bottom: 4px;
-`
+`;
 
 const IconWrap = styled.div`
   width: 28px;
@@ -48,7 +50,7 @@ const IconWrap = styled.div`
   background: var(--studio-green-subtle);
   color: var(--studio-green);
   flex-shrink: 0;
-`
+`;
 
 const Title = styled.div`
   font-size: 12px;
@@ -58,16 +60,16 @@ const Title = styled.div`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-`
+`;
 
 const MemberCount = styled.div`
   font-size: 11px;
   font-weight: 400;
   color: var(--studio-text-muted);
-`
+`;
 
 function TeamNodeComponent({ data }: NodeProps & { data: TeamNodeData }) {
-  const hasActivity = data.activeCount > 0
+  const hasActivity = data.activeCount > 0;
 
   return (
     <>
@@ -89,7 +91,7 @@ function TeamNodeComponent({ data }: NodeProps & { data: TeamNodeData }) {
       </Wrapper>
       <Handle type="source" position={Position.Bottom} style={handleStyle} />
     </>
-  )
+  );
 }
 
-export const TeamNode = memo(TeamNodeComponent)
+export const TeamNode = memo(TeamNodeComponent);

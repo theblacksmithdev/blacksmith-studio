@@ -1,15 +1,15 @@
-import { useState } from 'react'
-import { FileViewer } from './components/viewer'
-import { useFiles } from '@/hooks/use-files'
-import { useFileStore } from '@/stores/file-store'
-import { ExplorerPanel } from './components/explorer'
-import { EmptyViewer } from './components/explorer'
-import { SplitPanel } from '@/components/shared/layout'
+import { useState } from "react";
+import { FileViewer } from "./components/viewer";
+import { useFiles } from "@/hooks/use-files";
+import { useFileStore } from "@/stores/file-store";
+import { ExplorerPanel } from "./components/explorer";
+import { EmptyViewer } from "./components/explorer";
+import { SplitPanel } from "@/components/shared/layout";
 
 export default function FilesPage() {
-  const { tree, fetchFileTree, fetchFileContent } = useFiles()
-  const { activeTab, openTabs, changedFiles } = useFileStore()
-  const [searchQuery, setSearchQuery] = useState('')
+  const { tree, fetchFileTree, fetchFileContent } = useFiles();
+  const { activeTab, openTabs, changedFiles } = useFileStore();
+  const [searchQuery, setSearchQuery] = useState("");
 
   return (
     <SplitPanel
@@ -29,11 +29,7 @@ export default function FilesPage() {
       maxWidth={400}
       storageKey="files.explorerWidth"
     >
-      {openTabs.length > 0 && activeTab ? (
-        <FileViewer />
-      ) : (
-        <EmptyViewer />
-      )}
+      {openTabs.length > 0 && activeTab ? <FileViewer /> : <EmptyViewer />}
     </SplitPanel>
-  )
+  );
 }

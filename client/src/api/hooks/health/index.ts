@@ -1,1 +1,1 @@
-export { useHealthCheckQuery } from './use-health-check-query'
+export { useHealthCheckQuery } from "./use-health-check-query";

@@ -1,14 +1,14 @@
-import { Flex } from '@chakra-ui/react'
-import { FolderCog, Server } from 'lucide-react'
-import { SettingsSection } from '@/pages/settings/components/settings-section'
-import { SettingRow } from '@/pages/settings/components/setting-row'
-import { SettingInput } from '@/pages/settings/components/setting-input'
-import { SettingTextarea } from '@/pages/settings/components/setting-textarea'
-import { useWorkspaceSettings } from './hooks/use-workspace-settings'
-import { NodeVersionPicker } from '@/components/shared/node-version-picker'
+import { Flex } from "@chakra-ui/react";
+import { FolderCog, Server } from "lucide-react";
+import { SettingsSection } from "@/pages/settings/components/settings-section";
+import { SettingRow } from "@/pages/settings/components/setting-row";
+import { SettingInput } from "@/pages/settings/components/setting-input";
+import { SettingTextarea } from "@/pages/settings/components/setting-textarea";
+import { useWorkspaceSettings } from "./hooks/use-workspace-settings";
+import { NodeVersionPicker } from "@/components/shared/node-version-picker";
 
 export function WorkspaceSettings() {
-  const ws = useWorkspaceSettings()
+  const ws = useWorkspaceSettings();
 
   return (
     <Flex direction="column" gap="28px">
@@ -19,7 +19,12 @@ export function WorkspaceSettings() {
       >
         <SettingRow
           label="Display name"
-          description={<Flex align="center" gap="4px"><FolderCog size={11} /> Shown in the title bar. Defaults to the folder name.</Flex>}
+          description={
+            <Flex align="center" gap="4px">
+              <FolderCog size={11} /> Shown in the title bar. Defaults to the
+              folder name.
+            </Flex>
+          }
         >
           <SettingInput
             value={ws.displayName}
@@ -48,12 +53,17 @@ export function WorkspaceSettings() {
       >
         <SettingRow
           label="Node.js version"
-          description={<Flex align="center" gap="4px"><Server size={11} /> Node binary for dev servers. Empty = system default.</Flex>}
+          description={
+            <Flex align="center" gap="4px">
+              <Server size={11} /> Node binary for dev servers. Empty = system
+              default.
+            </Flex>
+          }
           fullWidth
         >
           <NodeVersionPicker value={ws.nodePath} onChange={ws.setNodePath} />
         </SettingRow>
       </SettingsSection>
     </Flex>
-  )
+  );
 }

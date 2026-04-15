@@ -1,10 +1,12 @@
-import styled from '@emotion/styled'
+import styled from "@emotion/styled";
 
 export const Section = styled.div`
   margin-bottom: 20px;
 
-  &:last-child { margin-bottom: 0; }
-`
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
 
 export const SectionTitle = styled.div`
   font-size: 10px;
@@ -13,26 +15,26 @@ export const SectionTitle = styled.div`
   letter-spacing: 0.08em;
   color: var(--studio-text-muted);
   margin-bottom: 10px;
-`
+`;
 
 export const Row = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 6px 0;
-`
+`;
 
 export const RowLabel = styled.span`
   font-size: 13px;
   font-weight: 450;
   color: var(--studio-text-secondary);
-`
+`;
 
 export const SliderWrap = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-`
+`;
 
 export const SliderValue = styled.span`
   font-size: 11px;
@@ -41,7 +43,7 @@ export const SliderValue = styled.span`
   min-width: 28px;
   text-align: right;
   font-variant-numeric: tabular-nums;
-`
+`;
 
 export const Slider = styled.input`
   -webkit-appearance: none;
@@ -67,7 +69,7 @@ export const Slider = styled.input`
   &::-webkit-slider-thumb:hover {
     transform: scale(1.15);
   }
-`
+`;
 
 export const SegmentRow = styled.div`
   display: flex;
@@ -75,7 +77,7 @@ export const SegmentRow = styled.div`
   background: var(--studio-bg-hover);
   border-radius: 8px;
   padding: 3px;
-`
+`;
 
 export const SegmentBtn = styled.button<{ $active: boolean }>`
   flex: 1;
@@ -89,14 +91,17 @@ export const SegmentBtn = styled.button<{ $active: boolean }>`
   transition: all 0.12s ease;
   white-space: nowrap;
 
-  background: ${({ $active }) => $active ? 'var(--studio-bg-surface)' : 'transparent'};
-  color: ${({ $active }) => $active ? 'var(--studio-text-primary)' : 'var(--studio-text-muted)'};
-  box-shadow: ${({ $active }) => $active ? '0 1px 3px rgba(0, 0, 0, 0.08)' : 'none'};
+  background: ${({ $active }) =>
+    $active ? "var(--studio-bg-surface)" : "transparent"};
+  color: ${({ $active }) =>
+    $active ? "var(--studio-text-primary)" : "var(--studio-text-muted)"};
+  box-shadow: ${({ $active }) =>
+    $active ? "0 1px 3px rgba(0, 0, 0, 0.08)" : "none"};
 
   &:hover {
     color: var(--studio-text-secondary);
   }
-`
+`;
 
 export const ToggleTrack = styled.button<{ $on: boolean }>`
   width: 32px;
@@ -107,10 +112,13 @@ export const ToggleTrack = styled.button<{ $on: boolean }>`
   cursor: pointer;
   transition: background 0.15s ease;
   flex-shrink: 0;
-  background: ${({ $on }) => $on ? 'var(--studio-green)' : 'var(--studio-bg-hover-strong, var(--studio-bg-hover))'};
+  background: ${({ $on }) =>
+    $on
+      ? "var(--studio-green)"
+      : "var(--studio-bg-hover-strong, var(--studio-bg-hover))"};
 
   &::after {
-    content: '';
+    content: "";
     display: block;
     width: 14px;
     height: 14px;
@@ -118,9 +126,9 @@ export const ToggleTrack = styled.button<{ $on: boolean }>`
     background: white;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
     transition: transform 0.15s ease;
-    transform: translateX(${({ $on }) => $on ? '14px' : '0'});
+    transform: translateX(${({ $on }) => ($on ? "14px" : "0")});
   }
-`
+`;
 
 export const ResetBtn = styled.button`
   width: 100%;
@@ -139,11 +147,11 @@ export const ResetBtn = styled.button`
     border-color: var(--studio-border-hover);
     color: var(--studio-text-secondary);
   }
-`
+`;
 
 export const Divider = styled.div`
   height: 1px;
   background: var(--studio-border);
   margin: 16px 0;
   opacity: 0.6;
-`
+`;

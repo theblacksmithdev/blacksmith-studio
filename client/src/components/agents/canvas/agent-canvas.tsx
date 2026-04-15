@@ -1,20 +1,27 @@
-import { useCallback, useMemo, useState } from 'react'
-import { ReactFlow, Background, Controls, type Node, type NodeTypes, BackgroundVariant } from '@xyflow/react'
-import '@xyflow/react/dist/style.css'
-import styled from '@emotion/styled'
-import { Settings2 } from 'lucide-react'
-import type { AgentRole, AgentInfo } from '@/api/types'
-import { Tooltip } from '@/components/shared/tooltip'
-import { AgentNode, TeamNode } from '../node'
-import { CanvasWrap } from './styles'
-import { useCanvasNodes } from './use-canvas-nodes'
-import { useCanvasEdges } from './use-canvas-edges'
-import { useCanvasSettings, CanvasSettingsDrawer } from './settings'
+import { useCallback, useMemo, useState } from "react";
+import {
+  ReactFlow,
+  Background,
+  Controls,
+  type Node,
+  type NodeTypes,
+  BackgroundVariant,
+} from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
+import styled from "@emotion/styled";
+import { Settings2 } from "lucide-react";
+import type { AgentRole, AgentInfo } from "@/api/types";
+import { Tooltip } from "@/components/shared/tooltip";
+import { AgentNode, TeamNode } from "../node";
+import { CanvasWrap } from "./styles";
+import { useCanvasNodes } from "./use-canvas-nodes";
+import { useCanvasEdges } from "./use-canvas-edges";
+import { useCanvasSettings, CanvasSettingsDrawer } from "./settings";
 
 const nodeTypes: NodeTypes = {
   agent: AgentNode as any,
   team: TeamNode as any,
-}
+};
 
 const SettingsBtn = styled.button`
   position: absolute;
@@ -40,33 +47,44 @@ const SettingsBtn = styled.button`
     color: var(--studio-text-secondary);
     background: var(--studio-bg-hover);
   }
-`
+`;
 
 interface AgentCanvasProps {
-  agents: AgentInfo[]
-  onNodeClick: (role: AgentRole) => void
-  onNodeDoubleClick?: (role: AgentRole) => void
-  conversationId?: string
+  agents: AgentInfo[];
+  onNodeClick: (role: AgentRole) => void;
+  onNodeDoubleClick?: (role: AgentRole) => void;
+  conversationId?: string;
 }
 
-export function AgentCanvas({ agents, onNodeClick, onNodeDoubleClick, conversationId }: AgentCanvasProps) {
-  const [settingsOpen, setSettingsOpen] = useState(false)
-  const { canvas, update, reset } = useCanvasSettings()
+export function AgentCanvas({
+  agents,
+  onNodeClick,
+  onNodeDoubleClick,
+  conversationId,
+}: AgentCanvasProps) {
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const { canvas, update, reset } = useCanvasSettings();
 
-  const { nodes, handleNodesChange } = useCanvasNodes(agents, conversationId)
+  const { nodes, handleNodesChange } = useCanvasNodes(agents, conversationId);
 
-  const nodeIds = useMemo(() => new Set(nodes.map((n) => n.id)), [nodes])
-  const { edges, onEdgesChange } = useCanvasEdges(nodeIds, canvas)
+  const nodeIds = useMemo(() => new Set(nodes.map((n) => n.id)), [nodes]);
+  const { edges, onEdgesChange } = useCanvasEdges(nodeIds, canvas);
 
-  const handleNodeClick = useCallback((_: any, node: Node) => {
-    if (node.type === 'team') return // team nodes don't have detail
-    onNodeClick(node.id as AgentRole)
-  }, [onNodeClick])
+  const handleNodeClick = useCallback(
+    (_: any, node: Node) => {
+      if (node.type === "team") return; // team nodes don't have detail
+      onNodeClick(node.id as AgentRole);
+    },
+    [onNodeClick],
+  );
 
-  const handleNodeDoubleClick = useCallback((_: any, node: Node) => {
-    if (node.type === 'team') return
-    onNodeDoubleClick?.(node.id as AgentRole)
-  }, [onNodeDoubleClick])
+  const handleNodeDoubleClick = useCallback(
+    (_: any, node: Node) => {
+      if (node.type === "team") return;
+      onNodeDoubleClick?.(node.id as AgentRole);
+    },
+    [onNodeDoubleClick],
+  );
 
   return (
     <CanvasWrap>
@@ -114,5 +132,5 @@ export function AgentCanvas({ agents, onNodeClick, onNodeDoubleClick, conversati
         />
       )}
     </CanvasWrap>
-  )
+  );
 }

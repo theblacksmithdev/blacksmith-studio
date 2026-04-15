@@ -1,1 +1,1 @@
-export { ServiceListPanel } from './service-list-panel'
+export { ServiceListPanel } from "./service-list-panel";

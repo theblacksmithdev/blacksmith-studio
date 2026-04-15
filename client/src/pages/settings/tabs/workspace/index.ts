@@ -1,1 +1,1 @@
-export { WorkspaceSettings } from './workspace-settings'
+export { WorkspaceSettings } from "./workspace-settings";

@@ -1,6 +1,6 @@
-import styled from '@emotion/styled'
-import { type LogEntry } from '@/stores/runner-store'
-import { getLineColor, MONO_FONT } from '@/components/runner/runner-primitives'
+import styled from "@emotion/styled";
+import { type LogEntry } from "@/stores/runner-store";
+import { getLineColor, MONO_FONT } from "@/components/runner/runner-primitives";
 
 const Line = styled.div`
   display: flex;
@@ -10,7 +10,7 @@ const Line = styled.div`
   &:hover {
     background: var(--studio-bg-surface);
   }
-`
+`;
 
 const Timestamp = styled.span`
   width: 58px;
@@ -19,7 +19,7 @@ const Timestamp = styled.span`
   font-size: 11px;
   padding-top: 3px;
   font-family: ${MONO_FONT};
-`
+`;
 
 const Source = styled.span`
   width: 58px;
@@ -30,22 +30,27 @@ const Source = styled.span`
   font-size: 11px;
   padding-top: 3px;
   letter-spacing: 0.02em;
-`
+`;
 
 const Text = styled.span`
   white-space: pre-wrap;
   word-break: break-all;
   flex: 1;
-`
+`;
 
 function formatTime(ts: number): string {
-  const d = new Date(ts)
-  return d.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  const d = new Date(ts);
+  return d.toLocaleTimeString("en-US", {
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 }
 
 interface LogLineProps {
-  entry: LogEntry
-  showTimestamp?: boolean
+  entry: LogEntry;
+  showTimestamp?: boolean;
 }
 
 export function LogLine({ entry, showTimestamp }: LogLineProps) {
@@ -55,5 +60,5 @@ export function LogLine({ entry, showTimestamp }: LogLineProps) {
       <Source>{entry.name}</Source>
       <Text style={{ color: getLineColor(entry.line) }}>{entry.line}</Text>
     </Line>
-  )
+  );
 }

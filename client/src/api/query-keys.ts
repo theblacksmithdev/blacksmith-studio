@@ -1,42 +1,45 @@
 /** Keys for global (non-project-scoped) queries */
 const global = {
-  projects: ['projects'] as const,
-  project: (id: string) => ['projects', id] as const,
-  browse: (path?: string) => ['browse', path ?? '~'] as const,
-  projectValidation: (path: string) => ['projects', 'validation', path] as const,
-  health: ['health'] as const,
-  nodeInstallations: ['runner', 'nodeInstallations'] as const,
-}
+  projects: ["projects"] as const,
+  project: (id: string) => ["projects", id] as const,
+  browse: (path?: string) => ["browse", path ?? "~"] as const,
+  projectValidation: (path: string) =>
+    ["projects", "validation", path] as const,
+  health: ["health"] as const,
+  nodeInstallations: ["runner", "nodeInstallations"] as const,
+};
 
 /** Keys for project-scoped queries — all include the project ID so switching projects gets a fresh cache */
 function projectKeys(projectId: string) {
-  const p = ['project', projectId] as const
+  const p = ["project", projectId] as const;
   return {
-    sessions: [...p, 'sessions'] as const,
-    session: (id: string) => [...p, 'sessions', id] as const,
-    files: [...p, 'files'] as const,
-    fileContent: (path: string) => [...p, 'files', 'content', path] as const,
-    templates: [...p, 'templates'] as const,
-    settings: [...p, 'settings'] as const,
-    mcp: [...p, 'mcp'] as const,
-    skills: [...p, 'skills'] as const,
-    knowledge: [...p, 'knowledge'] as const,
-    gitStatus: [...p, 'git', 'status'] as const,
-    gitChangedFiles: [...p, 'git', 'changedFiles'] as const,
-    gitHistory: [...p, 'git', 'history'] as const,
-    gitBranches: [...p, 'git', 'versions'] as const,
-    gitSyncStatus: [...p, 'git', 'syncStatus'] as const,
-    gitConflicts: [...p, 'git', 'conflicts'] as const,
-    gitCommitDetail: (hash: string) => [...p, 'git', 'commitDetail', hash] as const,
-    gitDiff: (path: string) => [...p, 'git', 'diff', path] as const,
-    agents: [...p, 'agents'] as const,
-    agentConversations: [...p, 'agents', 'conversations'] as const,
-    agentChat: (conversationId: string) => [...p, 'agents', 'conversations', conversationId, 'chat'] as const,
-    agentHistory: [...p, 'agents', 'history'] as const,
-    agentPipelines: [...p, 'agents', 'pipelines'] as const,
-    agentBuildProgress: [...p, 'agents', 'buildProgress'] as const,
-    runnerConfigs: [...p, 'runner', 'configs'] as const,
-  }
+    sessions: [...p, "sessions"] as const,
+    session: (id: string) => [...p, "sessions", id] as const,
+    files: [...p, "files"] as const,
+    fileContent: (path: string) => [...p, "files", "content", path] as const,
+    templates: [...p, "templates"] as const,
+    settings: [...p, "settings"] as const,
+    mcp: [...p, "mcp"] as const,
+    skills: [...p, "skills"] as const,
+    knowledge: [...p, "knowledge"] as const,
+    gitStatus: [...p, "git", "status"] as const,
+    gitChangedFiles: [...p, "git", "changedFiles"] as const,
+    gitHistory: [...p, "git", "history"] as const,
+    gitBranches: [...p, "git", "versions"] as const,
+    gitSyncStatus: [...p, "git", "syncStatus"] as const,
+    gitConflicts: [...p, "git", "conflicts"] as const,
+    gitCommitDetail: (hash: string) =>
+      [...p, "git", "commitDetail", hash] as const,
+    gitDiff: (path: string) => [...p, "git", "diff", path] as const,
+    agents: [...p, "agents"] as const,
+    agentConversations: [...p, "agents", "conversations"] as const,
+    agentChat: (conversationId: string) =>
+      [...p, "agents", "conversations", conversationId, "chat"] as const,
+    agentHistory: [...p, "agents", "history"] as const,
+    agentPipelines: [...p, "agents", "pipelines"] as const,
+    agentBuildProgress: [...p, "agents", "buildProgress"] as const,
+    runnerConfigs: [...p, "runner", "configs"] as const,
+  };
 }
 
 /**
@@ -56,5 +59,5 @@ export const queryKeys = {
 
   // ── DEPRECATED: unscoped keys kept temporarily for migration ──
   // These resolve to empty-project scope. Consumers should migrate to forProject().
-  ...projectKeys(''),
-}
+  ...projectKeys(""),
+};

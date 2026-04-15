@@ -1,10 +1,10 @@
-import styled from '@emotion/styled'
+import styled from "@emotion/styled";
 
 export const Overlay = styled.div`
   position: fixed;
   inset: 0;
   z-index: 999;
-`
+`;
 
 export const Menu = styled.div`
   position: fixed;
@@ -18,10 +18,16 @@ export const Menu = styled.div`
   animation: ctxFadeIn 0.1s ease;
 
   @keyframes ctxFadeIn {
-    from { opacity: 0; transform: scale(0.96); }
-    to   { opacity: 1; transform: scale(1); }
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
-`
+`;
 
 export const MenuItem = styled.button`
   display: flex;
@@ -43,7 +49,7 @@ export const MenuItem = styled.button`
     background: var(--studio-bg-hover);
     color: var(--studio-text-primary);
   }
-`
+`;
 
 export const DangerMenuItem = styled(MenuItem)`
   color: var(--studio-error);
@@ -52,13 +58,13 @@ export const DangerMenuItem = styled(MenuItem)`
     background: var(--studio-error-subtle);
     color: var(--studio-error);
   }
-`
+`;
 
 export const MenuDivider = styled.div`
   height: 1px;
   background: var(--studio-border);
   margin: 4px 6px;
-`
+`;
 
 export const RenameInput = styled.input`
   width: 100%;
@@ -74,4 +80,4 @@ export const RenameInput = styled.input`
   &:focus {
     border-color: var(--studio-accent);
   }
-`
+`;

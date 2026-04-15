@@ -1,5 +1,5 @@
-export { buildAgentContext } from './context.js'
-export { describeToolUse, describeMessageStart } from './activity.js'
+export { buildAgentContext } from "./context.js";
+export { describeToolUse, describeMessageStart } from "./activity.js";
 export {
   takeSnapshot,
   computeChanges,
@@ -7,4 +7,4 @@ export {
   type ChangeSnapshot,
   type ChangeSet,
   type ChangedFile,
-} from './change-tracker.js'
+} from "./change-tracker.js";

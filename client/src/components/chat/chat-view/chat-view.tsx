@@ -1,22 +1,22 @@
-import { useCallback } from 'react'
-import styled from '@emotion/styled'
-import { Flex, Box } from '@chakra-ui/react'
-import { PanelRight, History } from 'lucide-react'
-import { ConversationView } from '@/components/shared/conversation'
-import { StreamingIndicator } from '../streaming-indicator'
-import { HistoryPanel } from '../history-panel'
-import { ModelSelector } from '../model-selector'
-import { MarkdownRenderer } from '@/components/shared/markdown-renderer'
-import { PreviewPanel } from '@/components/shared/preview-panel'
-import { SplitPanel } from '@/components/shared/layout'
-import { IconButton, Tooltip, spacing } from '@/components/shared/ui'
-import { useChatSession } from './hooks/use-chat-session'
-import { useChatPanels } from './hooks/use-chat-panels'
+import { useCallback } from "react";
+import styled from "@emotion/styled";
+import { Flex, Box } from "@chakra-ui/react";
+import { PanelRight, History } from "lucide-react";
+import { ConversationView } from "@/components/shared/conversation";
+import { StreamingIndicator } from "../streaming-indicator";
+import { HistoryPanel } from "../history-panel";
+import { ModelSelector } from "../model-selector";
+import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
+import { PreviewPanel } from "@/components/shared/preview-panel";
+import { SplitPanel } from "@/components/shared/layout";
+import { IconButton, Tooltip, spacing } from "@/components/shared/ui";
+import { useChatSession } from "./hooks/use-chat-session";
+import { useChatPanels } from "./hooks/use-chat-panels";
 
 const Root = styled(Flex)`
   height: 100%;
   overflow: hidden;
-`
+`;
 
 export function ChatView() {
   const {
@@ -25,7 +25,7 @@ export function ChatView() {
     partialMessage,
     handleSend,
     handleCancel,
-  } = useChatSession()
+  } = useChatSession();
 
   const {
     previewOpen,
@@ -33,19 +33,19 @@ export function ChatView() {
     togglePreview,
     toggleHistory,
     closePreview,
-  } = useChatPanels()
+  } = useChatPanels();
 
   const renderContent = useCallback(
     (content: string) => <MarkdownRenderer content={content} />,
     [],
-  )
+  );
 
   const chatContent = (
-    <Flex direction="column" css={{ flex: 1, minWidth: 0, height: '100%' }}>
+    <Flex direction="column" css={{ flex: 1, minWidth: 0, height: "100%" }}>
       <Flex align="center" css={{ padding: spacing.sm, flexShrink: 0 }}>
-        <Tooltip content={historyOpen ? 'Close history' : 'Chat history'}>
+        <Tooltip content={historyOpen ? "Close history" : "Chat history"}>
           <IconButton
-            variant={historyOpen ? 'default' : 'ghost'}
+            variant={historyOpen ? "default" : "ghost"}
             size="sm"
             onClick={toggleHistory}
             aria-label="Toggle history"
@@ -54,9 +54,9 @@ export function ChatView() {
           </IconButton>
         </Tooltip>
         <Box css={{ flex: 1 }} />
-        <Tooltip content={previewOpen ? 'Close preview' : 'Open preview'}>
+        <Tooltip content={previewOpen ? "Close preview" : "Open preview"}>
           <IconButton
-            variant={previewOpen ? 'default' : 'ghost'}
+            variant={previewOpen ? "default" : "ghost"}
             size="sm"
             onClick={togglePreview}
             aria-label="Toggle preview"
@@ -81,7 +81,7 @@ export function ChatView() {
         inputLeading={<ModelSelector />}
       />
     </Flex>
-  )
+  );
 
   const mainContent = previewOpen ? (
     <SplitPanel
@@ -95,10 +95,10 @@ export function ChatView() {
     </SplitPanel>
   ) : (
     chatContent
-  )
+  );
 
   if (!historyOpen) {
-    return <Root>{mainContent}</Root>
+    return <Root>{mainContent}</Root>;
   }
 
   return (
@@ -113,5 +113,5 @@ export function ChatView() {
         {mainContent}
       </SplitPanel>
     </Root>
-  )
+  );
 }

@@ -1,12 +1,16 @@
-import { api as raw } from '../client'
+import { api as raw } from "../client";
 
 export interface SetupStatus {
-  node: { installed: boolean; version?: string }
-  claude: { installed: boolean; version?: string }
-  auth: { authenticated: boolean }
+  node: { installed: boolean; version?: string };
+  claude: { installed: boolean; version?: string };
+  auth: { authenticated: boolean };
 }
 
 export const setup = {
-  check: (projectId?: string) => raw.invoke<SetupStatus>('setup:check', { projectId }),
-  installClaude: (projectId?: string) => raw.invoke<{ success: boolean; error?: string }>('setup:installClaude', { projectId }),
-} as const
+  check: (projectId?: string) =>
+    raw.invoke<SetupStatus>("setup:check", { projectId }),
+  installClaude: (projectId?: string) =>
+    raw.invoke<{ success: boolean; error?: string }>("setup:installClaude", {
+      projectId,
+    }),
+} as const;

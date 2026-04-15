@@ -1,1 +1,1 @@
-export { EditorSettings } from './editor-settings'
+export { EditorSettings } from "./editor-settings";

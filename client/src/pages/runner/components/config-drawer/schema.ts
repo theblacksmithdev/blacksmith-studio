@@ -1,13 +1,13 @@
-import { z } from 'zod'
+import { z } from "zod";
 
 export const envEntrySchema = z.object({
   key: z.string(),
   value: z.string(),
-})
+});
 
 export const runnerConfigSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  command: z.string().min(1, 'Command is required'),
+  name: z.string().min(1, "Name is required"),
+  command: z.string().min(1, "Command is required"),
   setupCommand: z.string().optional(),
   cwd: z.string(),
   port: z.string().optional(),
@@ -15,7 +15,7 @@ export const runnerConfigSchema = z.object({
   previewUrl: z.string().optional(),
   icon: z.string(),
   env: z.array(envEntrySchema),
-})
+});
 
-export type RunnerConfigFormData = z.infer<typeof runnerConfigSchema>
-export type EnvEntry = z.infer<typeof envEntrySchema>
+export type RunnerConfigFormData = z.infer<typeof runnerConfigSchema>;
+export type EnvEntry = z.infer<typeof envEntrySchema>;

@@ -1,6 +1,6 @@
-import { useMutation } from '@tanstack/react-query'
-import { api } from '@/api'
-import type { ProjectCloneInput } from '@/api/types'
+import { useMutation } from "@tanstack/react-query";
+import { api } from "@/api";
+import type { ProjectCloneInput } from "@/api/types";
 
 /**
  * Kicks off a git clone to create a project.
@@ -9,5 +9,5 @@ import type { ProjectCloneInput } from '@/api/types'
 export function useCloneProject() {
   return useMutation({
     mutationFn: (input: ProjectCloneInput) => api.projects.clone(input),
-  })
+  });
 }

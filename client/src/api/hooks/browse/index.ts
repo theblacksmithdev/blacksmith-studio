@@ -1,1 +1,1 @@
-export { useBrowseQuery } from './use-browse-query'
+export { useBrowseQuery } from "./use-browse-query";

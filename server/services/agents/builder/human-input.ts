@@ -1,35 +1,35 @@
-import crypto from 'node:crypto'
+import crypto from "node:crypto";
 
 /* ── Types ── */
 
 export type InputType =
-  | 'approve'        // Yes/No decision (plan approval, phase gate)
-  | 'choose'         // Pick from options (retry/skip/abort on failure)
-  | 'text'           // Free-form text (clarification, custom instructions)
+  | "approve" // Yes/No decision (plan approval, phase gate)
+  | "choose" // Pick from options (retry/skip/abort on failure)
+  | "text"; // Free-form text (clarification, custom instructions)
 
 export interface InputRequest {
-  id: string
-  type: InputType
-  question: string
+  id: string;
+  type: InputType;
+  question: string;
   /** Context shown alongside the question (e.g. the plan summary, error details) */
-  context?: string
+  context?: string;
   /** Available choices for 'choose' type */
-  options?: { value: string; label: string }[]
+  options?: { value: string; label: string }[];
   /** Default value if the user doesn't respond (for auto-mode or timeout) */
-  defaultValue: string
+  defaultValue: string;
   /** Where in the build this question arose */
   source: {
-    buildId: string
-    phaseIndex?: number
-    taskId?: string
-  }
-  timestamp: string
+    buildId: string;
+    phaseIndex?: number;
+    taskId?: string;
+  };
+  timestamp: string;
 }
 
-export type InputRequestCallback = (request: InputRequest) => void
+export type InputRequestCallback = (request: InputRequest) => void;
 
 /** Sentinel value used when cancel resolves pending requests */
-const CANCEL_SENTINEL = '__cancelled__'
+const CANCEL_SENTINEL = "__cancelled__";
 
 /**
  * HumanInputGate — manages the pause/resume cycle for human-in-the-loop.
@@ -46,41 +46,50 @@ const CANCEL_SENTINEL = '__cancelled__'
  *   approval defaults, so cancellation never accidentally approves.
  */
 export class HumanInputGate {
-  private pending = new Map<string, {
-    request: InputRequest
-    resolve: (value: string) => void
-    timer: ReturnType<typeof setTimeout> | null
-  }>()
-  private requestCallbacks: InputRequestCallback[] = []
-  private _autoApprove = false
-  private _cancelled = false
+  private pending = new Map<
+    string,
+    {
+      request: InputRequest;
+      resolve: (value: string) => void;
+      timer: ReturnType<typeof setTimeout> | null;
+    }
+  >();
+  private requestCallbacks: InputRequestCallback[] = [];
+  private _autoApprove = false;
+  private _cancelled = false;
 
   /** When true, all questions resolve immediately with default values */
-  get autoApprove(): boolean { return this._autoApprove }
-  set autoApprove(value: boolean) { this._autoApprove = value }
+  get autoApprove(): boolean {
+    return this._autoApprove;
+  }
+  set autoApprove(value: boolean) {
+    this._autoApprove = value;
+  }
 
   /** Timeout in ms for pending requests. 0 = no timeout (default). */
-  timeoutMs = 0
+  timeoutMs = 0;
 
   /** Subscribe to input requests. The UI uses this to show prompts. */
   onRequest(cb: InputRequestCallback): () => void {
-    this.requestCallbacks.push(cb)
-    return () => { this.requestCallbacks = this.requestCallbacks.filter((c) => c !== cb) }
+    this.requestCallbacks.push(cb);
+    return () => {
+      this.requestCallbacks = this.requestCallbacks.filter((c) => c !== cb);
+    };
   }
 
   /** Check if there's a pending question waiting for an answer */
   get hasPending(): boolean {
-    return this.pending.size > 0
+    return this.pending.size > 0;
   }
 
   /** Get all pending requests */
   getPending(): InputRequest[] {
-    return Array.from(this.pending.values()).map((p) => p.request)
+    return Array.from(this.pending.values()).map((p) => p.request);
   }
 
   /** Reset cancelled state. Called at the start of a new build. */
   reset(): void {
-    this._cancelled = false
+    this._cancelled = false;
   }
 
   /**
@@ -90,15 +99,15 @@ export class HumanInputGate {
   async request(
     type: InputType,
     question: string,
-    source: InputRequest['source'],
+    source: InputRequest["source"],
     opts?: {
-      context?: string
-      choices?: { value: string; label: string }[]
-      defaultValue?: string
+      context?: string;
+      choices?: { value: string; label: string }[];
+      defaultValue?: string;
     },
   ): Promise<string> {
     // If already cancelled, resolve immediately
-    if (this._cancelled) return opts?.defaultValue ?? ''
+    if (this._cancelled) return opts?.defaultValue ?? "";
 
     const req: InputRequest = {
       id: crypto.randomUUID(),
@@ -106,39 +115,43 @@ export class HumanInputGate {
       question,
       context: opts?.context,
       options: opts?.choices,
-      defaultValue: opts?.defaultValue ?? '',
+      defaultValue: opts?.defaultValue ?? "",
       source,
       timestamp: new Date().toISOString(),
-    }
+    };
 
     // Auto-approve mode: resolve immediately with default
     if (this._autoApprove) {
-      return req.defaultValue
+      return req.defaultValue;
     }
 
     // Emit to UI
     for (const cb of this.requestCallbacks) {
-      try { cb(req) } catch (err) {
-        console.error('[human-input] Request callback error:', err)
+      try {
+        cb(req);
+      } catch (err) {
+        console.error("[human-input] Request callback error:", err);
       }
     }
 
     // Block until response arrives or timeout
     return new Promise<string>((resolve) => {
-      let timer: ReturnType<typeof setTimeout> | null = null
+      let timer: ReturnType<typeof setTimeout> | null = null;
 
       if (this.timeoutMs > 0) {
         timer = setTimeout(() => {
           if (this.pending.has(req.id)) {
-            this.pending.delete(req.id)
-            console.warn(`[human-input] Request "${req.id}" timed out after ${this.timeoutMs}ms, using default`)
-            resolve(req.defaultValue)
+            this.pending.delete(req.id);
+            console.warn(
+              `[human-input] Request "${req.id}" timed out after ${this.timeoutMs}ms, using default`,
+            );
+            resolve(req.defaultValue);
           }
-        }, this.timeoutMs)
+        }, this.timeoutMs);
       }
 
-      this.pending.set(req.id, { request: req, resolve, timer })
-    })
+      this.pending.set(req.id, { request: req, resolve, timer });
+    });
   }
 
   /**
@@ -146,22 +159,24 @@ export class HumanInputGate {
    * For 'choose' type, validates the response against available options.
    */
   respond(requestId: string, value: string): boolean {
-    const entry = this.pending.get(requestId)
-    if (!entry) return false
+    const entry = this.pending.get(requestId);
+    if (!entry) return false;
 
     // Validate 'choose' responses
-    if (entry.request.type === 'choose' && entry.request.options) {
-      const validValues = entry.request.options.map((o) => o.value)
+    if (entry.request.type === "choose" && entry.request.options) {
+      const validValues = entry.request.options.map((o) => o.value);
       if (!validValues.includes(value)) {
-        console.warn(`[human-input] Invalid choice "${value}" for request "${requestId}", valid: ${validValues.join(', ')}. Using default.`)
-        value = entry.request.defaultValue
+        console.warn(
+          `[human-input] Invalid choice "${value}" for request "${requestId}", valid: ${validValues.join(", ")}. Using default.`,
+        );
+        value = entry.request.defaultValue;
       }
     }
 
-    if (entry.timer) clearTimeout(entry.timer)
-    this.pending.delete(requestId)
-    entry.resolve(value)
-    return true
+    if (entry.timer) clearTimeout(entry.timer);
+    this.pending.delete(requestId);
+    entry.resolve(value);
+    return true;
   }
 
   /**
@@ -169,34 +184,48 @@ export class HumanInputGate {
    * callers can distinguish cancellation from approval.
    */
   rejectAll(): void {
-    this._cancelled = true
+    this._cancelled = true;
     for (const [, entry] of this.pending) {
-      if (entry.timer) clearTimeout(entry.timer)
-      entry.resolve(CANCEL_SENTINEL)
+      if (entry.timer) clearTimeout(entry.timer);
+      entry.resolve(CANCEL_SENTINEL);
     }
-    this.pending.clear()
+    this.pending.clear();
   }
 
   /* ── Convenience methods for common question patterns ── */
 
   /** Ask for plan approval. Returns true if approved. */
   async approvePlan(buildId: string, planSummary: string): Promise<boolean> {
-    const answer = await this.request('approve', 'Review the build plan and approve to proceed.', { buildId }, {
-      context: planSummary,
-      defaultValue: 'yes',
-    })
-    if (answer === CANCEL_SENTINEL) return false
-    return answer.toLowerCase() === 'yes' || answer.toLowerCase() === 'y'
+    const answer = await this.request(
+      "approve",
+      "Review the build plan and approve to proceed.",
+      { buildId },
+      {
+        context: planSummary,
+        defaultValue: "yes",
+      },
+    );
+    if (answer === CANCEL_SENTINEL) return false;
+    return answer.toLowerCase() === "yes" || answer.toLowerCase() === "y";
   }
 
   /** Ask for phase gate approval. Returns true if approved. */
-  async approvePhase(buildId: string, phaseIndex: number, phaseSummary: string): Promise<boolean> {
-    const answer = await this.request('approve', `Phase ${phaseIndex + 1} complete. Continue to next phase?`, { buildId, phaseIndex }, {
-      context: phaseSummary,
-      defaultValue: 'yes',
-    })
-    if (answer === CANCEL_SENTINEL) return false
-    return answer.toLowerCase() === 'yes' || answer.toLowerCase() === 'y'
+  async approvePhase(
+    buildId: string,
+    phaseIndex: number,
+    phaseSummary: string,
+  ): Promise<boolean> {
+    const answer = await this.request(
+      "approve",
+      `Phase ${phaseIndex + 1} complete. Continue to next phase?`,
+      { buildId, phaseIndex },
+      {
+        context: phaseSummary,
+        defaultValue: "yes",
+      },
+    );
+    if (answer === CANCEL_SENTINEL) return false;
+    return answer.toLowerCase() === "yes" || answer.toLowerCase() === "y";
   }
 
   /** Ask what to do about a failed task after retries. Returns 'retry', 'skip', or 'abort'. */
@@ -205,19 +234,25 @@ export class HumanInputGate {
     taskId: string,
     taskTitle: string,
     error: string,
-  ): Promise<'retry' | 'skip' | 'abort'> {
-    const answer = await this.request('choose', `Task "${taskTitle}" failed after all retries. What should we do?`, { buildId, taskId }, {
-      context: `Error: ${error}`,
-      choices: [
-        { value: 'retry', label: 'Retry with different instructions' },
-        { value: 'skip', label: 'Skip this task and continue' },
-        { value: 'abort', label: 'Abort the entire build' },
-      ],
-      defaultValue: 'skip',
-    })
-    if (answer === CANCEL_SENTINEL) return 'abort'
-    if (answer === 'retry' || answer === 'skip' || answer === 'abort') return answer
-    return 'skip'
+  ): Promise<"retry" | "skip" | "abort"> {
+    const answer = await this.request(
+      "choose",
+      `Task "${taskTitle}" failed after all retries. What should we do?`,
+      { buildId, taskId },
+      {
+        context: `Error: ${error}`,
+        choices: [
+          { value: "retry", label: "Retry with different instructions" },
+          { value: "skip", label: "Skip this task and continue" },
+          { value: "abort", label: "Abort the entire build" },
+        ],
+        defaultValue: "skip",
+      },
+    );
+    if (answer === CANCEL_SENTINEL) return "abort";
+    if (answer === "retry" || answer === "skip" || answer === "abort")
+      return answer;
+    return "skip";
   }
 
   /**
@@ -228,30 +263,46 @@ export class HumanInputGate {
     buildId: string,
     phaseIndex: number,
     issues: string,
-  ): Promise<'continue' | 'abort' | string> {
-    const answer = await this.request('choose', 'Verification found issues after this phase. How to proceed?', { buildId, phaseIndex }, {
-      context: issues,
-      choices: [
-        { value: 'continue', label: 'Continue anyway — agents will see these errors as context' },
-        { value: 'abort', label: 'Abort the build' },
-        { value: 'custom', label: 'Provide custom instructions for the next phase' },
-      ],
-      defaultValue: 'continue',
-    })
+  ): Promise<"continue" | "abort" | string> {
+    const answer = await this.request(
+      "choose",
+      "Verification found issues after this phase. How to proceed?",
+      { buildId, phaseIndex },
+      {
+        context: issues,
+        choices: [
+          {
+            value: "continue",
+            label: "Continue anyway — agents will see these errors as context",
+          },
+          { value: "abort", label: "Abort the build" },
+          {
+            value: "custom",
+            label: "Provide custom instructions for the next phase",
+          },
+        ],
+        defaultValue: "continue",
+      },
+    );
 
-    if (answer === CANCEL_SENTINEL) return 'abort'
-    if (answer !== 'custom') return answer
+    if (answer === CANCEL_SENTINEL) return "abort";
+    if (answer !== "custom") return answer;
 
     // Second request — check cancelled state first (set by rejectAll between requests)
-    if (this._cancelled) return 'abort'
+    if (this._cancelled) return "abort";
 
-    const guidance = await this.request('text', 'What instructions should be given to the agents in the next phase?', { buildId, phaseIndex }, {
-      context: issues,
-      defaultValue: '',
-    })
+    const guidance = await this.request(
+      "text",
+      "What instructions should be given to the agents in the next phase?",
+      { buildId, phaseIndex },
+      {
+        context: issues,
+        defaultValue: "",
+      },
+    );
 
-    if (guidance === CANCEL_SENTINEL || guidance === '') return 'continue'
-    return guidance
+    if (guidance === CANCEL_SENTINEL || guidance === "") return "continue";
+    return guidance;
   }
 
   /** Ask a free-form clarification question. */
@@ -260,8 +311,13 @@ export class HumanInputGate {
     question: string,
     context?: string,
   ): Promise<string> {
-    const answer = await this.request('text', question, { buildId }, { context, defaultValue: '' })
-    if (answer === CANCEL_SENTINEL) return ''
-    return answer
+    const answer = await this.request(
+      "text",
+      question,
+      { buildId },
+      { context, defaultValue: "" },
+    );
+    if (answer === CANCEL_SENTINEL) return "";
+    return answer;
   }
 }

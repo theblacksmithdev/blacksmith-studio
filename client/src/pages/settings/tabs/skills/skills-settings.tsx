@@ -1,18 +1,19 @@
-import { Flex } from '@chakra-ui/react'
-import { useActiveProjectId } from '@/api/hooks/_shared'
-import { skillsBrowserPath } from '@/router/paths'
-import { SkillEditorModal } from '@/pages/skills/components'
-import { ConfirmDialog } from '@/components/shared/confirm-dialog'
-import { useSkillsActions } from './hooks/use-skills-actions'
-import { SkillsHeader } from './components/skills-header'
-import { SkillsList } from './components/skills-list'
-import { SkillsEmptyState } from './components/skills-empty-state'
+import { Flex } from "@chakra-ui/react";
+import { useActiveProjectId } from "@/api/hooks/_shared";
+import { skillsBrowserPath } from "@/router/paths";
+import { SkillEditorModal } from "@/pages/skills/components";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { useSkillsActions } from "./hooks/use-skills-actions";
+import { SkillsHeader } from "./components/skills-header";
+import { SkillsList } from "./components/skills-list";
+import { SkillsEmptyState } from "./components/skills-empty-state";
 
 export function SkillsSettings() {
-  const pid = useActiveProjectId()
-  const { skills, modal, setModal, handleUpdate, handleRemove } = useSkillsActions()
+  const pid = useActiveProjectId();
+  const { skills, modal, setModal, handleUpdate, handleRemove } =
+    useSkillsActions();
 
-  const browsePath = skillsBrowserPath(pid!)
+  const browsePath = skillsBrowserPath(pid!);
 
   return (
     <Flex direction="column" gap="14px">
@@ -24,19 +25,19 @@ export function SkillsSettings() {
         <SkillsList
           skills={skills}
           browsePath={browsePath}
-          onEdit={(skill) => setModal({ type: 'edit', skill })}
-          onDelete={(name) => setModal({ type: 'delete', name })}
+          onEdit={(skill) => setModal({ type: "edit", skill })}
+          onDelete={(name) => setModal({ type: "delete", name })}
         />
       )}
 
-      {modal?.type === 'edit' && (
+      {modal?.type === "edit" && (
         <SkillEditorModal
           skill={modal.skill}
           onSave={handleUpdate}
           onClose={() => setModal(null)}
         />
       )}
-      {modal?.type === 'delete' && (
+      {modal?.type === "delete" && (
         <ConfirmDialog
           message={`Remove "${modal.name}"?`}
           description="This will delete the skill from your project. You can re-add it from the library."
@@ -47,5 +48,5 @@ export function SkillsSettings() {
         />
       )}
     </Flex>
-  )
+  );
 }

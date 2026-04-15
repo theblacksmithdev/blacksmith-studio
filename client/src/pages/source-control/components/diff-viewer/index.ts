@@ -1,1 +1,1 @@
-export { DiffViewer } from './diff-viewer'
+export { DiffViewer } from "./diff-viewer";

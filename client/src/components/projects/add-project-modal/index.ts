@@ -1,1 +1,1 @@
-export { AddProjectModal } from './add-project-modal'
+export { AddProjectModal } from "./add-project-modal";

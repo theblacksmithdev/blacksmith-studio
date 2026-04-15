@@ -1,12 +1,14 @@
-import type { BaseAgent, AgentExecuteOptions } from '../base/index.js'
-import type { AgentRole, AgentExecution, AgentEvent } from '../types.js'
+import type { BaseAgent, AgentExecuteOptions } from "../base/index.js";
+import type { AgentRole, AgentExecution, AgentEvent } from "../types.js";
 
-const MAX_HANDOFF_DEPTH = 5
+const MAX_HANDOFF_DEPTH = 5;
 
-type ExecuteFn = (options: AgentExecuteOptions & { role?: AgentRole }) => Promise<AgentExecution>
-type GetAgentFn = (role: AgentRole) => BaseAgent | undefined
-type GetLastHandoffFn = () => AgentEvent | null
-type ClearLastHandoffFn = () => void
+type ExecuteFn = (
+  options: AgentExecuteOptions & { role?: AgentRole },
+) => Promise<AgentExecution>;
+type GetAgentFn = (role: AgentRole) => BaseAgent | undefined;
+type GetLastHandoffFn = () => AgentEvent | null;
+type ClearLastHandoffFn = () => void;
 
 /**
  * Process handoff events emitted during agent execution.
@@ -29,50 +31,56 @@ export async function processHandoffs(
   visited = new Set<AgentRole>(),
 ): Promise<void> {
   if (depth >= MAX_HANDOFF_DEPTH) {
-    console.warn(`[handoff] Max depth (${MAX_HANDOFF_DEPTH}) reached, stopping chain`)
-    return
+    console.warn(
+      `[handoff] Max depth (${MAX_HANDOFF_DEPTH}) reached, stopping chain`,
+    );
+    return;
   }
 
-  if (!lastHandoffEvent || lastHandoffEvent.data.type !== 'handoff') return
+  if (!lastHandoffEvent || lastHandoffEvent.data.type !== "handoff") return;
 
   const { targetRole, reason, context } = lastHandoffEvent.data as {
-    type: 'handoff'
-    targetRole: AgentRole
-    reason: string
-    context: string
-  }
+    type: "handoff";
+    targetRole: AgentRole;
+    reason: string;
+    context: string;
+  };
 
   // Circular handoff detection
   if (visited.has(targetRole)) {
-    console.warn(`[handoff] Circular handoff detected: ${Array.from(visited).join(' → ')} → ${targetRole}, stopping`)
-    return
+    console.warn(
+      `[handoff] Circular handoff detected: ${Array.from(visited).join(" → ")} → ${targetRole}, stopping`,
+    );
+    return;
   }
 
-  const targetAgent = getAgent(targetRole)
+  const targetAgent = getAgent(targetRole);
   if (!targetAgent) {
-    console.warn(`[handoff] Target "${targetRole}" not found`)
-    return
+    console.warn(`[handoff] Target "${targetRole}" not found`);
+    return;
   }
 
   if (targetAgent.isRunning) {
-    console.warn(`[handoff] Target "${targetRole}" is busy, skipping`)
-    return
+    console.warn(`[handoff] Target "${targetRole}" is busy, skipping`);
+    return;
   }
 
-  visited.add(sourceAgent.role)
-  clearLastHandoff()
+  visited.add(sourceAgent.role);
+  clearLastHandoff();
 
-  console.log(`[handoff] ${sourceAgent.role} → ${targetRole} (reason: ${reason})`)
+  console.log(
+    `[handoff] ${sourceAgent.role} → ${targetRole} (reason: ${reason})`,
+  );
 
   const handoffExecution = await execute({
     ...originalOptions,
     prompt: `Handoff from ${sourceAgent.title}.\n\nReason: ${reason}\n\nContext:\n${context}\n\nOriginal task: ${execution.prompt}`,
     role: targetRole,
-  })
+  });
 
   // Recurse: check if the handoff execution itself emitted another handoff
-  if (handoffExecution.status === 'done') {
-    const nextHandoff = getLastHandoff()
+  if (handoffExecution.status === "done") {
+    const nextHandoff = getLastHandoff();
     if (nextHandoff) {
       await processHandoffs(
         targetAgent,
@@ -85,7 +93,7 @@ export async function processHandoffs(
         clearLastHandoff,
         depth + 1,
         visited,
-      )
+      );
     }
   }
 }

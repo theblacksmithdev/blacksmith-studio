@@ -1,26 +1,26 @@
-import { ChatInput } from '@/components/chat/chat-input'
-import { HomeHero } from './home-hero'
-import { QuickActions } from './quick-actions'
-import { HomeShell, SectionDivider } from './home-shell'
-import { RecentSection, type RecentEntry } from './recent-section'
-import { ConfirmDialog } from '@/components/shared/ui'
-import type { WorkMode } from '@/stores/ui-store'
+import { ChatInput } from "@/components/chat/chat-input";
+import { HomeHero } from "./home-hero";
+import { QuickActions } from "./quick-actions";
+import { HomeShell, SectionDivider } from "./home-shell";
+import { RecentSection, type RecentEntry } from "./recent-section";
+import { ConfirmDialog } from "@/components/shared/ui";
+import type { WorkMode } from "@/stores/ui-store";
 
 export interface HomePageViewProps {
-  mode: WorkMode
-  isStreaming: boolean
-  recentItems: RecentEntry[]
-  recentLabel?: string
-  onSend: (text: string) => void
-  onSelectRecent: (id: string) => void
-  onDeleteRecent?: (id: string) => void
+  mode: WorkMode;
+  isStreaming: boolean;
+  recentItems: RecentEntry[];
+  recentLabel?: string;
+  onSend: (text: string) => void;
+  onSelectRecent: (id: string) => void;
+  onDeleteRecent?: (id: string) => void;
   deleteConfirm?: {
-    target: string | null
-    message: string
-    description: string
-    onConfirm: () => void
-    onCancel: () => void
-  }
+    target: string | null;
+    message: string;
+    description: string;
+    onConfirm: () => void;
+    onCancel: () => void;
+  };
 }
 
 export function HomePageView({
@@ -36,7 +36,11 @@ export function HomePageView({
   return (
     <HomeShell>
       <HomeHero />
-      <ChatInput onSend={onSend} onCancel={() => {}} isStreaming={isStreaming} />
+      <ChatInput
+        onSend={onSend}
+        onCancel={() => {}}
+        isStreaming={isStreaming}
+      />
       <QuickActions mode={mode} onSend={onSend} />
 
       {recentItems.length > 0 ? (
@@ -60,5 +64,5 @@ export function HomePageView({
         />
       )}
     </HomeShell>
-  )
+  );
 }

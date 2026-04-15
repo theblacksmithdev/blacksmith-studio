@@ -1,16 +1,16 @@
-import { Flex } from '@chakra-ui/react'
-import { Shield, DollarSign } from 'lucide-react'
-import { SettingsSection } from '@/pages/settings/components/settings-section'
-import { SettingRow } from '@/pages/settings/components/setting-row'
-import { SettingInput } from '@/pages/settings/components/setting-input'
-import { SegmentedControl } from '@/pages/settings/components/segmented-control'
-import { PERMISSION_OPTIONS } from '../hooks/use-ai-settings'
+import { Flex } from "@chakra-ui/react";
+import { Shield, DollarSign } from "lucide-react";
+import { SettingsSection } from "@/pages/settings/components/settings-section";
+import { SettingRow } from "@/pages/settings/components/setting-row";
+import { SettingInput } from "@/pages/settings/components/setting-input";
+import { SegmentedControl } from "@/pages/settings/components/segmented-control";
+import { PERMISSION_OPTIONS } from "../hooks/use-ai-settings";
 
 interface BehaviorSectionProps {
-  permissionMode: string
-  maxBudget: number | null
-  onPermissionChange: (value: string) => void
-  onBudgetChange: (value: number | string | null) => void
+  permissionMode: string;
+  maxBudget: number | null;
+  onPermissionChange: (value: string) => void;
+  onBudgetChange: (value: number | string | null) => void;
 }
 
 export function BehaviorSection({
@@ -26,7 +26,12 @@ export function BehaviorSection({
     >
       <SettingRow
         label="Permissions"
-        description={<Flex align="center" gap="4px"><Shield size={11} /> How Claude handles file edits and shell commands.</Flex>}
+        description={
+          <Flex align="center" gap="4px">
+            <Shield size={11} /> How Claude handles file edits and shell
+            commands.
+          </Flex>
+        }
       >
         <SegmentedControl
           value={permissionMode}
@@ -36,10 +41,15 @@ export function BehaviorSection({
       </SettingRow>
       <SettingRow
         label="Budget limit"
-        description={<Flex align="center" gap="4px"><DollarSign size={11} /> Max USD per prompt. Leave empty for unlimited.</Flex>}
+        description={
+          <Flex align="center" gap="4px">
+            <DollarSign size={11} /> Max USD per prompt. Leave empty for
+            unlimited.
+          </Flex>
+        }
       >
         <SettingInput
-          value={maxBudget ?? ''}
+          value={maxBudget ?? ""}
           type="number"
           placeholder="No limit"
           prefix="$"
@@ -48,5 +58,5 @@ export function BehaviorSection({
         />
       </SettingRow>
     </SettingsSection>
-  )
+  );
 }

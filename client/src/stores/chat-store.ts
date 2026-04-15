@@ -1,19 +1,19 @@
-import { create } from 'zustand'
-import type { Message, ToolCall } from '@/types'
+import { create } from "zustand";
+import type { Message, ToolCall } from "@/types";
 
 interface ChatState {
-  messages: Message[]
-  isStreaming: boolean
-  partialMessage: string | null
-  currentToolCalls: ToolCall[]
+  messages: Message[];
+  isStreaming: boolean;
+  partialMessage: string | null;
+  currentToolCalls: ToolCall[];
 
-  addUserMessage: (text: string) => void
-  updateStreamingMessage: (text: string) => void
-  finalizeAssistantMessage: (text: string, toolCalls?: ToolCall[]) => void
-  addToolCall: (toolCall: ToolCall) => void
-  setStreaming: (streaming: boolean) => void
-  clearMessages: () => void
-  loadMessages: (msgs: Message[]) => void
+  addUserMessage: (text: string) => void;
+  updateStreamingMessage: (text: string) => void;
+  finalizeAssistantMessage: (text: string, toolCalls?: ToolCall[]) => void;
+  addToolCall: (toolCall: ToolCall) => void;
+  setStreaming: (streaming: boolean) => void;
+  clearMessages: () => void;
+  loadMessages: (msgs: Message[]) => void;
 }
 
 export const useChatStore = create<ChatState>((set) => ({
@@ -28,15 +28,14 @@ export const useChatStore = create<ChatState>((set) => ({
         ...s.messages,
         {
           id: crypto.randomUUID(),
-          role: 'user',
+          role: "user",
           content: text,
           timestamp: new Date().toISOString(),
         },
       ],
     })),
 
-  updateStreamingMessage: (text) =>
-    set({ partialMessage: text }),
+  updateStreamingMessage: (text) => set({ partialMessage: text }),
 
   finalizeAssistantMessage: (text, toolCalls) =>
     set((s) => ({
@@ -44,9 +43,13 @@ export const useChatStore = create<ChatState>((set) => ({
         ...s.messages,
         {
           id: crypto.randomUUID(),
-          role: 'assistant',
+          role: "assistant",
           content: text,
-          toolCalls: toolCalls || (s.currentToolCalls.length > 0 ? [...s.currentToolCalls] : undefined),
+          toolCalls:
+            toolCalls ||
+            (s.currentToolCalls.length > 0
+              ? [...s.currentToolCalls]
+              : undefined),
           timestamp: new Date().toISOString(),
         },
       ],
@@ -60,7 +63,9 @@ export const useChatStore = create<ChatState>((set) => ({
 
   setStreaming: (isStreaming) => set({ isStreaming }),
 
-  clearMessages: () => set({ messages: [], partialMessage: null, currentToolCalls: [] }),
+  clearMessages: () =>
+    set({ messages: [], partialMessage: null, currentToolCalls: [] }),
 
-  loadMessages: (messages) => set({ messages, partialMessage: null, currentToolCalls: [] }),
-}))
+  loadMessages: (messages) =>
+    set({ messages, partialMessage: null, currentToolCalls: [] }),
+}));

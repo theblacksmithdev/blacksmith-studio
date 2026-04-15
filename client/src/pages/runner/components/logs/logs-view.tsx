@@ -16,8 +16,7 @@ export function RunnerLogs({
   activeConfigId,
   toolbarTrailing,
 }: RunnerLogsProps) {
-
-  const { data: services = [] } = useRunnerConfigsQuery()
+  const { data: services = [] } = useRunnerConfigsQuery();
 
   const {
     logs,

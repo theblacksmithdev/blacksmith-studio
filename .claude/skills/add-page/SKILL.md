@@ -19,6 +19,7 @@ Create a new page: $ARGUMENTS
    - Global: under `AppLayout` children
 
 3. **Path helper** — Add to `client/src/router/paths.ts`:
+
    ```ts
    export const {name}Path = (pid: string) => `/${pid}/{name}`
    ```

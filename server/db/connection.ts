@@ -1,18 +1,18 @@
-import path from 'node:path'
-import os from 'node:os'
-import fs from 'node:fs'
-import Database from 'better-sqlite3'
-import { drizzle } from 'drizzle-orm/better-sqlite3'
-import * as schema from './schema.js'
+import path from "node:path";
+import os from "node:os";
+import fs from "node:fs";
+import Database from "better-sqlite3";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import * as schema from "./schema.js";
 
-let _db: ReturnType<typeof drizzle> | null = null
-let _sqlite: Database.Database | null = null
+let _db: ReturnType<typeof drizzle> | null = null;
+let _sqlite: Database.Database | null = null;
 
 /**
  * Get the global Studio database directory.
  */
 function getStudioDir(): string {
-  return path.join(os.homedir(), '.blacksmith-studio')
+  return path.join(os.homedir(), ".blacksmith-studio");
 }
 
 /**
@@ -20,16 +20,16 @@ function getStudioDir(): string {
  * Stored at ~/.blacksmith-studio/studio.db
  */
 export function getDatabase() {
-  if (_db) return _db
+  if (_db) return _db;
 
-  const studioDir = getStudioDir()
-  fs.mkdirSync(studioDir, { recursive: true })
+  const studioDir = getStudioDir();
+  fs.mkdirSync(studioDir, { recursive: true });
 
-  const dbPath = path.join(studioDir, 'studio.db')
-  _sqlite = new Database(dbPath)
+  const dbPath = path.join(studioDir, "studio.db");
+  _sqlite = new Database(dbPath);
 
-  _sqlite.pragma('journal_mode = WAL')
-  _sqlite.pragma('foreign_keys = ON')
+  _sqlite.pragma("journal_mode = WAL");
+  _sqlite.pragma("foreign_keys = ON");
 
   _sqlite.exec(`
     CREATE TABLE IF NOT EXISTS projects (
@@ -156,40 +156,44 @@ export function getDatabase() {
     CREATE INDEX IF NOT EXISTS idx_agent_tasks_dispatch_id ON agent_tasks(dispatch_id);
     CREATE INDEX IF NOT EXISTS idx_agent_chat_messages_project_id ON agent_chat_messages(project_id);
     CREATE INDEX IF NOT EXISTS idx_agent_chat_messages_timestamp ON agent_chat_messages(timestamp);
-  `)
+  `);
 
   // ── Migrations for existing databases ──
   // ALTER TABLE is safe to run — fails silently if column already exists
   const migrations = [
-    'ALTER TABLE agent_dispatches ADD COLUMN conversation_id TEXT REFERENCES agent_conversations(id) ON DELETE CASCADE',
-    'ALTER TABLE agent_chat_messages ADD COLUMN conversation_id TEXT REFERENCES agent_conversations(id) ON DELETE CASCADE',
-    'ALTER TABLE agent_tasks ADD COLUMN session_id TEXT',
-    'ALTER TABLE agent_tasks ADD COLUMN description TEXT',
-    'ALTER TABLE agent_tasks ADD COLUMN task_type TEXT',
-    'ALTER TABLE agent_tasks ADD COLUMN parent_task_id TEXT',
-    'ALTER TABLE runner_configs ADD COLUMN setup_command TEXT',
-  ]
+    "ALTER TABLE agent_dispatches ADD COLUMN conversation_id TEXT REFERENCES agent_conversations(id) ON DELETE CASCADE",
+    "ALTER TABLE agent_chat_messages ADD COLUMN conversation_id TEXT REFERENCES agent_conversations(id) ON DELETE CASCADE",
+    "ALTER TABLE agent_tasks ADD COLUMN session_id TEXT",
+    "ALTER TABLE agent_tasks ADD COLUMN description TEXT",
+    "ALTER TABLE agent_tasks ADD COLUMN task_type TEXT",
+    "ALTER TABLE agent_tasks ADD COLUMN parent_task_id TEXT",
+    "ALTER TABLE runner_configs ADD COLUMN setup_command TEXT",
+  ];
 
   for (const sql of migrations) {
-    try { _sqlite.exec(sql) } catch { /* column already exists — safe to ignore */ }
+    try {
+      _sqlite.exec(sql);
+    } catch {
+      /* column already exists — safe to ignore */
+    }
   }
 
   // Indexes for new columns (IF NOT EXISTS is safe)
   _sqlite.exec(`
     CREATE INDEX IF NOT EXISTS idx_agent_dispatches_conversation_id ON agent_dispatches(conversation_id);
     CREATE INDEX IF NOT EXISTS idx_agent_chat_messages_conversation_id ON agent_chat_messages(conversation_id);
-  `)
+  `);
 
-  _db = drizzle(_sqlite, { schema })
+  _db = drizzle(_sqlite, { schema });
 
-  console.log(`[db] Global database ready at ${dbPath}`)
-  return _db
+  console.log(`[db] Global database ready at ${dbPath}`);
+  return _db;
 }
 
 export function closeDatabase() {
   if (_sqlite) {
-    _sqlite.close()
-    _sqlite = null
-    _db = null
+    _sqlite.close();
+    _sqlite = null;
+    _db = null;
   }
 }

@@ -1,102 +1,135 @@
-import { useState, useRef, useEffect, useCallback, type ReactNode } from 'react'
-import { Flex, Box } from '@chakra-ui/react'
-import { ArrowUp, Square } from 'lucide-react'
-import { IconButton, Tooltip, KeyboardHint, spacing, radii, shadows } from '@/components/shared/ui'
+import {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  type ReactNode,
+} from "react";
+import { Flex, Box } from "@chakra-ui/react";
+import { ArrowUp, Square } from "lucide-react";
+import {
+  IconButton,
+  Tooltip,
+  KeyboardHint,
+  spacing,
+  radii,
+  shadows,
+} from "@/components/shared/ui";
 
 interface ConversationInputProps {
-  onSend: (text: string) => void
-  onCancel?: () => void
-  isStreaming?: boolean
-  disabled?: boolean
-  placeholder?: string
-  initialValue?: string
+  onSend: (text: string) => void;
+  onCancel?: () => void;
+  isStreaming?: boolean;
+  disabled?: boolean;
+  placeholder?: string;
+  initialValue?: string;
   /** Rendered in the bottom-left (e.g. model selector) */
-  leading?: ReactNode
+  leading?: ReactNode;
 }
 
 export function ConversationInput({
-  onSend, onCancel, isStreaming, disabled, placeholder, initialValue, leading,
+  onSend,
+  onCancel,
+  isStreaming,
+  disabled,
+  placeholder,
+  initialValue,
+  leading,
 }: ConversationInputProps) {
-  const [value, setValue] = useState(initialValue ?? '')
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const [value, setValue] = useState(initialValue ?? "");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const MAX_HEIGHT = 450
+  const MAX_HEIGHT = 450;
 
   const autoResize = useCallback(() => {
-    const el = textareaRef.current
-    if (!el) return
-    el.style.height = 'auto'
-    el.style.height = `${Math.min(el.scrollHeight, MAX_HEIGHT)}px`
-    el.style.overflowY = el.scrollHeight > MAX_HEIGHT ? 'auto' : 'hidden'
-  }, [])
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, MAX_HEIGHT)}px`;
+    el.style.overflowY = el.scrollHeight > MAX_HEIGHT ? "auto" : "hidden";
+  }, []);
 
-  useEffect(() => { autoResize() }, [value, autoResize])
+  useEffect(() => {
+    autoResize();
+  }, [value, autoResize]);
 
   const handleSend = () => {
-    const trimmed = value.trim()
-    if (!trimmed || isStreaming || disabled) return
-    onSend(trimmed)
-    setValue('')
+    const trimmed = value.trim();
+    if (!trimmed || isStreaming || disabled) return;
+    onSend(trimmed);
+    setValue("");
     requestAnimationFrame(() => {
-      if (textareaRef.current) textareaRef.current.style.height = 'auto'
-    })
-  }
+      if (textareaRef.current) textareaRef.current.style.height = "auto";
+    });
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault()
-      handleSend()
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      handleSend();
     }
-  }
+  };
 
-  const canSend = !!value.trim() && !disabled
+  const canSend = !!value.trim() && !disabled;
 
   return (
-    <Box css={{
-      position: 'relative',
-      background: 'var(--studio-bg-surface)',
-      borderRadius: radii['2xl'],
-      border: '1px solid var(--studio-border)',
-      transition: 'all 0.2s ease',
-      boxShadow: shadows.sm,
-      '&:focus-within': {
-        borderColor: 'var(--studio-border-hover)',
-        boxShadow: shadows.lg,
-      },
-    }}>
+    <Box
+      css={{
+        position: "relative",
+        background: "var(--studio-bg-surface)",
+        borderRadius: radii["2xl"],
+        border: "1px solid var(--studio-border)",
+        transition: "all 0.2s ease",
+        boxShadow: shadows.sm,
+        "&:focus-within": {
+          borderColor: "var(--studio-border-hover)",
+          boxShadow: shadows.lg,
+        },
+      }}
+    >
       <textarea
         ref={textareaRef}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={placeholder ?? 'Type a message...'}
+        placeholder={placeholder ?? "Type a message..."}
         disabled={disabled}
         rows={1}
         style={{
-          width: '100%',
-          minHeight: '44px',
+          width: "100%",
+          minHeight: "44px",
           padding: `${spacing.md} ${spacing.xl}`,
-          background: 'transparent',
-          border: 'none',
-          outline: 'none',
-          resize: 'none',
-          overflowY: 'hidden',
-          color: 'var(--studio-text-primary)',
-          fontSize: '15px',
-          lineHeight: '1.6',
-          fontFamily: 'inherit',
+          background: "transparent",
+          border: "none",
+          outline: "none",
+          resize: "none",
+          overflowY: "hidden",
+          color: "var(--studio-text-primary)",
+          fontSize: "15px",
+          lineHeight: "1.6",
+          fontFamily: "inherit",
         }}
       />
 
-      <Flex align="center" justify="space-between" css={{ padding: `0 ${spacing.sm} ${spacing.sm}` }}>
+      <Flex
+        align="center"
+        justify="space-between"
+        css={{ padding: `0 ${spacing.sm} ${spacing.sm}` }}
+      >
         <Box>{leading}</Box>
 
         <Flex align="center" gap={spacing.sm}>
-          <KeyboardHint keys={'\u2318+Enter'} />
+          <KeyboardHint keys={"\u2318+Enter"} />
 
           {isStreaming && onCancel ? (
             <Tooltip content="Stop generation">
-              <IconButton variant="danger" size="sm" onClick={onCancel} aria-label="Stop" css={{ borderRadius: radii.lg }}>
+              <IconButton
+                variant="danger"
+                size="sm"
+                onClick={onCancel}
+                aria-label="Stop"
+                css={{ borderRadius: radii.lg }}
+              >
                 <Square size={10} fill="currentColor" />
               </IconButton>
             </Tooltip>
@@ -106,13 +139,22 @@ export function ConversationInput({
                 as="button"
                 onClick={canSend ? handleSend : undefined}
                 css={{
-                  width: '30px', height: '30px', borderRadius: radii.lg,
-                  border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: canSend ? 'pointer' : 'default',
-                  transition: 'all 0.15s ease',
-                  background: canSend ? 'var(--studio-accent)' : 'var(--studio-bg-hover)',
-                  color: canSend ? 'var(--studio-accent-fg)' : 'var(--studio-text-muted)',
-                  '&:hover': canSend ? { transform: 'scale(1.05)' } : {},
+                  width: "30px",
+                  height: "30px",
+                  borderRadius: radii.lg,
+                  border: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: canSend ? "pointer" : "default",
+                  transition: "all 0.15s ease",
+                  background: canSend
+                    ? "var(--studio-accent)"
+                    : "var(--studio-bg-hover)",
+                  color: canSend
+                    ? "var(--studio-accent-fg)"
+                    : "var(--studio-text-muted)",
+                  "&:hover": canSend ? { transform: "scale(1.05)" } : {},
                 }}
               >
                 <ArrowUp size={15} />
@@ -122,5 +164,5 @@ export function ConversationInput({
         </Flex>
       </Flex>
     </Box>
-  )
+  );
 }

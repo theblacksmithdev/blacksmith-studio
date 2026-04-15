@@ -1,1 +1,1 @@
-export { ProjectTitleBar } from './project-title-bar'
+export { ProjectTitleBar } from "./project-title-bar";

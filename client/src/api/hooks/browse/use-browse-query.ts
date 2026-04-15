@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query'
-import { api } from '@/api'
-import { queryKeys } from '@/api/query-keys'
-import type { BrowseResult } from '@/api/types'
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/api";
+import { queryKeys } from "@/api/query-keys";
+import type { BrowseResult } from "@/api/types";
 
 /**
  * Browses a directory on disk and returns its subdirectories.
@@ -13,5 +13,5 @@ export function useBrowseQuery(path: string | null | undefined) {
     queryKey: queryKeys.browse(path ?? undefined),
     queryFn: () => api.browse.list(path != null ? { path } : undefined),
     enabled: path !== null,
-  })
+  });
 }

@@ -1,1 +1,1 @@
-export { BranchSwitcher } from './branch-switcher'
+export { BranchSwitcher } from "./branch-switcher";

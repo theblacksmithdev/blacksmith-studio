@@ -1,12 +1,12 @@
-import { useState } from 'react'
-import styled from '@emotion/styled'
-import { ChevronRight, Check, ExternalLink } from 'lucide-react'
-import type { DetectedEditor } from '@/api/modules/files'
-import { MenuItem } from './styled'
+import { useState } from "react";
+import styled from "@emotion/styled";
+import { ChevronRight, Check, ExternalLink } from "lucide-react";
+import type { DetectedEditor } from "@/api/modules/files";
+import { MenuItem } from "./styled";
 
 const SubMenuWrap = styled.div`
   position: relative;
-`
+`;
 
 const SubMenu = styled.div`
   position: absolute;
@@ -20,7 +20,7 @@ const SubMenu = styled.div`
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
   z-index: 1001;
   animation: ctxFadeIn 0.1s ease;
-`
+`;
 
 const EditorItem = styled.button`
   display: flex;
@@ -42,30 +42,35 @@ const EditorItem = styled.button`
     background: var(--studio-bg-hover);
     color: var(--studio-text-primary);
   }
-`
+`;
 
 const CheckIcon = styled.span`
   margin-left: auto;
   display: flex;
   color: var(--studio-text-muted);
-`
+`;
 
 interface EditorPickerProps {
-  editors: DetectedEditor[]
-  preferredCommand: string | null
-  onSelect: (command: string) => void
-  onSetPreferred: (command: string) => void
+  editors: DetectedEditor[];
+  preferredCommand: string | null;
+  onSelect: (command: string) => void;
+  onSetPreferred: (command: string) => void;
 }
 
-export function EditorPicker({ editors, preferredCommand, onSelect, onSetPreferred }: EditorPickerProps) {
-  const [open, setOpen] = useState(false)
+export function EditorPicker({
+  editors,
+  preferredCommand,
+  onSelect,
+  onSetPreferred,
+}: EditorPickerProps) {
+  const [open, setOpen] = useState(false);
 
   if (editors.length === 0) {
     return (
-      <MenuItem disabled style={{ opacity: 0.5, cursor: 'default' }}>
+      <MenuItem disabled style={{ opacity: 0.5, cursor: "default" }}>
         <ExternalLink size={14} /> No editors found
       </MenuItem>
-    )
+    );
   }
 
   // If only one editor, show direct action
@@ -74,7 +79,7 @@ export function EditorPicker({ editors, preferredCommand, onSelect, onSetPreferr
       <MenuItem onClick={() => onSelect(editors[0].command)}>
         <ExternalLink size={14} /> Open in {editors[0].name}
       </MenuItem>
-    )
+    );
   }
 
   return (
@@ -85,7 +90,10 @@ export function EditorPicker({ editors, preferredCommand, onSelect, onSetPreferr
       <MenuItem>
         <ExternalLink size={14} />
         Open in Editor
-        <ChevronRight size={12} style={{ marginLeft: 'auto', color: 'var(--studio-text-muted)' }} />
+        <ChevronRight
+          size={12}
+          style={{ marginLeft: "auto", color: "var(--studio-text-muted)" }}
+        />
       </MenuItem>
 
       {open && (
@@ -94,18 +102,20 @@ export function EditorPicker({ editors, preferredCommand, onSelect, onSetPreferr
             <EditorItem
               key={editor.id}
               onClick={() => {
-                onSetPreferred(editor.command)
-                onSelect(editor.command)
+                onSetPreferred(editor.command);
+                onSelect(editor.command);
               }}
             >
               {editor.name}
               {editor.command === preferredCommand && (
-                <CheckIcon><Check size={13} /></CheckIcon>
+                <CheckIcon>
+                  <Check size={13} />
+                </CheckIcon>
               )}
             </EditorItem>
           ))}
         </SubMenu>
       )}
     </SubMenuWrap>
-  )
+  );
 }

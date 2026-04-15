@@ -1,7 +1,7 @@
-import { Flex, Box } from '@chakra-ui/react'
-import type { ReactNode } from 'react'
-import styled from '@emotion/styled'
-import { Text } from '@/components/shared/ui'
+import { Flex, Box } from "@chakra-ui/react";
+import type { ReactNode } from "react";
+import styled from "@emotion/styled";
+import { Text } from "@/components/shared/ui";
 
 export const FormInput = styled.input`
   width: 100%;
@@ -15,28 +15,45 @@ export const FormInput = styled.input`
   outline: none;
   transition: border-color 0.12s ease;
 
-  &::placeholder { color: var(--studio-text-muted); }
-  &:hover:not(:disabled) { border-color: var(--studio-border-hover); }
-  &:focus { border-color: var(--studio-border-hover); box-shadow: var(--studio-ring-focus); }
-  &:disabled { opacity: 0.5; }
-`
+  &::placeholder {
+    color: var(--studio-text-muted);
+  }
+  &:hover:not(:disabled) {
+    border-color: var(--studio-border-hover);
+  }
+  &:focus {
+    border-color: var(--studio-border-hover);
+    box-shadow: var(--studio-ring-focus);
+  }
+  &:disabled {
+    opacity: 0.5;
+  }
+`;
 
 interface FormFieldProps {
-  label: string
-  hint?: string
-  children: ReactNode
+  label: string;
+  hint?: string;
+  children: ReactNode;
 }
 
 export function FormField({ label, hint, children }: FormFieldProps) {
   return (
     <Flex direction="column" gap="6px">
-      <Text css={{ fontSize: '13px', fontWeight: 500, color: 'var(--studio-text-secondary)' }}>
+      <Text
+        css={{
+          fontSize: "13px",
+          fontWeight: 500,
+          color: "var(--studio-text-secondary)",
+        }}
+      >
         {label}
       </Text>
       {children}
       {hint && (
-        <Text css={{ fontSize: '12px', color: 'var(--studio-text-muted)' }}>{hint}</Text>
+        <Text css={{ fontSize: "12px", color: "var(--studio-text-muted)" }}>
+          {hint}
+        </Text>
       )}
     </Flex>
-  )
+  );
 }

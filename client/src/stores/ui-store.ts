@@ -1,39 +1,39 @@
-import { create } from 'zustand'
+import { create } from "zustand";
 
-export type ConnectionStatus = 'connected' | 'disconnected' | 'reconnecting'
-export type WorkMode = 'chat' | 'agents'
+export type ConnectionStatus = "connected" | "disconnected" | "reconnecting";
+export type WorkMode = "chat" | "agents";
 
 interface UiState {
-  connectionStatus: ConnectionStatus
-  setConnectionStatus: (status: ConnectionStatus) => void
+  connectionStatus: ConnectionStatus;
+  setConnectionStatus: (status: ConnectionStatus) => void;
 
-  workMode: WorkMode
-  setWorkMode: (mode: WorkMode) => void
+  workMode: WorkMode;
+  setWorkMode: (mode: WorkMode) => void;
 
-  runnerPanelOpen: boolean
-  setRunnerPanelOpen: (open: boolean) => void
+  runnerPanelOpen: boolean;
+  setRunnerPanelOpen: (open: boolean) => void;
 
-  previewOpen: boolean
-  setPreviewOpen: (open: boolean) => void
+  previewOpen: boolean;
+  setPreviewOpen: (open: boolean) => void;
 
-  sidebarExpanded: boolean
-  setSidebarExpanded: (expanded: boolean) => void
-  toggleSidebar: () => void
+  sidebarExpanded: boolean;
+  setSidebarExpanded: (expanded: boolean) => void;
+  toggleSidebar: () => void;
 
-  historyPanelOpen: boolean
-  setHistoryPanelOpen: (open: boolean) => void
-  toggleHistoryPanel: () => void
+  historyPanelOpen: boolean;
+  setHistoryPanelOpen: (open: boolean) => void;
+  toggleHistoryPanel: () => void;
 
-  terminalOpen: boolean
-  setTerminalOpen: (open: boolean) => void
-  toggleTerminal: () => void
+  terminalOpen: boolean;
+  setTerminalOpen: (open: boolean) => void;
+  toggleTerminal: () => void;
 }
 
 export const useUiStore = create<UiState>((set) => ({
-  connectionStatus: 'disconnected',
+  connectionStatus: "disconnected",
   setConnectionStatus: (connectionStatus) => set({ connectionStatus }),
 
-  workMode: 'chat',
+  workMode: "chat",
   setWorkMode: (workMode) => set({ workMode }),
 
   runnerPanelOpen: false,
@@ -48,9 +48,10 @@ export const useUiStore = create<UiState>((set) => ({
 
   historyPanelOpen: false,
   setHistoryPanelOpen: (historyPanelOpen) => set({ historyPanelOpen }),
-  toggleHistoryPanel: () => set((s) => ({ historyPanelOpen: !s.historyPanelOpen })),
+  toggleHistoryPanel: () =>
+    set((s) => ({ historyPanelOpen: !s.historyPanelOpen })),
 
   terminalOpen: false,
   setTerminalOpen: (terminalOpen) => set({ terminalOpen }),
   toggleTerminal: () => set((s) => ({ terminalOpen: !s.terminalOpen })),
-}))
+}));

@@ -1,88 +1,138 @@
-import { useState, useCallback } from 'react'
-import { useRunnerConfigsQuery, useAddRunnerConfig, useUpdateRunnerConfig, useRemoveRunnerConfig, useSetupRunner } from '@/api/hooks/runner'
-import { useChannel } from '@/api/hooks/_shared'
-import { useRunner } from '@/hooks/use-runner'
-import { useCreateSession } from '@/api/hooks/sessions'
-import type { RunnerConfigData } from '@/api/types'
-import { useActiveService } from './use-active-service'
+import { useState, useCallback } from "react";
+import {
+  useRunnerConfigsQuery,
+  useAddRunnerConfig,
+  useUpdateRunnerConfig,
+  useRemoveRunnerConfig,
+  useSetupRunner,
+} from "@/api/hooks/runner";
+import { useChannel } from "@/api/hooks/_shared";
+import { useRunner } from "@/hooks/use-runner";
+import { useCreateSession } from "@/api/hooks/sessions";
+import type { RunnerConfigData } from "@/api/types";
+import { useActiveService } from "./use-active-service";
 
 export interface DiagnoseState {
-  sessionId: string
-  prompt: string
-  title: string
+  sessionId: string;
+  prompt: string;
+  title: string;
 }
 
 export function useServiceActions() {
-  const { activeId, selectService } = useActiveService()
-  const { data: configs = [] } = useRunnerConfigsQuery()
-  const addConfig = useAddRunnerConfig()
-  const updateConfig = useUpdateRunnerConfig()
-  const removeConfig = useRemoveRunnerConfig()
-  const setupRunner = useSetupRunner()
-  const createSessionMutation = useCreateSession()
-  
-  const { start, stop, startAll, stopAll } = useRunner()
-  const { messages: allLogs } = useChannel('runner:output', { maxHistory: 1000 })
+  const { activeId, selectService } = useActiveService();
+  const { data: configs = [] } = useRunnerConfigsQuery();
+  const addConfig = useAddRunnerConfig();
+  const updateConfig = useUpdateRunnerConfig();
+  const removeConfig = useRemoveRunnerConfig();
+  const setupRunner = useSetupRunner();
+  const createSessionMutation = useCreateSession();
 
-  const [modalConfig, setModalConfig] = useState<RunnerConfigData | null | 'new'>(null)
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
-  const [diagnoseDrawer, setDiagnoseDrawer] = useState<DiagnoseState | null>(null)
+  const { start, stop, startAll, stopAll } = useRunner();
+  const { messages: allLogs } = useChannel("runner:output", {
+    maxHistory: 1000,
+  });
 
-  const handleSave = useCallback((data: Partial<RunnerConfigData>) => {
-    if (modalConfig === 'new') {
-      addConfig.mutate(data)
-    } else if (modalConfig) {
-      updateConfig.mutate({ id: modalConfig.id, updates: data })
-    }
-  }, [modalConfig, addConfig, updateConfig])
+  const [modalConfig, setModalConfig] = useState<
+    RunnerConfigData | null | "new"
+  >(null);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [diagnoseDrawer, setDiagnoseDrawer] = useState<DiagnoseState | null>(
+    null,
+  );
+
+  const handleSave = useCallback(
+    (data: Partial<RunnerConfigData>) => {
+      if (modalConfig === "new") {
+        addConfig.mutate(data);
+      } else if (modalConfig) {
+        updateConfig.mutate({ id: modalConfig.id, updates: data });
+      }
+    },
+    [modalConfig, addConfig, updateConfig],
+  );
 
   const handleDelete = useCallback(() => {
-    if (!deleteTarget) return
-    stop(deleteTarget.id)
-    removeConfig.mutate(deleteTarget.id)
-    if (activeId === deleteTarget.id) selectService(null)
-    setDeleteTarget(null)
-  }, [deleteTarget, stop, removeConfig, activeId, selectService])
+    if (!deleteTarget) return;
+    stop(deleteTarget.id);
+    removeConfig.mutate(deleteTarget.id);
+    if (activeId === deleteTarget.id) selectService(null);
+    setDeleteTarget(null);
+  }, [deleteTarget, stop, removeConfig, activeId, selectService]);
 
-  const handleDiagnose = useCallback(async (svcId: string) => {
-    const config = configs.find((c) => c.id === svcId)
-    const recentLogs = allLogs.filter((l) => l.configId === svcId).slice(-80).map((l) => l.line)
+  const handleDiagnose = useCallback(
+    async (svcId: string) => {
+      const config = configs.find((c) => c.id === svcId);
+      const recentLogs = allLogs
+        .filter((l) => l.configId === svcId)
+        .slice(-80)
+        .map((l) => l.line);
 
-    const prompt = [
-      `My dev service "${config?.name ?? 'Unknown'}" has issues. Please diagnose the error from the logs below and fix it.`,
-      '',
-      config ? [
-        '## Service Configuration',
-        `- Command: \`${config.command}\``,
-        `- Working directory: \`${config.cwd}\``,
-        config.port ? `- Port: ${config.port}` : null,
-        Object.keys(config.env || {}).length > 0 ? `- Environment: ${JSON.stringify(config.env)}` : null,
-      ].filter(Boolean).join('\n') : '',
-      '',
-      recentLogs.length > 0 ? `## Recent Logs\n\`\`\`\n${recentLogs.join('\n')}\n\`\`\`` : '## Logs\nNo log output available.',
-      '',
-      'Please:',
-      '1. Identify the root cause of the error',
-      '2. Fix any code or configuration issues in the project',
-      '3. Explain what you changed and why',
-    ].join('\n')
+      const prompt = [
+        `My dev service "${config?.name ?? "Unknown"}" has issues. Please diagnose the error from the logs below and fix it.`,
+        "",
+        config
+          ? [
+              "## Service Configuration",
+              `- Command: \`${config.command}\``,
+              `- Working directory: \`${config.cwd}\``,
+              config.port ? `- Port: ${config.port}` : null,
+              Object.keys(config.env || {}).length > 0
+                ? `- Environment: ${JSON.stringify(config.env)}`
+                : null,
+            ]
+              .filter(Boolean)
+              .join("\n")
+          : "",
+        "",
+        recentLogs.length > 0
+          ? `## Recent Logs\n\`\`\`\n${recentLogs.join("\n")}\n\`\`\``
+          : "## Logs\nNo log output available.",
+        "",
+        "Please:",
+        "1. Identify the root cause of the error",
+        "2. Fix any code or configuration issues in the project",
+        "3. Explain what you changed and why",
+      ].join("\n");
 
-    const session = await createSessionMutation.mutateAsync(`Fix: ${config?.name ?? 'service'} error`)
-    if (session?.id) {
-      setDiagnoseDrawer({ sessionId: session.id, prompt, title: `Fix: ${config?.name ?? 'Service'} Error` })
-    }
-  }, [configs, allLogs, createSessionMutation])
+      const session = await createSessionMutation.mutateAsync(
+        `Fix: ${config?.name ?? "service"} error`,
+      );
+      if (session?.id) {
+        setDiagnoseDrawer({
+          sessionId: session.id,
+          prompt,
+          title: `Fix: ${config?.name ?? "Service"} Error`,
+        });
+      }
+    },
+    [configs, allLogs, createSessionMutation],
+  );
 
-  const handleSetup = useCallback((svcId: string) => {
-    selectService(svcId)
-    setupRunner.mutate(svcId)
-  }, [selectService, setupRunner])
+  const handleSetup = useCallback(
+    (svcId: string) => {
+      selectService(svcId);
+      setupRunner.mutate(svcId);
+    },
+    [selectService, setupRunner],
+  );
 
   return {
-    modalConfig, setModalConfig,
-    deleteTarget, setDeleteTarget,
-    diagnoseDrawer, setDiagnoseDrawer,
-    handleSave, handleDelete, handleDiagnose, handleSetup,
-    start, stop, startAll, stopAll,
-  }
+    modalConfig,
+    setModalConfig,
+    deleteTarget,
+    setDeleteTarget,
+    diagnoseDrawer,
+    setDiagnoseDrawer,
+    handleSave,
+    handleDelete,
+    handleDiagnose,
+    handleSetup,
+    start,
+    stop,
+    startAll,
+    stopAll,
+  };
 }

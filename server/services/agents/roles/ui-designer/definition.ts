@@ -1,12 +1,13 @@
-import type { AgentRoleDefinition } from '../../types.js'
-import { SPEC_ONLY_BOUNDARIES } from '../boundaries.js'
+import type { AgentRoleDefinition } from "../../types.js";
+import { SPEC_ONLY_BOUNDARIES } from "../boundaries.js";
 
 export const DEFINITION: AgentRoleDefinition = {
-  role: 'ui-designer',
-  team: 'engineering',
-  title: 'UI/UX Designer',
-  label: 'Design',
-  description: 'Design specialist who writes detailed UI/UX specifications for the Frontend Engineer to implement.',
+  role: "ui-designer",
+  team: "engineering",
+  title: "UI/UX Designer",
+  label: "Design",
+  description:
+    "Design specialist who writes detailed UI/UX specifications for the Frontend Engineer to implement.",
   systemPrompt: `You are a senior UI/UX designer. You produce detailed design specifications that frontend engineers implement. You do NOT write code yourself.
 
 ## Your Strengths
@@ -56,22 +57,26 @@ For every design task, you produce a written specification document that contain
 
 ${SPEC_ONLY_BOUNDARIES}`,
 
-  filePatterns: [
-    '*.tsx', '*.ts', '*.css', '*.json', '*.md',
-  ],
-  scopeDirs: ['frontend', 'client', 'src', 'app'],
+  filePatterns: ["*.tsx", "*.ts", "*.css", "*.json", "*.md"],
+  scopeDirs: ["frontend", "client", "src", "app"],
   selfDecompose: false,
   keyFiles: [
-    'package.json', 'tailwind.config.ts', 'tailwind.config.js',
-    'CLAUDE.md', 'README.md',
+    "package.json",
+    "tailwind.config.ts",
+    "tailwind.config.js",
+    "CLAUDE.md",
+    "README.md",
     // Design system files — the designer MUST know the actual tokens and components
-    'src/theme.ts', 'client/src/theme.ts',
-    'src/components/shared/ui/tokens.ts', 'client/src/components/shared/ui/tokens.ts',
-    'src/components/shared/ui/index.ts', 'client/src/components/shared/ui/index.ts',
+    "src/theme.ts",
+    "client/src/theme.ts",
+    "src/components/shared/ui/tokens.ts",
+    "client/src/components/shared/ui/tokens.ts",
+    "src/components/shared/ui/index.ts",
+    "client/src/components/shared/ui/index.ts",
   ],
-  permissionMode: 'default',
+  permissionMode: "default",
   preferredModel: null,
   maxBudget: null,
-  mcpServers: 'all',
-  allowedTools: ['Read', 'Glob', 'Grep', 'Bash', 'Write'],
-}
+  mcpServers: "all",
+  allowedTools: ["Read", "Glob", "Grep", "Bash", "Write"],
+};

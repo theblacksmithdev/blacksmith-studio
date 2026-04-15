@@ -1,1 +1,1 @@
-export { default } from './mcp-browser-page'
+export { default } from "./mcp-browser-page";

@@ -1,8 +1,8 @@
-import styled from '@emotion/styled'
-import { useNavigate } from 'react-router-dom'
-import { Plus } from 'lucide-react'
-import { useActiveProjectId } from '@/api/hooks/_shared'
-import { projectHome } from '@/router/paths'
+import styled from "@emotion/styled";
+import { useNavigate } from "react-router-dom";
+import { Plus } from "lucide-react";
+import { useActiveProjectId } from "@/api/hooks/_shared";
+import { projectHome } from "@/router/paths";
 
 const Btn = styled.button`
   width: 36px;
@@ -24,21 +24,21 @@ const Btn = styled.button`
     border-color: var(--studio-border-hover);
     color: var(--studio-text-primary);
   }
-`
+`;
 
 interface NewChatButtonProps {
-  expanded?: boolean
+  expanded?: boolean;
 }
 
 export function NewChatButton(_props: NewChatButtonProps) {
-  const navigate = useNavigate()
-  const pid = useActiveProjectId()
+  const navigate = useNavigate();
+  const pid = useActiveProjectId();
 
-  if (!pid) return null
+  if (!pid) return null;
 
   return (
     <Btn onClick={() => navigate(projectHome(pid))}>
       <Plus size={18} />
     </Btn>
-  )
+  );
 }

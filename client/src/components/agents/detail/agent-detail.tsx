@@ -1,48 +1,78 @@
-import { Flex, Box } from '@chakra-ui/react'
-import { Layers, X, Clock, Maximize2, Zap, Wrench } from 'lucide-react'
-import { useAgentStore } from '@/stores/agent-store'
-import { ROLE_ICONS } from '../shared/role-icons'
-import { Text } from '@/components/shared/ui'
-import type { AgentInfo } from '@/api/types'
+import { Flex, Box } from "@chakra-ui/react";
+import { Layers, X, Clock, Maximize2, Zap, Wrench } from "lucide-react";
+import { useAgentStore } from "@/stores/agent-store";
+import { ROLE_ICONS } from "../shared/role-icons";
+import { Text } from "@/components/shared/ui";
+import type { AgentInfo } from "@/api/types";
 import {
-  Panel, Header, HeaderTop, IconBox, CloseBtn,
-  StatusBadge, StatusDot, OpenFullBtn,
-  Body, Section, SectionLabel, AboutText,
-  Timeline, TimelineItem, TimelineTrack, TimelineDot, TimelineLine,
-  TimelineContent, TimelineText, TimelineTime, EmptyActivity,
-} from './styles'
+  Panel,
+  Header,
+  HeaderTop,
+  IconBox,
+  CloseBtn,
+  StatusBadge,
+  StatusDot,
+  OpenFullBtn,
+  Body,
+  Section,
+  SectionLabel,
+  AboutText,
+  Timeline,
+  TimelineItem,
+  TimelineTrack,
+  TimelineDot,
+  TimelineLine,
+  TimelineContent,
+  TimelineText,
+  TimelineTime,
+  EmptyActivity,
+} from "./styles";
 
 interface AgentDetailProps {
-  agent: AgentInfo
-  onClose: () => void
-  onOpenInnerView?: () => void
+  agent: AgentInfo;
+  onClose: () => void;
+  onOpenInnerView?: () => void;
 }
 
 function formatTime(ts: string): string {
-  return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  return new Date(ts).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 }
 
 function statusLabel(status: string): string {
   switch (status) {
-    case 'idle': return 'Ready'
-    case 'thinking': return 'Thinking'
-    case 'executing': return 'Executing'
-    case 'done': return 'Complete'
-    case 'error': return 'Error'
-    default: return 'Idle'
+    case "idle":
+      return "Ready";
+    case "thinking":
+      return "Thinking";
+    case "executing":
+      return "Executing";
+    case "done":
+      return "Complete";
+    case "error":
+      return "Error";
+    default:
+      return "Idle";
   }
 }
 
-export function AgentDetail({ agent, onClose, onOpenInnerView }: AgentDetailProps) {
-  const activity = useAgentStore((s) => s.activities.get(agent.role))
-  const Icon = ROLE_ICONS[agent.role] ?? Layers
-  const status = activity?.status ?? 'idle'
-  const isActive = status === 'executing' || status === 'thinking'
-  const history = activity?.history ?? []
-  const eventLog = activity?.eventLog ?? []
-  const toolCalls = eventLog.filter((e) => e.type === 'tool_use').length
+export function AgentDetail({
+  agent,
+  onClose,
+  onOpenInnerView,
+}: AgentDetailProps) {
+  const activity = useAgentStore((s) => s.activities.get(agent.role));
+  const Icon = ROLE_ICONS[agent.role] ?? Layers;
+  const status = activity?.status ?? "idle";
+  const isActive = status === "executing" || status === "thinking";
+  const history = activity?.history ?? [];
+  const eventLog = activity?.eventLog ?? [];
+  const toolCalls = eventLog.filter((e) => e.type === "tool_use").length;
 
-  const reversed = [...history].reverse()
+  const reversed = [...history].reverse();
 
   return (
     <Panel>
@@ -52,7 +82,14 @@ export function AgentDetail({ agent, onClose, onOpenInnerView }: AgentDetailProp
             <Icon size={16} />
           </IconBox>
           <Box css={{ flex: 1, minWidth: 0 }}>
-            <Text css={{ fontSize: '14px', fontWeight: 600, color: 'var(--studio-text-primary)', letterSpacing: '-0.01em' }}>
+            <Text
+              css={{
+                fontSize: "14px",
+                fontWeight: 600,
+                color: "var(--studio-text-primary)",
+                letterSpacing: "-0.01em",
+              }}
+            >
               {agent.title}
             </Text>
             <StatusBadge $status={status}>
@@ -81,19 +118,35 @@ export function AgentDetail({ agent, onClose, onOpenInnerView }: AgentDetailProp
         {eventLog.length > 0 && (
           <Section>
             <Flex gap="8px">
-              <Flex align="center" gap="5px" css={{
-                padding: '5px 10px', borderRadius: '7px',
-                background: 'var(--studio-bg-surface)', border: '1px solid var(--studio-border)',
-                fontSize: '11px', fontWeight: 500, color: 'var(--studio-text-muted)',
-              }}>
+              <Flex
+                align="center"
+                gap="5px"
+                css={{
+                  padding: "5px 10px",
+                  borderRadius: "7px",
+                  background: "var(--studio-bg-surface)",
+                  border: "1px solid var(--studio-border)",
+                  fontSize: "11px",
+                  fontWeight: 500,
+                  color: "var(--studio-text-muted)",
+                }}
+              >
                 <Zap size={10} /> {eventLog.length} events
               </Flex>
               {toolCalls > 0 && (
-                <Flex align="center" gap="5px" css={{
-                  padding: '5px 10px', borderRadius: '7px',
-                  background: 'var(--studio-bg-surface)', border: '1px solid var(--studio-border)',
-                  fontSize: '11px', fontWeight: 500, color: 'var(--studio-text-muted)',
-                }}>
+                <Flex
+                  align="center"
+                  gap="5px"
+                  css={{
+                    padding: "5px 10px",
+                    borderRadius: "7px",
+                    background: "var(--studio-bg-surface)",
+                    border: "1px solid var(--studio-border)",
+                    fontSize: "11px",
+                    fontWeight: 500,
+                    color: "var(--studio-text-muted)",
+                  }}
+                >
                   <Wrench size={10} /> {toolCalls} tools
                 </Flex>
               )}
@@ -112,7 +165,11 @@ export function AgentDetail({ agent, onClose, onOpenInnerView }: AgentDetailProp
           ) : (
             <Timeline>
               {reversed.map((entry, i) => (
-                <TimelineItem key={entry.id} $status={entry.status} $isLatest={i === 0}>
+                <TimelineItem
+                  key={entry.id}
+                  $status={entry.status}
+                  $isLatest={i === 0}
+                >
                   <TimelineTrack>
                     <TimelineDot $status={entry.status} />
                     {i < reversed.length - 1 && <TimelineLine />}
@@ -140,5 +197,5 @@ export function AgentDetail({ agent, onClose, onOpenInnerView }: AgentDetailProp
         )}
       </Body>
     </Panel>
-  )
+  );
 }

@@ -1,16 +1,16 @@
-import { useInfiniteQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
-import { api } from '@/api'
-import { useProjectKeys, useActiveProjectId } from '../_shared'
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+import { api } from "@/api";
+import { useProjectKeys, useActiveProjectId } from "../_shared";
 
-const PAGE_SIZE = 100
+const PAGE_SIZE = 100;
 
 /**
  * Fetches changed files with infinite pagination.
  */
 export function useGitChangedFilesQuery() {
-  const keys = useProjectKeys()
-  const projectId = useActiveProjectId()
+  const keys = useProjectKeys();
+  const projectId = useActiveProjectId();
 
   const query = useInfiniteQuery({
     queryKey: keys.gitChangedFiles,
@@ -20,13 +20,13 @@ export function useGitChangedFilesQuery() {
     getNextPageParam: (lastPage, _allPages, lastPageParam) =>
       lastPage.hasMore ? lastPageParam + PAGE_SIZE : undefined,
     enabled: !!projectId,
-  })
+  });
 
   const files = useMemo(
     () => query.data?.pages.flatMap((p) => p.items) ?? [],
     [query.data],
-  )
-  const total = query.data?.pages[0]?.total ?? 0
+  );
+  const total = query.data?.pages[0]?.total ?? 0;
 
   return {
     data: files,
@@ -35,5 +35,5 @@ export function useGitChangedFilesQuery() {
     isFetchingNextPage: query.isFetchingNextPage,
     hasNextPage: query.hasNextPage,
     fetchNextPage: query.fetchNextPage,
-  }
+  };
 }

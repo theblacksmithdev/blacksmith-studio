@@ -1,38 +1,48 @@
-import { type ReactNode } from 'react'
-import { Flex, Box } from '@chakra-ui/react'
-import { MessageList } from './message-list'
-import { ConversationInput } from './conversation-input'
-import { spacing } from '@/components/shared/ui'
-import type { ConversationMessage } from './message-bubble'
+import { type ReactNode } from "react";
+import { Flex, Box } from "@chakra-ui/react";
+import { MessageList } from "./message-list";
+import { ConversationInput } from "./conversation-input";
+import { spacing } from "@/components/shared/ui";
+import type { ConversationMessage } from "./message-bubble";
 
 interface ConversationViewProps {
-  messages: ConversationMessage[]
-  onSend: (text: string) => void
-  onCancel?: () => void
-  isStreaming?: boolean
-  disabled?: boolean
-  placeholder?: string
-  initialValue?: string
-  maxWidth?: string
+  messages: ConversationMessage[];
+  onSend: (text: string) => void;
+  onCancel?: () => void;
+  isStreaming?: boolean;
+  disabled?: boolean;
+  placeholder?: string;
+  initialValue?: string;
+  maxWidth?: string;
   /** Rendered after all messages (e.g. streaming indicator) */
-  streamingTrailing?: ReactNode
+  streamingTrailing?: ReactNode;
   /** Custom empty state when no messages */
-  emptyState?: ReactNode
+  emptyState?: ReactNode;
   /** Rendered in the input bottom-left (e.g. model selector) */
-  inputLeading?: ReactNode
+  inputLeading?: ReactNode;
   /** Custom renderer per message — return null to use default bubble */
-  renderMessage?: (msg: ConversationMessage) => ReactNode | null
+  renderMessage?: (msg: ConversationMessage) => ReactNode | null;
   /** Custom content renderer inside the default bubble (e.g. MarkdownRenderer) */
-  renderContent?: (content: string) => ReactNode
+  renderContent?: (content: string) => ReactNode;
 }
 
 export function ConversationView({
-  messages, onSend, onCancel, isStreaming, disabled, placeholder, initialValue,
-  maxWidth = '760px', streamingTrailing, emptyState, inputLeading,
-  renderMessage, renderContent,
+  messages,
+  onSend,
+  onCancel,
+  isStreaming,
+  disabled,
+  placeholder,
+  initialValue,
+  maxWidth = "760px",
+  streamingTrailing,
+  emptyState,
+  inputLeading,
+  renderMessage,
+  renderContent,
 }: ConversationViewProps) {
   return (
-    <Flex direction="column" css={{ height: '100%', width: '100%' }}>
+    <Flex direction="column" css={{ height: "100%", width: "100%" }}>
       <MessageList
         messages={messages}
         maxWidth={maxWidth}
@@ -42,7 +52,15 @@ export function ConversationView({
         renderContent={renderContent}
       />
 
-      <Box css={{ flexShrink: 0, padding: `0 ${spacing.xl} ${spacing.lg}`, maxWidth, width: '100%', margin: '0 auto' }}>
+      <Box
+        css={{
+          flexShrink: 0,
+          padding: `0 ${spacing.xl} ${spacing.lg}`,
+          maxWidth,
+          width: "100%",
+          margin: "0 auto",
+        }}
+      >
         <ConversationInput
           onSend={onSend}
           onCancel={onCancel}
@@ -54,5 +72,5 @@ export function ConversationView({
         />
       </Box>
     </Flex>
-  )
+  );
 }

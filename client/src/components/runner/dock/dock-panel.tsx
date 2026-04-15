@@ -1,18 +1,22 @@
-import styled from '@emotion/styled'
-import { keyframes } from '@emotion/react'
-import { Square, X } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-import { useRunnerStore, selectServices, isServiceActive } from '@/stores/runner-store'
-import { useRunner } from '@/hooks/use-runner'
-import { useActiveProjectId } from '@/api/hooks/_shared'
-import { runPath } from '@/router/paths'
-import { getServiceIcon } from '../runner-primitives'
-import { ServiceCard } from '../service-card'
+import styled from "@emotion/styled";
+import { keyframes } from "@emotion/react";
+import { Square, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import {
+  useRunnerStore,
+  selectServices,
+  isServiceActive,
+} from "@/stores/runner-store";
+import { useRunner } from "@/hooks/use-runner";
+import { useActiveProjectId } from "@/api/hooks/_shared";
+import { runPath } from "@/router/paths";
+import { getServiceIcon } from "../runner-primitives";
+import { ServiceCard } from "../service-card";
 
 const panelIn = keyframes`
   from { opacity: 0; transform: translateY(8px) scale(0.96); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
-`
+`;
 
 const Strip = styled.div`
   position: fixed;
@@ -29,14 +33,14 @@ const Strip = styled.div`
   box-shadow: var(--studio-shadow-lg);
   backdrop-filter: blur(20px);
   animation: ${panelIn} 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-`
+`;
 
 const Separator = styled.div`
   width: 1px;
   height: 20px;
   background: var(--studio-border);
   flex-shrink: 0;
-`
+`;
 
 const StopAllBtn = styled.button`
   display: flex;
@@ -57,7 +61,7 @@ const StopAllBtn = styled.button`
   &:hover {
     opacity: 0.85;
   }
-`
+`;
 
 const CloseBtn = styled.button`
   width: 24px;
@@ -77,24 +81,24 @@ const CloseBtn = styled.button`
     background: var(--studio-bg-hover);
     color: var(--studio-text-primary);
   }
-`
+`;
 
 interface DockPanelProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 export function DockPanel({ onClose }: DockPanelProps) {
-  const navigate = useNavigate()
-  const { start, stop } = useRunner()
-  const pid = useActiveProjectId()
-  const services = useRunnerStore(selectServices)
+  const navigate = useNavigate();
+  const { start, stop } = useRunner();
+  const pid = useActiveProjectId();
+  const services = useRunnerStore(selectServices);
 
   const goToRunPage = () => {
     if (pid) {
-      navigate(runPath(pid))
-      onClose()
+      navigate(runPath(pid));
+      onClose();
     }
-  }
+  };
 
   return (
     <Strip>
@@ -106,7 +110,9 @@ export function DockPanel({ onClose }: DockPanelProps) {
           status={svc.status}
           port={svc.port}
           variant="compact"
-          onToggle={() => (isServiceActive(svc.status) ? stop(svc.id) : start(svc.id))}
+          onToggle={() =>
+            isServiceActive(svc.status) ? stop(svc.id) : start(svc.id)
+          }
         />
       ))}
 
@@ -121,5 +127,5 @@ export function DockPanel({ onClose }: DockPanelProps) {
         <X size={13} />
       </CloseBtn>
     </Strip>
-  )
+  );
 }

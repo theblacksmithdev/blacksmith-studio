@@ -1,5 +1,5 @@
-import { useMutation } from '@tanstack/react-query'
-import { api } from '@/api'
+import { useMutation } from "@tanstack/react-query";
+import { api } from "@/api";
 
 /**
  * Kills a terminal by its ID.
@@ -7,5 +7,5 @@ import { api } from '@/api'
 export function useKillTerminal() {
   return useMutation({
     mutationFn: (id: string) => api.terminal.kill(id),
-  })
+  });
 }

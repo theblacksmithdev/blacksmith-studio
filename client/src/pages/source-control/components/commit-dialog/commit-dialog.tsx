@@ -1,21 +1,40 @@
-import { GitCommitHorizontal } from 'lucide-react'
-import { Modal, ModalFooterSpacer, Button, Badge, SkeletonList } from '@/components/shared/ui'
-import { useCommit } from './hooks'
-import { MessageInput, FileList } from './components'
+import { GitCommitHorizontal } from "lucide-react";
+import {
+  Modal,
+  ModalFooterSpacer,
+  Button,
+  Badge,
+  SkeletonList,
+} from "@/components/shared/ui";
+import { useCommit } from "./hooks";
+import { MessageInput, FileList } from "./components";
 
 interface CommitDialogProps {
-  onClose: () => void
-  onCommitted: () => void
+  onClose: () => void;
+  onCommitted: () => void;
 }
 
 export function CommitDialog({ onClose, onCommitted }: CommitDialogProps) {
   const {
-    files, total, selectedCount, isFileSelected, isAllSelected,
-    isLoadingFiles, hasNextPage, isFetchingNextPage, fetchNextPage,
-    message, setMessage,
-    toggleFile, toggleAll, handleCommit, regenerateMessage,
-    isCommitting, isGenerating, canCommit,
-  } = useCommit(onCommitted)
+    files,
+    total,
+    selectedCount,
+    isFileSelected,
+    isAllSelected,
+    isLoadingFiles,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    message,
+    setMessage,
+    toggleFile,
+    toggleAll,
+    handleCommit,
+    regenerateMessage,
+    isCommitting,
+    isGenerating,
+    canCommit,
+  } = useCommit(onCommitted);
 
   return (
     <Modal
@@ -25,17 +44,24 @@ export function CommitDialog({ onClose, onCommitted }: CommitDialogProps) {
       headerExtra={
         total > 0 ? (
           <Badge variant="default" size="sm">
-            {total} file{total !== 1 ? 's' : ''}
+            {total} file{total !== 1 ? "s" : ""}
           </Badge>
         ) : undefined
       }
       footer={
         <>
           <ModalFooterSpacer />
-          <Button variant="ghost" size="md" onClick={onClose}>Cancel</Button>
-          <Button variant="primary" size="md" onClick={handleCommit} disabled={!canCommit}>
+          <Button variant="ghost" size="md" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={handleCommit}
+            disabled={!canCommit}
+          >
             <GitCommitHorizontal size={14} />
-            {isCommitting ? 'Committing...' : 'Commit'}
+            {isCommitting ? "Committing..." : "Commit"}
           </Button>
         </>
       }
@@ -63,5 +89,5 @@ export function CommitDialog({ onClose, onCommitted }: CommitDialogProps) {
         />
       )}
     </Modal>
-  )
+  );
 }
