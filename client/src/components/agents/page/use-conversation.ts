@@ -1,57 +1,44 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "@/api";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  useCreateAgentConversation,
+  useAgentDispatch,
+} from "@/api/hooks/agents";
 import { useAgentStore } from "@/stores/agent-store";
-import { useActiveProjectId } from "@/api/hooks/_shared";
+import { useActiveProjectId, useProjectKeys } from "@/api/hooks/_shared";
 import { agentsConversationPath } from "@/router/paths";
 
 export function useConversation(conversationId: string | undefined) {
   const navigate = useNavigate();
   const projectId = useActiveProjectId();
-  const addChatMessage = useAgentStore((s) => s.addChatMessage);
-  const loadPersistedChat = useAgentStore((s) => s.loadPersistedChat);
-  const clearChat = useAgentStore((s) => s.clearChat);
+  const qc = useQueryClient();
+  const keys = useProjectKeys();
+
+  const addLiveMessage = useAgentStore((s) => s.addLiveMessage);
+  const clearLiveMessages = useAgentStore((s) => s.clearLiveMessages);
+  const createConversation = useCreateAgentConversation();
+  const dispatch = useAgentDispatch();
 
   const [currentConvId, setCurrentConvId] = useState<string | undefined>(
     conversationId,
   );
 
-  // Load persisted chat for this conversation
+  // Clear live messages and ephemeral state when switching conversations
   useEffect(() => {
-    clearChat();
-    if (currentConvId && projectId) {
-      api.agents
-        .listChat(projectId, currentConvId)
-        .then((messages) => {
-          if (messages.length > 0) {
-            loadPersistedChat(
-              messages.map((m: any) => ({
-                id: m.id,
-                role: m.role,
-                agentRole: m.agentRole,
-                content: m.content,
-                timestamp: m.timestamp,
-              })),
-            );
-          }
-        })
-        .catch(() => {});
-    }
+    clearLiveMessages();
   }, [currentConvId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSend = useCallback(
     async (message: string) => {
-      addChatMessage({ role: "user", content: message });
+      addLiveMessage({ role: "user", content: message });
 
       let convId = currentConvId;
 
       // Create conversation on first message if we're on /agents/new
       if (!convId) {
         try {
-          const conv = await api.agents.createConversation(
-            projectId!,
-            message.slice(0, 60),
-          );
+          const conv = await createConversation.mutateAsync(message.slice(0, 60));
           convId = conv.id as string;
           setCurrentConvId(convId);
           if (projectId && convId) {
@@ -60,7 +47,7 @@ export function useConversation(conversationId: string | undefined) {
             });
           }
         } catch (err: any) {
-          addChatMessage({
+          addLiveMessage({
             role: "system",
             content: `Failed to create conversation: ${err.message}`,
           });
@@ -69,22 +56,33 @@ export function useConversation(conversationId: string | undefined) {
       }
 
       try {
-        const result = await api.agents.dispatch(projectId!, message, convId);
+        const result = await dispatch.mutateAsync({
+          prompt: message,
+          conversationId: convId,
+        });
+
         const totalCost = result.executions.reduce(
           (sum: number, e: any) => sum + e.costUsd,
           0,
         );
         if (totalCost > 0) {
-          addChatMessage({
+          addLiveMessage({
             role: "system",
             content: `All tasks finished — total $${totalCost.toFixed(4)}`,
           });
         }
+
+        // Bring RQ cache up to date with the new persisted messages, then
+        // discard the optimistic live messages since RQ is now the source of truth
+        await qc.invalidateQueries({
+          queryKey: keys.agentChat(convId!),
+        });
+        clearLiveMessages();
       } catch (err: any) {
-        addChatMessage({ role: "system", content: `Error: ${err.message}` });
+        addLiveMessage({ role: "system", content: `Error: ${err.message}` });
       }
     },
-    [addChatMessage, currentConvId, projectId, navigate],
+    [addLiveMessage, clearLiveMessages, currentConvId, projectId, navigate, createConversation, dispatch, qc, keys],
   );
 
   return { currentConvId, handleSend };

@@ -2,30 +2,34 @@ import { create } from "zustand";
 import type { Message, ToolCall } from "@/types";
 
 interface ChatState {
-  messages: Message[];
   isStreaming: boolean;
   partialMessage: string | null;
   currentToolCalls: ToolCall[];
+  /**
+   * Optimistic in-flight messages: the user prompt and finalized assistant
+   * response that haven't yet been confirmed by a React Query refetch.
+   * Cleared automatically once `useSessionQuery` returns updated data.
+   */
+  pendingMessages: Message[];
 
-  addUserMessage: (text: string) => void;
+  addPendingUserMessage: (text: string) => void;
+  appendPendingAssistantMessage: (text: string, toolCalls?: ToolCall[]) => void;
+  clearPendingMessages: () => void;
   updateStreamingMessage: (text: string) => void;
-  finalizeAssistantMessage: (text: string, toolCalls?: ToolCall[]) => void;
   addToolCall: (toolCall: ToolCall) => void;
   setStreaming: (streaming: boolean) => void;
-  clearMessages: () => void;
-  loadMessages: (msgs: Message[]) => void;
 }
 
-export const useChatStore = create<ChatState>((set) => ({
-  messages: [],
+export const useChatStore = create<ChatState>((set, get) => ({
   isStreaming: false,
   partialMessage: null,
   currentToolCalls: [],
+  pendingMessages: [],
 
-  addUserMessage: (text) =>
+  addPendingUserMessage: (text) =>
     set((s) => ({
-      messages: [
-        ...s.messages,
+      pendingMessages: [
+        ...s.pendingMessages,
         {
           id: crypto.randomUUID(),
           role: "user",
@@ -35,18 +39,16 @@ export const useChatStore = create<ChatState>((set) => ({
       ],
     })),
 
-  updateStreamingMessage: (text) => set({ partialMessage: text }),
-
-  finalizeAssistantMessage: (text, toolCalls) =>
+  appendPendingAssistantMessage: (text, toolCalls) =>
     set((s) => ({
-      messages: [
-        ...s.messages,
+      pendingMessages: [
+        ...s.pendingMessages,
         {
           id: crypto.randomUUID(),
           role: "assistant",
           content: text,
           toolCalls:
-            toolCalls ||
+            toolCalls ??
             (s.currentToolCalls.length > 0
               ? [...s.currentToolCalls]
               : undefined),
@@ -58,14 +60,12 @@ export const useChatStore = create<ChatState>((set) => ({
       isStreaming: false,
     })),
 
+  clearPendingMessages: () => set({ pendingMessages: [] }),
+
+  updateStreamingMessage: (text) => set({ partialMessage: text }),
+
   addToolCall: (toolCall) =>
     set((s) => ({ currentToolCalls: [...s.currentToolCalls, toolCall] })),
 
   setStreaming: (isStreaming) => set({ isStreaming }),
-
-  clearMessages: () =>
-    set({ messages: [], partialMessage: null, currentToolCalls: [] }),
-
-  loadMessages: (messages) =>
-    set({ messages, partialMessage: null, currentToolCalls: [] }),
 }));

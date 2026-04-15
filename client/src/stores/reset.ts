@@ -12,7 +12,7 @@ import { useSessionStore } from "./session-store";
  * so they don't need manual clearing — each project gets its own cache.
  */
 export function resetProjectStores() {
-  useChatStore.getState().clearMessages();
+  useChatStore.getState().clearPendingMessages();
   useSessionStore.getState().setActiveSession(null);
 
   useFileStore.setState({

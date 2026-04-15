@@ -7,7 +7,7 @@ import { PageContainer } from "@/components/shared/page-container";
 import { usePromptTemplatesQuery } from "@/api/hooks/prompt-templates";
 import { useCreateSession } from "@/api/hooks/sessions";
 import { useActiveProjectId } from "@/api/hooks/_shared";
-import { useClaude } from "@/hooks/use-claude";
+import { useAiChat } from "@/hooks/use-ai-chat";
 import { useSessionStore } from "@/stores/session-store";
 import { chatPath } from "@/router/paths";
 import type { PromptTemplate } from "@/types";
@@ -16,7 +16,7 @@ export function TemplateGrid() {
   const { data: templates = [] } = usePromptTemplatesQuery();
   const [selected, setSelected] = useState<PromptTemplate | null>(null);
   const { open, onOpen, onClose } = useDisclosure();
-  const { sendPrompt } = useClaude();
+  const { sendPrompt } = useAiChat();
   const createSession = useCreateSession();
   const activeSessionId = useSessionStore((s) => s.activeSessionId);
   const navigate = useNavigate();

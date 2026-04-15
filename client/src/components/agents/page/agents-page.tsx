@@ -6,6 +6,7 @@ import {
   useAgentsListQuery,
   useAgentRespond,
   useAgentCancelAll,
+  useAgentChatQuery,
 } from "@/api/hooks/agents";
 import { useAgentStore } from "@/stores/agent-store";
 import { Tooltip } from "@/components/shared/tooltip";
@@ -54,7 +55,7 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
   const selectAgent = useAgentStore((s) => s.selectAgent);
   const buildActive = useAgentStore((s) => s.buildActive);
   const dispatchTasks = useAgentStore((s) => s.dispatchTasks);
-  const chatMessages = useAgentStore((s) => s.chatMessages);
+  const liveMessages = useAgentStore((s) => s.liveMessages);
 
   useEffect(() => {
     if (agents.length > 0) setAgents(agents);
@@ -62,6 +63,10 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
 
   useAgentEvents();
   const { currentConvId, handleSend } = useConversation(conversationId);
+
+  // Persisted messages for the active conversation — used for unread tracking
+  const { data: persistedMsgs = [] } = useAgentChatQuery(currentConvId);
+  const totalMsgCount = persistedMsgs.length + liveMessages.length;
 
   // Auto-send initial prompt from route state
   const location = useLocation();
@@ -75,13 +80,13 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
   }, [location.state, handleSend]);
 
   // Track unread messages when chat is closed
-  const prevCountRef = useRef(chatMessages.length);
+  const prevCountRef = useRef(totalMsgCount);
   useEffect(() => {
-    if (chatMessages.length > prevCountRef.current && !chatOpenRef.current) {
+    if (totalMsgCount > prevCountRef.current && !chatOpenRef.current) {
       setHasUnread(true);
     }
-    prevCountRef.current = chatMessages.length;
-  }, [chatMessages.length]);
+    prevCountRef.current = totalMsgCount;
+  }, [totalMsgCount]);
 
   const toggleChat = useCallback(() => {
     setChatOpen((v) => {
@@ -157,6 +162,7 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
       onSend={handleSend}
       onRespond={handleRespond}
       isProcessing={isProcessing}
+      conversationId={currentConvId}
     />
   );
 

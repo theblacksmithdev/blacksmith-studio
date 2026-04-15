@@ -1,17 +1,17 @@
 import { Box, Text, VStack, HStack } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { History, MessageSquare, Clock } from "lucide-react";
 import { SessionCard } from "./session-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageContainer } from "@/components/shared/page-container";
 import {
   useSessionsQuery,
-  useSessionQuery,
   useDeleteSession,
 } from "@/api/hooks/sessions";
-import { useActiveProjectId } from "@/api/hooks/_shared";
+import { useActiveProjectId, useProjectKeys } from "@/api/hooks/_shared";
 import { useSessionStore } from "@/stores/session-store";
-import { useChatStore } from "@/stores/chat-store";
+import { api } from "@/api";
 import { chatPath } from "@/router/paths";
 
 function groupSessionsByDate(sessions: any[]) {
@@ -45,17 +45,18 @@ export function ActivityLog() {
   const projectId = useActiveProjectId();
   const navigate = useNavigate();
   const { setActiveSession } = useSessionStore();
-  const { loadMessages } = useChatStore();
+  const qc = useQueryClient();
+  const keys = useProjectKeys();
 
   const sessions = sessionsData?.items ?? [];
 
   const handleSelect = async (id: string) => {
     if (!projectId) return;
-    const session = await import("@/api").then(({ api }) =>
-      api.sessions.get({ id }),
-    );
+    const session = await qc.fetchQuery({
+      queryKey: keys.session(id),
+      queryFn: () => api.sessions.get({ id }),
+    });
     setActiveSession(session.id);
-    loadMessages(session.messages);
     navigate(chatPath(projectId, id));
   };
 

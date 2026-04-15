@@ -58,7 +58,12 @@ interface ChatMessage {
 interface AgentState {
   agents: AgentInfo[];
   activities: Map<AgentRole, AgentActivity>;
-  chatMessages: ChatMessage[];
+  /**
+   * Optimistic in-flight messages for the active conversation: user prompts
+   * and system/cost messages added during dispatch. Cleared once React Query
+   * refetches `useAgentChatQuery` with the latest persisted data.
+   */
+  liveMessages: ChatMessage[];
   selectedAgent: AgentRole | null;
   buildActive: boolean;
   buildEvents: BuildEvent[];
@@ -88,10 +93,9 @@ interface AgentState {
   handleBuildEvent: (event: BuildEvent) => void;
   addInputRequest: (request: InputRequest) => void;
   removeInputRequest: (requestId: string) => void;
-  addChatMessage: (msg: Omit<ChatMessage, "id" | "timestamp">) => void;
+  addLiveMessage: (msg: Omit<ChatMessage, "id" | "timestamp">) => void;
+  clearLiveMessages: () => void;
   selectAgent: (role: AgentRole | null) => void;
-  clearChat: () => void;
-  loadPersistedChat: (messages: ChatMessage[]) => void;
   setDispatchPlan: (plan: DispatchPlan) => void;
   updateTaskStatus: (taskId: string, status: DispatchTask["status"]) => void;
   clearDispatch: () => void;
@@ -102,7 +106,7 @@ interface AgentState {
 export const useAgentStore = create<AgentState>((set) => ({
   agents: [],
   activities: new Map(),
-  chatMessages: [],
+  liveMessages: [],
   selectedAgent: null,
   buildActive: false,
   buildEvents: [],
@@ -326,10 +330,10 @@ export const useAgentStore = create<AgentState>((set) => ({
       pendingInputs: state.pendingInputs.filter((r) => r.id !== requestId),
     })),
 
-  addChatMessage: (msg) =>
+  addLiveMessage: (msg) =>
     set((state) => ({
-      chatMessages: [
-        ...state.chatMessages,
+      liveMessages: [
+        ...state.liveMessages,
         {
           ...msg,
           id: crypto.randomUUID(),
@@ -338,11 +342,9 @@ export const useAgentStore = create<AgentState>((set) => ({
       ],
     })),
 
+  clearLiveMessages: () => set({ liveMessages: [], buildEvents: [] }),
+
   selectAgent: (role) => set({ selectedAgent: role }),
-
-  clearChat: () => set({ chatMessages: [], buildEvents: [] }),
-
-  loadPersistedChat: (messages) => set({ chatMessages: messages }),
 
   setDispatchPlan: (plan) =>
     set({

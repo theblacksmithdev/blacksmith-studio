@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback, useMemo } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import { api } from "@/api";
-import { useClaude } from "@/hooks/use-claude";
+import { useSessionQuery } from "@/api/hooks/sessions";
+import { useAiChat } from "@/hooks/use-ai-chat";
 import { useChatStore } from "@/stores/chat-store";
 import { useSessionStore } from "@/stores/session-store";
 import { toConversationMessages } from "../message-helpers";
@@ -9,24 +9,42 @@ import { toConversationMessages } from "../message-helpers";
 /**
  * Manages loading/resuming a chat session, sending prompts,
  * and transforming messages for the conversation view.
+ *
+ * Message sources:
+ *  - `session.messages`  — persisted history from React Query (source of truth)
+ *  - `pendingMessages`   — optimistic in-flight messages (user prompt + assistant
+ *                          response) shown until the RQ refetch catches up
  */
 export function useChatSession() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const location = useLocation();
-  const { sendPrompt, cancelPrompt } = useClaude();
-  const { messages, isStreaming, partialMessage } = useChatStore();
+  const { sendPrompt, cancelPrompt } = useAiChat();
+  const { isStreaming, partialMessage, pendingMessages, clearPendingMessages } =
+    useChatStore();
   const { activeSessionId, setActiveSession } = useSessionStore();
-  const { loadMessages } = useChatStore();
 
-  // Load session when navigating to a new one
+  const { data: session } = useSessionQuery(sessionId);
+  const sessionMessages = session?.messages ?? [];
+
+  // Clear stale pending messages when navigating to a different session
   useEffect(() => {
-    if (sessionId && sessionId !== activeSessionId) {
-      api.sessions.get({ id: sessionId }).then((session) => {
-        setActiveSession(session.id);
-        loadMessages(session.messages);
-      });
+    clearPendingMessages();
+  }, [sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Once React Query refetches and delivers updated session messages, the
+  // pending messages are now in the DB — safe to discard the optimistic copies
+  useEffect(() => {
+    if (sessionMessages.length > 0) {
+      clearPendingMessages();
     }
-  }, [sessionId, activeSessionId]);
+  }, [sessionMessages.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Sync active session ID with the session store
+  useEffect(() => {
+    if (session && session.id !== activeSessionId) {
+      setActiveSession(session.id);
+    }
+  }, [session, sessionId, activeSessionId]);
 
   // Auto-send initial prompt from route state (e.g. from template or quick action)
   const initialPromptSent = useRef(false);
@@ -55,14 +73,19 @@ export function useChatSession() {
     if (sessionId) cancelPrompt(sessionId);
   }, [sessionId, cancelPrompt]);
 
+  // Merge persisted history with optimistic pending messages
+  const allMessages = useMemo(
+    () => [...sessionMessages, ...pendingMessages],
+    [sessionMessages, pendingMessages],
+  );
+
   const conversationMessages = useMemo(
-    () => toConversationMessages(messages),
-    [messages],
+    () => toConversationMessages(allMessages),
+    [allMessages],
   );
 
   return {
     sessionId,
-    messages,
     conversationMessages,
     isStreaming,
     partialMessage,

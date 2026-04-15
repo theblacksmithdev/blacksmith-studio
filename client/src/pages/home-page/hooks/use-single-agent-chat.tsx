@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { MessageSquare } from "lucide-react";
-import { useClaude } from "@/hooks/use-claude";
+import { useAiChat } from "@/hooks/use-ai-chat";
 import { useSessionsQuery, useCreateSession } from "@/api/hooks/sessions";
 import { useActiveProjectId } from "@/api/hooks/_shared";
 import { useChatStore } from "@/stores/chat-store";
@@ -10,7 +10,7 @@ import type { RecentEntry } from "../components/recent-section";
 export function useSingleAgentChat() {
   const navigate = useNavigate();
   const projectId = useActiveProjectId();
-  const { sendPrompt } = useClaude();
+  const { sendPrompt } = useAiChat();
   const { isStreaming } = useChatStore();
   const { data: sessionsData } = useSessionsQuery({ limit: 4 });
   const createSession = useCreateSession();

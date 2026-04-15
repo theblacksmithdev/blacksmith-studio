@@ -3,16 +3,17 @@ import styled from "@emotion/styled";
 import { useNavigate, useLocation } from "react-router-dom";
 import { MessageSquare, Network, Trash2, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useQueryClient } from "@tanstack/react-query";
+import { api } from "@/api";
 import {
   useSessionsQuery,
-  useSessionQuery,
   useDeleteSession,
 } from "@/api/hooks/sessions";
 import {
   useAgentConversationsQuery,
   useDeleteAgentConversation,
 } from "@/api/hooks/agents";
-import { useActiveProjectId } from "@/api/hooks/_shared";
+import { useActiveProjectId, useProjectKeys } from "@/api/hooks/_shared";
 import { useSessionStore } from "@/stores/session-store";
 import { useChatStore } from "@/stores/chat-store";
 import { useUiStore } from "@/stores/ui-store";
@@ -192,11 +193,13 @@ const Empty = styled.div`
 export function HistoryPanel() {
   const location = useLocation();
   const navigate = useNavigate();
+  const qc = useQueryClient();
+  const keys = useProjectKeys();
   const { data: sessionsData } = useSessionsQuery();
   const deleteSessionMutation = useDeleteSession();
   const activeSessionId = useSessionStore((s) => s.activeSessionId);
   const { setActiveSession } = useSessionStore();
-  const { loadMessages } = useChatStore();
+  const clearPendingMessages = useChatStore((s) => s.clearPendingMessages);
   const pid = useActiveProjectId();
   const close = useUiStore((s) => s.setHistoryPanelOpen);
 
@@ -226,10 +229,12 @@ export function HistoryPanel() {
     if (isAgents) {
       navigate(agentsConversationPath(pid, id));
     } else {
-      const { api } = await import("@/api");
-      const session = await api.sessions.get({ id });
+      const session = await qc.fetchQuery({
+        queryKey: keys.session(id),
+        queryFn: () => api.sessions.get({ id }),
+      });
       setActiveSession(session.id);
-      loadMessages(session.messages);
+      clearPendingMessages();
       navigate(chatPath(pid, id));
     }
   };

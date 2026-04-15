@@ -4,6 +4,7 @@ import styled from "@emotion/styled";
 import { keyframes } from "@emotion/react";
 import { Network, Bot, Cpu, Sparkles, AlertCircle } from "lucide-react";
 import { useAgentStore } from "@/stores/agent-store";
+import { useAgentChatQuery } from "@/api/hooks/agents";
 import { ROLE_ICONS } from "../shared/role-icons";
 import {
   ConversationView,
@@ -106,15 +107,23 @@ interface AgentChatProps {
   onSend: (msg: string) => void;
   onRespond: (id: string, val: string) => void;
   isProcessing: boolean;
+  conversationId?: string;
 }
 
-export function AgentChat({ onSend, onRespond, isProcessing }: AgentChatProps) {
-  const msgs = useAgentStore((s) => s.chatMessages);
+export function AgentChat({ onSend, onRespond, isProcessing, conversationId }: AgentChatProps) {
+  const { data: persistedMsgs = [] } = useAgentChatQuery(conversationId);
+  const liveMessages = useAgentStore((s) => s.liveMessages);
   const inputs = useAgentStore((s) => s.pendingInputs);
+
+  // Merge persisted history with optimistic in-flight messages
+  const msgs = useMemo(
+    () => [...persistedMsgs, ...liveMessages],
+    [persistedMsgs, liveMessages],
+  );
 
   const conversationMessages: ConversationMessage[] = useMemo(
     () =>
-      msgs.map((m) => ({
+      msgs.map((m: any) => ({
         id: m.id,
         role: m.role,
         content: m.content,
