@@ -48,19 +48,30 @@ export function setupGitIPC(
     return p;
   }
 
-  // Debounced status change push
-  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  // Debounced status change push — one timer per project path
+  const debounceTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
   gitManager.onStatusChange(async (projectPath) => {
-    if (debounceTimer) clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(async () => {
-      try {
-        const status = await gitManager.getStatus(projectPath);
-        getWindow()?.webContents.send(GIT_ON_STATUS_CHANGE, status);
-      } catch {
-        /* ignore */
-      }
-    }, 500);
+    const existing = debounceTimers.get(projectPath);
+    if (existing) clearTimeout(existing);
+
+    debounceTimers.set(
+      projectPath,
+      setTimeout(async () => {
+        debounceTimers.delete(projectPath);
+        try {
+          const project = projectManager.getByPath(projectPath);
+          if (!project) return;
+          const status = await gitManager.getStatus(projectPath);
+          getWindow()?.webContents.send(GIT_ON_STATUS_CHANGE, {
+            projectId: project.id,
+            ...status,
+          });
+        } catch {
+          /* ignore */
+        }
+      }, 500),
+    );
   });
 
   // ── Status ──

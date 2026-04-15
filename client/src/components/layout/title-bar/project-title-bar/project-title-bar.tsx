@@ -1,4 +1,4 @@
-import { PanelLeft } from "lucide-react";
+import { PanelLeft, Terminal } from "lucide-react";
 import { Tooltip } from "@/components/shared/tooltip";
 import {
   TitleBarShell,
@@ -9,9 +9,11 @@ import {
 } from "../title-bar-shell";
 import { ModeToggle } from "./mode-toggle";
 import { useTitleBar } from "./hooks/use-title-bar";
+import { useTerminalPanel } from "@/hooks/use-terminal-panel";
 
 export function ProjectTitleBar() {
   const { project, pageName, isHome, toggleSidebar } = useTitleBar();
+  const [terminalOpen, toggleTerminal] = useTerminalPanel();
 
   return (
     <TitleBarShell
@@ -38,6 +40,13 @@ export function ProjectTitleBar() {
         ) : (
           <TitleText>Blacksmith Studio</TitleText>
         )
+      }
+      trailing={
+        <Tooltip content="Terminal">
+          <NavBtn onClick={toggleTerminal} style={{ color: terminalOpen ? "var(--studio-text-primary)" : undefined }}>
+            <Terminal size={14} />
+          </NavBtn>
+        </Tooltip>
       }
     />
   );

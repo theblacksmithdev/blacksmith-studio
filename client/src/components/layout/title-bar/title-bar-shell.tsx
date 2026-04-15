@@ -151,12 +151,12 @@ export function TitleBarShell({
       <Center>{center}</Center>
 
       <Actions>
+        {trailing}
         <Tooltip content={mode === "dark" ? "Light mode" : "Dark mode"}>
           <ActionBtn onClick={toggleTheme}>
             {mode === "dark" ? <Sun size={13} /> : <Moon size={13} />}
           </ActionBtn>
         </Tooltip>
-        {trailing}
       </Actions>
     </Bar>
   );

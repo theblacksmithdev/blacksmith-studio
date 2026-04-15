@@ -6,6 +6,7 @@ import { useActiveProjectId } from "@/api/hooks/_shared";
 import { useRunnerListener } from "@/hooks/use-runner";
 import { useGitListener } from "@/hooks/use-git";
 import { useUiStore } from "@/stores/ui-store";
+import { useTerminalPanel } from "@/hooks/use-terminal-panel";
 import { SplitPanel } from "@/components/shared/layout";
 import { RunnerDock } from "@/components/runner/dock";
 import { TerminalPanel } from "@/components/terminal";
@@ -44,7 +45,7 @@ export function ProjectLayout() {
   const projectId = useActiveProjectId();
   const { data: project, isLoading, isError } = useProjectQuery(projectId);
   const navigate = useNavigate();
-  const terminalOpen = useUiStore((s) => s.terminalOpen);
+  const [terminalOpen] = useTerminalPanel();
 
   useRunnerListener();
   useGitListener();
