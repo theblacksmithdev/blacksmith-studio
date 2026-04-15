@@ -60,6 +60,62 @@ function defineCustomThemes(monaco: Monaco) {
   monaco.editor.defineTheme("blacksmith-light", lightTheme);
 }
 
+/** Configure Monaco's built-in TypeScript/JavaScript language service */
+function configureTypeScriptDefaults(monaco: Monaco) {
+  const ts = monaco.languages.typescript;
+
+  const compilerOptions: Parameters<typeof ts.typescriptDefaults.setCompilerOptions>[0] = {
+    target: ts.ScriptTarget.ES2020,
+    module: ts.ModuleKind.ESNext,
+    // Use NodeJs resolution — Monaco's TS service doesn't support "bundler"
+    moduleResolution: ts.ModuleResolutionKind.NodeJs,
+    jsx: ts.JsxEmit.ReactJSX,
+    jsxImportSource: "react",
+    allowSyntheticDefaultImports: true,
+    esModuleInterop: true,
+    allowJs: true,
+    checkJs: false,
+    strict: false,
+    noImplicitAny: false,
+    strictNullChecks: false,
+    resolveJsonModule: true,
+    skipLibCheck: true,
+    noEmit: true,
+    experimentalDecorators: true,
+    emitDecoratorMetadata: true,
+  };
+
+  // Suppress errors we can't resolve (missing node_modules types, path aliases, etc.)
+  const diagnosticCodesToIgnore = [
+    2307, // Cannot find module '...' or its corresponding type declarations
+    7016, // Could not find a declaration file for module '...'
+    2304, // Cannot find name '...' (e.g. from missing lib types)
+    2305, // Module '...' has no exported member '...'
+    2322, // suppress some strict type mismatch noise when checkJs is on
+    1259, // Module can only be default-imported using 'esModuleInterop' flag
+    1192, // Module '...' has no default export
+    2792, // Cannot find module ... Did you mean to set moduleResolution to 'bundler'
+  ];
+
+  ts.typescriptDefaults.setCompilerOptions(compilerOptions);
+  ts.typescriptDefaults.setDiagnosticsOptions({
+    noSemanticValidation: false,
+    noSyntaxValidation: false,
+    diagnosticCodesToIgnore,
+  });
+
+  ts.javascriptDefaults.setCompilerOptions(compilerOptions);
+  ts.javascriptDefaults.setDiagnosticsOptions({
+    noSemanticValidation: false,
+    noSyntaxValidation: false,
+    diagnosticCodesToIgnore,
+  });
+
+  // Eager model sync gives better completion performance
+  ts.typescriptDefaults.setEagerModelSync(true);
+  ts.javascriptDefaults.setEagerModelSync(true);
+}
+
 export function CodeEditor({
   content,
   language,
@@ -122,7 +178,10 @@ export function CodeEditor({
           options={EDITOR_OPTIONS}
           onMount={handleMount}
           onChange={handleChange}
-          beforeMount={defineCustomThemes}
+          beforeMount={(monaco) => {
+            defineCustomThemes(monaco);
+            configureTypeScriptDefaults(monaco);
+          }}
           keepCurrentModel={false}
           loading={
             <Flex align="center" justify="center" css={{ height: "100%" }}>
