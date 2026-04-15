@@ -1,8 +1,8 @@
 import { memo, useCallback } from "react";
 import { Box, Flex } from "@chakra-ui/react";
 import { InfiniteScrollList, spacing } from "@/components/shared/ui";
-import type { DiffLine, ParsedDiff } from "../hooks";
-import { getLineStyles, lineNumStyle, LINE_HEIGHT, FONT } from "../hooks";
+import type { DiffLine, ParsedDiff } from "../../../hooks";
+import { getLineStyles, lineNumStyle, LINE_HEIGHT, FONT } from "../../../hooks";
 
 const DiffRow = memo(function DiffRow({
   line,

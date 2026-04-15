@@ -8,7 +8,7 @@ import {
   radii,
 } from "@/components/shared/ui";
 import { FileIcon } from "@/pages/files/components/explorer/utils/file-icon";
-import { FONT } from "../hooks";
+import { FONT } from "../../../hooks";
 
 interface NoFileSelectedProps {
   /* intentionally empty */

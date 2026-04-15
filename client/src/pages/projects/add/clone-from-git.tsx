@@ -4,10 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { FolderOpen, GitBranch, Terminal } from "lucide-react";
+import { FolderOpen, GitBranch } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { api } from "@/api";
 import { queryKeys } from "@/api/query-keys";
+import { useCloneProject } from "@/api/hooks/projects";
+import { useChannel } from "@/api/hooks/_shared/use-channel";
 import { FormField, inputCss } from "@/components/forms/form-field";
 import { FolderPicker } from "./folder-picker";
 import { isElectron, selectFolderNative } from "@/lib/electron";
@@ -35,9 +36,14 @@ export function CloneFromGit() {
   const qc = useQueryClient();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [cloning, setCloning] = useState(false);
-  const [output, setOutput] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const termRef = useRef<HTMLDivElement>(null);
+
+  const cloneProject = useCloneProject();
+
+  const outputChannel = useChannel("projects:createOutput");
+  const doneChannel = useChannel("projects:createDone", { replace: true });
+  const errorChannel = useChannel("projects:createError", { replace: true });
 
   const {
     register,
@@ -69,45 +75,46 @@ export function CloneFromGit() {
     if (termRef.current) {
       termRef.current.scrollTop = termRef.current.scrollHeight;
     }
-  }, [output]);
+  }, [outputChannel.messages]);
+
+  // Handle clone done
+  useEffect(() => {
+    if (!doneChannel.last) return;
+    setCloning(false);
+    qc.invalidateQueries({ queryKey: queryKeys.projects });
+    if (doneChannel.last.project?.id) {
+      navigate(`/${doneChannel.last.project.id}`);
+    }
+  }, [doneChannel.last, navigate, qc]);
+
+  // Handle clone error
+  useEffect(() => {
+    if (!errorChannel.last) return;
+    setCloning(false);
+    setError(errorChannel.last.error);
+  }, [errorChannel.last]);
 
   const onSubmit = async (data: FormData) => {
     setCloning(true);
-    setOutput([]);
+    outputChannel.clear();
+    doneChannel.clear();
+    errorChannel.clear();
     setError(null);
 
-    try {
-      await api.projects.clone({
+    cloneProject.mutate(
+      {
         gitUrl: data.gitUrl.trim(),
         parentPath: data.parentPath,
         name: data.name?.trim() || undefined,
-      });
-    } catch (err: any) {
-      setError(err.message || "Failed to start clone");
-      setCloning(false);
-    }
+      },
+      {
+        onError: (err: any) => {
+          setError(err.message || "Failed to start clone");
+          setCloning(false);
+        },
+      },
+    );
   };
-
-  // Listen for streaming events
-  useEffect(() => {
-    const unsubs = [
-      api.projects.onCreateOutput((data) => {
-        setOutput((prev) => [...prev, data.line]);
-      }),
-      api.projects.onCreateDone((data) => {
-        setCloning(false);
-        qc.invalidateQueries({ queryKey: queryKeys.projects });
-        if (data.project?.id) {
-          navigate(`/${data.project.id}`);
-        }
-      }),
-      api.projects.onCreateError((data) => {
-        setCloning(false);
-        setError(data.error);
-      }),
-    ];
-    return () => unsubs.forEach((u) => u());
-  }, [navigate, qc]);
 
   return (
     <VStack
@@ -255,7 +262,7 @@ export function CloneFromGit() {
           )}
 
           {/* Terminal output */}
-          {(cloning || output.length > 0) && (
+          {(cloning || outputChannel.hasData) && (
             <Box
               ref={termRef}
               css={{
@@ -271,8 +278,8 @@ export function CloneFromGit() {
                 color: "var(--studio-text-tertiary)",
               }}
             >
-              {output.map((line, i) => (
-                <div key={i}>{line}</div>
+              {outputChannel.messages.map((msg, i) => (
+                <div key={i}>{msg.line}</div>
               ))}
               {cloning && (
                 <Text

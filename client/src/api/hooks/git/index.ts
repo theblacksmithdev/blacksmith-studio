@@ -8,6 +8,9 @@ export { useGitBranchesQuery } from "./use-git-branches-query";
 export { useGitSyncStatusQuery } from "./use-git-sync-status-query";
 export { useGitConflictsQuery } from "./use-git-conflicts-query";
 
+// Utilities
+export { useInvalidateGit } from "./use-invalidate-git";
+
 // Mutations
 export { useGitCommit } from "./use-git-commit";
 export { useGitGenerateMessage } from "./use-git-generate-message";

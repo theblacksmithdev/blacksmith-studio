@@ -12,7 +12,7 @@ import {
   spacing,
   radii,
 } from "@/components/shared/ui";
-import { useBranchActions } from "./hooks";
+import { useBranchActions } from "../../hooks";
 
 interface Props {
   onClose: () => void;

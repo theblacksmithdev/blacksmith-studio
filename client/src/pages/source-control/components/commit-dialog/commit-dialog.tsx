@@ -6,7 +6,7 @@ import {
   Badge,
   SkeletonList,
 } from "@/components/shared/ui";
-import { useCommit } from "./hooks";
+import { useCommit } from "../../hooks";
 import { MessageInput, FileList } from "./components";
 
 interface CommitDialogProps {

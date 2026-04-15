@@ -1,6 +1,6 @@
 import { Flex } from "@chakra-ui/react";
 import { Text } from "@/components/shared/ui";
-import { useParsedDiff } from "./hooks";
+import { useParsedDiff } from "../../hooks";
 import { DiffHeader, DiffTable, NoFileSelected, NoChanges } from "./components";
 
 function Shell({ children }: { children: React.ReactNode }) {

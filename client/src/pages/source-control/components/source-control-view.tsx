@@ -1,6 +1,5 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { Box, Flex } from "@chakra-ui/react";
-import { useQueryClient } from "@tanstack/react-query";
 import {
   GitBranch,
   GitCommitHorizontal,
@@ -12,8 +11,8 @@ import {
   useGitHistoryQuery,
   useGitStatusQuery,
   useGitInit,
+  useInvalidateGit,
 } from "@/api/hooks/git";
-import { useProjectKeys } from "@/api/hooks/_shared";
 import { useGitStore, selectBranchLabel } from "@/stores/git-store";
 import {
   Text,
@@ -40,20 +39,11 @@ export function SourceControlView() {
   const [showBranches, setShowBranches] = useState(false);
   const [selectedCommit, setSelectedCommit] = useState<string | null>(null);
 
-  const qc = useQueryClient();
-  const keys = useProjectKeys();
   const status = useGitStatusQuery();
   const changedFiles = useGitChangedFilesQuery();
   const history = useGitHistoryQuery();
   const initGit = useGitInit();
-
-  const invalidateAll = useCallback(() => {
-    qc.invalidateQueries({ queryKey: keys.gitStatus });
-    qc.invalidateQueries({ queryKey: keys.gitChangedFiles });
-    qc.invalidateQueries({ queryKey: keys.gitHistory });
-    qc.invalidateQueries({ queryKey: keys.gitBranches });
-    qc.invalidateQueries({ queryKey: keys.gitSyncStatus });
-  }, [qc, keys]);
+  const invalidateAll = useInvalidateGit();
 
   const branchLabel = useGitStore(selectBranchLabel);
   const changedCount = useGitStore((s) => s.changedCount);
