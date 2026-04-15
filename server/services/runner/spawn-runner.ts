@@ -31,7 +31,6 @@ export async function spawnRunner(
 ): Promise<SpawnResult> {
   // Check that the configured port is free — fail fast if busy
   const configuredPort = config.port ?? null;
-  console.log("Configured port:", configuredPort);
   if (configuredPort) {
     await assertPortAvailable(configuredPort);
   }
