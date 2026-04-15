@@ -1,5 +1,6 @@
 import { useState, useMemo, memo, useCallback } from "react";
 import { Flex, Box } from "@chakra-ui/react";
+import styled from "@emotion/styled";
 import { GitCommitHorizontal, User, Calendar, Copy, Check } from "lucide-react";
 import { useGitCommitDetailQuery } from "@/api/hooks/git";
 import {
@@ -29,19 +30,69 @@ function classifyLine(line: string): "add" | "remove" | "hunk" | "context" {
   return "context";
 }
 
-const diffLineColors: Record<string, { bg: string; text: string }> = {
-  add: { bg: "var(--studio-green-subtle)", text: "var(--studio-text-primary)" },
-  remove: {
-    bg: "var(--studio-error-subtle)",
-    text: "var(--studio-text-primary)",
-  },
-  hunk: { bg: "var(--studio-bg-surface)", text: "var(--studio-text-muted)" },
-  context: { bg: "transparent", text: "var(--studio-text-tertiary)" },
+const diffBg: Record<string, string> = {
+  add: "var(--studio-green-subtle)",
+  remove: "var(--studio-error-subtle)",
+  hunk: "var(--studio-bg-surface)",
+  context: "transparent",
+};
+const diffText: Record<string, string> = {
+  add: "var(--studio-text-primary)",
+  remove: "var(--studio-text-primary)",
+  hunk: "var(--studio-text-muted)",
+  context: "var(--studio-text-tertiary)",
 };
 
 function getFileName(path: string) {
   return path.split("/").pop() || path;
 }
+
+const Meta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${spacing.xs};
+  color: var(--studio-text-muted);
+`;
+
+const HashBtn = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: ${radii.md};
+  border: 1px solid var(--studio-border);
+  background: var(--studio-bg-surface);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  color: var(--studio-text-secondary);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  &:hover {
+    border-color: var(--studio-border-hover);
+    color: var(--studio-text-primary);
+  }
+`;
+
+const SectionLabel = styled.div`
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--studio-text-muted);
+  margin-bottom: ${spacing.sm};
+`;
+
+const FileItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${spacing.sm};
+  padding: 5px ${spacing.sm};
+  border-radius: ${radii.md};
+  transition: background 0.1s ease;
+  &:hover {
+    background: var(--studio-bg-hover);
+  }
+`;
 
 interface Props {
   hash: string;
@@ -59,8 +110,7 @@ export function CommitDetailDrawer({ hash, onClose }: Props) {
   };
 
   const { totalAdded, totalDeleted, diffLines } = useMemo(() => {
-    if (!detail)
-      return { totalAdded: 0, totalDeleted: 0, diffLines: [] as string[] };
+    if (!detail) return { totalAdded: 0, totalDeleted: 0, diffLines: [] as string[] };
     return {
       totalAdded: detail.files.reduce((n, f) => n + f.insertions, 0),
       totalDeleted: detail.files.reduce((n, f) => n + f.deletions, 0),
@@ -78,11 +128,10 @@ export function CommitDetailDrawer({ hash, onClose }: Props) {
 
   const renderDiffLine = useCallback((line: string, i: number) => {
     const type = classifyLine(line);
-    const colors = diffLineColors[type];
     return (
       <Flex
         css={{
-          background: colors.bg,
+          background: diffBg[type],
           fontFamily: "'SF Mono', 'Fira Code', monospace",
           fontSize: "12px",
           lineHeight: "18px",
@@ -90,14 +139,14 @@ export function CommitDetailDrawer({ hash, onClose }: Props) {
       >
         <Box
           css={{
-            width: "40px",
-            minWidth: "40px",
+            width: "36px",
+            minWidth: "36px",
             padding: "0 6px",
             textAlign: "right",
             color: "var(--studio-text-muted)",
             fontSize: "11px",
             userSelect: "none",
-            opacity: 0.5,
+            opacity: 0.4,
           }}
         >
           {i + 1}
@@ -108,7 +157,7 @@ export function CommitDetailDrawer({ hash, onClose }: Props) {
             padding: "0 10px 0 6px",
             whiteSpace: "pre-wrap",
             wordBreak: "break-all",
-            color: colors.text,
+            color: diffText[type],
             fontWeight: type === "hunk" ? 600 : 400,
           }}
         >
@@ -120,123 +169,58 @@ export function CommitDetailDrawer({ hash, onClose }: Props) {
 
   return (
     <Drawer
-      title={detail?.message ?? "Commit Detail"}
+      title={detail?.message ?? "Commit"}
+      subtitle={detail ? `${detail.hash.slice(0, 7)} · ${detail.author}` : undefined}
       onClose={onClose}
       size="lg"
       headerExtra={
-        <GitCommitHorizontal
-          size={16}
-          style={{ color: "var(--studio-text-muted)" }}
-        />
+        <GitCommitHorizontal size={15} style={{ color: "var(--studio-text-muted)" }} />
       }
     >
       {isLoading ? (
         <Flex align="center" justify="center" css={{ height: "200px" }}>
-          <Text variant="body" color="muted">
-            Loading commit details...
-          </Text>
+          <Text variant="caption" color="muted">Loading…</Text>
         </Flex>
       ) : detail ? (
-        <Flex
-          direction="column"
-          gap={spacing.xl}
-          css={{ height: "100%", minHeight: 0 }}
-        >
+        <Flex direction="column" gap={spacing.xl} css={{ height: "100%", minHeight: 0 }}>
+
           {/* ── Metadata ── */}
           <Flex align="center" gap={spacing.md} css={{ flexWrap: "wrap" }}>
-            <Flex
-              as="button"
-              align="center"
-              gap={spacing.xs}
-              onClick={copyHash}
-              css={{
-                padding: `3px ${spacing.sm}`,
-                borderRadius: radii.md,
-                border: "1px solid var(--studio-border)",
-                background: "var(--studio-bg-surface)",
-                fontFamily: "'SF Mono', monospace",
-                fontSize: "12px",
-                color: "var(--studio-text-secondary)",
-                cursor: "pointer",
-                transition: "all 0.12s ease",
-                "&:hover": {
-                  borderColor: "var(--studio-border-hover)",
-                  color: "var(--studio-text-primary)",
-                },
-              }}
-            >
+            <HashBtn onClick={copyHash}>
               {copied ? <Check size={11} /> : <Copy size={11} />}
               {detail.hash.slice(0, 7)}
-            </Flex>
-
-            <Flex
-              align="center"
-              gap={spacing.xs}
-              css={{ color: "var(--studio-text-muted)" }}
-            >
+            </HashBtn>
+            <Meta>
               <User size={12} />
               <Text variant="caption">{detail.author}</Text>
-            </Flex>
-
-            <Flex
-              align="center"
-              gap={spacing.xs}
-              css={{ color: "var(--studio-text-muted)" }}
-            >
+            </Meta>
+            <Meta>
               <Calendar size={12} />
               <Text variant="caption">{formatDate(detail.date)}</Text>
-            </Flex>
+            </Meta>
           </Flex>
 
           {/* ── Files changed ── */}
           <Box>
-            <Flex
-              align="center"
-              gap={spacing.sm}
-              css={{ marginBottom: spacing.sm }}
-            >
-              <Text
-                variant="tiny"
-                color="muted"
-                css={{ textTransform: "uppercase", letterSpacing: "0.06em" }}
-              >
-                Files changed
-              </Text>
-              <Badge variant="default" size="sm">
-                {detail.files.length}
-              </Badge>
+            <Flex align="center" gap={spacing.sm} css={{ marginBottom: spacing.sm }}>
+              <SectionLabel style={{ marginBottom: 0 }}>Files changed</SectionLabel>
+              <Badge variant="default" size="sm">{detail.files.length}</Badge>
               {totalAdded > 0 && (
-                <Text
-                  variant="caption"
-                  css={{ color: "var(--studio-green)", fontWeight: 500 }}
-                >
+                <Text variant="caption" css={{ color: "var(--studio-green)", fontWeight: 500 }}>
                   +{totalAdded}
                 </Text>
               )}
               {totalDeleted > 0 && (
-                <Text
-                  variant="caption"
-                  css={{ color: "var(--studio-error)", fontWeight: 500 }}
-                >
-                  -{totalDeleted}
+                <Text variant="caption" css={{ color: "var(--studio-error)", fontWeight: 500 }}>
+                  −{totalDeleted}
                 </Text>
               )}
             </Flex>
 
             <Flex direction="column" gap="1px">
               {detail.files.map((f) => (
-                <Flex
-                  key={f.path}
-                  align="center"
-                  gap={spacing.sm}
-                  css={{
-                    padding: `5px ${spacing.sm}`,
-                    borderRadius: radii.md,
-                    transition: "background 0.1s ease",
-                    "&:hover": { background: "var(--studio-bg-hover)" },
-                  }}
-                >
-                  <FileIcon name={getFileName(f.path)} size={14} />
+                <FileItem key={f.path}>
+                  <FileIcon name={getFileName(f.path)} size={13} />
                   <Text
                     variant="bodySmall"
                     css={{
@@ -249,46 +233,23 @@ export function CommitDetailDrawer({ hash, onClose }: Props) {
                     {f.path}
                   </Text>
                   {f.insertions > 0 && (
-                    <Text
-                      variant="caption"
-                      css={{ color: "var(--studio-green)", fontWeight: 500 }}
-                    >
+                    <Text variant="caption" css={{ color: "var(--studio-green)", fontWeight: 500 }}>
                       +{f.insertions}
                     </Text>
                   )}
                   {f.deletions > 0 && (
-                    <Text
-                      variant="caption"
-                      css={{ color: "var(--studio-error)", fontWeight: 500 }}
-                    >
-                      -{f.deletions}
+                    <Text variant="caption" css={{ color: "var(--studio-error)", fontWeight: 500 }}>
+                      −{f.deletions}
                     </Text>
                   )}
-                </Flex>
+                </FileItem>
               ))}
             </Flex>
           </Box>
 
           {/* ── Diff ── */}
-          <Box
-            css={{
-              flex: 1,
-              minHeight: 0,
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <Text
-              variant="tiny"
-              color="muted"
-              css={{
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-                marginBottom: spacing.sm,
-              }}
-            >
-              Diff
-            </Text>
+          <Box css={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+            <SectionLabel>Diff</SectionLabel>
             <Box
               css={{
                 flex: 1,
@@ -310,9 +271,7 @@ export function CommitDetailDrawer({ hash, onClose }: Props) {
         </Flex>
       ) : (
         <Flex align="center" justify="center" css={{ height: "200px" }}>
-          <Text variant="body" color="muted">
-            Failed to load commit details
-          </Text>
+          <Text variant="caption" color="muted">Failed to load commit</Text>
         </Flex>
       )}
     </Drawer>

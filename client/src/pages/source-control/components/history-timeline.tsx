@@ -1,5 +1,6 @@
 import { useMemo, memo, useCallback } from "react";
 import { Flex, Box } from "@chakra-ui/react";
+import styled from "@emotion/styled";
 import { Text, InfiniteScrollList, spacing } from "@/components/shared/ui";
 import type { GitCommitEntry } from "@/api/types";
 
@@ -12,10 +13,10 @@ function formatRelative(dateStr: string): string {
   const diffDay = Math.floor(diffHr / 24);
 
   if (diffMin < 1) return "just now";
-  if (diffMin < 60) return `${diffMin}m ago`;
-  if (diffHr < 24) return `${diffHr}h ago`;
+  if (diffMin < 60) return `${diffMin}m`;
+  if (diffHr < 24) return `${diffHr}h`;
   if (diffDay === 1) return "yesterday";
-  if (diffDay < 7) return `${diffDay}d ago`;
+  if (diffDay < 7) return `${diffDay}d`;
   return date.toLocaleDateString();
 }
 
@@ -26,13 +27,8 @@ function getDateKey(dateStr: string): string {
 
   if (diffDays === 0) return "Today";
   if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7)
-    return date.toLocaleDateString(undefined, { weekday: "long" });
-  return date.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  if (diffDays < 7) return date.toLocaleDateString(undefined, { weekday: "long" });
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 }
 
 type FlatItem =
@@ -53,6 +49,49 @@ function flattenWithHeaders(entries: GitCommitEntry[]): FlatItem[] {
   return items;
 }
 
+const CommitBtn = styled.button`
+  display: flex;
+  align-items: center;
+  gap: ${spacing.sm};
+  width: calc(100% - 5px);
+  margin-left: 5px;
+  padding: 7px ${spacing.sm};
+  border: none;
+  border-left: 1px solid var(--studio-border);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.1s ease;
+
+  &:hover {
+    border-left-color: var(--studio-text-muted);
+    background: var(--studio-bg-surface);
+  }
+  &:hover .commit-dot {
+    background: var(--studio-text-muted);
+  }
+`;
+
+const CommitDot = styled.div`
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--studio-border-hover);
+  flex-shrink: 0;
+  margin-left: -4px;
+  transition: background 0.1s ease;
+`;
+
+const HashLabel = styled.span`
+  font-size: 11px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  color: var(--studio-text-muted);
+  flex-shrink: 0;
+  opacity: 0.6;
+  letter-spacing: 0.02em;
+`;
+
 const CommitRow = memo(function CommitRow({
   entry,
   onSelect,
@@ -61,49 +100,9 @@ const CommitRow = memo(function CommitRow({
   onSelect?: (hash: string) => void;
 }) {
   return (
-    <Flex
-      as="button"
-      align="center"
-      gap={spacing.sm}
-      onClick={() => onSelect?.(entry.hash)}
-      css={{
-        width: "100%",
-        padding: `6px ${spacing.sm}`,
-        marginLeft: "5px",
-        border: "none",
-        borderLeft: "1px solid var(--studio-border)",
-        background: "transparent",
-        textAlign: "left",
-        cursor: "pointer",
-        fontFamily: "inherit",
-        transition: "all 0.1s ease",
-        "&:hover": {
-          background: "var(--studio-bg-surface)",
-          borderLeftColor: "var(--studio-text-muted)",
-        },
-      }}
-    >
-      <Box
-        css={{
-          width: "7px",
-          height: "7px",
-          borderRadius: "50%",
-          background: "var(--studio-border-hover)",
-          flexShrink: 0,
-          marginLeft: "-4px",
-        }}
-      />
-      <Text
-        variant="caption"
-        css={{
-          fontFamily: "'SF Mono', monospace",
-          color: "var(--studio-text-muted)",
-          flexShrink: 0,
-          opacity: 0.7,
-        }}
-      >
-        {entry.hash.slice(0, 7)}
-      </Text>
+    <CommitBtn onClick={() => onSelect?.(entry.hash)}>
+      <CommitDot className="commit-dot" />
+      <HashLabel>{entry.hash.slice(0, 7)}</HashLabel>
       <Text
         variant="bodySmall"
         css={{
@@ -117,10 +116,14 @@ const CommitRow = memo(function CommitRow({
       >
         {entry.message}
       </Text>
-      <Text variant="caption" color="muted" css={{ flexShrink: 0 }}>
+      <Text
+        variant="caption"
+        color="muted"
+        css={{ flexShrink: 0, fontSize: "11px" }}
+      >
         {formatRelative(entry.date)}
       </Text>
-    </Flex>
+    </CommitBtn>
   );
 });
 
@@ -134,14 +137,8 @@ export function HistoryTimeline({ entries, onSelect }: Props) {
 
   if (entries.length === 0) {
     return (
-      <Flex
-        align="center"
-        justify="center"
-        css={{ padding: `${spacing.xl} 0` }}
-      >
-        <Text variant="caption" color="muted">
-          No commits yet
-        </Text>
+      <Flex align="center" justify="center" css={{ padding: `${spacing.xl} 0` }}>
+        <Text variant="caption" color="muted">No commits yet</Text>
       </Flex>
     );
   }
@@ -150,17 +147,15 @@ export function HistoryTimeline({ entries, onSelect }: Props) {
     (item: FlatItem) => {
       if (item.type === "header") {
         return (
-          <Text
-            variant="tiny"
-            color="muted"
-            css={{
-              padding: `${spacing.sm} 0 ${spacing.xs}`,
-              textTransform: "uppercase",
-              letterSpacing: "0.06em",
-            }}
-          >
-            {item.label}
-          </Text>
+          <Box css={{ padding: `${spacing.sm} 0 ${spacing.xs} 1px` }}>
+            <Text
+              variant="tiny"
+              color="muted"
+              css={{ textTransform: "uppercase", letterSpacing: "0.07em" }}
+            >
+              {item.label}
+            </Text>
+          </Box>
         );
       }
       return <CommitRow entry={item.entry} onSelect={onSelect} />;

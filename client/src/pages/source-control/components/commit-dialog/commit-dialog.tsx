@@ -2,8 +2,8 @@ import { GitCommitHorizontal } from "lucide-react";
 import {
   Modal,
   ModalFooterSpacer,
-  Button,
-  Badge,
+  ModalPrimaryButton,
+  ModalSecondaryButton,
   SkeletonList,
 } from "@/components/shared/ui";
 import { useCommit } from "../../hooks";
@@ -38,31 +38,20 @@ export function CommitDialog({ onClose, onCommitted }: CommitDialogProps) {
 
   return (
     <Modal
-      title="Commit Changes"
+      title="Commit changes"
       onClose={onClose}
-      width="520px"
-      headerExtra={
-        total > 0 ? (
-          <Badge variant="default" size="sm">
-            {total} file{total !== 1 ? "s" : ""}
-          </Badge>
-        ) : undefined
-      }
+      width="500px"
       footer={
         <>
           <ModalFooterSpacer />
-          <Button variant="ghost" size="md" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            size="md"
+          <ModalSecondaryButton onClick={onClose}>Cancel</ModalSecondaryButton>
+          <ModalPrimaryButton
             onClick={handleCommit}
             disabled={!canCommit}
           >
             <GitCommitHorizontal size={14} />
-            {isCommitting ? "Committing..." : "Commit"}
-          </Button>
+            {isCommitting ? "Committing…" : `Commit${selectedCount > 0 ? ` ${selectedCount} file${selectedCount !== 1 ? "s" : ""}` : ""}`}
+          </ModalPrimaryButton>
         </>
       }
     >
@@ -74,7 +63,7 @@ export function CommitDialog({ onClose, onCommitted }: CommitDialogProps) {
       />
 
       {isLoadingFiles ? (
-        <SkeletonList rows={5} />
+        <SkeletonList rows={4} />
       ) : (
         <FileList
           files={files}

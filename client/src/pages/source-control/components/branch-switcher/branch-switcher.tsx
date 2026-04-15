@@ -1,18 +1,73 @@
 import { useState } from "react";
-import { Box, Flex } from "@chakra-ui/react";
-import { GitBranch, GitMerge, Plus } from "lucide-react";
+import { Flex, Box } from "@chakra-ui/react";
+import { GitBranch, GitMerge, Plus, Check } from "lucide-react";
+import styled from "@emotion/styled";
 import {
   Modal,
   ModalFooterSpacer,
+  ModalPrimaryButton,
+  ModalSecondaryButton,
   Text,
   Input,
-  Badge,
-  Button,
   Alert,
+  ConfirmDialog,
   spacing,
   radii,
 } from "@/components/shared/ui";
 import { useBranchActions } from "../../hooks";
+
+const BranchRow = styled.button<{ active?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: ${spacing.sm};
+  width: 100%;
+  padding: 8px ${spacing.md};
+  border-radius: ${radii.md};
+  border: none;
+  background: ${({ active }) =>
+    active ? "var(--studio-bg-hover)" : "transparent"};
+  cursor: ${({ active }) => (active ? "default" : "pointer")};
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.1s ease;
+  &:hover {
+    background: var(--studio-bg-hover);
+  }
+  &:hover .merge-action {
+    opacity: 1;
+  }
+`;
+
+const BranchDot = styled.div<{ active?: boolean }>`
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: ${({ active }) =>
+    active ? "var(--studio-accent)" : "transparent"};
+  border: ${({ active }) =>
+    active ? "none" : "1.5px solid var(--studio-border-hover)"};
+`;
+
+const MergeBtn = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: ${radii.sm};
+  border: 1px solid var(--studio-border);
+  background: transparent;
+  color: var(--studio-text-muted);
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.1s ease;
+  &:hover {
+    border-color: var(--studio-border-hover);
+    color: var(--studio-text-primary);
+  }
+`;
 
 interface Props {
   onClose: () => void;
@@ -34,310 +89,175 @@ export function BranchSwitcher({ onClose }: Props) {
     const trimmed = newName.trim();
     if (!trimmed) return;
     actions.create(trimmed);
-  };
-
-  const handleCheckout = (name: string) => {
-    actions.checkout(name);
-  };
-
-  const handleMerge = (source: string) => {
-    actions.mergeInto(source);
+    setNewName("");
+    setShowCreate(false);
   };
 
   return (
-    <Modal
-      title="Branches"
-      onClose={onClose}
-      width="440px"
-      headerExtra={
-        <GitBranch size={16} style={{ color: "var(--studio-text-muted)" }} />
-      }
-    >
-      {/* ── Error banner ── */}
-      {error && (
-        <Box css={{ marginBottom: spacing.md }}>
-          <Alert variant="error" onDismiss={clearError}>
-            {error}
-          </Alert>
-        </Box>
-      )}
-
-      {/* ── Search ── */}
-      {branches.others.length > 3 && (
-        <Box css={{ marginBottom: spacing.md }}>
-          <Input
-            size="sm"
-            value={search}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setSearch(e.target.value)
-            }
-            placeholder="Search branches..."
-          />
-        </Box>
-      )}
-
-      {branches.isLoading ? (
-        <Flex align="center" justify="center" css={{ padding: spacing["3xl"] }}>
-          <Text variant="caption" color="muted">
-            Loading branches...
-          </Text>
-        </Flex>
-      ) : (
-        <Flex direction="column" gap="2px">
-          {/* ── Current branch ── */}
-          {branches.current && (
-            <Flex
-              align="center"
-              gap={spacing.sm}
-              css={{
-                padding: `${spacing.sm} ${spacing.md}`,
-                borderRadius: radii.md,
-                background: "var(--studio-bg-hover)",
-              }}
-            >
-              <Box
-                css={{
-                  width: "8px",
-                  height: "8px",
-                  borderRadius: "50%",
-                  background: "var(--studio-accent)",
-                  flexShrink: 0,
-                }}
-              />
-              <Text
-                variant="bodySmall"
-                css={{
-                  flex: 1,
-                  fontFamily: "'SF Mono', 'Fira Code', monospace",
-                  fontWeight: 500,
-                  color: "var(--studio-text-primary)",
+    <>
+      <Modal
+        title="Branches"
+        onClose={onClose}
+        width="400px"
+        headerExtra={
+          <GitBranch size={15} style={{ color: "var(--studio-text-muted)" }} />
+        }
+        footer={
+          showCreate ? (
+            <>
+              <ModalFooterSpacer />
+              <ModalSecondaryButton
+                onClick={() => {
+                  setShowCreate(false);
+                  setNewName("");
                 }}
               >
-                {branches.current.name}
-              </Text>
-              <Badge variant="default" size="sm">
-                current
-              </Badge>
-            </Flex>
-          )}
-
-          {/* ── Other branches ── */}
-          {filtered.map((b) => (
-            <Flex
-              as="button"
-              key={b.name}
-              align="center"
-              gap={spacing.sm}
-              onClick={() => handleCheckout(b.name)}
-              css={{
-                width: "100%",
-                padding: `${spacing.sm} ${spacing.md}`,
-                borderRadius: radii.md,
-                border: "none",
-                background: "transparent",
-                cursor: pending.switching ? "wait" : "pointer",
-                fontFamily: "inherit",
-                textAlign: "left",
-                transition: "all 0.1s ease",
-                opacity: pending.switching ? 0.6 : 1,
-                "&:hover": { background: "var(--studio-bg-surface)" },
-              }}
-            >
-              <Box
-                css={{
-                  width: "8px",
-                  height: "8px",
-                  borderRadius: "50%",
-                  border: "1.5px solid var(--studio-border-hover)",
-                  flexShrink: 0,
-                }}
-              />
-              <Text
-                variant="bodySmall"
-                css={{
-                  flex: 1,
-                  fontFamily: "'SF Mono', 'Fira Code', monospace",
-                  color: "var(--studio-text-secondary)",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
+                Cancel
+              </ModalSecondaryButton>
+              <ModalPrimaryButton
+                onClick={handleCreate}
+                disabled={!newName.trim() || pending.creating}
               >
-                {b.name}
-              </Text>
-
-              {/* Merge button */}
-              <Box
-                as="button"
-                onClick={(e: React.MouseEvent) => {
-                  e.stopPropagation();
-                  setMergeSource(b.name);
-                }}
-                css={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "4px",
-                  padding: `2px ${spacing.sm}`,
-                  borderRadius: radii.sm,
-                  border: "1px solid var(--studio-border)",
-                  background: "transparent",
-                  color: "var(--studio-text-muted)",
-                  fontSize: "11px",
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                  opacity: 0,
-                  transition: "all 0.1s ease",
-                  "*:hover > &": { opacity: 1 },
-                  "&:hover": {
-                    borderColor: "var(--studio-border-hover)",
-                    color: "var(--studio-text-primary)",
-                  },
-                }}
+                {pending.creating ? "Creating…" : "Create branch"}
+              </ModalPrimaryButton>
+            </>
+          ) : (
+            <>
+              <ModalFooterSpacer />
+              <ModalSecondaryButton
+                onClick={() => setShowCreate(true)}
               >
-                <GitMerge size={10} /> Merge
-              </Box>
-            </Flex>
-          ))}
-
-          {filtered.length === 0 && search && (
-            <Flex align="center" justify="center" css={{ padding: spacing.xl }}>
-              <Text variant="caption" color="muted">
-                No branches match "{search}"
-              </Text>
-            </Flex>
-          )}
-        </Flex>
-      )}
-
-      {/* ── Create branch ── */}
-      <Box
-        css={{
-          marginTop: spacing.md,
-          paddingTop: spacing.md,
-          borderTop: "1px solid var(--studio-border)",
-        }}
+                <Plus size={13} /> New branch
+              </ModalSecondaryButton>
+            </>
+          )
+        }
       >
-        {showCreate ? (
-          <Flex gap={spacing.sm}>
-            <Box css={{ flex: 1 }}>
-              <Input
-                size="sm"
-                value={newName}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setNewName(e.target.value)
-                }
-                placeholder="new-branch-name"
-                autoFocus
-                onKeyDown={(e: React.KeyboardEvent) => {
-                  if (e.key === "Enter") handleCreate();
-                  if (e.key === "Escape") {
-                    setShowCreate(false);
-                    setNewName("");
-                  }
-                }}
-              />
-            </Box>
-            <Button
-              variant="primary"
+        {error && (
+          <Box css={{ marginBottom: spacing.md }}>
+            <Alert variant="error" onDismiss={clearError}>
+              {error}
+            </Alert>
+          </Box>
+        )}
+
+        {branches.others.length > 4 && (
+          <Box css={{ marginBottom: spacing.md }}>
+            <Input
               size="sm"
-              onClick={handleCreate}
-              disabled={!newName.trim() || pending.creating}
-            >
-              {pending.creating ? "Creating..." : "Create"}
-            </Button>
+              value={search}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setSearch(e.target.value)
+              }
+              placeholder="Filter branches…"
+            />
+          </Box>
+        )}
+
+        {showCreate && (
+          <Box css={{ marginBottom: spacing.md }}>
+            <Input
+              size="sm"
+              value={newName}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setNewName(e.target.value)
+              }
+              placeholder="new-branch-name"
+              autoFocus
+              onKeyDown={(e: React.KeyboardEvent) => {
+                if (e.key === "Enter") handleCreate();
+                if (e.key === "Escape") {
+                  setShowCreate(false);
+                  setNewName("");
+                }
+              }}
+            />
+          </Box>
+        )}
+
+        {branches.isLoading ? (
+          <Flex align="center" justify="center" css={{ padding: spacing["3xl"] }}>
+            <Text variant="caption" color="muted">Loading…</Text>
           </Flex>
         ) : (
-          <Flex
-            as="button"
-            align="center"
-            justify="center"
-            gap={spacing.xs}
-            onClick={() => setShowCreate(true)}
-            css={{
-              width: "100%",
-              padding: spacing.sm,
-              borderRadius: radii.md,
-              border: "1px dashed var(--studio-border)",
-              background: "transparent",
-              color: "var(--studio-text-muted)",
-              cursor: "pointer",
-              fontFamily: "inherit",
-              fontSize: "13px",
-              transition: "all 0.1s ease",
-              "&:hover": {
-                borderColor: "var(--studio-border-hover)",
-                color: "var(--studio-text-secondary)",
-                background: "var(--studio-bg-surface)",
-              },
-            }}
-          >
-            <Plus size={13} /> New branch
+          <Flex direction="column" gap="2px">
+            {/* Current branch */}
+            {branches.current && (
+              <BranchRow active>
+                <BranchDot active />
+                <Text
+                  variant="bodySmall"
+                  css={{
+                    flex: 1,
+                    fontFamily: "'SF Mono', 'Fira Code', monospace",
+                    fontWeight: 500,
+                    color: "var(--studio-text-primary)",
+                  }}
+                >
+                  {branches.current.name}
+                </Text>
+                <Check size={13} style={{ color: "var(--studio-text-muted)", flexShrink: 0 }} />
+              </BranchRow>
+            )}
+
+            {/* Other branches */}
+            {filtered.map((b) => (
+              <BranchRow
+                key={b.name}
+                onClick={() => actions.checkout(b.name)}
+                style={{ opacity: pending.switching ? 0.6 : 1, cursor: pending.switching ? "wait" : "pointer" }}
+              >
+                <BranchDot />
+                <Text
+                  variant="bodySmall"
+                  css={{
+                    flex: 1,
+                    fontFamily: "'SF Mono', 'Fira Code', monospace",
+                    color: "var(--studio-text-secondary)",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {b.name}
+                </Text>
+                <MergeBtn
+                  className="merge-action"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMergeSource(b.name);
+                  }}
+                >
+                  <GitMerge size={10} /> Merge
+                </MergeBtn>
+              </BranchRow>
+            ))}
+
+            {filtered.length === 0 && search && (
+              <Flex align="center" justify="center" css={{ padding: spacing.xl }}>
+                <Text variant="caption" color="muted">
+                  No branches match "{search}"
+                </Text>
+              </Flex>
+            )}
           </Flex>
         )}
-      </Box>
+      </Modal>
 
-      {/* ── Merge confirmation ── */}
       {mergeSource && branches.current && (
-        <Box
-          css={{
-            marginTop: spacing.md,
-            padding: spacing.md,
-            borderRadius: radii.md,
-            border: "1px solid var(--studio-border)",
-            background: "var(--studio-bg-surface)",
+        <ConfirmDialog
+          message={`Merge "${mergeSource}" into "${branches.current.name}"?`}
+          description="This will merge the selected branch into your current branch. Resolve any conflicts if they arise."
+          confirmLabel={pending.merging ? "Merging…" : "Merge"}
+          variant="default"
+          onConfirm={() => {
+            actions.mergeInto(mergeSource);
+            setMergeSource(null);
           }}
-        >
-          <Text
-            variant="bodySmall"
-            css={{ marginBottom: spacing.md, lineHeight: 1.5 }}
-          >
-            Merge{" "}
-            <Text
-              as="span"
-              variant="bodySmall"
-              css={{
-                fontFamily: "'SF Mono', monospace",
-                fontWeight: 600,
-                color: "var(--studio-text-primary)",
-              }}
-            >
-              {mergeSource}
-            </Text>{" "}
-            into{" "}
-            <Text
-              as="span"
-              variant="bodySmall"
-              css={{
-                fontFamily: "'SF Mono', monospace",
-                fontWeight: 600,
-                color: "var(--studio-text-primary)",
-              }}
-            >
-              {branches.current.name}
-            </Text>
-            ?
-          </Text>
-
-          <Flex gap={spacing.sm} justify="flex-end">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setMergeSource(null)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => handleMerge(mergeSource)}
-              disabled={pending.merging}
-            >
-              <GitMerge size={12} />
-              {pending.merging ? "Merging..." : "Merge"}
-            </Button>
-          </Flex>
-        </Box>
+          onCancel={() => setMergeSource(null)}
+          loading={pending.merging}
+        />
       )}
-    </Modal>
+    </>
   );
 }

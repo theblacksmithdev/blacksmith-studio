@@ -1,12 +1,14 @@
-import { Flex } from "@chakra-ui/react";
+import { Flex, Box } from "@chakra-ui/react";
 import { Sparkles } from "lucide-react";
-import {
-  Text,
-  Textarea,
-  Button,
-  Skeleton,
-  spacing,
-} from "@/components/shared/ui";
+import styled from "@emotion/styled";
+import { Text, Textarea, Button, Skeleton, spacing, radii } from "@/components/shared/ui";
+
+const Label = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: ${spacing.xs};
+`;
 
 interface MessageInputProps {
   value: string;
@@ -22,16 +24,9 @@ export function MessageInput({
   isGenerating,
 }: MessageInputProps) {
   return (
-    <Flex
-      direction="column"
-      gap={spacing.sm}
-      css={{ marginBottom: spacing.xl }}
-    >
-      <Flex align="center" justify="space-between">
-        <Text
-          variant="bodySmall"
-          css={{ fontWeight: 500, color: "var(--studio-text-secondary)" }}
-        >
+    <Box css={{ marginBottom: spacing.lg }}>
+      <Label>
+        <Text variant="caption" color="muted" css={{ fontWeight: 500 }}>
           Commit message
         </Text>
         <Button
@@ -40,23 +35,36 @@ export function MessageInput({
           onClick={onRegenerate}
           disabled={isGenerating}
         >
-          <Sparkles size={12} />
-          {isGenerating ? "Generating..." : "Generate with AI"}
+          <Sparkles size={11} />
+          {isGenerating ? "Generating…" : "Generate"}
         </Button>
-      </Flex>
+      </Label>
 
       {isGenerating ? (
-        <Skeleton variant="rectangular" height="80px" />
+        <Flex
+          direction="column"
+          gap={spacing.xs}
+          css={{
+            padding: spacing.md,
+            borderRadius: radii.md,
+            border: "1px solid var(--studio-border)",
+            background: "var(--studio-bg-surface)",
+            minHeight: "76px",
+          }}
+        >
+          <Skeleton variant="text" width="80%" />
+          <Skeleton variant="text" width="60%" />
+        </Flex>
       ) : (
         <Textarea
           size="md"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Describe your changes..."
+          placeholder="Describe your changes…"
           autoFocus
-          css={{ resize: "none", minHeight: "80px" }}
+          css={{ resize: "none", minHeight: "76px" }}
         />
       )}
-    </Flex>
+    </Box>
   );
 }

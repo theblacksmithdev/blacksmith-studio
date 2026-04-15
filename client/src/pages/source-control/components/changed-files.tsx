@@ -1,43 +1,28 @@
 import { memo, useCallback } from "react";
-import { Flex, Box } from "@chakra-ui/react";
-import {
-  Text,
-  InfiniteScrollList,
-  SkeletonList,
-  spacing,
-  radii,
-} from "@/components/shared/ui";
+import { Flex } from "@chakra-ui/react";
+import styled from "@emotion/styled";
+import { Text, InfiniteScrollList, spacing, radii } from "@/components/shared/ui";
 import { FileIcon } from "@/pages/files/components/explorer/utils/file-icon";
 import type { GitChangedFile } from "@/api/types";
 
-function statusLetter(status: GitChangedFile["status"]): string {
+function statusColor(status: GitChangedFile["status"]): string {
   switch (status) {
-    case "modified":
-      return "M";
+    case "modified": return "var(--studio-warning)";
     case "added":
-      return "A";
-    case "deleted":
-      return "D";
-    case "renamed":
-      return "R";
-    case "untracked":
-      return "U";
-    default:
-      return "?";
+    case "untracked": return "var(--studio-green)";
+    case "deleted": return "var(--studio-error)";
+    default: return "var(--studio-text-muted)";
   }
 }
 
-function statusColor(status: GitChangedFile["status"]): string {
+function statusLetter(status: GitChangedFile["status"]): string {
   switch (status) {
-    case "modified":
-      return "var(--studio-warning)";
-    case "added":
-    case "untracked":
-      return "var(--studio-green)";
-    case "deleted":
-      return "var(--studio-error)";
-    default:
-      return "var(--studio-text-muted)";
+    case "modified": return "M";
+    case "added": return "A";
+    case "deleted": return "D";
+    case "renamed": return "R";
+    case "untracked": return "U";
+    default: return "?";
   }
 }
 
@@ -50,6 +35,34 @@ function getDirectory(path: string) {
   if (parts.length <= 1) return "";
   return parts.slice(0, -1).join("/") + "/";
 }
+
+const Row = styled.button<{ selected: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: ${spacing.sm};
+  padding: 6px ${spacing.sm};
+  border-radius: ${radii.md};
+  border: none;
+  background: ${({ selected }) => selected ? "var(--studio-bg-hover)" : "transparent"};
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  transition: background 0.1s ease;
+  &:hover {
+    background: var(--studio-bg-hover);
+  }
+`;
+
+const StatusPill = styled.span<{ color: string }>`
+  font-size: 10px;
+  font-weight: 600;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  color: ${({ color }) => color};
+  flex-shrink: 0;
+  min-width: 12px;
+  text-align: right;
+`;
 
 const FileRow = memo(function FileRow({
   file,
@@ -64,30 +77,8 @@ const FileRow = memo(function FileRow({
   const dir = getDirectory(file.path);
 
   return (
-    <Flex
-      as="button"
-      align="center"
-      gap={spacing.sm}
-      onClick={() => onSelect(file.path)}
-      css={{
-        padding: `6px ${spacing.sm}`,
-        borderRadius: radii.md,
-        border: "none",
-        background: isSelected ? "var(--studio-bg-hover)" : "transparent",
-        cursor: "pointer",
-        textAlign: "left",
-        width: "100%",
-        fontFamily: "inherit",
-        transition: "all 0.1s ease",
-        "&:hover": {
-          background: isSelected
-            ? "var(--studio-bg-hover)"
-            : "var(--studio-bg-surface)",
-        },
-      }}
-    >
-      <FileIcon name={name} size={14} />
-
+    <Row selected={isSelected} onClick={() => onSelect(file.path)}>
+      <FileIcon name={name} size={13} />
       <Flex direction="column" css={{ flex: 1, minWidth: 0 }}>
         <Text
           variant="bodySmall"
@@ -113,26 +104,10 @@ const FileRow = memo(function FileRow({
           </Text>
         )}
       </Flex>
-
-      <Box
-        css={{
-          width: "18px",
-          height: "18px",
-          borderRadius: radii.xs,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "10px",
-          fontWeight: 600,
-          fontFamily: "'SF Mono', monospace",
-          color: statusColor(file.status),
-          background: "transparent",
-          flexShrink: 0,
-        }}
-      >
+      <StatusPill color={statusColor(file.status)}>
         {statusLetter(file.status)}
-      </Box>
-    </Flex>
+      </StatusPill>
+    </Row>
   );
 });
 
@@ -184,7 +159,6 @@ export function ChangedFilesList({
       overscan={15}
       onLoadMore={onLoadMore}
       isLoadingMore={isLoadingMore}
-      loadingFooter={<SkeletonList rows={3} />}
     />
   );
 }
