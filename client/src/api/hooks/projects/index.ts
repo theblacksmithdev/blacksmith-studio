@@ -6,3 +6,4 @@ export { useCloneProject } from "./use-clone-project";
 export { useRenameProject } from "./use-rename-project";
 export { useRemoveProject } from "./use-remove-project";
 export { useValidateProject } from "./use-validate-project";
+export { useTouchProject } from "./use-touch-project";

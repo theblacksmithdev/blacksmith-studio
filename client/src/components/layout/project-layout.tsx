@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import styled from "@emotion/styled";
 import { Outlet, useNavigate } from "react-router-dom";
-import { useProjectQuery } from "@/api/hooks/projects";
+import { useProjectQuery, useTouchProject } from "@/api/hooks/projects";
 import { useActiveProjectId } from "@/api/hooks/_shared";
 import { useRunnerListener } from "@/hooks/use-runner";
 import { useGitListener } from "@/hooks/use-git";
@@ -46,9 +46,16 @@ export function ProjectLayout() {
   const { data: project, isLoading, isError } = useProjectQuery(projectId);
   const navigate = useNavigate();
   const [terminalOpen] = useTerminalPanel();
+  const touch = useTouchProject();
 
   useRunnerListener();
   useGitListener();
+
+  // Update lastOpenedAt whenever a project is entered so the dashboard
+  // always sorts by most recently accessed.
+  useEffect(() => {
+    if (projectId) touch.mutate(projectId);
+  }, [projectId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Keyboard shortcut: Ctrl+` / Cmd+` to toggle terminal
   useEffect(() => {

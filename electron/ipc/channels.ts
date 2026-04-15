@@ -4,6 +4,7 @@
 export const PROJECTS_LIST = "projects:list";
 export const PROJECTS_GET = "projects:get";
 export const PROJECTS_REGISTER = "projects:register";
+export const PROJECTS_TOUCH = "projects:touch";
 export const PROJECTS_CREATE = "projects:create";
 export const PROJECTS_RENAME = "projects:rename";
 export const PROJECTS_REMOVE = "projects:remove";
@@ -168,6 +169,7 @@ export const INVOKE_CHANNELS = [
   PROJECTS_LIST,
   PROJECTS_GET,
   PROJECTS_REGISTER,
+  PROJECTS_TOUCH,
   PROJECTS_CREATE,
   PROJECTS_CLONE,
   PROJECTS_RENAME,

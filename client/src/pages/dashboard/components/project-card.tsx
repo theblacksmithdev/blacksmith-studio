@@ -5,6 +5,7 @@ import type { Project } from "@/api/types";
 import { Link } from "react-router-dom";
 import { projectHome } from "@/router/paths";
 import { useProjectRunnerStatus } from "@/api/hooks/runner";
+import { useTouchProject } from "@/api/hooks/projects";
 
 const Root = styled(Link)`
   display: flex;
@@ -63,17 +64,24 @@ const Arrow = styled.div`
 
 interface ProjectCardProps {
   project: Project;
+  onNavigate?: () => void;
 }
 
-export function ProjectCard({ project }: ProjectCardProps) {
+export function ProjectCard({ project, onNavigate }: ProjectCardProps) {
   const { data: services } = useProjectRunnerStatus(project.id);
+  const touch = useTouchProject();
 
   const runningCount =
     services?.filter((s) => s.status === "running" || s.status === "starting")
       .length ?? 0;
 
+  const handleClick = () => {
+    touch.mutate(project.id);
+    onNavigate?.();
+  };
+
   return (
-    <Root to={projectHome(project.id)}>
+    <Root to={projectHome(project.id)} onClick={handleClick}>
       <Avatar size="sm" variant="default" icon={<FolderOpen />} />
       <Body>
         <Text

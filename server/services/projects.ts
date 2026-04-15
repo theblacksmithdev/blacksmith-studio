@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import path from "node:path";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { getDatabase } from "../db/index.js";
 import { projects } from "../db/schema.js";
 
@@ -22,7 +22,11 @@ export class ProjectManager {
   }
 
   list(): Project[] {
-    return this.db.select().from(projects).all() as Project[];
+    return this.db
+      .select()
+      .from(projects)
+      .orderBy(desc(projects.lastOpenedAt))
+      .all() as Project[];
   }
 
   get(id: string): Project | null {

@@ -1,12 +1,15 @@
 import { useState } from "react";
-import { FolderPlus } from "lucide-react";
+import { FolderPlus, LayoutGrid } from "lucide-react";
 import styled from "@emotion/styled";
 import { keyframes } from "@emotion/react";
-import { Text, Button, spacing, radii } from "@/components/shared/ui";
+import { Box, Flex } from "@chakra-ui/react";
+import { Text, Button, Modal, spacing, radii } from "@/components/shared/ui";
 import { AddProjectModal } from "@/components/projects/add-project-modal";
 import { useProjectsQuery } from "@/api/hooks/projects";
 import { HeroSection } from "./components/hero-section";
 import { ProjectCard } from "./components/project-card";
+
+const VISIBLE_LIMIT = 5;
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(10px); }
@@ -47,7 +50,7 @@ const ProjectsList = styled.div`
   flex-direction: column;
 `;
 
-const AddRow = styled.button`
+const FooterRow = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -70,6 +73,10 @@ const AddRow = styled.button`
   }
 `;
 
+const SeeAllRow = styled(FooterRow)`
+  color: var(--studio-text-secondary);
+`;
+
 const EmptyBox = styled.div`
   padding: ${spacing["4xl"]} ${spacing["2xl"]};
   display: flex;
@@ -79,11 +86,20 @@ const EmptyBox = styled.div`
   text-align: center;
 `;
 
+const AllProjectsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--studio-border);
+`;
+
 export default function DashboardPage() {
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [allModalOpen, setAllModalOpen] = useState(false);
   const { data: projects = [] } = useProjectsQuery();
 
   const hasProjects = projects.length > 0;
+  const hasMore = projects.length > VISIBLE_LIMIT;
+  const visible = hasMore ? projects.slice(0, VISIBLE_LIMIT) : projects;
 
   return (
     <Page>
@@ -95,14 +111,22 @@ export default function DashboardPage() {
             {hasProjects ? (
               <>
                 <ProjectsList>
-                  {projects.map((project) => (
+                  {visible.map((project) => (
                     <ProjectCard key={project.id} project={project} />
                   ))}
                 </ProjectsList>
-                <AddRow onClick={() => setAddModalOpen(true)}>
+
+                {hasMore && (
+                  <SeeAllRow onClick={() => setAllModalOpen(true)}>
+                    <LayoutGrid size={13} />
+                    See all {projects.length} projects
+                  </SeeAllRow>
+                )}
+
+                <FooterRow onClick={() => setAddModalOpen(true)}>
                   <FolderPlus size={14} />
                   Add project
-                </AddRow>
+                </FooterRow>
               </>
             ) : (
               <EmptyBox>
@@ -128,6 +152,48 @@ export default function DashboardPage() {
         open={addModalOpen}
         onClose={() => setAddModalOpen(false)}
       />
+
+      {allModalOpen && (
+        <Modal
+          title="All Projects"
+          onClose={() => setAllModalOpen(false)}
+          width="520px"
+          footer={
+            <Flex css={{ width: "100%" }} justify="flex-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setAllModalOpen(false);
+                  setAddModalOpen(true);
+                }}
+              >
+                <FolderPlus size={13} />
+                Add project
+              </Button>
+            </Flex>
+          }
+        >
+          <Text
+            variant="caption"
+            color="muted"
+            css={{ display: "block", marginBottom: spacing.lg }}
+          >
+            {projects.length} project{projects.length !== 1 ? "s" : ""} — sorted by most recently opened
+          </Text>
+          <Box css={{ maxHeight: "60vh", overflowY: "auto", margin: `0 -${spacing.xl}` }}>
+            <AllProjectsList>
+              {projects.map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  onNavigate={() => setAllModalOpen(false)}
+                />
+              ))}
+            </AllProjectsList>
+          </Box>
+        </Modal>
+      )}
     </Page>
   );
 }

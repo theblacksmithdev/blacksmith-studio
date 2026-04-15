@@ -19,6 +19,8 @@ export const projects = {
   get: (input: ProjectGetInput) => raw.invoke<Project>("projects:get", input),
   register: (input: ProjectRegisterInput) =>
     raw.invoke<Project>("projects:register", input),
+  touch: (input: { id: string }) =>
+    raw.invoke<void>("projects:touch", input),
   create: (input: ProjectCreateInput & { projectId?: string }) =>
     raw.invoke<{ started: boolean }>("projects:create", input),
   clone: (input: ProjectCloneInput) =>

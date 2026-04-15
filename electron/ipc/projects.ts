@@ -10,6 +10,7 @@ import {
   PROJECTS_LIST,
   PROJECTS_GET,
   PROJECTS_REGISTER,
+  PROJECTS_TOUCH,
   PROJECTS_CREATE,
   PROJECTS_CLONE,
   PROJECTS_RENAME,
@@ -43,6 +44,11 @@ export function setupProjectsIPC(
       return projectManager.register(data.path, data.name);
     },
   );
+
+  ipcMain.handle(PROJECTS_TOUCH, (_e, data: { id: string }) => {
+    projectManager.touchLastOpened(data.id);
+    return null;
+  });
 
   ipcMain.handle(PROJECTS_RENAME, (_e, data: { id: string; name: string }) => {
     const project = projectManager.rename(data.id, data.name);
