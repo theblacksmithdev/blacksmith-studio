@@ -6,7 +6,7 @@ import {
   useRemoveRunnerConfig,
   useSetupRunner,
 } from "@/api/hooks/runner";
-import { useChannel } from "@/api/hooks/_shared";
+import { useRunnerStore } from "@/stores/runner-store";
 import { useRunner } from "@/hooks/use-runner";
 import { useCreateSession } from "@/api/hooks/sessions";
 import type { RunnerConfigData } from "@/api/types";
@@ -28,9 +28,7 @@ export function useServiceActions() {
   const createSessionMutation = useCreateSession();
 
   const { start, stop, startAll, stopAll } = useRunner();
-  const { messages: allLogs } = useChannel("runner:output", {
-    maxHistory: 1000,
-  });
+  const allLogs = useRunnerStore((s) => s.logs);
 
   const [modalConfig, setModalConfig] = useState<
     RunnerConfigData | null | "new"

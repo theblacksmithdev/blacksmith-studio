@@ -15,7 +15,12 @@ export { RunnerConfigService } from "./runner-config.js";
 export type { RunnerConfig } from "./runner-config.js";
 export { detectRunners } from "./detect-runners.js";
 
-type OutputListener = (configId: string, name: string, line: string) => void;
+type OutputListener = (
+  configId: string,
+  name: string,
+  line: string,
+  timestamp: number,
+) => void;
 type StatusListener = (services: RunnerServiceStatus[]) => void;
 
 interface BufferedLog {
@@ -26,13 +31,14 @@ interface BufferedLog {
 }
 
 const MAX_BUFFERED_LOGS = 500;
+const KILL_ESCALATION_MS = 5_000;
 
 export class RunnerManager {
   private processes = new Map<string, RunnerProcess>();
   private outputListeners: OutputListener[] = [];
   private statusListeners: StatusListener[] = [];
   private configService: RunnerConfigService;
-  private logBuffer: BufferedLog[] = [];
+  private logBuffers = new Map<string, BufferedLog[]>();
 
   constructor(configService: RunnerConfigService) {
     this.configService = configService;
@@ -45,10 +51,11 @@ export class RunnerManager {
     this.statusListeners.push(cb);
   }
 
-  /** Returns buffered logs, optionally filtered by configId. */
-  getLogs(configId?: string): BufferedLog[] {
-    if (configId) return this.logBuffer.filter((l) => l.configId === configId);
-    return [...this.logBuffer];
+  /** Returns buffered logs for a project, optionally filtered by configId. */
+  getLogs(projectId: string, configId?: string): BufferedLog[] {
+    const buf = this.logBuffers.get(projectId) ?? [];
+    if (configId) return buf.filter((l) => l.configId === configId);
+    return [...buf];
   }
 
   getStatus(projectId: string): RunnerServiceStatus[] {
@@ -76,27 +83,35 @@ export class RunnerManager {
     const config = this.configService.getConfig(configId);
     if (!config) throw new Error(`Runner config not found.`);
 
+    let currentProc: import("node:child_process").ChildProcess | null = null;
+
     const result = await spawnRunner(
       config,
       projectRoot,
-      (id, line) => this.emitOutput(id, config.name, line),
+      (id, line) => this.emitOutput(config.projectId, id, config.name, line),
       (id, status, port) => {
         const existing = this.processes.get(id);
-        if (existing) {
+        // Only update if the entry still belongs to this spawn (not a newer restart)
+        if (existing && (!currentProc || existing.process === currentProc)) {
           existing.status = status;
           if (port != null) existing.port = port;
+          if (status === "stopped") {
+            this.processes.delete(id);
+          }
         }
-        if (status === "stopped") this.processes.delete(id);
-        this.emitStatus();
+        this.emitStatus(config.projectId);
       },
       nodePath,
     );
+
+    currentProc = result.process;
 
     this.processes.set(
       configId,
       new RunnerProcess({
         process: result.process,
         configId,
+        projectId: config.projectId,
         name: config.name,
         port: result.port,
         status: "starting",
@@ -109,9 +124,24 @@ export class RunnerManager {
   stop(configId: string): void {
     const proc = this.processes.get(configId);
     if (!proc) return;
-    proc.process.kill("SIGTERM");
+
+    const projectId = proc.projectId;
+
+    // Delete from map immediately so start() can re-add
     this.processes.delete(configId);
-    this.emitStatus();
+    proc.process.kill("SIGTERM");
+    this.emitStatus(projectId);
+
+    // Escalate to SIGKILL if process doesn't exit in time
+    const killTimer = setTimeout(() => {
+      try {
+        proc.process.kill("SIGKILL");
+      } catch {
+        // Process already exited
+      }
+    }, KILL_ESCALATION_MS);
+
+    proc.process.once("close", () => clearTimeout(killTimer));
   }
 
   async startAll(
@@ -133,7 +163,7 @@ export class RunnerManager {
   }
 
   stopEverything(): void {
-    for (const [id] of this.processes) this.stop(id);
+    for (const [id] of [...this.processes]) this.stop(id);
   }
 
   /**
@@ -155,6 +185,7 @@ export class RunnerManager {
     const env = nodeEnv(nodePath, { ...config.env });
 
     this.emitOutput(
+      config.projectId,
       configId,
       config.name,
       `[studio] Running setup: ${config.setupCommand}`,
@@ -174,7 +205,8 @@ export class RunnerManager {
         const lines = stdoutBuf.split("\n");
         stdoutBuf = lines.pop() ?? "";
         for (const line of lines) {
-          if (line.trim()) this.emitOutput(configId, config.name, line);
+          if (line.trim())
+            this.emitOutput(config.projectId, configId, config.name, line);
         }
       });
 
@@ -184,16 +216,20 @@ export class RunnerManager {
         const lines = stderrBuf.split("\n");
         stderrBuf = lines.pop() ?? "";
         for (const line of lines) {
-          if (line.trim()) this.emitOutput(configId, config.name, line);
+          if (line.trim())
+            this.emitOutput(config.projectId, configId, config.name, line);
         }
       });
 
       proc.on("close", (code) => {
-        if (stdoutBuf.trim()) this.emitOutput(configId, config.name, stdoutBuf);
-        if (stderrBuf.trim()) this.emitOutput(configId, config.name, stderrBuf);
+        if (stdoutBuf.trim())
+          this.emitOutput(config.projectId, configId, config.name, stdoutBuf);
+        if (stderrBuf.trim())
+          this.emitOutput(config.projectId, configId, config.name, stderrBuf);
 
         if (code === 0) {
           this.emitOutput(
+            config.projectId,
             configId,
             config.name,
             "[studio] Setup completed successfully.",
@@ -201,6 +237,7 @@ export class RunnerManager {
           resolve();
         } else {
           this.emitOutput(
+            config.projectId,
             configId,
             config.name,
             `[studio] Setup failed (exit code ${code}).`,
@@ -211,6 +248,7 @@ export class RunnerManager {
 
       proc.on("error", (err) => {
         this.emitOutput(
+          config.projectId,
           configId,
           config.name,
           `[studio] Setup error: ${err.message}`,
@@ -228,26 +266,25 @@ export class RunnerManager {
     }
   }
 
-  private emitOutput(configId: string, name: string, line: string) {
-    this.logBuffer.push({ configId, name, line, timestamp: Date.now() });
-    if (this.logBuffer.length > MAX_BUFFERED_LOGS) {
-      this.logBuffer = this.logBuffer.slice(-MAX_BUFFERED_LOGS);
+  private emitOutput(
+    projectId: string,
+    configId: string,
+    name: string,
+    line: string,
+  ) {
+    const ts = Date.now();
+    const buf = this.logBuffers.get(projectId) ?? [];
+    buf.push({ configId, name, line, timestamp: ts });
+    if (buf.length > MAX_BUFFERED_LOGS) {
+      this.logBuffers.set(projectId, buf.slice(-MAX_BUFFERED_LOGS));
+    } else {
+      this.logBuffers.set(projectId, buf);
     }
-    for (const cb of this.outputListeners) cb(configId, name, line);
+    for (const cb of this.outputListeners) cb(configId, name, line, ts);
   }
 
-  private emitStatus() {
-    const all: RunnerServiceStatus[] = [];
-    for (const proc of this.processes.values()) {
-      all.push({
-        id: proc.configId,
-        name: proc.name,
-        status: proc.status,
-        port: proc.port,
-        previewUrl: proc.previewUrl,
-        icon: proc.icon,
-      });
-    }
+  private emitStatus(projectId: string) {
+    const all = this.getStatus(projectId);
     for (const cb of this.statusListeners) cb(all);
   }
 }

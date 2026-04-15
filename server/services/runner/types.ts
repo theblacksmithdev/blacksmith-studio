@@ -5,6 +5,7 @@ export type RunnerStatus = "stopped" | "starting" | "running";
 export class RunnerProcess {
   readonly process: ChildProcess;
   readonly configId: string;
+  readonly projectId: string;
   readonly name: string;
   readonly icon: string;
   private _port: number | null;
@@ -14,6 +15,7 @@ export class RunnerProcess {
   constructor(opts: {
     process: ChildProcess;
     configId: string;
+    projectId: string;
     name: string;
     port: number | null;
     status: RunnerStatus;
@@ -22,6 +24,7 @@ export class RunnerProcess {
   }) {
     this.process = opts.process;
     this.configId = opts.configId;
+    this.projectId = opts.projectId;
     this.name = opts.name;
     this.icon = opts.icon;
     this._port = opts.port;

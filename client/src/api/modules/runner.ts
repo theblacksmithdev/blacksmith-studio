@@ -31,10 +31,10 @@ export const runner = {
     raw.invoke<void>("runner:setup", { projectId, configId }),
 
   // Logs
-  getLogs: (configId?: string) =>
+  getLogs: (projectId: string, configId?: string) =>
     raw.invoke<
       { configId: string; name: string; line: string; timestamp: number }[]
-    >("runner:getLogs", { configId }),
+    >("runner:getLogs", { projectId, configId }),
 
   // Detection
   detectRunners: (projectId: string) =>

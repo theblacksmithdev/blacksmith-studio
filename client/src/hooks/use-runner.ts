@@ -1,9 +1,10 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { api } from "@/api";
 import {
   useRunnerStore,
   RunnerStatus,
   type RunnerService,
+  type LogEntry,
 } from "@/stores/runner-store";
 import { useActiveProjectId } from "@/api/hooks/_shared";
 import {
@@ -13,8 +14,8 @@ import {
 } from "@/api/hooks/runner";
 
 /**
- * Initializes IPC listener for runner service status.
- * Logs are handled by useChannel('runner:output') in useFilteredLogs.
+ * Initializes IPC listeners for runner service status and log output.
+ * Hydrates initial state from server buffer, then subscribes to live events.
  * Mount once at the ProjectLayout level.
  */
 export function useRunnerListener() {
@@ -24,6 +25,9 @@ export function useRunnerListener() {
   useEffect(() => {
     if (!projectId) return;
 
+    const store = useRunnerStore.getState();
+
+    // Hydrate initial status
     api.runner
       .getStatus(projectId)
       .then((status) => {
@@ -31,11 +35,48 @@ export function useRunnerListener() {
       })
       .catch(() => {});
 
-    const unsub = api.runner.onStatus((data) => {
+    // Hydrate initial logs from server buffer
+    api.runner
+      .getLogs(projectId)
+      .then((logs) => {
+        useRunnerStore.getState().setLogs(logs as LogEntry[]);
+      })
+      .catch(() => {});
+
+    // Live status subscription
+    const unsubStatus = api.runner.onStatus((data) => {
       useRunnerStore.getState().setServices(data as RunnerService[]);
     });
 
-    return unsub;
+    // Live output subscription — push each line into the store
+    const unsubOutput = api.runner.onOutput((data) => {
+      useRunnerStore.getState().addLog({
+        configId: data.configId,
+        name: data.name,
+        line: data.line,
+        timestamp: data.timestamp,
+      });
+    });
+
+    // Re-fetch status when window regains focus (covers event gaps)
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible" && projectId) {
+        api.runner
+          .getStatus(projectId)
+          .then((status) => {
+            useRunnerStore.getState().setServices(status as RunnerService[]);
+          })
+          .catch(() => {});
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      unsubStatus();
+      unsubOutput();
+      document.removeEventListener("visibilitychange", handleVisibility);
+      store.clearLogs();
+    };
   }, [projectId]);
 }
 
@@ -45,6 +86,7 @@ export function useRunnerListener() {
 export function useRunner() {
   const startMutation = useStartRunner();
   const stopMutation = useStopRunner();
+  const restartCleanupRef = useRef<(() => void) | null>(null);
 
   const start = useCallback(
     (configId?: string) => {
@@ -62,14 +104,33 @@ export function useRunner() {
 
   const restart = useCallback(
     (configId: string) => {
+      // Clean up any previous restart listener
+      restartCleanupRef.current?.();
+      restartCleanupRef.current = null;
+
       stopMutation.mutate(configId);
+
       const unsub = api.runner.onStatus((services: any[]) => {
         const svc = services.find((s: any) => s.id === configId);
         if (svc?.status === RunnerStatus.Stopped) {
-          unsub();
+          cleanup();
           startMutation.mutate(configId);
         }
       });
+
+      // Force-start after timeout if stop never confirms
+      const timer = setTimeout(() => {
+        cleanup();
+        startMutation.mutate(configId);
+      }, 10_000);
+
+      const cleanup = () => {
+        unsub();
+        clearTimeout(timer);
+        restartCleanupRef.current = null;
+      };
+
+      restartCleanupRef.current = cleanup;
     },
     [startMutation, stopMutation],
   );

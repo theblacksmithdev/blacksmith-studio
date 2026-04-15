@@ -37,8 +37,13 @@ export function setupRunnerIPC(
   settingsManager: SettingsManager,
 ) {
   // Push callbacks
-  runnerManager.onOutput((configId, name, line) => {
-    getWindow()?.webContents.send(RUNNER_ON_OUTPUT, { configId, name, line });
+  runnerManager.onOutput((configId, name, line, timestamp) => {
+    getWindow()?.webContents.send(RUNNER_ON_OUTPUT, {
+      configId,
+      name,
+      line,
+      timestamp,
+    });
   });
 
   runnerManager.onStatusChange((services) => {
@@ -111,9 +116,12 @@ export function setupRunnerIPC(
     },
   );
 
-  ipcMain.handle(RUNNER_GET_LOGS, (_e, data: { configId?: string }) => {
-    return runnerManager.getLogs(data?.configId);
-  });
+  ipcMain.handle(
+    RUNNER_GET_LOGS,
+    (_e, data: { projectId: string; configId?: string }) => {
+      return runnerManager.getLogs(data.projectId, data.configId);
+    },
+  );
 
   ipcMain.handle(
     RUNNER_SETUP,

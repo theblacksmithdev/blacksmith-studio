@@ -1,20 +1,12 @@
 import { useState, useMemo } from "react";
-import { useChannel } from "@/api/hooks/_shared";
+import { useRunnerStore } from "@/stores/runner-store";
 
 export function useFilteredLogs(activeConfigId?: string | null) {
-  // Collect ALL logs — no channel-level filter so switching services doesn't lose history
-  const { messages: rawLogs, clear } = useChannel("runner:output", {
-    maxHistory: 1000,
-  });
+  const logs = useRunnerStore((s) => s.logs);
+  const clearLogs = useRunnerStore((s) => s.clearLogs);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [showTimestamps, setShowTimestamps] = useState(false);
-
-  // Add timestamp for display (channel events don't include one)
-  const logs = useMemo(
-    () => rawLogs.map((l) => ({ ...l, timestamp: Date.now() })),
-    [rawLogs],
-  );
 
   // Filter by active service + search term at display level
   const filteredLogs = useMemo(() => {
@@ -36,6 +28,6 @@ export function useFilteredLogs(activeConfigId?: string | null) {
     setSearchTerm,
     showTimestamps,
     toggleTimestamps: () => setShowTimestamps((v) => !v),
-    clearLogs: clear,
+    clearLogs,
   };
 }

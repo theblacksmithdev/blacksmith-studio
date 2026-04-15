@@ -185,6 +185,7 @@ export interface RunnerOutputEvent {
   configId: string;
   name: string;
   line: string;
+  timestamp: number;
 }
 
 /* ── Claude ── */

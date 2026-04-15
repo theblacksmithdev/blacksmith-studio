@@ -58,6 +58,23 @@ export async function spawnRunner(
     : null;
   let isReady = false;
 
+  // Timeout: auto-promote to "running" if readyPattern never matches
+  const READY_TIMEOUT_MS = 30_000;
+  let readyTimer: ReturnType<typeof setTimeout> | null = null;
+
+  if (readyRegex) {
+    readyTimer = setTimeout(() => {
+      if (!isReady) {
+        isReady = true;
+        onOutput(
+          config.id,
+          `[studio] Ready pattern not matched after ${READY_TIMEOUT_MS / 1000}s — assuming running`,
+        );
+        onStatus(config.id, "running", port);
+      }
+    }, READY_TIMEOUT_MS);
+  }
+
   const handleLine = (line: string) => {
     if (!line.trim()) return;
     onOutput(config.id, line);
@@ -65,6 +82,7 @@ export async function spawnRunner(
     if (!isReady) {
       if (readyRegex ? readyRegex.test(line) : true) {
         isReady = true;
+        if (readyTimer) clearTimeout(readyTimer);
         onStatus(config.id, "running", port);
       }
     }
@@ -88,6 +106,7 @@ export async function spawnRunner(
   });
 
   proc.on("close", (code) => {
+    if (readyTimer) clearTimeout(readyTimer);
     // Flush remaining buffers
     if (stdoutBuf.trim()) handleLine(stdoutBuf);
     if (stderrBuf.trim()) handleLine(stderrBuf);
@@ -96,6 +115,7 @@ export async function spawnRunner(
   });
 
   proc.on("error", (err) => {
+    if (readyTimer) clearTimeout(readyTimer);
     onOutput(config.id, `[studio] Failed to start: ${err.message}`);
     onStatus(config.id, "stopped", null);
   });

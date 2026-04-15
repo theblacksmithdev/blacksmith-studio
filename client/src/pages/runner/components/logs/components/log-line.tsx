@@ -13,7 +13,7 @@ const Line = styled.div`
 `;
 
 const Timestamp = styled.span`
-  width: 58px;
+  width: max-content;
   flex-shrink: 0;
   color: var(--studio-text-muted);
   font-size: 11px;
@@ -22,7 +22,7 @@ const Timestamp = styled.span`
 `;
 
 const Source = styled.span`
-  width: 58px;
+  width: max-content;
   flex-shrink: 0;
   color: var(--studio-text-muted);
   font-weight: 600;
