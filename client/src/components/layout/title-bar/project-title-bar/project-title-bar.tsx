@@ -43,7 +43,12 @@ export function ProjectTitleBar() {
       }
       trailing={
         <Tooltip content="Terminal">
-          <NavBtn onClick={toggleTerminal} style={{ color: terminalOpen ? "var(--studio-text-primary)" : undefined }}>
+          <NavBtn
+            onClick={toggleTerminal}
+            style={{
+              color: terminalOpen ? "var(--studio-text-primary)" : undefined,
+            }}
+          >
             <Terminal size={14} />
           </NavBtn>
         </Tooltip>

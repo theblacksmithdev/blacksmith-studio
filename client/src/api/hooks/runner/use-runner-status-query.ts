@@ -15,11 +15,10 @@ export function useRunnerStatusQuery() {
   });
 }
 
-
 /**
  * Fetches the current status of all runner services for a specific project.
- * @param projectId 
- * @returns 
+ * @param projectId
+ * @returns
  */
 
 export function useProjectRunnerStatus(projectId: string) {

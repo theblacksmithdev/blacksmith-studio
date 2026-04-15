@@ -211,9 +211,16 @@ export default function DashboardPage() {
             color="muted"
             css={{ display: "block", marginBottom: spacing.lg }}
           >
-            {projects.length} project{projects.length !== 1 ? "s" : ""} — sorted by most recently opened
+            {projects.length} project{projects.length !== 1 ? "s" : ""} — sorted
+            by most recently opened
           </Text>
-          <Box css={{ maxHeight: "60vh", overflowY: "auto", margin: `0 -${spacing.xl}` }}>
+          <Box
+            css={{
+              maxHeight: "60vh",
+              overflowY: "auto",
+              margin: `0 -${spacing.xl}`,
+            }}
+          >
             <AllProjectsList>
               {projects.map((project) => (
                 <ProjectCard

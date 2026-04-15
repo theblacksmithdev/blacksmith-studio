@@ -5,10 +5,7 @@ import { History, MessageSquare, Clock } from "lucide-react";
 import { SessionCard } from "./session-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageContainer } from "@/components/shared/page-container";
-import {
-  useSessionsQuery,
-  useDeleteSession,
-} from "@/api/hooks/sessions";
+import { useSessionsQuery, useDeleteSession } from "@/api/hooks/sessions";
 import { useActiveProjectId, useProjectKeys } from "@/api/hooks/_shared";
 import { useSessionStore } from "@/stores/session-store";
 import { api } from "@/api";

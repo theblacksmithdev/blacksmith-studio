@@ -64,7 +64,9 @@ function defineCustomThemes(monaco: Monaco) {
 function configureTypeScriptDefaults(monaco: Monaco) {
   const ts = monaco.languages.typescript;
 
-  const compilerOptions: Parameters<typeof ts.typescriptDefaults.setCompilerOptions>[0] = {
+  const compilerOptions: Parameters<
+    typeof ts.typescriptDefaults.setCompilerOptions
+  >[0] = {
     target: ts.ScriptTarget.ES2020,
     module: ts.ModuleKind.ESNext,
     // Use NodeJs resolution — Monaco's TS service doesn't support "bundler"

@@ -14,22 +14,32 @@ import type { GitChangedFile } from "@/api/types";
 
 function statusColor(status: GitChangedFile["status"]): string {
   switch (status) {
-    case "modified": return "var(--studio-warning)";
+    case "modified":
+      return "var(--studio-warning)";
     case "added":
-    case "untracked": return "var(--studio-green)";
-    case "deleted": return "var(--studio-error)";
-    default: return "var(--studio-text-muted)";
+    case "untracked":
+      return "var(--studio-green)";
+    case "deleted":
+      return "var(--studio-error)";
+    default:
+      return "var(--studio-text-muted)";
   }
 }
 
 function statusLetter(status: GitChangedFile["status"]): string {
   switch (status) {
-    case "modified": return "M";
-    case "added": return "A";
-    case "deleted": return "D";
-    case "renamed": return "R";
-    case "untracked": return "U";
-    default: return "?";
+    case "modified":
+      return "M";
+    case "added":
+      return "A";
+    case "deleted":
+      return "D";
+    case "renamed":
+      return "R";
+    case "untracked":
+      return "U";
+    default:
+      return "?";
   }
 }
 
@@ -54,8 +64,11 @@ const CheckBox = styled.div<{ checked: boolean }>`
   width: 15px;
   height: 15px;
   border-radius: 4px;
-  border: 1.5px solid ${({ checked }) => checked ? "var(--studio-accent)" : "var(--studio-border-hover)"};
-  background: ${({ checked }) => checked ? "var(--studio-accent)" : "transparent"};
+  border: 1.5px solid
+    ${({ checked }) =>
+      checked ? "var(--studio-accent)" : "var(--studio-border-hover)"};
+  background: ${({ checked }) =>
+    checked ? "var(--studio-accent)" : "transparent"};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -66,7 +79,7 @@ const CheckBox = styled.div<{ checked: boolean }>`
 const StatusPill = styled.div<{ color: string }>`
   font-size: 10px;
   font-weight: 600;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: "SF Mono", "Fira Code", monospace;
   color: ${({ color }) => color};
   flex-shrink: 0;
   min-width: 12px;
@@ -96,7 +109,13 @@ const FileRow = memo(function FileRow({
       <CheckBox checked={isSelected}>
         {isSelected && (
           <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
-            <path d="M1.5 4.5l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path
+              d="M1.5 4.5l2 2 4-4"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         )}
       </CheckBox>
@@ -154,7 +173,11 @@ export function FileList({
 
   return (
     <Flex direction="column" gap={spacing.xs}>
-      <Flex align="center" justify="space-between" css={{ marginBottom: spacing.xs }}>
+      <Flex
+        align="center"
+        justify="space-between"
+        css={{ marginBottom: spacing.xs }}
+      >
         <Text variant="caption" color="muted">
           {selectedCount} of {total} selected
         </Text>

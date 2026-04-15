@@ -27,8 +27,13 @@ function getDateKey(dateStr: string): string {
 
   if (diffDays === 0) return "Today";
   if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return date.toLocaleDateString(undefined, { weekday: "long" });
-  return date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  if (diffDays < 7)
+    return date.toLocaleDateString(undefined, { weekday: "long" });
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 type FlatItem =
@@ -85,7 +90,7 @@ const CommitDot = styled.div`
 
 const HashLabel = styled.span`
   font-size: 11px;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: "SF Mono", "Fira Code", monospace;
   color: var(--studio-text-muted);
   flex-shrink: 0;
   opacity: 0.6;
@@ -137,8 +142,14 @@ export function HistoryTimeline({ entries, onSelect }: Props) {
 
   if (entries.length === 0) {
     return (
-      <Flex align="center" justify="center" css={{ padding: `${spacing.xl} 0` }}>
-        <Text variant="caption" color="muted">No commits yet</Text>
+      <Flex
+        align="center"
+        justify="center"
+        css={{ padding: `${spacing.xl} 0` }}
+      >
+        <Text variant="caption" color="muted">
+          No commits yet
+        </Text>
       </Flex>
     );
   }

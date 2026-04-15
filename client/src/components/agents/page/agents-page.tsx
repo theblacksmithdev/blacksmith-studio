@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState, useRef } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { ReactFlowProvider } from "@xyflow/react";
 import { ListTodo, MessageSquare, Square } from "lucide-react";
 import {
@@ -18,7 +18,6 @@ import { AgentInnerView } from "../inner-view";
 import { TaskDrawer } from "../drawer";
 import { AgentMainPanel } from "./agent-main-panel";
 import { useAgentEvents } from "./use-agent-events";
-import { useConversation } from "./use-conversation";
 import {
   Layout,
   CanvasPanel,
@@ -33,11 +32,10 @@ import type { AgentRole } from "@/api/types";
 
 interface AgentsPageProps {
   conversationId?: string;
+  onSend: (message: string) => void;
 }
 
-export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
-  const params = useParams();
-  const conversationId = propConvId ?? params.conversationId;
+export function AgentsPage({ conversationId, onSend }: AgentsPageProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(true);
   const [hasUnread, setHasUnread] = useState(false);
@@ -62,10 +60,9 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
   }, [agents, setAgents]);
 
   useAgentEvents();
-  const { currentConvId, handleSend } = useConversation(conversationId);
 
   // Persisted messages for the active conversation — used for unread tracking
-  const { data: persistedMsgs = [] } = useAgentChatQuery(currentConvId);
+  const { data: persistedMsgs = [] } = useAgentChatQuery(conversationId);
   const totalMsgCount = persistedMsgs.length + liveMessages.length;
 
   // Auto-send initial prompt from route state
@@ -75,9 +72,9 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
     const state = location.state as { initialPrompt?: string } | null;
     if (state?.initialPrompt && !initialPromptSent.current) {
       initialPromptSent.current = true;
-      handleSend(state.initialPrompt);
+      onSend(state.initialPrompt);
     }
-  }, [location.state, handleSend]);
+  }, [location.state, onSend]);
 
   // Track unread messages when chat is closed
   const prevCountRef = useRef(totalMsgCount);
@@ -159,10 +156,10 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
 
   const chatPanel = (
     <AgentChat
-      onSend={handleSend}
+      onSend={onSend}
       onRespond={handleRespond}
       isProcessing={isProcessing}
-      conversationId={currentConvId}
+      conversationId={conversationId}
     />
   );
 
@@ -173,7 +170,7 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
           agents={agents}
           onNodeClick={handleNodeClick}
           onNodeDoubleClick={handleNodeDoubleClick}
-          conversationId={currentConvId}
+          conversationId={conversationId}
         />
       </ReactFlowProvider>
 
@@ -225,7 +222,7 @@ export function AgentsPage({ conversationId: propConvId }: AgentsPageProps) {
   );
 
   const mainPanel = (
-    <AgentMainPanel canvas={canvas} conversationId={currentConvId} />
+    <AgentMainPanel canvas={canvas} conversationId={conversationId} />
   );
 
   return (

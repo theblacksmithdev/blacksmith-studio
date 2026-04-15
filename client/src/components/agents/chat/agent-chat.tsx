@@ -110,7 +110,12 @@ interface AgentChatProps {
   conversationId?: string;
 }
 
-export function AgentChat({ onSend, onRespond, isProcessing, conversationId }: AgentChatProps) {
+export function AgentChat({
+  onSend,
+  onRespond,
+  isProcessing,
+  conversationId,
+}: AgentChatProps) {
   const { data: persistedMsgs = [] } = useAgentChatQuery(conversationId);
   const liveMessages = useAgentStore((s) => s.liveMessages);
   const inputs = useAgentStore((s) => s.pendingInputs);

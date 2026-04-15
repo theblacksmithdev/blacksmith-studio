@@ -69,6 +69,7 @@ export const git = {
   init: (projectId: string) => raw.invoke<void>("git:init", { projectId }),
 
   // Subscribe
-  onStatusChange: (cb: (data: GitStatusResult & { projectId: string }) => void) =>
-    raw.subscribe("git:onStatusChange", cb),
+  onStatusChange: (
+    cb: (data: GitStatusResult & { projectId: string }) => void,
+  ) => raw.subscribe("git:onStatusChange", cb),
 } as const;

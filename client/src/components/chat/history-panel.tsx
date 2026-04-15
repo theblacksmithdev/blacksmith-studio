@@ -5,10 +5,7 @@ import { MessageSquare, Network, Trash2, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api";
-import {
-  useSessionsQuery,
-  useDeleteSession,
-} from "@/api/hooks/sessions";
+import { useSessionsQuery, useDeleteSession } from "@/api/hooks/sessions";
 import {
   useAgentConversationsQuery,
   useDeleteAgentConversation,

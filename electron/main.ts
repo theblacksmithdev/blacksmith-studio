@@ -129,7 +129,8 @@ app.whenReady().then(async () => {
   const runnerManager = new RunnerManager(runnerConfigService, (projectId) => {
     const project = projectManager.get(projectId);
     if (!project) throw new Error(`Project not found for id: ${projectId}`);
-    const nodePath = settingsManager.resolve(projectId, "runner.nodePath") || "";
+    const nodePath =
+      settingsManager.resolve(projectId, "runner.nodePath") || "";
     return { path: project.path, nodePath };
   });
   const mcpManager = new McpManager();

@@ -1,28 +1,43 @@
 import { memo, useCallback } from "react";
 import { Flex } from "@chakra-ui/react";
 import styled from "@emotion/styled";
-import { Text, InfiniteScrollList, spacing, radii } from "@/components/shared/ui";
+import {
+  Text,
+  InfiniteScrollList,
+  spacing,
+  radii,
+} from "@/components/shared/ui";
 import { FileIcon } from "@/pages/files/components/explorer/utils/file-icon";
 import type { GitChangedFile } from "@/api/types";
 
 function statusColor(status: GitChangedFile["status"]): string {
   switch (status) {
-    case "modified": return "var(--studio-warning)";
+    case "modified":
+      return "var(--studio-warning)";
     case "added":
-    case "untracked": return "var(--studio-green)";
-    case "deleted": return "var(--studio-error)";
-    default: return "var(--studio-text-muted)";
+    case "untracked":
+      return "var(--studio-green)";
+    case "deleted":
+      return "var(--studio-error)";
+    default:
+      return "var(--studio-text-muted)";
   }
 }
 
 function statusLetter(status: GitChangedFile["status"]): string {
   switch (status) {
-    case "modified": return "M";
-    case "added": return "A";
-    case "deleted": return "D";
-    case "renamed": return "R";
-    case "untracked": return "U";
-    default: return "?";
+    case "modified":
+      return "M";
+    case "added":
+      return "A";
+    case "deleted":
+      return "D";
+    case "renamed":
+      return "R";
+    case "untracked":
+      return "U";
+    default:
+      return "?";
   }
 }
 
@@ -43,7 +58,8 @@ const Row = styled.button<{ selected: boolean }>`
   padding: 6px ${spacing.sm};
   border-radius: ${radii.md};
   border: none;
-  background: ${({ selected }) => selected ? "var(--studio-bg-hover)" : "transparent"};
+  background: ${({ selected }) =>
+    selected ? "var(--studio-bg-hover)" : "transparent"};
   cursor: pointer;
   text-align: left;
   width: 100%;
@@ -57,7 +73,7 @@ const Row = styled.button<{ selected: boolean }>`
 const StatusPill = styled.span<{ color: string }>`
   font-size: 10px;
   font-weight: 600;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: "SF Mono", "Fira Code", monospace;
   color: ${({ color }) => color};
   flex-shrink: 0;
   min-width: 12px;

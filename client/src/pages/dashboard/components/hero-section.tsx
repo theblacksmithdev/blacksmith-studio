@@ -16,7 +16,7 @@ const LogoGlow = styled.div`
   padding: ${spacing.sm};
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: -20px;
     border-radius: 50%;
@@ -55,11 +55,17 @@ export function HeroSection() {
   return (
     <Wrap>
       <LogoGlow>
-        <Logo size={44} variant="brand" style={{ position: "relative", zIndex: 1 }} />
+        <Logo
+          size={44}
+          variant="brand"
+          style={{ position: "relative", zIndex: 1 }}
+        />
       </LogoGlow>
       <Wordmark>
         <AppName>Blacksmith Studio</AppName>
-        <Tagline>AI-native IDE. Build with Claude, solo or with a team of agents.</Tagline>
+        <Tagline>
+          AI-native IDE. Build with Claude, solo or with a team of agents.
+        </Tagline>
       </Wordmark>
     </Wrap>
   );

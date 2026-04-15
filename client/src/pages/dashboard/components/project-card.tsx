@@ -23,7 +23,10 @@ function formatRelative(dateStr: string): string {
   if (diffHr < 24) return `${diffHr}h ago`;
   if (diffDay === 1) return "yesterday";
   if (diffDay < 7) return `${diffDay}d ago`;
-  return new Date(dateStr).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return new Date(dateStr).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
 }
 
 const Root = styled(Link)`
@@ -63,7 +66,7 @@ const Initial = styled.div`
   justify-content: center;
   font-size: 11px;
   font-weight: 600;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: "SF Mono", "Fira Code", monospace;
   color: var(--studio-text-secondary);
   flex-shrink: 0;
   letter-spacing: 0.04em;

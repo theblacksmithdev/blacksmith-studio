@@ -55,7 +55,7 @@ const BranchButton = styled.button`
   background: var(--studio-bg-main);
   color: var(--studio-text-secondary);
   cursor: pointer;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: "SF Mono", "Fira Code", monospace;
   font-size: 12px;
   font-weight: 500;
   transition: all 0.12s ease;
@@ -126,8 +126,10 @@ export function SourceControlView() {
   };
 
   return (
-    <Flex direction="column" css={{ height: "100%", background: "var(--studio-bg-main)" }}>
-
+    <Flex
+      direction="column"
+      css={{ height: "100%", background: "var(--studio-bg-main)" }}
+    >
       {/* ── Header ── */}
       <Header>
         <Flex align="center" gap={spacing.sm} css={{ minWidth: 0 }}>
@@ -138,7 +140,9 @@ export function SourceControlView() {
             </BranchButton>
           </Tooltip>
           {changedCount > 0 && (
-            <Badge variant="warning" size="sm">{changedCount}</Badge>
+            <Badge variant="warning" size="sm">
+              {changedCount}
+            </Badge>
           )}
         </Flex>
 
@@ -184,25 +188,48 @@ export function SourceControlView() {
               left={
                 <Flex
                   direction="column"
-                  css={{ height: "100%", background: "var(--studio-bg-sidebar)" }}
+                  css={{
+                    height: "100%",
+                    background: "var(--studio-bg-sidebar)",
+                  }}
                 >
                   <PanelLabel>
-                    <Text variant="tiny" color="muted">Changes</Text>
+                    <Text variant="tiny" color="muted">
+                      Changes
+                    </Text>
                     {changedFiles.total > 0 && (
-                      <Badge variant="default" size="sm">{changedFiles.total}</Badge>
+                      <Badge variant="default" size="sm">
+                        {changedFiles.total}
+                      </Badge>
                     )}
                   </PanelLabel>
-                  <Box css={{ flex: 1, minHeight: 0, padding: `0 ${spacing.xs} ${spacing.sm}` }}>
+                  <Box
+                    css={{
+                      flex: 1,
+                      minHeight: 0,
+                      padding: `0 ${spacing.xs} ${spacing.sm}`,
+                    }}
+                  >
                     {changedFiles.isLoading ? (
-                      <Flex align="center" justify="center" css={{ height: "80px" }}>
-                        <Text variant="caption" color="muted">Loading…</Text>
+                      <Flex
+                        align="center"
+                        justify="center"
+                        css={{ height: "80px" }}
+                      >
+                        <Text variant="caption" color="muted">
+                          Loading…
+                        </Text>
                       </Flex>
                     ) : (
                       <ChangedFilesList
                         files={changedFiles.data}
                         selectedPath={selectedFile}
                         onSelect={setSelectedFile}
-                        onLoadMore={changedFiles.hasNextPage ? () => changedFiles.fetchNextPage() : undefined}
+                        onLoadMore={
+                          changedFiles.hasNextPage
+                            ? () => changedFiles.fetchNextPage()
+                            : undefined
+                        }
                         isLoadingMore={changedFiles.isFetchingNextPage}
                       />
                     )}
@@ -220,21 +247,36 @@ export function SourceControlView() {
           {/* Bottom: commit history */}
           <Flex
             direction="column"
-            css={{ height: "100%", borderTop: "1px solid var(--studio-border)" }}
+            css={{
+              height: "100%",
+              borderTop: "1px solid var(--studio-border)",
+            }}
           >
             <PanelLabel>
               <Flex align="center" gap={spacing.xs}>
-                <Text variant="tiny" color="muted">History</Text>
+                <Text variant="tiny" color="muted">
+                  History
+                </Text>
                 {history.data && history.data.length > 0 && (
-                  <Badge variant="default" size="sm">{history.data.length}</Badge>
+                  <Badge variant="default" size="sm">
+                    {history.data.length}
+                  </Badge>
                 )}
               </Flex>
             </PanelLabel>
             <SectionDivider />
-            <Box css={{ flex: 1, overflowY: "auto", padding: `${spacing.sm} ${spacing.lg} ${spacing.md}` }}>
+            <Box
+              css={{
+                flex: 1,
+                overflowY: "auto",
+                padding: `${spacing.sm} ${spacing.lg} ${spacing.md}`,
+              }}
+            >
               {history.isLoading ? (
                 <Flex align="center" justify="center" css={{ height: "60px" }}>
-                  <Text variant="caption" color="muted">Loading…</Text>
+                  <Text variant="caption" color="muted">
+                    Loading…
+                  </Text>
                 </Flex>
               ) : (
                 <HistoryTimeline

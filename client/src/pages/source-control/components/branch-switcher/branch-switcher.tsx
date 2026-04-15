@@ -124,9 +124,7 @@ export function BranchSwitcher({ onClose }: Props) {
           ) : (
             <>
               <ModalFooterSpacer />
-              <ModalSecondaryButton
-                onClick={() => setShowCreate(true)}
-              >
+              <ModalSecondaryButton onClick={() => setShowCreate(true)}>
                 <Plus size={13} /> New branch
               </ModalSecondaryButton>
             </>
@@ -176,8 +174,14 @@ export function BranchSwitcher({ onClose }: Props) {
         )}
 
         {branches.isLoading ? (
-          <Flex align="center" justify="center" css={{ padding: spacing["3xl"] }}>
-            <Text variant="caption" color="muted">Loading…</Text>
+          <Flex
+            align="center"
+            justify="center"
+            css={{ padding: spacing["3xl"] }}
+          >
+            <Text variant="caption" color="muted">
+              Loading…
+            </Text>
           </Flex>
         ) : (
           <Flex direction="column" gap="2px">
@@ -196,7 +200,10 @@ export function BranchSwitcher({ onClose }: Props) {
                 >
                   {branches.current.name}
                 </Text>
-                <Check size={13} style={{ color: "var(--studio-text-muted)", flexShrink: 0 }} />
+                <Check
+                  size={13}
+                  style={{ color: "var(--studio-text-muted)", flexShrink: 0 }}
+                />
               </BranchRow>
             )}
 
@@ -205,7 +212,10 @@ export function BranchSwitcher({ onClose }: Props) {
               <BranchRow
                 key={b.name}
                 onClick={() => actions.checkout(b.name)}
-                style={{ opacity: pending.switching ? 0.6 : 1, cursor: pending.switching ? "wait" : "pointer" }}
+                style={{
+                  opacity: pending.switching ? 0.6 : 1,
+                  cursor: pending.switching ? "wait" : "pointer",
+                }}
               >
                 <BranchDot />
                 <Text
@@ -234,7 +244,11 @@ export function BranchSwitcher({ onClose }: Props) {
             ))}
 
             {filtered.length === 0 && search && (
-              <Flex align="center" justify="center" css={{ padding: spacing.xl }}>
+              <Flex
+                align="center"
+                justify="center"
+                css={{ padding: spacing.xl }}
+              >
                 <Text variant="caption" color="muted">
                   No branches match "{search}"
                 </Text>

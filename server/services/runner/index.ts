@@ -37,9 +37,10 @@ interface BufferedLog {
 const MAX_BUFFERED_LOGS = 500;
 const KILL_ESCALATION_MS = 5_000;
 
-export type ProjectResolver = (
-  projectId: string,
-) => { path: string; nodePath: string };
+export type ProjectResolver = (projectId: string) => {
+  path: string;
+  nodePath: string;
+};
 
 export class RunnerManager {
   private processes = new Map<string, RunnerProcess>();
@@ -299,7 +300,8 @@ export class RunnerManager {
     } else {
       this.logBuffers.set(projectId, buf);
     }
-    for (const cb of this.outputListeners) cb(projectId, configId, name, line, ts);
+    for (const cb of this.outputListeners)
+      cb(projectId, configId, name, line, ts);
   }
 
   private emitStatus(projectId: string) {

@@ -45,12 +45,11 @@ export function CommitDialog({ onClose, onCommitted }: CommitDialogProps) {
         <>
           <ModalFooterSpacer />
           <ModalSecondaryButton onClick={onClose}>Cancel</ModalSecondaryButton>
-          <ModalPrimaryButton
-            onClick={handleCommit}
-            disabled={!canCommit}
-          >
+          <ModalPrimaryButton onClick={handleCommit} disabled={!canCommit}>
             <GitCommitHorizontal size={14} />
-            {isCommitting ? "Committing…" : `Commit${selectedCount > 0 ? ` ${selectedCount} file${selectedCount !== 1 ? "s" : ""}` : ""}`}
+            {isCommitting
+              ? "Committing…"
+              : `Commit${selectedCount > 0 ? ` ${selectedCount} file${selectedCount !== 1 ? "s" : ""}` : ""}`}
           </ModalPrimaryButton>
         </>
       }

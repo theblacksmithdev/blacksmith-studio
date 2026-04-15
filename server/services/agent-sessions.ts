@@ -115,9 +115,7 @@ export class AgentSessionManager {
     });
   }
 
-  getConversation(
-    conversationId: string,
-  ): {
+  getConversation(conversationId: string): {
     id: string;
     title: string;
     createdAt: string;

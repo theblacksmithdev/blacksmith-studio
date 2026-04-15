@@ -33,16 +33,22 @@ export function useAiChat() {
         });
       }),
       api.claude.onDone(() => {
-        chatStore.getState().appendPendingAssistantMessage(lastContentRef.current);
+        chatStore
+          .getState()
+          .appendPendingAssistantMessage(lastContentRef.current);
         lastContentRef.current = "";
         const sid = currentSessionRef.current;
         const pid = projectIdRef.current;
         if (sid && pid) {
-          qc.invalidateQueries({ queryKey: queryKeys.forProject(pid).session(sid) });
+          qc.invalidateQueries({
+            queryKey: queryKeys.forProject(pid).session(sid),
+          });
         }
       }),
       api.claude.onError((data) => {
-        chatStore.getState().appendPendingAssistantMessage(`Error: ${data.error}`);
+        chatStore
+          .getState()
+          .appendPendingAssistantMessage(`Error: ${data.error}`);
         lastContentRef.current = "";
       }),
       api.files.onChanged((data) => {

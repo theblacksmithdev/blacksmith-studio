@@ -1,7 +1,14 @@
 import { Flex, Box } from "@chakra-ui/react";
 import { Sparkles } from "lucide-react";
 import styled from "@emotion/styled";
-import { Text, Textarea, Button, Skeleton, spacing, radii } from "@/components/shared/ui";
+import {
+  Text,
+  Textarea,
+  Button,
+  Skeleton,
+  spacing,
+  radii,
+} from "@/components/shared/ui";
 
 const Label = styled.div`
   display: flex;

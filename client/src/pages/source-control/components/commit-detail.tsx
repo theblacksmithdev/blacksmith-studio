@@ -62,7 +62,7 @@ const HashBtn = styled.button`
   border-radius: ${radii.md};
   border: 1px solid var(--studio-border);
   background: var(--studio-bg-surface);
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: "SF Mono", "Fira Code", monospace;
   font-size: 12px;
   color: var(--studio-text-secondary);
   cursor: pointer;
@@ -110,7 +110,8 @@ export function CommitDetailDrawer({ hash, onClose }: Props) {
   };
 
   const { totalAdded, totalDeleted, diffLines } = useMemo(() => {
-    if (!detail) return { totalAdded: 0, totalDeleted: 0, diffLines: [] as string[] };
+    if (!detail)
+      return { totalAdded: 0, totalDeleted: 0, diffLines: [] as string[] };
     return {
       totalAdded: detail.files.reduce((n, f) => n + f.insertions, 0),
       totalDeleted: detail.files.reduce((n, f) => n + f.deletions, 0),
@@ -170,20 +171,30 @@ export function CommitDetailDrawer({ hash, onClose }: Props) {
   return (
     <Drawer
       title={detail?.message ?? "Commit"}
-      subtitle={detail ? `${detail.hash.slice(0, 7)} · ${detail.author}` : undefined}
+      subtitle={
+        detail ? `${detail.hash.slice(0, 7)} · ${detail.author}` : undefined
+      }
       onClose={onClose}
       size="lg"
       headerExtra={
-        <GitCommitHorizontal size={15} style={{ color: "var(--studio-text-muted)" }} />
+        <GitCommitHorizontal
+          size={15}
+          style={{ color: "var(--studio-text-muted)" }}
+        />
       }
     >
       {isLoading ? (
         <Flex align="center" justify="center" css={{ height: "200px" }}>
-          <Text variant="caption" color="muted">Loading…</Text>
+          <Text variant="caption" color="muted">
+            Loading…
+          </Text>
         </Flex>
       ) : detail ? (
-        <Flex direction="column" gap={spacing.xl} css={{ height: "100%", minHeight: 0 }}>
-
+        <Flex
+          direction="column"
+          gap={spacing.xl}
+          css={{ height: "100%", minHeight: 0 }}
+        >
           {/* ── Metadata ── */}
           <Flex align="center" gap={spacing.md} css={{ flexWrap: "wrap" }}>
             <HashBtn onClick={copyHash}>
@@ -202,16 +213,30 @@ export function CommitDetailDrawer({ hash, onClose }: Props) {
 
           {/* ── Files changed ── */}
           <Box>
-            <Flex align="center" gap={spacing.sm} css={{ marginBottom: spacing.sm }}>
-              <SectionLabel style={{ marginBottom: 0 }}>Files changed</SectionLabel>
-              <Badge variant="default" size="sm">{detail.files.length}</Badge>
+            <Flex
+              align="center"
+              gap={spacing.sm}
+              css={{ marginBottom: spacing.sm }}
+            >
+              <SectionLabel style={{ marginBottom: 0 }}>
+                Files changed
+              </SectionLabel>
+              <Badge variant="default" size="sm">
+                {detail.files.length}
+              </Badge>
               {totalAdded > 0 && (
-                <Text variant="caption" css={{ color: "var(--studio-green)", fontWeight: 500 }}>
+                <Text
+                  variant="caption"
+                  css={{ color: "var(--studio-green)", fontWeight: 500 }}
+                >
                   +{totalAdded}
                 </Text>
               )}
               {totalDeleted > 0 && (
-                <Text variant="caption" css={{ color: "var(--studio-error)", fontWeight: 500 }}>
+                <Text
+                  variant="caption"
+                  css={{ color: "var(--studio-error)", fontWeight: 500 }}
+                >
                   −{totalDeleted}
                 </Text>
               )}
@@ -233,12 +258,18 @@ export function CommitDetailDrawer({ hash, onClose }: Props) {
                     {f.path}
                   </Text>
                   {f.insertions > 0 && (
-                    <Text variant="caption" css={{ color: "var(--studio-green)", fontWeight: 500 }}>
+                    <Text
+                      variant="caption"
+                      css={{ color: "var(--studio-green)", fontWeight: 500 }}
+                    >
                       +{f.insertions}
                     </Text>
                   )}
                   {f.deletions > 0 && (
-                    <Text variant="caption" css={{ color: "var(--studio-error)", fontWeight: 500 }}>
+                    <Text
+                      variant="caption"
+                      css={{ color: "var(--studio-error)", fontWeight: 500 }}
+                    >
                       −{f.deletions}
                     </Text>
                   )}
@@ -248,7 +279,14 @@ export function CommitDetailDrawer({ hash, onClose }: Props) {
           </Box>
 
           {/* ── Diff ── */}
-          <Box css={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+          <Box
+            css={{
+              flex: 1,
+              minHeight: 0,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
             <SectionLabel>Diff</SectionLabel>
             <Box
               css={{
@@ -271,7 +309,9 @@ export function CommitDetailDrawer({ hash, onClose }: Props) {
         </Flex>
       ) : (
         <Flex align="center" justify="center" css={{ height: "200px" }}>
-          <Text variant="caption" color="muted">Failed to load commit</Text>
+          <Text variant="caption" color="muted">
+            Failed to load commit
+          </Text>
         </Flex>
       )}
     </Drawer>
