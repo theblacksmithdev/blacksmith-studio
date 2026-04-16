@@ -4,21 +4,7 @@ import { KnowledgeManager } from "../knowledge.js";
 
 const knowledgeManager = new KnowledgeManager();
 
-const GRAPHIFY_REPORT_PATH = ".blacksmith/graphify/GRAPH_REPORT.md";
-const MAX_REPORT_SIZE = 32 * 1024;
-
-function readGraphReport(projectRoot: string): string | null {
-  const reportPath = path.join(projectRoot, GRAPHIFY_REPORT_PATH);
-  if (!fs.existsSync(reportPath)) return null;
-  try {
-    const content = fs.readFileSync(reportPath, "utf-8");
-    return content.length > MAX_REPORT_SIZE
-      ? content.slice(0, MAX_REPORT_SIZE) + "\n\n[... truncated]"
-      : content;
-  } catch {
-    return null;
-  }
-}
+import { getGraphContext } from "../graphify-context.js";
 
 const IGNORE = new Set([
   "node_modules",
@@ -82,9 +68,10 @@ export function generateProjectContext(projectRoot: string): string {
   const lines: string[] = [];
 
   // Inject graph report as a rich structural overview when available
-  const graphReport = readGraphReport(projectRoot);
+  const graphReport = getGraphContext(projectRoot);
   if (graphReport) {
-    lines.push("## Project Knowledge Graph\n");
+    lines.push("## Project Knowledge Graph");
+    lines.push("(Pre-built codebase structure — trust this for navigation. Read specific files only when you need implementation details.)\n");
     lines.push(graphReport);
     lines.push("");
   }

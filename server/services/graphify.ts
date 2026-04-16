@@ -11,6 +11,9 @@ const GRAPH_HTML = "graph.html";
 const MAX_REPORT_SIZE = 32 * 1024;
 const PKG_NAME = "graphifyy";
 const BIN_NAME = "graphify";
+const CLAUDE_MD = "CLAUDE.md";
+const SECTION_START = "<!-- blacksmith:graphify:start -->";
+const SECTION_END = "<!-- blacksmith:graphify:end -->";
 
 interface GraphifyMeta {
   builtAt: string;
@@ -134,6 +137,9 @@ export class GraphifyManager {
           path.join(outDir, META_FILE),
           JSON.stringify(meta, null, 2),
         );
+
+        // Update CLAUDE.md with graph instructions
+        this.updateClaudeMd(projectRoot);
       }
 
       return { success: result.success, durationMs, error: result.error };
@@ -205,19 +211,100 @@ export class GraphifyManager {
   }
 
   clean(projectRoot: string): void {
-    // Remove our output directory
     const out = this.outputDir(projectRoot);
     if (fs.existsSync(out)) fs.rmSync(out, { recursive: true, force: true });
 
-    // Also remove graphify's default output if it exists
     const defaultDir = path.join(projectRoot, GRAPHIFY_DEFAULT_DIR);
     if (fs.existsSync(defaultDir)) fs.rmSync(defaultDir, { recursive: true, force: true });
+
+    // Remove the managed section from CLAUDE.md
+    this.removeClaudeMdSection(projectRoot);
   }
 
   // ── Private ──
 
   /**
-   * Move graphify's default output (.graphify/) into our managed directory (.blacksmith/graphify/).
+   * Write or update the Graphify instructions section in CLAUDE.md.
+   * Uses sentinel comments to manage the section without touching user content.
+   */
+  private updateClaudeMd(projectRoot: string): void {
+    const graph = this.getGraph(projectRoot) as {
+      nodes?: unknown[];
+      links?: unknown[];
+    } | null;
+
+    const nodes = graph?.nodes?.length ?? 0;
+    const edges = graph?.links?.length ?? 0;
+    const date = new Date().toISOString().split("T")[0];
+
+    const section = [
+      SECTION_START,
+      "## Knowledge Graph (Graphify)",
+      "",
+      "This project has a pre-built knowledge graph at `.blacksmith/graphify/`.",
+      "",
+      "Rules:",
+      "- Before exploring the codebase with Glob/Grep/Read, read `.blacksmith/graphify/GRAPH_REPORT.md`",
+      "  for the structural overview — god nodes, communities, and file relationships.",
+      "- Use the graph to navigate directly to relevant files instead of scanning broadly.",
+      "- Only Read files you need to modify or understand in detail — the graph already maps the structure.",
+      "",
+      `Stats: ${nodes} nodes · ${edges} edges · Built ${date}`,
+      SECTION_END,
+    ].join("\n");
+
+    const claudeMdPath = path.join(projectRoot, CLAUDE_MD);
+    let content = "";
+
+    if (fs.existsSync(claudeMdPath)) {
+      content = fs.readFileSync(claudeMdPath, "utf-8");
+    }
+
+    const startIdx = content.indexOf(SECTION_START);
+    const endIdx = content.indexOf(SECTION_END);
+
+    if (startIdx !== -1 && endIdx !== -1) {
+      // Replace existing section in place
+      content =
+        content.slice(0, startIdx) +
+        section +
+        content.slice(endIdx + SECTION_END.length);
+    } else {
+      // Append to end
+      content = content.trimEnd() + "\n\n" + section + "\n";
+    }
+
+    fs.writeFileSync(claudeMdPath, content.trimStart());
+  }
+
+  /**
+   * Remove the managed Graphify section from CLAUDE.md.
+   */
+  private removeClaudeMdSection(projectRoot: string): void {
+    const claudeMdPath = path.join(projectRoot, CLAUDE_MD);
+    if (!fs.existsSync(claudeMdPath)) return;
+
+    let content = fs.readFileSync(claudeMdPath, "utf-8");
+    const startIdx = content.indexOf(SECTION_START);
+    const endIdx = content.indexOf(SECTION_END);
+
+    if (startIdx === -1 || endIdx === -1) return;
+
+    content =
+      content.slice(0, startIdx) +
+      content.slice(endIdx + SECTION_END.length);
+
+    // Clean up extra blank lines left behind
+    content = content.replace(/\n{3,}/g, "\n\n").trim();
+
+    if (content) {
+      fs.writeFileSync(claudeMdPath, content + "\n");
+    }
+    // Don't delete CLAUDE.md even if empty — user may have other plans for it
+  }
+
+  /**
+   * Move graphify's default output (graphify-out/) into our managed directory (.blacksmith/graphify/).
    * Copies files we care about, then removes the default output directory.
    */
   private collectOutput(projectRoot: string): void {
