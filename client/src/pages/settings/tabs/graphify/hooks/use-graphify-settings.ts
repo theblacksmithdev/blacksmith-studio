@@ -24,6 +24,16 @@ export function useGraphifySettings() {
     [updateSettings],
   );
 
+  const build = () => {
+      buildMutation.reset();
+      buildMutation.mutate();
+    }
+
+    const clean = () => {
+      buildMutation.reset();
+      cleanMutation.mutate();
+    }
+
   return {
     // Install state
     installed: installStatus?.version ?? false,
@@ -41,8 +51,8 @@ export function useGraphifySettings() {
     buildResult: buildMutation.data,
 
     // Actions
-    build: () => buildMutation.mutate(),
-    clean: () => cleanMutation.mutate(),
+    build,
+    clean,
     openVisualization,
 
     // Setup flow

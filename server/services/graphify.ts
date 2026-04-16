@@ -2,7 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import type { PythonManager } from "./python/index.js";
 
-const GRAPHIFY_DIR = ".blacksmith/graphify";
+const OUTPUT_DIR = ".blacksmith/graphify";
+const GRAPHIFY_DEFAULT_DIR = ".graphify"; // where graphify CLI outputs by default
 const META_FILE = "meta.json";
 const REPORT_FILE = "GRAPH_REPORT.md";
 const GRAPH_FILE = "graph.json";
@@ -45,10 +46,13 @@ export class GraphifyManager {
     return this.python.packages;
   }
 
+  private outputDir(projectRoot: string): string {
+    return path.join(projectRoot, OUTPUT_DIR);
+  }
+
   // ── Install & Check ──
 
   async checkInstalled(): Promise<{ installed: boolean; version?: string }> {
-    // Check venv binary first, then pip package
     if (fs.existsSync(this.pkg.bin(BIN_NAME))) {
       const version = await this.pkg.getVersion(PKG_NAME);
       return { installed: true, version: version ?? undefined };
@@ -66,19 +70,16 @@ export class GraphifyManager {
     pythonVersion?: string,
     onProgress?: ProgressCallback,
   ): Promise<{ success: boolean; error?: string }> {
-    // 1. Ensure venv
     if (!this.pkg.ready) {
       onProgress?.("Creating Studio Python environment...");
       const venv = await this.pkg.createVenv(pythonVersion, onProgress);
       if (!venv.success) return venv;
     }
 
-    // 2. Install
     onProgress?.("Installing graphifyy...");
     const install = await this.pkg.install(PKG_NAME, onProgress);
     if (!install.success) return install;
 
-    // 3. Verify
     const check = await this.checkInstalled();
     if (!check.installed) {
       return { success: false, error: "Package installed but not detected." };
@@ -98,16 +99,14 @@ export class GraphifyManager {
       return { success: false, durationMs: 0, error: "Build already in progress" };
     }
 
-    const outputDir = path.join(projectRoot, GRAPHIFY_DIR);
-    fs.mkdirSync(outputDir, { recursive: true });
-
     this._building.add(projectRoot);
     const start = Date.now();
 
     try {
+      // graphify outputs to .graphify/ in cwd by default
       const result = await this.pkg.runWithProgress(
         BIN_NAME,
-        ["./", "--output", outputDir],
+        [],
         onProgress,
         { cwd: projectRoot, timeout: 600_000 },
       );
@@ -115,6 +114,14 @@ export class GraphifyManager {
       const durationMs = Date.now() - start;
 
       if (result.success) {
+        // Move output from .graphify/ → .blacksmith/graphify/
+        this.collectOutput(projectRoot);
+
+        // Ensure output dir exists (collectOutput may not have created it
+        // if graphify output to a different location)
+        const outDir = this.outputDir(projectRoot);
+        fs.mkdirSync(outDir, { recursive: true });
+
         const { version } = await this.checkInstalled();
         const meta: GraphifyMeta = {
           builtAt: new Date().toISOString(),
@@ -122,7 +129,7 @@ export class GraphifyManager {
           version: version ?? "unknown",
         };
         fs.writeFileSync(
-          path.join(outputDir, META_FILE),
+          path.join(outDir, META_FILE),
           JSON.stringify(meta, null, 2),
         );
       }
@@ -146,7 +153,7 @@ export class GraphifyManager {
 
   getStatus(projectRoot: string, maxAgeMs = 3_600_000): GraphifyStatus {
     const installed = fs.existsSync(this.pkg.bin(BIN_NAME));
-    const metaPath = path.join(projectRoot, GRAPHIFY_DIR, META_FILE);
+    const metaPath = path.join(this.outputDir(projectRoot), META_FILE);
     const building = this._building.has(projectRoot);
 
     if (!fs.existsSync(metaPath)) {
@@ -167,7 +174,7 @@ export class GraphifyManager {
   }
 
   getReport(projectRoot: string): string | null {
-    const filePath = path.join(projectRoot, GRAPHIFY_DIR, REPORT_FILE);
+    const filePath = path.join(this.outputDir(projectRoot), REPORT_FILE);
     try {
       if (!fs.existsSync(filePath)) return null;
       const content = fs.readFileSync(filePath, "utf-8");
@@ -180,8 +187,8 @@ export class GraphifyManager {
   }
 
   getGraph(projectRoot: string): object | null {
+    const filePath = path.join(this.outputDir(projectRoot), GRAPH_FILE);
     try {
-      const filePath = path.join(projectRoot, GRAPHIFY_DIR, GRAPH_FILE);
       if (!fs.existsSync(filePath)) return null;
       return JSON.parse(fs.readFileSync(filePath, "utf-8"));
     } catch {
@@ -190,12 +197,47 @@ export class GraphifyManager {
   }
 
   getVisualizationPath(projectRoot: string): string | null {
-    const filePath = path.join(projectRoot, GRAPHIFY_DIR, GRAPH_HTML);
+    const filePath = path.join(this.outputDir(projectRoot), GRAPH_HTML);
     return fs.existsSync(filePath) ? filePath : null;
   }
 
   clean(projectRoot: string): void {
-    const dir = path.join(projectRoot, GRAPHIFY_DIR);
-    if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true });
+    // Remove our output directory
+    const out = this.outputDir(projectRoot);
+    if (fs.existsSync(out)) fs.rmSync(out, { recursive: true, force: true });
+
+    // Also remove graphify's default output if it exists
+    const defaultDir = path.join(projectRoot, GRAPHIFY_DEFAULT_DIR);
+    if (fs.existsSync(defaultDir)) fs.rmSync(defaultDir, { recursive: true, force: true });
+  }
+
+  // ── Private ──
+
+  /**
+   * Move graphify's default output (.graphify/) into our managed directory (.blacksmith/graphify/).
+   * Copies files we care about, then removes the default output directory.
+   */
+  private collectOutput(projectRoot: string): void {
+    const src = path.join(projectRoot, GRAPHIFY_DEFAULT_DIR);
+    if (!fs.existsSync(src)) return;
+
+    const dest = this.outputDir(projectRoot);
+    fs.mkdirSync(dest, { recursive: true });
+
+    for (const file of [REPORT_FILE, GRAPH_FILE, GRAPH_HTML]) {
+      const srcFile = path.join(src, file);
+      if (fs.existsSync(srcFile)) {
+        fs.copyFileSync(srcFile, path.join(dest, file));
+      }
+    }
+
+    // Also copy the cache directory for incremental rebuilds
+    const cacheDir = path.join(src, "cache");
+    if (fs.existsSync(cacheDir)) {
+      fs.cpSync(cacheDir, path.join(dest, "cache"), { recursive: true });
+    }
+
+    // Clean up the default directory
+    fs.rmSync(src, { recursive: true, force: true });
   }
 }
