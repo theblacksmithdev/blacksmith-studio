@@ -117,6 +117,7 @@ export const GIT_INIT = "git:init";
 
 // Graphify
 export const GRAPHIFY_CHECK = "graphify:check";
+export const GRAPHIFY_SETUP = "graphify:setup";
 export const GRAPHIFY_STATUS = "graphify:status";
 export const GRAPHIFY_BUILD = "graphify:build";
 export const GRAPHIFY_QUERY = "graphify:query";
@@ -259,6 +260,7 @@ export const INVOKE_CHANNELS = [
   GIT_COMMIT_DETAIL,
   GIT_INIT,
   GRAPHIFY_CHECK,
+  GRAPHIFY_SETUP,
   GRAPHIFY_STATUS,
   GRAPHIFY_BUILD,
   GRAPHIFY_QUERY,

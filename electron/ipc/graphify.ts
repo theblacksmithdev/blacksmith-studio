@@ -6,6 +6,7 @@ import type { GraphifyManager } from "../../server/services/graphify.js";
 import type { GitManager } from "../../server/services/git.js";
 import {
   GRAPHIFY_CHECK,
+  GRAPHIFY_SETUP,
   GRAPHIFY_STATUS,
   GRAPHIFY_BUILD,
   GRAPHIFY_QUERY,
@@ -31,6 +32,13 @@ export function setupGraphifyIPC(
 ) {
   ipcMain.handle(GRAPHIFY_CHECK, () => {
     return graphifyManager.checkInstalled();
+  });
+
+  ipcMain.handle(GRAPHIFY_SETUP, async () => {
+    const win = getWindow();
+    return graphifyManager.setup((line) => {
+      win?.webContents.send(GRAPHIFY_ON_BUILD_PROGRESS, { line });
+    });
   });
 
   ipcMain.handle(GRAPHIFY_STATUS, (_e, data: { projectId: string }) => {

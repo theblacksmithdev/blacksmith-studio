@@ -19,8 +19,14 @@ export interface GraphifyBuildResult {
   error?: string;
 }
 
+export interface GraphifySetupResult {
+  success: boolean;
+  error?: string;
+}
+
 export const graphify = {
   check: () => raw.invoke<GraphifyInstallStatus>("graphify:check"),
+  setup: () => raw.invoke<GraphifySetupResult>("graphify:setup"),
   status: (projectId: string) =>
     raw.invoke<GraphifyStatus>("graphify:status", { projectId }),
   build: (projectId: string) =>

@@ -52,6 +52,91 @@ export class GraphifyManager {
   }
 
   /**
+   * Install Graphify CLI via pip and run graphify install.
+   * Streams progress lines for UI feedback.
+   */
+  async setup(
+    onProgress?: BuildProgressCallback,
+  ): Promise<{ success: boolean; error?: string }> {
+    // Step 1: pip install graphifyy
+    onProgress?.("Installing graphifyy via pip...");
+    const pipResult = await this.spawnCommand(
+      "pip",
+      ["install", "graphifyy"],
+      onProgress,
+    );
+    if (!pipResult.success) {
+      // Try pip3 as fallback
+      onProgress?.("Trying pip3...");
+      const pip3Result = await this.spawnCommand(
+        "pip3",
+        ["install", "graphifyy"],
+        onProgress,
+      );
+      if (!pip3Result.success) {
+        return {
+          success: false,
+          error: pip3Result.error ?? "Failed to install graphifyy. Make sure Python 3.10+ and pip are available.",
+        };
+      }
+    }
+
+    // Step 2: graphify install
+    onProgress?.("Running graphify install...");
+    const installResult = await this.spawnCommand(
+      "graphify",
+      ["install"],
+      onProgress,
+    );
+    if (!installResult.success) {
+      return {
+        success: false,
+        error: installResult.error ?? "graphify install failed",
+      };
+    }
+
+    onProgress?.("Setup complete.");
+    return { success: true };
+  }
+
+  private spawnCommand(
+    cmd: string,
+    args: string[],
+    onProgress?: BuildProgressCallback,
+  ): Promise<{ success: boolean; error?: string }> {
+    return new Promise((resolve) => {
+      const proc = spawn(cmd, args, {
+        stdio: ["ignore", "pipe", "pipe"],
+        timeout: 300_000, // 5 min
+      });
+
+      let stderr = "";
+
+      proc.stdout?.on("data", (data: Buffer) => {
+        for (const line of data.toString().split("\n").filter(Boolean)) {
+          onProgress?.(line);
+        }
+      });
+
+      proc.stderr?.on("data", (data: Buffer) => {
+        stderr += data.toString();
+        for (const line of data.toString().split("\n").filter(Boolean)) {
+          onProgress?.(line);
+        }
+      });
+
+      proc.on("close", (code) => {
+        if (code === 0) resolve({ success: true });
+        else resolve({ success: false, error: stderr.trim().slice(0, 500) || `Exit code ${code}` });
+      });
+
+      proc.on("error", (err) => {
+        resolve({ success: false, error: err.message });
+      });
+    });
+  }
+
+  /**
    * Build the knowledge graph for a project.
    */
   async build(
