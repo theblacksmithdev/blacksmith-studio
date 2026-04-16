@@ -24,6 +24,8 @@ export interface AiCompletionOptions {
   timeout?: number;
   /** Disable tools (pass '--tools ""' to CLI) */
   disableTools?: boolean;
+  /** Restrict the provider to a specific tool set (e.g. ["Read","Glob","Grep"]) */
+  allowedTools?: string[];
 }
 
 /** Options for streaming interactive sessions */
@@ -39,6 +41,13 @@ export interface AiStreamOptions extends AiCompletionOptions {
   customInstructions?: string;
   /** Project context — prepended to prompt on first message */
   projectContext?: string;
+  /**
+   * When true, resolve the stream promise with whatever was produced even
+   * on non-zero exit or signal termination — as long as some output was
+   * collected. Used by one-shot callers (e.g. the PM planner) where the
+   * CLI occasionally exits 1 with valid output.
+   */
+  tolerantExit?: boolean;
 }
 
 /** Result handle from a streaming session */

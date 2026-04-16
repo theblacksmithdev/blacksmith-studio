@@ -1,4 +1,5 @@
 export { Ai } from "./ai";
+export type { AiStreamTextOptions, AiStreamTextResult } from "./ai";
 export { AiModelTier, AiProviderType } from "./types";
 export type {
   AiCompletionOptions,

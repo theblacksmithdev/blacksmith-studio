@@ -7,6 +7,19 @@ import type {
 } from "./types.js";
 import type { AiProvider } from "./providers/provider.js";
 import { ClaudeCliProvider } from "./providers/claude-cli.js";
+import { extractTextFromEvent } from "./parser.js";
+
+/** Options for streamText — same as stream, minus the required onChunk. */
+export interface AiStreamTextOptions extends Omit<AiStreamOptions, "onChunk"> {
+  /** Optional chunk tap — still fires for every NDJSON event */
+  onChunk?: (parsed: any) => void;
+  /** Called for every assistant text delta as it arrives */
+  onText?: (delta: string, isFinal: boolean) => void;
+}
+
+export interface AiStreamTextResult {
+  text: string;
+}
 
 /**
  * Ai — the unified AI interface.
@@ -55,6 +68,31 @@ export class Ai {
     }
 
     return handle;
+  }
+
+  /**
+   * Stream + collect. Wraps `stream()` and returns the accumulated assistant
+   * text after the provider completes. Consumers can still tap every chunk
+   * via `onChunk` and every text delta via `onText`.
+   *
+   * Intended for one-shot calls that need the full text to parse (e.g. the
+   * PM planner) but also want to stream partial output to the UI.
+   */
+  async streamText(options: AiStreamTextOptions): Promise<AiStreamTextResult> {
+    let text = "";
+    const handle = this.stream({
+      ...options,
+      onChunk: (event) => {
+        const delta = extractTextFromEvent(event);
+        if (delta) {
+          text += delta;
+          options.onText?.(delta, !!event.stop_reason);
+        }
+        options.onChunk?.(event);
+      },
+    });
+    await handle.promise;
+    return { text };
   }
 
   /** Cancel an active streaming session. */

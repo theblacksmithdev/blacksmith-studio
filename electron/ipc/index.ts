@@ -91,5 +91,6 @@ export function setupAllIPC(
     claudeManager,
     mcpManager,
     sessionManager,
+    ai,
   );
 }

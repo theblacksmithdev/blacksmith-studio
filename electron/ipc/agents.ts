@@ -3,6 +3,7 @@ import type { ProjectManager } from "../../server/services/projects.js";
 import type { SettingsManager } from "../../server/services/settings.js";
 import type { ClaudeManager } from "../../server/services/claude/index.js";
 import type { McpManager } from "../../server/services/mcp.js";
+import type { Ai } from "../../server/services/ai/ai.js";
 import {
   AgentManager,
   ProjectBuilder,
@@ -47,6 +48,7 @@ function resolveBaseOptions(
   settingsManager: SettingsManager,
   claudeManager: ClaudeManager,
   mcpManager: McpManager,
+  ai: Ai,
   projectId: string,
 ): Omit<AgentExecuteOptions, "prompt"> {
   const project = projectManager.get(projectId);
@@ -56,6 +58,7 @@ function resolveBaseOptions(
 
   return {
     projectRoot: project.path,
+    ai,
     claudeBin: claudeManager.getClaudeBin(),
     nodePath:
       settingsManager.resolve(project.id, "runner.nodePath") || undefined,
@@ -77,6 +80,7 @@ export function setupAgentsIPC(
   claudeManager: ClaudeManager,
   mcpManager: McpManager,
   chatSessionManager: SessionManager,
+  ai: Ai,
 ) {
   const agentManager = new AgentManager();
   const projectBuilder = new ProjectBuilder(agentManager);
@@ -131,6 +135,7 @@ export function setupAgentsIPC(
         settingsManager,
         claudeManager,
         mcpManager,
+        ai,
         data.projectId,
       );
 
@@ -266,6 +271,7 @@ export function setupAgentsIPC(
         settingsManager,
         claudeManager,
         mcpManager,
+        ai,
         data.projectId,
       );
       return agentManager.execute({
@@ -310,6 +316,7 @@ export function setupAgentsIPC(
         settingsManager,
         claudeManager,
         mcpManager,
+        ai,
         data.projectId,
       );
       return agentManager.runPipeline(
@@ -337,6 +344,7 @@ export function setupAgentsIPC(
         settingsManager,
         claudeManager,
         mcpManager,
+        ai,
         data.projectId,
       );
       return agentManager.runWorkflow(
@@ -361,6 +369,7 @@ export function setupAgentsIPC(
         settingsManager,
         claudeManager,
         mcpManager,
+        ai,
         data.projectId,
       );
       return projectBuilder.build(
@@ -379,6 +388,7 @@ export function setupAgentsIPC(
         settingsManager,
         claudeManager,
         mcpManager,
+        ai,
         data.projectId,
       );
       return projectBuilder.resume(baseOptions, data.maxBudgetUsd);

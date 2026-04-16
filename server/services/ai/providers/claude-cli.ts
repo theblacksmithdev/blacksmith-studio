@@ -129,6 +129,8 @@ export class ClaudeCliProvider extends AiProvider {
       customInstructions,
       projectContext,
       disableTools,
+      allowedTools,
+      tolerantExit,
     } = options;
     const bin = this.getBin();
 
@@ -165,6 +167,8 @@ export class ClaudeCliProvider extends AiProvider {
       args.push("--max-budget-usd", String(maxBudget));
     if (mcpConfigPath) args.push("--mcp-config", mcpConfigPath);
     if (disableTools) args.push("--allowedTools", "");
+    else if (allowedTools && allowedTools.length > 0)
+      args.push("--allowedTools", allowedTools.join(","));
 
     const proc = spawn(bin, args, {
       cwd: cwd || process.cwd(),
@@ -180,15 +184,24 @@ export class ClaudeCliProvider extends AiProvider {
       proc.stderr.on("data", (chunk: Buffer) => {
         stderrBuffer += chunk.toString();
       });
-      proc.on("close", (code) => {
+      proc.on("close", (code, signal) => {
         parser.flush();
-        if (code === 0 || code === null) resolve();
-        else
-          reject(
-            new Error(
-              stderrBuffer.trim() || `Process exited with code ${code}`,
-            ),
+        if (code === 0 || code === null) {
+          resolve();
+          return;
+        }
+        if (tolerantExit) {
+          console.warn(
+            `[claude-cli] Non-zero exit (code=${code}, signal=${signal}) — resolving tolerantly`,
           );
+          resolve();
+          return;
+        }
+        reject(
+          new Error(
+            stderrBuffer.trim() || `Process exited with code ${code}`,
+          ),
+        );
       });
       proc.on("error", (err) =>
         reject(new Error(`Failed to spawn: ${err.message}`)),
