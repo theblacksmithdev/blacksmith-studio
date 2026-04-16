@@ -18,6 +18,8 @@ export interface AgentExecuteOptions {
   projectInstructions?: string;
   /** Per-agent config overrides from settings */
   agentConfig?: AgentConfig;
+  /** Project-level permission mode override (overrides role definition default) */
+  permissionMode?: string;
 }
 
 export interface ToolCallRecord {

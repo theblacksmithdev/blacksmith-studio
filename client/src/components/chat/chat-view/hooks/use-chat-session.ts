@@ -26,9 +26,18 @@ export function useChatSession() {
   const { data: session } = useSessionQuery(sessionId);
   const sessionMessages = session?.messages ?? [];
 
-  // Clear stale pending messages when navigating to a different session
+  // Clear stale pending messages when switching BETWEEN sessions, but not on
+  // initial mount — navigating from chat/new with a freshly-added pending
+  // message would otherwise clear it before it's visible.
+  const prevSessionIdRef = useRef<string | undefined>(undefined);
   useEffect(() => {
-    clearPendingMessages();
+    if (
+      prevSessionIdRef.current !== undefined &&
+      prevSessionIdRef.current !== sessionId
+    ) {
+      clearPendingMessages();
+    }
+    prevSessionIdRef.current = sessionId;
   }, [sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Once React Query refetches and delivers updated session messages, the

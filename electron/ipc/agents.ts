@@ -66,6 +66,7 @@ function resolveBaseOptions(
         : [],
     ),
     projectInstructions: allSettings["ai.customInstructions"] || undefined,
+    permissionMode: allSettings["ai.permissionMode"] || undefined,
   };
 }
 

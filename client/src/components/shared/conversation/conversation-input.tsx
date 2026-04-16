@@ -64,7 +64,7 @@ export function ConversationInput({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+    if (e.key === "Enter" && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
       e.preventDefault();
       handleSend();
     }
@@ -119,7 +119,7 @@ export function ConversationInput({
         <Box>{leading}</Box>
 
         <Flex align="center" gap={spacing.sm}>
-          <KeyboardHint keys={"\u2318+Enter"} />
+          <KeyboardHint keys={"Shift+Enter for newline"} />
 
           {isStreaming && onCancel ? (
             <Tooltip content="Stop generation">
@@ -134,7 +134,7 @@ export function ConversationInput({
               </IconButton>
             </Tooltip>
           ) : (
-            <Tooltip content="Send (Cmd+Enter)">
+            <Tooltip content="Send (Enter)">
               <Box
                 as="button"
                 onClick={canSend ? handleSend : undefined}

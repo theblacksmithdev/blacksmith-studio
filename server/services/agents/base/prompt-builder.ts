@@ -45,7 +45,7 @@ export function buildCliArgs(params: {
     "stream-json",
     "--verbose",
     "--permission-mode",
-    definition.permissionMode,
+    options.permissionMode ?? definition.permissionMode,
     "--include-partial-messages",
     "--append-system-prompt",
     systemPrompt,
