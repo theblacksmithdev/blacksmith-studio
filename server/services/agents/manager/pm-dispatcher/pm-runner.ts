@@ -1,4 +1,5 @@
 import type { AgentExecuteOptions } from "../../base/index.js";
+import { AiModelTier } from "../../../ai/types.js";
 
 export interface PMRunOptions {
   /** User-facing prompt sent to the AI provider. */
@@ -9,6 +10,11 @@ export interface PMRunOptions {
   baseOptions: Omit<AgentExecuteOptions, "prompt">;
   /** Label used in log prefixes — "dispatch", "refine", "replan". */
   label: string;
+  /**
+   * Model tier. Defaults to Balanced for planning. Refine/replan should
+   * use Fast — they're structural rewrites, not creative work.
+   */
+  model?: AiModelTier;
   /** Invoked for each assistant text delta as it streams in. */
   onAssistantText?: (chunk: { text: string; isFinal: boolean }) => void;
   /** Invoked once when the final `result` frame arrives, with the full collected text. */
@@ -40,6 +46,7 @@ export async function runPM(opts: PMRunOptions): Promise<PMRunResult> {
   const { text } = await ai.streamText({
     prompt: opts.prompt,
     systemPrompt: opts.systemPrompt,
+    model: opts.model ?? AiModelTier.Balanced,
     cwd: opts.baseOptions.projectRoot,
     nodePath: opts.baseOptions.nodePath,
     permissionMode: "bypassPermissions",

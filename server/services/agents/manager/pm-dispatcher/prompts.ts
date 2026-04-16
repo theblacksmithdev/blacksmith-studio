@@ -68,8 +68,8 @@ When agents complete their work, their output is automatically saved as an artif
 
 ## Critical Rules
 1. Simple requests (one role, one deliverable) → mode: "single", one task.
-2. Multi-concern requests → mode: "multi", STRICT SERIAL ORDER. Every task depends on the previous.
-3. Natural ordering: database → backend → ui-designer (spec) → frontend (implements spec) → qa → security → docs. Only include the layers the request actually needs.
+2. Multi-concern requests → mode: "multi". Use \`dependsOn\` to express the REAL dependency graph — not artificial serialization. Two tasks that don't read each other's output and don't touch the same files can run in parallel; leave their \`dependsOn\` arrays empty (or pointing only to a shared prerequisite). The executor will run independent branches concurrently.
+3. Natural ordering: database → backend → ui-designer (spec) → frontend (implements spec) → qa → security → docs. Only include the layers the request actually needs. Backend and ui-designer often do NOT depend on each other and should run in parallel.
 4. Task prompts must be SPECIFIC. Name exact files, fields, endpoints, components. Reference what previous tasks created by file path.
 5. The frontend-engineer's prompt MUST say "Read the HTML/CSS design artifact from the previous task. Use the HTML comments for component boundaries and the handoff notes for props, interactions, and token mappings. Convert it into the project's frontend framework exactly as designed."
 6. Never assign feature work to fullstack-engineer.

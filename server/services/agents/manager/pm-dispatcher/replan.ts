@@ -10,6 +10,7 @@ import {
 import { PM_REPLAN_PROMPT } from "./prompts.js";
 import { PMEventEmitter, type EmitFn } from "./pm-emitter.js";
 import { runPM } from "./pm-runner.js";
+import { AiModelTier } from "../../../ai/types.js";
 
 /**
  * Re-plan downstream tasks after a spec-producing agent completes.
@@ -59,6 +60,7 @@ export async function replanDownstream(
       systemPrompt: PM_REPLAN_PROMPT,
       baseOptions,
       label: "replan",
+      model: AiModelTier.Fast,
     });
 
     if (!text.trim()) {
