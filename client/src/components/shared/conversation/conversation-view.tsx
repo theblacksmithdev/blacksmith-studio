@@ -42,7 +42,7 @@ export function ConversationView({
   renderContent,
 }: ConversationViewProps) {
   return (
-    <Flex direction="column" css={{ height: "100%", width: "100%" }}>
+    <Flex direction="column" css={{ height: "100%", width: "100%", minHeight: 0, overflow: "hidden" }}>
       <MessageList
         messages={messages}
         maxWidth={maxWidth}

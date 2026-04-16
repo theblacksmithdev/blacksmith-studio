@@ -42,7 +42,7 @@ export function MessageList({
   }
 
   return (
-    <Box flex={1} overflowY="auto">
+    <Box flex={1} overflowY="auto" minH={0} data-scroll-container>
       <Box
         css={{
           maxWidth,
@@ -82,7 +82,7 @@ export function MessageList({
           );
         })}
         {trailing}
-        <Box ref={bottomRef} css={{ height: spacing.xl }} />
+        <Box ref={bottomRef} css={{ height: spacing.xs }} />
       </Box>
     </Box>
   );

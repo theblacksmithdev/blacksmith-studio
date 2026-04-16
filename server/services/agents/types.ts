@@ -211,8 +211,11 @@ export type AgentEventData =
         tasks: {
           id: string;
           title: string;
+          description: string;
           role: AgentRole;
           dependsOn: string[];
+          model: string;
+          reviewLevel: string;
         }[];
       };
     };
