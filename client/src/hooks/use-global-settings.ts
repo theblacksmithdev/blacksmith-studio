@@ -19,5 +19,6 @@ export function useGlobalSettings() {
     get,
     set,
     nodePath: (settings["runner.nodePath"] as string) ?? "",
+    pythonPath: (settings["python.pythonPath"] as string) ?? "",
   };
 }

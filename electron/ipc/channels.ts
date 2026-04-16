@@ -115,6 +115,14 @@ export const GIT_RESOLVE_CONFLICT = "git:resolveConflict";
 export const GIT_COMMIT_DETAIL = "git:commitDetail";
 export const GIT_INIT = "git:init";
 
+// Python
+export const PYTHON_DETECT = "python:detect";
+export const PYTHON_CHECK = "python:check";
+export const PYTHON_SETUP_VENV = "python:setupVenv";
+export const PYTHON_RESET_VENV = "python:resetVenv";
+export const PYTHON_INSTALL_PACKAGE = "python:installPackage";
+export const PYTHON_IS_PACKAGE_INSTALLED = "python:isPackageInstalled";
+
 // Graphify
 export const GRAPHIFY_CHECK = "graphify:check";
 export const GRAPHIFY_SETUP = "graphify:setup";
@@ -168,6 +176,7 @@ export const WINDOW_ON_FULLSCREEN = "window:onFullscreen";
 export const TERMINAL_ON_OUTPUT = "terminal:onOutput";
 export const TERMINAL_ON_EXIT = "terminal:onExit";
 export const GIT_ON_STATUS_CHANGE = "git:onStatusChange";
+export const PYTHON_ON_PROGRESS = "python:onProgress";
 export const GRAPHIFY_ON_BUILD_PROGRESS = "graphify:onBuildProgress";
 export const AGENTS_ON_EVENT = "agents:onEvent";
 export const AGENTS_ON_WORKFLOW_EVENT = "agents:onWorkflowEvent";
@@ -259,6 +268,12 @@ export const INVOKE_CHANNELS = [
   GIT_RESOLVE_CONFLICT,
   GIT_COMMIT_DETAIL,
   GIT_INIT,
+  PYTHON_DETECT,
+  PYTHON_CHECK,
+  PYTHON_SETUP_VENV,
+  PYTHON_RESET_VENV,
+  PYTHON_INSTALL_PACKAGE,
+  PYTHON_IS_PACKAGE_INSTALLED,
   GRAPHIFY_CHECK,
   GRAPHIFY_SETUP,
   GRAPHIFY_STATUS,
@@ -307,6 +322,7 @@ export const SUBSCRIBE_CHANNELS = [
   TERMINAL_ON_OUTPUT,
   TERMINAL_ON_EXIT,
   GIT_ON_STATUS_CHANGE,
+  PYTHON_ON_PROGRESS,
   GRAPHIFY_ON_BUILD_PROGRESS,
   AGENTS_ON_EVENT,
   AGENTS_ON_WORKFLOW_EVENT,

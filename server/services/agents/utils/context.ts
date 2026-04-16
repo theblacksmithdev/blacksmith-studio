@@ -1,9 +1,22 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { AgentRoleDefinition } from "../types.js";
-import { GraphifyManager } from "../../graphify.js";
 
-const graphifyManager = new GraphifyManager();
+const GRAPHIFY_REPORT_PATH = ".blacksmith/graphify/GRAPH_REPORT.md";
+const MAX_REPORT_SIZE = 32 * 1024;
+
+function readGraphReport(projectRoot: string): string | null {
+  const reportPath = path.join(projectRoot, GRAPHIFY_REPORT_PATH);
+  if (!fs.existsSync(reportPath)) return null;
+  try {
+    const content = fs.readFileSync(reportPath, "utf-8");
+    return content.length > MAX_REPORT_SIZE
+      ? content.slice(0, MAX_REPORT_SIZE) + "\n\n[... truncated]"
+      : content;
+  } catch {
+    return null;
+  }
+}
 
 const IGNORE = new Set([
   "node_modules",
@@ -32,7 +45,7 @@ export function buildAgentContext(
   projectRoot: string,
   role: AgentRoleDefinition,
 ): string {
-  const graphReport = graphifyManager.getReport(projectRoot);
+  const graphReport = readGraphReport(projectRoot);
   const lines: string[] = [];
   const scopeDirs = role.scopeDirs.length > 0 ? role.scopeDirs : ["."];
 

@@ -23,6 +23,7 @@ const DEFAULTS: Record<string, any> = {
   "preview.runSplit": 55,
   "runner.nodePath": "",
   "agents.nodePositions": null,
+  "python.pythonPath": "",
   "graphify.enabled": false,
   "graphify.autoRebuild": true,
   "graphify.maxAgeMinutes": 60,
@@ -30,6 +31,7 @@ const DEFAULTS: Record<string, any> = {
 
 const GLOBAL_DEFAULTS: Record<string, any> = {
   "runner.nodePath": "",
+  "python.pythonPath": "",
   "editor.preferred": "",
 };
 
