@@ -87,6 +87,10 @@ export { Tooltip } from "./tooltip";
 
 export { KeyboardHint } from "./keyboard-hint";
 
+// ── Embeds ──
+export { IFrame } from "./iframe";
+export type { IFrameSandbox } from "./iframe";
+
 // ── Brand ──
 export { Logo } from "./logo";
 export type { LogoVariant } from "./logo";

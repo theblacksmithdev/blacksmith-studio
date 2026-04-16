@@ -7,7 +7,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { Text } from "@/components/shared/ui";
-import { PrimaryBtn, ResultBanner } from "./styles";
+import { PrimaryBtn, ResultBar } from "./styles";
 
 const Wrap = styled.div`
   border-radius: 10px;
@@ -128,9 +128,9 @@ export function GraphifySetupFlow({
       {result && !result.success && (
         <Footer>
           <Flex direction="column" gap="10px">
-            <ResultBanner $success={false}>
+            <ResultBar $success={false}>
               {result.error ?? "Installation failed. Make sure Python 3.10+ and pip are available."}
-            </ResultBanner>
+            </ResultBar>
             <Flex>
               <PrimaryBtn onClick={onRetry}>Try Again</PrimaryBtn>
             </Flex>

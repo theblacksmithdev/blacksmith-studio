@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import { ipcMain } from "electron";
 import type { BrowserWindow } from "electron";
 import type { ProjectManager } from "../../server/services/projects.js";
@@ -89,8 +90,7 @@ export function setupGraphifyIPC(
       const root = resolveProjectPath(projectManager, data.projectId);
       const vizPath = graphifyManager.getVisualizationPath(root);
       if (!vizPath) return null;
-      // Return file:// URL for iframe src
-      return `file://${vizPath}`;
+      return fs.readFileSync(vizPath, "utf-8");
     },
   );
 
