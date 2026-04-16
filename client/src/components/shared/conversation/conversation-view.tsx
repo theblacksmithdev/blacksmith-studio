@@ -18,8 +18,6 @@ interface ConversationViewProps {
   streamingTrailing?: ReactNode;
   /** Custom empty state when no messages */
   emptyState?: ReactNode;
-  /** Rendered in the input bottom-left (e.g. model selector) */
-  inputLeading?: ReactNode;
   /** Custom renderer per message — return null to use default bubble */
   renderMessage?: (msg: ConversationMessage) => ReactNode | null;
   /** Custom content renderer inside the default bubble (e.g. MarkdownRenderer) */
@@ -37,7 +35,6 @@ export function ConversationView({
   maxWidth = "760px",
   streamingTrailing,
   emptyState,
-  inputLeading,
   renderMessage,
   renderContent,
 }: ConversationViewProps) {
@@ -68,7 +65,6 @@ export function ConversationView({
           disabled={disabled}
           placeholder={placeholder}
           initialValue={initialValue}
-          leading={inputLeading}
         />
       </Box>
     </Flex>

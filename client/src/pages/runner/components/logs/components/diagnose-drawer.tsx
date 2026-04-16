@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Flex, Box } from "@chakra-ui/react";
 import { Drawer } from "@/components/shared/ui";
 import { MessageList } from "@/components/chat/message-list";
-import { ChatInput } from "@/components/chat/chat-input";
+import { ConversationInput } from "@/components/shared/conversation";
 import { useAiChat } from "@/hooks/use-ai-chat";
 import { useChatStore } from "@/stores/chat-store";
 import { useSessionQuery } from "@/api/hooks/sessions";
@@ -41,11 +41,12 @@ export function DiagnoseDrawer({
           partialMessage={partialMessage}
         />
         <Box css={{ padding: "0 16px 12px", flexShrink: 0 }}>
-          <ChatInput
+          <ConversationInput
             onSend={(text) => sendPrompt(text, sessionId)}
             onCancel={() => cancelPrompt(sessionId)}
             isStreaming={isStreaming}
             initialValue={initialPrompt}
+            sendShortcut="cmd+enter"
           />
         </Box>
       </Flex>

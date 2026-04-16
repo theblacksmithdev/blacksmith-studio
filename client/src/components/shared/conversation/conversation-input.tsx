@@ -15,6 +15,10 @@ import {
   radii,
   shadows,
 } from "@/components/shared/ui";
+import { ModelSelector } from "@/components/chat/model-selector";
+import { GraphifyChip } from "@/components/chat/graphify-chip";
+
+type SendShortcut = "enter" | "cmd+enter";
 
 interface ConversationInputProps {
   onSend: (text: string) => void;
@@ -23,8 +27,12 @@ interface ConversationInputProps {
   disabled?: boolean;
   placeholder?: string;
   initialValue?: string;
-  /** Rendered in the bottom-left (e.g. model selector) */
-  leading?: ReactNode;
+  /** Override the bottom-left leading content. Defaults to ModelSelector + GraphifyChip. Pass null to hide. */
+  leading?: ReactNode | null;
+  /** Send on Enter (default) or Cmd+Enter. Controls keyboard hint too. */
+  sendShortcut?: SendShortcut;
+  /** Minimum textarea height. Default: "44px". */
+  minHeight?: string;
 }
 
 export function ConversationInput({
@@ -35,6 +43,8 @@ export function ConversationInput({
   placeholder,
   initialValue,
   leading,
+  sendShortcut = "enter",
+  minHeight = "44px",
 }: ConversationInputProps) {
   const [value, setValue] = useState(initialValue ?? "");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -64,17 +74,30 @@ export function ConversationInput({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
-      e.preventDefault();
-      handleSend();
+    if (sendShortcut === "cmd+enter") {
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        handleSend();
+      }
+    } else {
+      if (e.key === "Enter" && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        handleSend();
+      }
     }
   };
 
   const canSend = !!value.trim() && !disabled;
 
+  const hintText =
+    sendShortcut === "cmd+enter" ? "\u2318+Enter" : "Shift+Enter for newline";
+  const sendTooltip =
+    sendShortcut === "cmd+enter" ? "Send (Cmd+Enter)" : "Send (Enter)";
+
   return (
     <Box
       css={{
+        width: "100%",
         position: "relative",
         background: "var(--studio-bg-surface)",
         borderRadius: radii["2xl"],
@@ -97,7 +120,7 @@ export function ConversationInput({
         rows={1}
         style={{
           width: "100%",
-          minHeight: "44px",
+          minHeight,
           padding: `${spacing.md} ${spacing.xl}`,
           background: "transparent",
           border: "none",
@@ -116,10 +139,19 @@ export function ConversationInput({
         justify="space-between"
         css={{ padding: `0 ${spacing.sm} ${spacing.sm}` }}
       >
-        <Box>{leading}</Box>
+        <Flex align="center" gap="2px">
+          {leading === undefined ? (
+            <>
+              <ModelSelector />
+              <GraphifyChip />
+            </>
+          ) : (
+            leading
+          )}
+        </Flex>
 
         <Flex align="center" gap={spacing.sm}>
-          <KeyboardHint keys={"Shift+Enter for newline"} />
+          <KeyboardHint keys={hintText} />
 
           {isStreaming && onCancel ? (
             <Tooltip content="Stop generation">
@@ -134,7 +166,7 @@ export function ConversationInput({
               </IconButton>
             </Tooltip>
           ) : (
-            <Tooltip content="Send (Enter)">
+            <Tooltip content={sendTooltip}>
               <Box
                 as="button"
                 onClick={canSend ? handleSend : undefined}

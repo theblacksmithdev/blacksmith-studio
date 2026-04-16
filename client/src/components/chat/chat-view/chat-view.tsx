@@ -5,7 +5,6 @@ import { PanelRight, History } from "lucide-react";
 import { ConversationView } from "@/components/shared/conversation";
 import { StreamingIndicator } from "../streaming-indicator";
 import { HistoryPanel } from "../history-panel";
-import { ModelSelector } from "../model-selector";
 import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 import { PreviewPanel } from "@/components/shared/preview-panel";
 import { SplitPanel } from "@/components/shared/layout";
@@ -78,7 +77,6 @@ export function ChatView() {
             <StreamingIndicator partialMessage={partialMessage} />
           ) : undefined
         }
-        inputLeading={<ModelSelector />}
       />
     </Flex>
   );

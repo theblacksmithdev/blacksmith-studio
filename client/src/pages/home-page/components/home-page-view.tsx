@@ -1,4 +1,4 @@
-import { ChatInput } from "@/components/chat/chat-input";
+import { ConversationInput } from "@/components/shared/conversation";
 import { HomeHero } from "./home-hero";
 import { QuickActions } from "./quick-actions";
 import { HomeShell, SectionDivider } from "./home-shell";
@@ -36,10 +36,12 @@ export function HomePageView({
   return (
     <HomeShell>
       <HomeHero />
-      <ChatInput
+      <ConversationInput
         onSend={onSend}
-        onCancel={() => {}}
         isStreaming={isStreaming}
+        placeholder="Ask Claude to build something..."
+        sendShortcut="cmd+enter"
+        minHeight="70px"
       />
       <QuickActions mode={mode} onSend={onSend} />
 

@@ -89,3 +89,7 @@ export function agentsConversationPath(
 ) {
   return `/${projectId}/agents/${conversationId}`;
 }
+
+export function settingsGraphifyPath(projectId: string) {
+  return `/${projectId}/settings/graphify`;
+}
