@@ -1,4 +1,4 @@
-import { ipcMain, shell } from "electron";
+import { ipcMain } from "electron";
 import type { BrowserWindow } from "electron";
 import type { ProjectManager } from "../../server/services/projects.js";
 import type { SettingsManager } from "../../server/services/settings.js";
@@ -83,13 +83,16 @@ export function setupGraphifyIPC(
     graphifyManager.clean(root);
   });
 
-  ipcMain.handle(GRAPHIFY_OPEN_VIZ, (_e, data: { projectId: string }) => {
-    const root = resolveProjectPath(projectManager, data.projectId);
-    const vizPath = graphifyManager.getVisualizationPath(root);
-    if (vizPath) {
-      shell.openExternal(`file://${vizPath}`);
-    }
-  });
+  ipcMain.handle(
+    GRAPHIFY_OPEN_VIZ,
+    (_e, data: { projectId: string }): string | null => {
+      const root = resolveProjectPath(projectManager, data.projectId);
+      const vizPath = graphifyManager.getVisualizationPath(root);
+      if (!vizPath) return null;
+      // Return file:// URL for iframe src
+      return `file://${vizPath}`;
+    },
+  );
 
   // ── Auto-rebuild: listen for git file changes ──
   if (gitManager) {

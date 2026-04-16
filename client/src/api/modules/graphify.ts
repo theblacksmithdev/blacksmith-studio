@@ -11,6 +11,7 @@ export interface GraphifyStatus {
   builtAt: string | null;
   stale: boolean;
   building: boolean;
+  hasVisualization: boolean;
 }
 
 export interface GraphifyBuildResult {
@@ -36,8 +37,8 @@ export const graphify = {
     raw.invoke<string>("graphify:query", { projectId, question }),
   clean: (projectId: string) =>
     raw.invoke<void>("graphify:clean", { projectId }),
-  openVisualization: (projectId: string) =>
-    raw.invoke<void>("graphify:openVisualization", { projectId }),
+  getVisualizationUrl: (projectId: string) =>
+    raw.invoke<string | null>("graphify:openVisualization", { projectId }),
   onBuildProgress: (cb: (data: { line: string }) => void) =>
     raw.subscribe("graphify:onBuildProgress", cb),
 } as const;

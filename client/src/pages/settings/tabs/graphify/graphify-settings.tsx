@@ -83,6 +83,7 @@ export function GraphifySettings() {
         graphStatus={gs.graphStatus}
         isBuilding={gs.isBuilding}
         buildResult={gs.buildResult}
+        enabled={gs.enabled}
         onBuild={gs.build}
         onVisualize={gs.openVisualization}
         onClean={gs.clean}

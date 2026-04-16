@@ -3,7 +3,7 @@ import path from "node:path";
 import type { PythonManager } from "./python/index.js";
 
 const OUTPUT_DIR = ".blacksmith/graphify";
-const GRAPHIFY_DEFAULT_DIR = ".graphify"; // where graphify CLI outputs by default
+const GRAPHIFY_DEFAULT_DIR = "graphify-out"; // where graphify CLI outputs by default
 const META_FILE = "meta.json";
 const REPORT_FILE = "GRAPH_REPORT.md";
 const GRAPH_FILE = "graph.json";
@@ -24,6 +24,7 @@ interface GraphifyStatus {
   builtAt: string | null;
   stale: boolean;
   building: boolean;
+  hasVisualization: boolean;
 }
 
 interface GraphifyBuildResult {
@@ -103,10 +104,11 @@ export class GraphifyManager {
     const start = Date.now();
 
     try {
-      // graphify outputs to .graphify/ in cwd by default
+      // `graphify update .` extracts code structure via AST (no LLM needed)
+      // Outputs to graphify-out/ in cwd
       const result = await this.pkg.runWithProgress(
         BIN_NAME,
-        [],
+        ["update", "."],
         onProgress,
         { cwd: projectRoot, timeout: 600_000 },
       );
@@ -155,17 +157,18 @@ export class GraphifyManager {
     const installed = fs.existsSync(this.pkg.bin(BIN_NAME));
     const metaPath = path.join(this.outputDir(projectRoot), META_FILE);
     const building = this._building.has(projectRoot);
+    const hasVisualization = this.getVisualizationPath(projectRoot) !== null;
 
     if (!fs.existsSync(metaPath)) {
-      return { installed, exists: false, builtAt: null, stale: true, building };
+      return { installed, exists: false, builtAt: null, stale: true, building, hasVisualization };
     }
 
     try {
       const meta: GraphifyMeta = JSON.parse(fs.readFileSync(metaPath, "utf-8"));
       const stale = Date.now() - new Date(meta.builtAt).getTime() > maxAgeMs;
-      return { installed, exists: true, builtAt: meta.builtAt, stale, building };
+      return { installed, exists: true, builtAt: meta.builtAt, stale, building, hasVisualization };
     } catch {
-      return { installed, exists: false, builtAt: null, stale: true, building };
+      return { installed, exists: false, builtAt: null, stale: true, building, hasVisualization };
     }
   }
 

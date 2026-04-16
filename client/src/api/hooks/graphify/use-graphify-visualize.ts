@@ -3,12 +3,14 @@ import { api } from "@/api";
 import { useActiveProjectId } from "../_shared";
 
 /**
- * Opens the Graphify graph visualization in the system browser.
+ * Returns a function that fetches the visualization URL for the current project.
+ * Returns null if no visualization is available.
  */
 export function useGraphifyVisualize() {
   const projectId = useActiveProjectId();
 
-  return useCallback(() => {
-    if (projectId) api.graphify.openVisualization(projectId);
+  return useCallback(async (): Promise<string | null> => {
+    if (!projectId) return null;
+    return api.graphify.getVisualizationUrl(projectId);
   }, [projectId]);
 }

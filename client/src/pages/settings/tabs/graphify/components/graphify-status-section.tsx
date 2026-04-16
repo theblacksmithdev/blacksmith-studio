@@ -1,8 +1,8 @@
+import { useState } from "react";
 import { Flex, Box } from "@chakra-ui/react";
 import styled from "@emotion/styled";
 import { keyframes, css } from "@emotion/react";
 import {
-  Network,
   CheckCircle2,
   Loader2,
   ExternalLink,
@@ -10,8 +10,10 @@ import {
   AlertCircle,
   Clock,
   Zap,
+  BrainCircuit,
+  CircleOff,
 } from "lucide-react";
-import { Text } from "@/components/shared/ui";
+import { Text, Drawer } from "@/components/shared/ui";
 import type {
   GraphifyBuildResult,
   GraphifyStatus,
@@ -153,14 +155,40 @@ const MetaChip = styled.span`
   }
 `;
 
+const ContextBar = styled.div<{ $active: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--studio-border);
+  background: ${(p) =>
+    p.$active ? "var(--studio-green-subtle)" : "var(--studio-bg-inset)"};
+  font-size: 12px;
+  font-weight: 450;
+  color: ${(p) =>
+    p.$active ? "var(--studio-green)" : "var(--studio-text-muted)"};
+  svg {
+    flex-shrink: 0;
+  }
+`;
+
+const IFrame = styled.iframe`
+  width: 100%;
+  height: 100%;
+  border: none;
+  flex: 1;
+  background: var(--studio-bg-main);
+`;
+
 /* ── Component ── */
 
 interface GraphifyStatusSectionProps {
   graphStatus: GraphifyStatus | undefined;
   isBuilding: boolean;
   buildResult: GraphifyBuildResult | undefined;
+  enabled: boolean;
   onBuild: () => void;
-  onVisualize: () => void;
+  onVisualize: () => Promise<string | null>;
   onClean: () => void;
 }
 
@@ -168,10 +196,13 @@ export function GraphifyStatusSection({
   graphStatus,
   isBuilding,
   buildResult,
+  enabled,
   onBuild,
   onVisualize,
   onClean,
 }: GraphifyStatusSectionProps) {
+  const [vizUrl, setVizUrl] = useState<string | null>(null);
+
   const status = (() => {
     if (isBuilding) return "building";
     if (!graphStatus?.exists) return "missing";
@@ -190,107 +221,147 @@ export function GraphifyStatusSection({
     ? formatTimeAgo(graphStatus.builtAt)
     : null;
 
-  return (
-    <Box>
-      <Flex
-        justify="space-between"
-        align="flex-start"
-        css={{ marginBottom: "14px" }}
-      >
-        <Box>
-          <Text
-            css={{
-              fontSize: "15px",
-              fontWeight: 600,
-              color: "var(--studio-text-primary)",
-              letterSpacing: "-0.01em",
-              marginBottom: "4px",
-            }}
-          >
-            Graph Status
-          </Text>
-          <Text
-            css={{
-              fontSize: "13px",
-              color: "var(--studio-text-tertiary)",
-              lineHeight: 1.5,
-            }}
-          >
-            Build and manage the knowledge graph for this project.
-          </Text>
-        </Box>
-      </Flex>
+  const handleVisualize = async () => {
+    const url = await onVisualize();
+    if (url) setVizUrl(url);
+  };
 
-      <Card>
-        <Header>
-          <StatusDot $status={status} />
-          <Box css={{ flex: 1, minWidth: 0 }}>
+  return (
+    <>
+      <Box>
+        <Flex
+          justify="space-between"
+          align="flex-start"
+          css={{ marginBottom: "14px" }}
+        >
+          <Box>
+            <Text
+              css={{
+                fontSize: "15px",
+                fontWeight: 600,
+                color: "var(--studio-text-primary)",
+                letterSpacing: "-0.01em",
+                marginBottom: "4px",
+              }}
+            >
+              Graph Status
+            </Text>
             <Text
               css={{
                 fontSize: "13px",
-                fontWeight: 500,
-                color: "var(--studio-text-primary)",
+                color: "var(--studio-text-tertiary)",
+                lineHeight: 1.5,
               }}
             >
-              {statusText}
+              Build and manage the knowledge graph for this project.
             </Text>
           </Box>
-          {builtAgo && (
-            <MetaChip>
-              <Clock size={10} />
-              {builtAgo}
-            </MetaChip>
-          )}
-        </Header>
+        </Flex>
 
-        <Body>
-          <ActionRow>
-            <Btn
-              $primary={!graphStatus?.exists && !isBuilding}
-              disabled={isBuilding}
-              onClick={onBuild}
-            >
-              {isBuilding ? (
-                <Loader2 size={12} style={{ animation: `${spin} 1s linear infinite` }} />
-              ) : (
-                <Zap size={12} />
-              )}
-              {isBuilding
-                ? "Building..."
-                : graphStatus?.exists
-                  ? "Rebuild"
-                  : "Build Now"}
-            </Btn>
-
-            {graphStatus?.exists && (
-              <>
-                <Btn onClick={onVisualize}>
-                  <ExternalLink size={12} />
-                  Visualize
-                </Btn>
-                <Btn $danger disabled={isBuilding} onClick={onClean}>
-                  <Trash2 size={12} />
-                  Clean
-                </Btn>
-              </>
+        <Card>
+          <Header>
+            <StatusDot $status={status} />
+            <Box css={{ flex: 1, minWidth: 0 }}>
+              <Text
+                css={{
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  color: "var(--studio-text-primary)",
+                }}
+              >
+                {statusText}
+              </Text>
+            </Box>
+            {builtAgo && (
+              <MetaChip>
+                <Clock size={10} />
+                {builtAgo}
+              </MetaChip>
             )}
-          </ActionRow>
-        </Body>
+          </Header>
 
-        {buildResult && !buildResult.success && (
-          <ResultBar $success={false}>
-            <AlertCircle size={13} style={{ flexShrink: 0 }} />
-            Build failed: {buildResult.error ?? "Unknown error"}
-          </ResultBar>
-        )}
+          {graphStatus?.exists && (
+            <ContextBar $active={enabled}>
+              {enabled ? (
+                <>
+                  <BrainCircuit size={13} />
+                  Context active — agents and chat receive the knowledge graph
+                </>
+              ) : (
+                <>
+                  <CircleOff size={13} />
+                  Context disabled — enable Graphify above to inject into AI context
+                </>
+              )}
+            </ContextBar>
+          )}
 
-        {buildResult?.success && (
-          <ResultBar $success>
-            <CheckCircle2 size={13} style={{ flexShrink: 0 }} />
-            Graph built in {(buildResult.durationMs / 1000).toFixed(1)}s
-          </ResultBar>
-        )}
-      </Card>
-    </Box>
+          <Body>
+            <ActionRow>
+              <Btn
+                $primary={!graphStatus?.exists && !isBuilding}
+                disabled={isBuilding}
+                onClick={onBuild}
+              >
+                {isBuilding ? (
+                  <Loader2
+                    size={12}
+                    style={{ animation: `${spin} 1s linear infinite` }}
+                  />
+                ) : (
+                  <Zap size={12} />
+                )}
+                {isBuilding
+                  ? "Building..."
+                  : graphStatus?.exists
+                    ? "Rebuild"
+                    : "Build Now"}
+              </Btn>
+
+              {graphStatus?.exists && (
+                <>
+                  {graphStatus.hasVisualization && (
+                    <Btn onClick={handleVisualize}>
+                      <ExternalLink size={12} />
+                      Visualize
+                    </Btn>
+                  )}
+                  <Btn $danger disabled={isBuilding} onClick={onClean}>
+                    <Trash2 size={12} />
+                    Clean
+                  </Btn>
+                </>
+              )}
+            </ActionRow>
+          </Body>
+
+          {buildResult && !buildResult.success && (
+            <ResultBar $success={false}>
+              <AlertCircle size={13} style={{ flexShrink: 0 }} />
+              Build failed: {buildResult.error ?? "Unknown error"}
+            </ResultBar>
+          )}
+
+          {buildResult?.success && (
+            <ResultBar $success>
+              <CheckCircle2 size={13} style={{ flexShrink: 0 }} />
+              Graph built in {(buildResult.durationMs / 1000).toFixed(1)}s
+            </ResultBar>
+          )}
+        </Card>
+      </Box>
+
+      {vizUrl && (
+        <Drawer
+          title="Knowledge Graph"
+          subtitle="Interactive visualization of your codebase structure"
+          onClose={() => setVizUrl(null)}
+          size="full"
+          noPadding
+        >
+          <IFrame src={vizUrl} sandbox="allow-scripts allow-same-origin" />
+        </Drawer>
+      )}
+    </>
   );
 }
