@@ -1,22 +1,20 @@
-import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
-import { spawn, execFile } from "node:child_process";
 import {
   detectPythonInstallations,
   MIN_PYTHON_VERSION,
   type PythonInstallation,
 } from "./detect-python.js";
-import { pythonEnv, pythonCmd } from "./python-env.js";
+import { pythonEnv } from "./python-env.js";
+import { PackageManager } from "./package-manager.js";
 
 const VENV_DIR = path.join(os.homedir(), ".blacksmith-studio", "venv");
-const IS_WIN = process.platform === "win32";
-const BIN_DIR = IS_WIN ? "Scripts" : "bin";
 
 export interface PythonCheckResult {
   installed: boolean;
   version?: string;
   meetsMinimum: boolean;
+  venvReady: boolean;
 }
 
 export interface PythonSetupResult {
@@ -26,20 +24,30 @@ export interface PythonSetupResult {
 
 type ProgressCallback = (line: string) => void;
 
+/**
+ * Manages Python detection and the Studio venv lifecycle.
+ * For package operations inside the venv, use `this.packages`.
+ */
 export class PythonManager {
-  /** Detect all Python installations on the system. */
+  /** Package manager for the Studio venv. */
+  readonly packages = new PackageManager();
+
+  // ── Detection ──
+
   detectInstallations(): PythonInstallation[] {
     return detectPythonInstallations();
   }
 
-  /** Check if a specific Python binary is available and meets minimum version. */
   checkPython(pythonPath?: string): PythonCheckResult {
-    const bin = pythonPath || "python3";
+    const venvReady = this.isVenvReady();
+    const bin = pythonPath || this.findSystemPython() || "python3";
+
     try {
       const { execSync } = require("node:child_process");
-      const version = execSync(`"${bin}" --version`, {
+      const version = execSync(`"${bin}" --version 2>&1`, {
         timeout: 5000,
         encoding: "utf-8",
+        shell: true,
         env: pythonEnv(pythonPath),
       })
         .trim()
@@ -51,164 +59,59 @@ export class PythonManager {
         parts[0] > min[0] ||
         (parts[0] === min[0] && parts[1] >= min[1]);
 
-      return { installed: true, version, meetsMinimum };
+      return { installed: true, version, meetsMinimum, venvReady };
     } catch {
-      return { installed: false, meetsMinimum: false };
+      return { installed: false, meetsMinimum: false, venvReady };
     }
   }
 
   // ── Venv Lifecycle ──
 
-  /** Check if the Studio venv exists and has a working python. */
   isVenvReady(): boolean {
-    return fs.existsSync(this.getVenvPython());
+    return this.packages.ready;
   }
 
-  /** Get the venv directory path. */
   getVenvDir(): string {
     return VENV_DIR;
   }
 
-  /** Get the path to python inside the venv. */
   getVenvPython(): string {
-    return path.join(VENV_DIR, BIN_DIR, IS_WIN ? "python.exe" : "python3");
+    return this.packages.python;
   }
 
-  /** Get the path to pip inside the venv. */
   getVenvPip(): string {
-    return path.join(VENV_DIR, BIN_DIR, IS_WIN ? "pip.exe" : "pip3");
+    return this.packages.pip;
   }
 
-  /** Get the path to any binary installed in the venv. */
   getVenvBin(cmd: string): string {
-    return path.join(VENV_DIR, BIN_DIR, IS_WIN ? `${cmd}.exe` : cmd);
+    return this.packages.bin(cmd);
   }
 
-  /** Create the Studio venv using the given (or default) Python binary. */
   async createVenv(
-    pythonPath?: string,
+    pythonVersion?: string,
     onProgress?: ProgressCallback,
   ): Promise<PythonSetupResult> {
-    const bin = pythonPath || "python3";
-
-    // Ensure parent directory exists
-    fs.mkdirSync(path.dirname(VENV_DIR), { recursive: true });
-
-    onProgress?.(`Creating venv at ${VENV_DIR}...`);
-
-    const result = await this.spawnAndCollect(
-      bin,
-      ["-m", "venv", VENV_DIR],
-      onProgress,
-      pythonEnv(pythonPath),
-    );
-
-    if (!result.success) {
-      return {
-        success: false,
-        error: result.error ?? "Failed to create venv",
-      };
-    }
-
-    // Upgrade pip inside the venv
-    onProgress?.("Upgrading pip...");
-    await this.spawnAndCollect(
-      this.getVenvPip(),
-      ["install", "--upgrade", "pip"],
-      onProgress,
-    );
-
-    onProgress?.("Venv ready.");
-    return { success: true };
+    return this.packages.createVenv(pythonVersion, onProgress);
   }
 
-  /** Remove the Studio venv entirely. */
   resetVenv(): void {
-    if (fs.existsSync(VENV_DIR)) {
-      fs.rmSync(VENV_DIR, { recursive: true, force: true });
-    }
-  }
-
-  // ── Package Management ──
-
-  /** Install a package into the Studio venv. */
-  async installPackage(
-    pkg: string,
-    onProgress?: ProgressCallback,
-  ): Promise<PythonSetupResult> {
-    if (!this.isVenvReady()) {
-      return {
-        success: false,
-        error: "Studio venv not found. Create it first.",
-      };
-    }
-
-    onProgress?.(`Installing ${pkg}...`);
-    return this.spawnAndCollect(
-      this.getVenvPip(),
-      ["install", pkg],
-      onProgress,
-    );
-  }
-
-  /** Check if a package is installed in the Studio venv. */
-  async isPackageInstalled(pkg: string): Promise<boolean> {
-    if (!this.isVenvReady()) return false;
-
-    return new Promise((resolve) => {
-      execFile(
-        this.getVenvPip(),
-        ["show", pkg],
-        { timeout: 10_000 },
-        (err) => {
-          resolve(!err);
-        },
-      );
-    });
+    this.packages.resetVenv();
   }
 
   // ── Private ──
 
-  private spawnAndCollect(
-    cmd: string,
-    args: string[],
-    onProgress?: ProgressCallback,
-    env?: Record<string, string | undefined>,
-  ): Promise<PythonSetupResult> {
-    return new Promise((resolve) => {
-      const proc = spawn(cmd, args, {
-        stdio: ["ignore", "pipe", "pipe"],
-        env: env ?? process.env,
-        timeout: 300_000,
-      });
-
-      let stderr = "";
-
-      proc.stdout?.on("data", (data: Buffer) => {
-        for (const line of data.toString().split("\n").filter(Boolean)) {
-          onProgress?.(line);
-        }
-      });
-
-      proc.stderr?.on("data", (data: Buffer) => {
-        stderr += data.toString();
-        for (const line of data.toString().split("\n").filter(Boolean)) {
-          onProgress?.(line);
-        }
-      });
-
-      proc.on("close", (code) => {
-        if (code === 0) resolve({ success: true });
-        else
-          resolve({
-            success: false,
-            error: stderr.trim().slice(0, 500) || `Exit code ${code}`,
-          });
-      });
-
-      proc.on("error", (err) => {
-        resolve({ success: false, error: err.message });
-      });
-    });
+  private findSystemPython(): string | null {
+    try {
+      const { execSync } = require("node:child_process");
+      return (
+        execSync(
+          "which python3 2>/dev/null || command -v python3 2>/dev/null",
+          { encoding: "utf-8", timeout: 3000, shell: true },
+        ).trim() || null
+      );
+    } catch {
+      return null;
+    }
   }
+
 }

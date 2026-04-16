@@ -53,7 +53,7 @@ export function setupPythonIPC(
     PYTHON_INSTALL_PACKAGE,
     async (_e, data: { pkg: string }) => {
       const win = getWindow();
-      return pythonManager.installPackage(data.pkg, (line) => {
+      return pythonManager.packages.install(data.pkg, (line) => {
         win?.webContents.send(PYTHON_ON_PROGRESS, { line });
       });
     },
@@ -62,7 +62,7 @@ export function setupPythonIPC(
   ipcMain.handle(
     PYTHON_IS_PACKAGE_INSTALLED,
     async (_e, data: { pkg: string }) => {
-      return pythonManager.isPackageInstalled(data.pkg);
+      return pythonManager.packages.isInstalled(data.pkg);
     },
   );
 }

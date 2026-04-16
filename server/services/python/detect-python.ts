@@ -13,10 +13,12 @@ export interface PythonInstallation {
 
 function getPythonVersion(pythonBinary: string): string | null {
   try {
-    return execSync(`"${pythonBinary}" --version`, {
+    const output = execSync(`"${pythonBinary}" --version 2>&1`, {
       timeout: 5000,
-      encoding: "utf-8",
-    })
+      shell: "/bin/sh",
+    });
+    return output
+      .toString()
       .trim()
       .replace(/^Python\s*/i, "");
   } catch {

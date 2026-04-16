@@ -5,6 +5,8 @@ import { runner } from "./modules/runner";
 import { git } from "./modules/git";
 import { terminal } from "./modules/terminal";
 import { agents } from "./modules/agents";
+import { python } from "./modules/python";
+import { graphify } from "./modules/graphify";
 import { windowApi } from "./modules/window";
 
 /**
@@ -57,6 +59,12 @@ export const channels = {
   "agents:workflowEvent": agents.onWorkflowEvent,
   "agents:buildEvent": agents.onBuildEvent,
   "agents:inputRequest": agents.onInputRequest,
+
+  // Python
+  "python:progress": python.onProgress,
+
+  // Graphify
+  "graphify:buildProgress": graphify.onBuildProgress,
 
   // Window
   "window:fullscreen": windowApi.onFullscreen,

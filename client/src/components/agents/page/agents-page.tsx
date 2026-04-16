@@ -10,6 +10,7 @@ import {
 } from "@/api/hooks/agents";
 import { useAgentStore } from "@/stores/agent-store";
 import { Tooltip } from "@/components/shared/tooltip";
+import { ConfirmDialog } from "@/components/shared/ui";
 import { SplitPanel } from "@/components/shared/layout";
 import { AgentCanvas } from "../canvas";
 import { AgentChat } from "../chat";
@@ -100,11 +101,14 @@ export function AgentsPage({ conversationId, onSend }: AgentsPageProps) {
     [removeInputRequest, respondMutation],
   );
 
-  const handleStop = useCallback(async () => {
-    const confirmed = window.confirm(
-      "Stop all running agents? This will cancel the current task and skip all remaining tasks in the pipeline.",
-    );
-    if (!confirmed) return;
+  const [showStopConfirm, setShowStopConfirm] = useState(false);
+
+  const handleStop = useCallback(() => {
+    setShowStopConfirm(true);
+  }, []);
+
+  const confirmStop = useCallback(async () => {
+    setShowStopConfirm(false);
     await cancelAllMutation.mutateAsync();
   }, [cancelAllMutation]);
 
@@ -242,6 +246,18 @@ export function AgentsPage({ conversationId, onSend }: AgentsPageProps) {
       )}
 
       {drawerOpen && <TaskDrawer onClose={() => setDrawerOpen(false)} />}
+
+      {showStopConfirm && (
+        <ConfirmDialog
+          message="Stop all running agents?"
+          description="This will cancel the current task and skip all remaining tasks in the pipeline."
+          confirmLabel="Stop All"
+          cancelLabel="Cancel"
+          variant="danger"
+          onConfirm={confirmStop}
+          onCancel={() => setShowStopConfirm(false)}
+        />
+      )}
     </Layout>
   );
 }

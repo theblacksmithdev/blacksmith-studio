@@ -1,4 +1,5 @@
 export { PythonManager } from "./python-manager.js";
+export { PackageManager } from "./package-manager.js";
 export {
   detectPythonInstallations,
   MIN_PYTHON_VERSION,
@@ -9,3 +10,8 @@ export type {
   PythonCheckResult,
   PythonSetupResult,
 } from "./python-manager.js";
+export type {
+  PackageResult,
+  PackageInfo,
+  ProgressCallback,
+} from "./package-manager.js";

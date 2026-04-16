@@ -34,12 +34,25 @@ export function setupGraphifyIPC(
     return graphifyManager.checkInstalled();
   });
 
-  ipcMain.handle(GRAPHIFY_SETUP, async () => {
-    const win = getWindow();
-    return graphifyManager.setup((line) => {
-      win?.webContents.send(GRAPHIFY_ON_BUILD_PROGRESS, { line });
-    });
-  });
+  ipcMain.handle(
+    GRAPHIFY_SETUP,
+    async (_e, data?: { projectId?: string }) => {
+      const win = getWindow();
+
+      // Resolve the user's configured Python path from settings
+      let pythonPath: string | undefined;
+      if (data?.projectId) {
+        pythonPath =
+          (settingsManager.resolve(data.projectId, "python.pythonPath") as
+            | string
+            | undefined) || undefined;
+      }
+
+      return graphifyManager.setup(pythonPath, (line) => {
+        win?.webContents.send(GRAPHIFY_ON_BUILD_PROGRESS, { line });
+      });
+    },
+  );
 
   ipcMain.handle(GRAPHIFY_STATUS, (_e, data: { projectId: string }) => {
     const root = resolveProjectPath(projectManager, data.projectId);

@@ -1,6 +1,5 @@
 import fs from "node:fs";
 import path from "node:path";
-import { spawn, execFile } from "node:child_process";
 import type { PythonManager } from "./python/index.js";
 
 const GRAPHIFY_DIR = ".blacksmith/graphify";
@@ -8,13 +7,14 @@ const META_FILE = "meta.json";
 const REPORT_FILE = "GRAPH_REPORT.md";
 const GRAPH_FILE = "graph.json";
 const GRAPH_HTML = "graph.html";
-const MAX_REPORT_SIZE = 32 * 1024; // 32KB cap for context injection
+const MAX_REPORT_SIZE = 32 * 1024;
+const PKG_NAME = "graphifyy";
+const BIN_NAME = "graphify";
 
 interface GraphifyMeta {
   builtAt: string;
   durationMs: number;
-  graphifyVersion: string;
-  fileCount: number;
+  version: string;
 }
 
 interface GraphifyStatus {
@@ -31,7 +31,7 @@ interface GraphifyBuildResult {
   error?: string;
 }
 
-type BuildProgressCallback = (line: string) => void;
+type ProgressCallback = (line: string) => void;
 
 export class GraphifyManager {
   private _building = new Set<string>();
@@ -41,154 +41,85 @@ export class GraphifyManager {
     this.python = pythonManager;
   }
 
-  /** Resolve the graphify binary — uses venv if available, falls back to system. */
-  private getGraphifyBin(): string {
-    const venvBin = this.python.getVenvBin("graphify");
-    if (fs.existsSync(venvBin)) return venvBin;
-    return "graphify";
+  private get pkg() {
+    return this.python.packages;
   }
 
-  /**
-   * Check if graphify CLI is installed (in venv or system) and return its version.
-   */
+  // ── Install & Check ──
+
   async checkInstalled(): Promise<{ installed: boolean; version?: string }> {
-    const bin = this.getGraphifyBin();
-    return new Promise((resolve) => {
-      execFile(bin, ["--version"], { timeout: 5000 }, (err, stdout) => {
-        if (err) {
-          resolve({ installed: false });
-          return;
-        }
-        const version =
-          stdout.trim().replace(/^graphify\s*/i, "") || undefined;
-        resolve({ installed: true, version });
-      });
-    });
+    // Check venv binary first, then pip package
+    if (fs.existsSync(this.pkg.bin(BIN_NAME))) {
+      const version = await this.pkg.getVersion(PKG_NAME);
+      return { installed: true, version: version ?? undefined };
+    }
+
+    if (this.pkg.ready) {
+      const version = await this.pkg.getVersion(PKG_NAME);
+      if (version) return { installed: true, version };
+    }
+
+    return { installed: false };
   }
 
-  /**
-   * Full setup: ensure venv exists, install graphifyy, run graphify install.
-   * Uses PythonManager for all operations — never touches system pip.
-   */
   async setup(
-    onProgress?: BuildProgressCallback,
+    pythonVersion?: string,
+    onProgress?: ProgressCallback,
   ): Promise<{ success: boolean; error?: string }> {
-    // Step 1: Ensure Studio venv exists
-    if (!this.python.isVenvReady()) {
+    // 1. Ensure venv
+    if (!this.pkg.ready) {
       onProgress?.("Creating Studio Python environment...");
-      const venvResult = await this.python.createVenv(undefined, onProgress);
-      if (!venvResult.success) {
-        return {
-          success: false,
-          error:
-            venvResult.error ??
-            "Failed to create Python venv. Make sure Python 3.10+ is available.",
-        };
-      }
+      const venv = await this.pkg.createVenv(pythonVersion, onProgress);
+      if (!venv.success) return venv;
     }
 
-    // Step 2: Install graphifyy into venv
+    // 2. Install
     onProgress?.("Installing graphifyy...");
-    const installResult = await this.python.installPackage(
-      "graphifyy",
-      onProgress,
-    );
-    if (!installResult.success) {
-      return {
-        success: false,
-        error: installResult.error ?? "Failed to install graphifyy",
-      };
+    const install = await this.pkg.install(PKG_NAME, onProgress);
+    if (!install.success) return install;
+
+    // 3. Verify
+    const check = await this.checkInstalled();
+    if (!check.installed) {
+      return { success: false, error: "Package installed but not detected." };
     }
 
-    // Step 3: Run graphify install (registers with coding assistants)
-    onProgress?.("Configuring graphify...");
-    const graphifyBin = this.python.getVenvBin("graphify");
-    const configResult = await this.spawnCommand(
-      graphifyBin,
-      ["install"],
-      onProgress,
-    );
-    if (!configResult.success) {
-      return {
-        success: false,
-        error: configResult.error ?? "graphify install failed",
-      };
-    }
-
-    onProgress?.("Setup complete.");
+    onProgress?.(`Setup complete. Graphify ${check.version ?? ""} ready.`);
     return { success: true };
   }
 
-  /**
-   * Build the knowledge graph for a project.
-   */
+  // ── Build & Query ──
+
   async build(
     projectRoot: string,
-    onProgress?: BuildProgressCallback,
+    onProgress?: ProgressCallback,
   ): Promise<GraphifyBuildResult> {
     if (this._building.has(projectRoot)) {
-      return {
-        success: false,
-        durationMs: 0,
-        error: "Build already in progress",
-      };
+      return { success: false, durationMs: 0, error: "Build already in progress" };
     }
 
-    this._building.add(projectRoot);
-    const startTime = Date.now();
     const outputDir = path.join(projectRoot, GRAPHIFY_DIR);
-
     fs.mkdirSync(outputDir, { recursive: true });
 
+    this._building.add(projectRoot);
+    const start = Date.now();
+
     try {
-      const bin = this.getGraphifyBin();
-      const result = await new Promise<{ success: boolean; error?: string }>(
-        (resolve) => {
-          const proc = spawn(bin, ["./", "--output", outputDir], {
-            cwd: projectRoot,
-            stdio: ["ignore", "pipe", "pipe"],
-            timeout: 600_000,
-          });
-
-          let stderr = "";
-
-          proc.stdout?.on("data", (data: Buffer) => {
-            for (const line of data.toString().split("\n").filter(Boolean)) {
-              onProgress?.(line);
-            }
-          });
-
-          proc.stderr?.on("data", (data: Buffer) => {
-            stderr += data.toString();
-            for (const line of data.toString().split("\n").filter(Boolean)) {
-              onProgress?.(line);
-            }
-          });
-
-          proc.on("close", (code) => {
-            if (code === 0) resolve({ success: true });
-            else
-              resolve({
-                success: false,
-                error: stderr.trim().slice(0, 500) || `Exit code ${code}`,
-              });
-          });
-
-          proc.on("error", (err) => {
-            resolve({ success: false, error: err.message });
-          });
-        },
+      const result = await this.pkg.runWithProgress(
+        BIN_NAME,
+        ["./", "--output", outputDir],
+        onProgress,
+        { cwd: projectRoot, timeout: 600_000 },
       );
 
-      const durationMs = Date.now() - startTime;
+      const durationMs = Date.now() - start;
 
       if (result.success) {
         const { version } = await this.checkInstalled();
         const meta: GraphifyMeta = {
           builtAt: new Date().toISOString(),
           durationMs,
-          graphifyVersion: version ?? "unknown",
-          fileCount: this.countGraphNodes(projectRoot),
+          version: version ?? "unknown",
         };
         fs.writeFileSync(
           path.join(outputDir, META_FILE),
@@ -202,13 +133,20 @@ export class GraphifyManager {
     }
   }
 
-  /**
-   * Get the current status of the knowledge graph for a project.
-   */
+  async query(projectRoot: string, question: string): Promise<string> {
+    const output = await this.pkg.run(BIN_NAME, ["query", question], {
+      cwd: projectRoot,
+      timeout: 30_000,
+    });
+    if (output === null) throw new Error("Query failed");
+    return output;
+  }
+
+  // ── Status & Read ──
+
   getStatus(projectRoot: string, maxAgeMs = 3_600_000): GraphifyStatus {
-    const installed = fs.existsSync(this.getGraphifyBin());
-    const outputDir = path.join(projectRoot, GRAPHIFY_DIR);
-    const metaPath = path.join(outputDir, META_FILE);
+    const installed = fs.existsSync(this.pkg.bin(BIN_NAME));
+    const metaPath = path.join(projectRoot, GRAPHIFY_DIR, META_FILE);
     const building = this._building.has(projectRoot);
 
     if (!fs.existsSync(metaPath)) {
@@ -216,138 +154,48 @@ export class GraphifyManager {
     }
 
     try {
-      const meta: GraphifyMeta = JSON.parse(
-        fs.readFileSync(metaPath, "utf-8"),
-      );
-      const age = Date.now() - new Date(meta.builtAt).getTime();
-      return {
-        installed,
-        exists: true,
-        builtAt: meta.builtAt,
-        stale: age > maxAgeMs,
-        building,
-      };
+      const meta: GraphifyMeta = JSON.parse(fs.readFileSync(metaPath, "utf-8"));
+      const stale = Date.now() - new Date(meta.builtAt).getTime() > maxAgeMs;
+      return { installed, exists: true, builtAt: meta.builtAt, stale, building };
     } catch {
       return { installed, exists: false, builtAt: null, stale: true, building };
     }
   }
 
-  /** Check if the graph is stale beyond a given threshold. */
   isStale(projectRoot: string, maxAgeMs: number): boolean {
     return this.getStatus(projectRoot, maxAgeMs).stale;
   }
 
-  /** Read the graph report for context injection. Capped at MAX_REPORT_SIZE. */
   getReport(projectRoot: string): string | null {
-    const reportPath = path.join(projectRoot, GRAPHIFY_DIR, REPORT_FILE);
-    if (!fs.existsSync(reportPath)) return null;
-
+    const filePath = path.join(projectRoot, GRAPHIFY_DIR, REPORT_FILE);
     try {
-      const stat = fs.statSync(reportPath);
-      if (!stat.isFile()) return null;
-
-      const content = fs.readFileSync(reportPath, "utf-8");
-      if (content.length > MAX_REPORT_SIZE) {
-        return content.slice(0, MAX_REPORT_SIZE) + "\n\n[... truncated]";
-      }
-      return content;
+      if (!fs.existsSync(filePath)) return null;
+      const content = fs.readFileSync(filePath, "utf-8");
+      return content.length > MAX_REPORT_SIZE
+        ? content.slice(0, MAX_REPORT_SIZE) + "\n\n[... truncated]"
+        : content;
     } catch {
       return null;
     }
   }
 
-  /** Read the graph.json for programmatic queries. */
   getGraph(projectRoot: string): object | null {
-    const graphPath = path.join(projectRoot, GRAPHIFY_DIR, GRAPH_FILE);
-    if (!fs.existsSync(graphPath)) return null;
-
     try {
-      return JSON.parse(fs.readFileSync(graphPath, "utf-8"));
+      const filePath = path.join(projectRoot, GRAPHIFY_DIR, GRAPH_FILE);
+      if (!fs.existsSync(filePath)) return null;
+      return JSON.parse(fs.readFileSync(filePath, "utf-8"));
     } catch {
       return null;
     }
   }
 
-  /** Get the path to the visualization HTML file. */
   getVisualizationPath(projectRoot: string): string | null {
-    const htmlPath = path.join(projectRoot, GRAPHIFY_DIR, GRAPH_HTML);
-    return fs.existsSync(htmlPath) ? htmlPath : null;
+    const filePath = path.join(projectRoot, GRAPHIFY_DIR, GRAPH_HTML);
+    return fs.existsSync(filePath) ? filePath : null;
   }
 
-  /** Query the knowledge graph using graphify CLI. */
-  async query(projectRoot: string, question: string): Promise<string> {
-    const bin = this.getGraphifyBin();
-    return new Promise((resolve, reject) => {
-      execFile(
-        bin,
-        ["query", question],
-        { cwd: projectRoot, timeout: 30_000 },
-        (err, stdout, stderr) => {
-          if (err) {
-            reject(new Error(stderr.trim() || err.message));
-            return;
-          }
-          resolve(stdout.trim());
-        },
-      );
-    });
-  }
-
-  /** Remove all graph artifacts for a project. */
   clean(projectRoot: string): void {
-    const outputDir = path.join(projectRoot, GRAPHIFY_DIR);
-    if (fs.existsSync(outputDir)) {
-      fs.rmSync(outputDir, { recursive: true, force: true });
-    }
-  }
-
-  // ── Private ──
-
-  private spawnCommand(
-    cmd: string,
-    args: string[],
-    onProgress?: BuildProgressCallback,
-  ): Promise<{ success: boolean; error?: string }> {
-    return new Promise((resolve) => {
-      const proc = spawn(cmd, args, {
-        stdio: ["ignore", "pipe", "pipe"],
-        timeout: 300_000,
-      });
-
-      let stderr = "";
-
-      proc.stdout?.on("data", (data: Buffer) => {
-        for (const line of data.toString().split("\n").filter(Boolean)) {
-          onProgress?.(line);
-        }
-      });
-
-      proc.stderr?.on("data", (data: Buffer) => {
-        stderr += data.toString();
-        for (const line of data.toString().split("\n").filter(Boolean)) {
-          onProgress?.(line);
-        }
-      });
-
-      proc.on("close", (code) => {
-        if (code === 0) resolve({ success: true });
-        else
-          resolve({
-            success: false,
-            error: stderr.trim().slice(0, 500) || `Exit code ${code}`,
-          });
-      });
-
-      proc.on("error", (err) => {
-        resolve({ success: false, error: err.message });
-      });
-    });
-  }
-
-  private countGraphNodes(projectRoot: string): number {
-    const graph = this.getGraph(projectRoot);
-    if (!graph || typeof graph !== "object") return 0;
-    const nodes = (graph as any).nodes;
-    return Array.isArray(nodes) ? nodes.length : 0;
+    const dir = path.join(projectRoot, GRAPHIFY_DIR);
+    if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true });
   }
 }

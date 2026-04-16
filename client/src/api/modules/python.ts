@@ -10,6 +10,7 @@ export interface PythonCheckResult {
   installed: boolean;
   version?: string;
   meetsMinimum: boolean;
+  venvReady: boolean;
 }
 
 export interface PythonSetupResult {
