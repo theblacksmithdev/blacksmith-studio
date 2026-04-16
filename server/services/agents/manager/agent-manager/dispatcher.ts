@@ -5,14 +5,15 @@ import type { AgentRole, AgentExecution } from "../../types.js";
 import { ArtifactManager } from "../../artifacts.js";
 import { routePrompt, type RouteResult } from "../router.js";
 import {
+  buildDirectPlan,
   dispatchWithPM,
   type DispatchPlan,
-  type DispatchTask,
   type ReviewLevel,
 } from "../pm-dispatcher.js";
 import { needsQualityGate, runQualityGate } from "../quality-gate.js";
 import { TaskPlanExecutor } from "../task-plan/index.js";
-import type { EventBus } from "./event-bus.js";
+import type { ICancellationToken } from "../task-plan/types.js";
+import type { AgentEventEmitter } from "./agent-event-emitter.js";
 import type { AgentExecutor } from "./agent-executor.js";
 
 /**
@@ -20,16 +21,16 @@ import type { AgentExecutor } from "./agent-executor.js";
  * single-task or multi-task execution with quality gates.
  *
  * Single Responsibility: dispatch orchestration.
- * Dependency Inversion: depends on AgentExecutor and EventBus abstractions
- * rather than owning execution or event logic itself.
+ * Dependency Inversion: depends on AgentExecutor, AgentEventEmitter, and
+ * ICancellationToken rather than owning execution, event, or cancel logic.
  */
 export class Dispatcher {
   constructor(
     private readonly registry: Map<AgentRole, BaseAgent>,
     private readonly roleSessions: Map<AgentRole, string>,
     private readonly executor: AgentExecutor,
-    private readonly events: EventBus,
-    private readonly getCancelled: () => boolean,
+    private readonly emitter: AgentEventEmitter,
+    private readonly cancellation: ICancellationToken,
   ) {}
 
   route(prompt: string): RouteResult {
@@ -61,28 +62,19 @@ export class Dispatcher {
     }
 
     // ── PM path ──
-    this.events.emitAgentEvent({
-      type: "activity",
-      agentId: "product-manager",
-      executionId: "",
-      timestamp: new Date().toISOString(),
-      data: {
-        type: "activity",
-        description: "Analyzing request and assigning tasks...",
-      },
-    });
+    this.emitter.emitPM("Analyzing request and assigning tasks...");
 
     const plan = await dispatchWithPM(options.prompt, options, (event) =>
-      this.events.emitAgentEvent(event),
+      this.emitter.emitAgentEvent(event),
     );
 
     if (plan.mode === "clarification") {
-      this.events.emitPM(plan.summary);
+      this.emitter.emitPM(plan.summary);
       return { plan, executions: [] };
     }
 
-    this.events.emitPM(`Plan: ${plan.summary}`);
-    this.events.emitDispatchPlan(plan);
+    this.emitter.emitPM(`Plan: ${plan.summary}`);
+    this.emitter.emitDispatchPlan(plan);
 
     if (plan.mode === "single" && plan.task) {
       return this.dispatchSingle(plan, options);
@@ -98,24 +90,9 @@ export class Dispatcher {
     agent: BaseAgent,
   ): Promise<{ plan: DispatchPlan; executions: AgentExecution[] }> {
     const snapshot = takeSnapshot(options.projectRoot);
-    const directTask: DispatchTask = {
-      id: "t0",
-      title: options.prompt.slice(0, 60),
-      description: "",
-      role,
-      prompt: options.prompt,
-      dependsOn: [],
-      model: "balanced",
-      reviewLevel: "light",
-    };
-    const plan: DispatchPlan = {
-      mode: "single",
-      task: directTask,
-      tasks: [directTask],
-      summary: `Direct to ${agent.title} (requested by user)`,
-    };
+    const plan = buildDirectPlan(role, agent.title, options.prompt);
 
-    this.events.emitDispatchPlan(plan);
+    this.emitter.emitDispatchPlan(plan);
 
     const execution = await this.executor.execute({ ...options, role });
     const executions = [execution];
@@ -123,7 +100,7 @@ export class Dispatcher {
     if (execution.status === "done" && needsQualityGate(role, "light")) {
       const changes = computeChanges(options.projectRoot, snapshot);
       const gateExecs = await this.runQualityGate(
-        { ...directTask, reviewLevel: "light" },
+        { ...plan.task!, reviewLevel: "light" },
         options,
         changes,
       );
@@ -169,16 +146,11 @@ export class Dispatcher {
 
     const taskPlan = new TaskPlanExecutor(
       { execute: (opts) => this.executor.execute(opts) },
-      {
-        emitAgentEvent: (event) => this.events.emitAgentEvent(event),
-        emitPM: (desc) => this.events.emitPM(desc),
-        emitTaskStatus: (id, status, title, role) =>
-          this.events.emitTaskStatus(id, status, title, role),
-      },
+      this.emitter,
       {
         run: (ctx, opts, changes) => this.runQualityGate(ctx, opts, changes),
       },
-      { isCancelled: this.getCancelled },
+      this.cancellation,
     );
     const executions = await taskPlan.execute(plan.tasks, options, artifacts);
 
@@ -197,7 +169,7 @@ export class Dispatcher {
     changes?: ChangeSet,
   ): Promise<AgentExecution[]> {
     const fileCount = changes?.files.length ?? 0;
-    this.events.emitPM(
+    this.emitter.emitPM(
       `Running quality gate${fileCount > 0 ? ` on ${fileCount} changed files` : ""}...`,
     );
 
@@ -205,24 +177,17 @@ export class Dispatcher {
       context,
       options,
       (opts) => this.executor.execute(opts),
-      (event) => this.events.emitAgentEvent(event),
+      (event) => this.emitter.emitAgentEvent(event),
       changes,
       (role) => this.roleSessions.get(role),
-      this.getCancelled,
+      () => this.cancellation.isCancelled(),
     );
 
-    this.events.emitAgentEvent({
-      type: "activity",
-      agentId: "product-manager",
-      executionId: "",
-      timestamp: new Date().toISOString(),
-      data: {
-        type: "activity",
-        description: gateResult.passed
-          ? `Quality gate passed (${gateResult.reviewCycles} review, ${gateResult.testCycles} test cycles)`
-          : "Quality gate completed with issues",
-      },
-    });
+    this.emitter.emitPM(
+      gateResult.passed
+        ? `Quality gate passed (${gateResult.reviewCycles} review, ${gateResult.testCycles} test cycles)`
+        : "Quality gate completed with issues",
+    );
 
     return gateResult.executions;
   }

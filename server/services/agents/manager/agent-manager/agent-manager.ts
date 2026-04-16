@@ -12,7 +12,10 @@ import type { RouteResult } from "../router.js";
 import type { DispatchPlan } from "../pm-dispatcher.js";
 import type { PipelineTemplate } from "../pipelines.js";
 import { EventBus } from "./event-bus.js";
+import { AgentEventEmitter } from "./agent-event-emitter.js";
 import { AgentExecutor } from "./agent-executor.js";
+import { ExecutionHistory } from "./execution-history.js";
+import { CancellationToken } from "./cancellation-token.js";
 import { Dispatcher } from "./dispatcher.js";
 import { WorkflowRunner } from "./workflow-runner.js";
 
@@ -20,42 +23,56 @@ import { WorkflowRunner } from "./workflow-runner.js";
  * AgentManager — thin facade that composes focused collaborators.
  *
  * Each concern is owned by a single class:
- * - EventBus       — listener management + event emission
- * - AgentExecutor  — single-agent execution + sessions + handoffs
- * - Dispatcher     — PM-first dispatch orchestration + quality gates
- * - WorkflowRunner — pipeline/workflow lifecycle
+ * - EventBus          — low-level listener management
+ * - AgentEventEmitter — domain-shaped event emission (PM, task status, plans)
+ * - AgentExecutor     — single-agent execution + sessions + handoffs
+ * - ExecutionHistory  — bounded history of past executions
+ * - CancellationToken — cancellation state shared across collaborators
+ * - Dispatcher        — PM-first dispatch orchestration + quality gates
+ * - WorkflowRunner    — pipeline/workflow lifecycle
  *
- * This class owns shared state (registry, sessions, cancellation flag)
- * and delegates all behavior.
+ * This class owns the registry + session map and delegates all behavior.
  */
 export class AgentManager {
   private readonly registry: Map<AgentRole, BaseAgent>;
   private readonly roleSessions = new Map<AgentRole, string>();
-  private _cancelled = false;
 
-  private readonly events: EventBus;
+  private readonly bus: EventBus;
+  private readonly emitter: AgentEventEmitter;
+  private readonly history: ExecutionHistory;
+  private readonly cancellation: CancellationToken;
   private readonly agentExecutor: AgentExecutor;
   private readonly dispatcher: Dispatcher;
-  private readonly workflows: WorkflowRunner;
+  private readonly workflowRunner: WorkflowRunner;
 
   constructor() {
     this.registry = createAgentRegistry();
-    this.events = new EventBus();
+    this.bus = new EventBus();
+    this.emitter = new AgentEventEmitter(this.bus);
+    this.history = new ExecutionHistory();
+    this.cancellation = new CancellationToken();
+
     this.agentExecutor = new AgentExecutor(
       this.registry,
       this.roleSessions,
-      this.events,
-      (prompt) => this.dispatcher.route(prompt),
+      this.emitter,
+      this.history,
     );
     this.dispatcher = new Dispatcher(
       this.registry,
       this.roleSessions,
       this.agentExecutor,
-      this.events,
-      () => this._cancelled,
+      this.emitter,
+      this.cancellation,
     );
-    this.workflows = new WorkflowRunner(
-      this.events,
+    // Wire the role resolver now that dispatcher exists — avoids a
+    // constructor forward reference.
+    this.agentExecutor.setRoleResolver(
+      (prompt) => this.dispatcher.route(prompt).role,
+    );
+
+    this.workflowRunner = new WorkflowRunner(
+      this.bus,
       (opts) => this.agentExecutor.execute(opts),
     );
   }
@@ -99,7 +116,7 @@ export class AgentManager {
   async dispatch(
     options: AgentExecuteOptions,
   ): Promise<{ plan: DispatchPlan; executions: AgentExecution[] }> {
-    this._cancelled = false;
+    this.cancellation.reset();
     return this.dispatcher.dispatch(options);
   }
 
@@ -118,20 +135,20 @@ export class AgentManager {
   }
 
   cancelAll(): void {
-    this._cancelled = true;
+    this.cancellation.cancel();
 
     for (const agent of this.registry.values()) {
       if (agent.isRunning) agent.cancel();
     }
 
-    this.workflows.cancelAll();
-    this.events.emitPM("Execution cancelled by user");
+    this.workflowRunner.cancelAll();
+    this.emitter.emitPM("Execution cancelled by user");
   }
 
   /* ── Pipelines & Workflows ── */
 
   listPipelines(): PipelineTemplate[] {
-    return this.workflows.listPipelines();
+    return this.workflowRunner.listPipelines();
   }
 
   async runPipeline(
@@ -140,7 +157,7 @@ export class AgentManager {
     baseOptions: Omit<AgentExecuteOptions, "prompt">,
     maxBudgetUsd?: number,
   ): Promise<Workflow> {
-    return this.workflows.runPipeline(
+    return this.workflowRunner.runPipeline(
       pipelineId,
       prompt,
       baseOptions,
@@ -154,26 +171,31 @@ export class AgentManager {
     baseOptions: Omit<AgentExecuteOptions, "prompt">,
     maxBudgetUsd?: number,
   ): Promise<Workflow> {
-    return this.workflows.runWorkflow(name, steps, baseOptions, maxBudgetUsd);
+    return this.workflowRunner.runWorkflow(
+      name,
+      steps,
+      baseOptions,
+      maxBudgetUsd,
+    );
   }
 
   /* ── Events ── */
 
   onAgentEvent(cb: AgentEventCallback): () => void {
-    return this.events.onAgentEvent(cb);
+    return this.bus.onAgentEvent(cb);
   }
 
   onWorkflowEvent(cb: WorkflowEventCallback): () => void {
-    return this.events.onWorkflowEvent(cb);
+    return this.bus.onWorkflowEvent(cb);
   }
 
   /* ── History & State ── */
 
   getExecutionHistory(limit = 50): AgentExecution[] {
-    return this.agentExecutor.getHistory(limit);
+    return this.history.tail(limit);
   }
 
   getActiveWorkflows(): Workflow[] {
-    return this.workflows.getActive();
+    return this.workflowRunner.getActive();
   }
 }

@@ -24,7 +24,7 @@ export class WorkflowRunner {
   private activeWorkflows = new Map<string, Workflow>();
 
   constructor(
-    private readonly events: EventBus,
+    private readonly bus: EventBus,
     private readonly execute: ExecuteFn,
   ) {}
 
@@ -83,7 +83,7 @@ export class WorkflowRunner {
       if (workflow.status === "running") {
         workflow.status = "cancelled";
         workflow.completedAt = new Date().toISOString();
-        this.events.emitWorkflowEvent({
+        this.bus.emitWorkflowEvent({
           type: "workflow:cancelled",
           workflowId: id,
           stepIndex: null,
@@ -117,7 +117,7 @@ export class WorkflowRunner {
     };
 
     this.activeWorkflows.set(workflowId, workflow);
-    this.events.emitWorkflowEvent({
+    this.bus.emitWorkflowEvent({
       type: "workflow:started",
       workflowId,
       stepIndex: null,
@@ -130,14 +130,14 @@ export class WorkflowRunner {
         workflow,
         baseOptions,
         (opts) => this.execute(opts),
-        (event) => this.events.emitWorkflowEvent(event),
+        (event) => this.bus.emitWorkflowEvent(event),
       );
 
       const allDone = workflow.steps.every((s) => s.status === "completed");
       workflow.status = allDone ? "completed" : "failed";
       workflow.completedAt = new Date().toISOString();
 
-      this.events.emitWorkflowEvent({
+      this.bus.emitWorkflowEvent({
         type: allDone ? "workflow:completed" : "workflow:failed",
         workflowId,
         stepIndex: null,
@@ -154,7 +154,7 @@ export class WorkflowRunner {
     } catch (err: any) {
       workflow.status = "failed";
       workflow.completedAt = new Date().toISOString();
-      this.events.emitWorkflowEvent({
+      this.bus.emitWorkflowEvent({
         type: "workflow:failed",
         workflowId,
         stepIndex: null,

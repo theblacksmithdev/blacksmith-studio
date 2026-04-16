@@ -5,35 +5,39 @@ import type {
   AgentEvent,
 } from "../../types.js";
 import { processHandoffs } from "../handoff.js";
-import type { EventBus } from "./event-bus.js";
+import type { AgentEventEmitter } from "./agent-event-emitter.js";
+import type { ExecutionHistory } from "./execution-history.js";
 
 /**
  * Executes a single agent with session tracking and handoff processing.
  *
  * Single Responsibility: the execute-one-agent lifecycle — resolve role,
- * guard against concurrent runs, forward events, track sessions, process
- * handoffs, and manage execution history.
+ * guard against concurrent runs, forward events, track sessions, and
+ * process handoffs. History persistence is delegated to ExecutionHistory.
  */
 export class AgentExecutor {
-  private static readonly MAX_HISTORY = 200;
-  private executionHistory: AgentExecution[] = [];
   private lastHandoffEvent: AgentEvent | null = null;
+  private resolveRole: (prompt: string) => AgentRole | null = () => null;
 
   constructor(
     private readonly registry: Map<AgentRole, BaseAgent>,
     private readonly roleSessions: Map<AgentRole, string>,
-    private readonly events: EventBus,
-    private readonly route: (prompt: string) => { role: AgentRole | null },
+    private readonly emitter: AgentEventEmitter,
+    private readonly history: ExecutionHistory,
   ) {}
 
   /**
-   * Execute a prompt with a specific agent role.
-   * Tracks sessions, processes handoffs, and records history.
+   * Wire the role resolver after construction. Breaks the AgentExecutor ↔
+   * Dispatcher cycle without forward-referencing an undefined field.
    */
+  setRoleResolver(resolve: (prompt: string) => AgentRole | null): void {
+    this.resolveRole = resolve;
+  }
+
   async execute(
     options: AgentExecuteOptions & { role?: AgentRole },
   ): Promise<AgentExecution> {
-    const role = options.role ?? this.route(options.prompt).role;
+    const role = options.role ?? this.resolveRole(options.prompt);
     if (!role)
       throw new Error(
         "Cannot determine agent role. Use dispatch() for ambiguous prompts.",
@@ -48,7 +52,7 @@ export class AgentExecutor {
 
     try {
       const execution = await agent.execute(options);
-      this.pushHistory(execution);
+      this.history.push(execution);
 
       // Track latest session per role for cross-execution continuity
       // (e.g. quality gate fix rounds resuming the task session)
@@ -80,21 +84,8 @@ export class AgentExecutor {
     }
   }
 
-  getHistory(limit = 50): AgentExecution[] {
-    return this.executionHistory.slice(-limit);
-  }
-
-  private pushHistory(execution: AgentExecution): void {
-    this.executionHistory.push(execution);
-    if (this.executionHistory.length > AgentExecutor.MAX_HISTORY) {
-      this.executionHistory = this.executionHistory.slice(
-        -AgentExecutor.MAX_HISTORY,
-      );
-    }
-  }
-
   private forwardAgentEvent(event: AgentEvent): void {
     if (event.type === "handoff") this.lastHandoffEvent = event;
-    this.events.emitAgentEvent(event);
+    this.emitter.emitAgentEvent(event);
   }
 }

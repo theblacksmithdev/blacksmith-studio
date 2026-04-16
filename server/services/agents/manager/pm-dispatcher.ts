@@ -43,6 +43,35 @@ export interface DispatchPlan {
   summary: string;
 }
 
+/* ── Plan Factories ── */
+
+/**
+ * Build a DispatchPlan for a prompt that explicitly targets a single role.
+ * Skips the PM entirely — used for "@role" or "as a <title>" prompts.
+ */
+export function buildDirectPlan(
+  role: AgentRole,
+  agentTitle: string,
+  prompt: string,
+): DispatchPlan {
+  const task: DispatchTask = {
+    id: "t0",
+    title: prompt.slice(0, 60),
+    description: "",
+    role,
+    prompt,
+    dependsOn: [],
+    model: "balanced",
+    reviewLevel: "light",
+  };
+  return {
+    mode: "single",
+    task,
+    tasks: [task],
+    summary: `Direct to ${agentTitle} (requested by user)`,
+  };
+}
+
 /* ── System Prompt ── */
 
 const PM_SYSTEM_PROMPT = `You are the lead project manager for a software team. Analyze the user's request and produce an intelligent task plan. You HAVE access to the filesystem — use Read, Glob, and Grep tools to understand the codebase before planning. Read key files like CLAUDE.md, theme files, component barrel exports, and package.json to understand the project's architecture, design system, and conventions before decomposing tasks.
