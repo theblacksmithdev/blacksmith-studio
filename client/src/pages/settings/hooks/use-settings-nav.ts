@@ -8,6 +8,7 @@ import {
   Blocks,
   Wand2,
   BookOpen,
+  Network,
   AlertTriangle,
   type LucideIcon,
 } from "lucide-react";
@@ -44,6 +45,7 @@ export const settingsGroups: SettingsNavGroup[] = [
     items: [
       { id: "workspace", icon: FolderCog, label: "Workspace" },
       { id: "knowledge", icon: BookOpen, label: "Knowledge Base" },
+      { id: "graphify", icon: Network, label: "Knowledge Graph" },
     ],
   },
 ];

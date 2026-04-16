@@ -39,6 +39,8 @@ function projectKeys(projectId: string) {
     agentPipelines: [...p, "agents", "pipelines"] as const,
     agentBuildProgress: [...p, "agents", "buildProgress"] as const,
     runnerConfigs: [...p, "runner", "configs"] as const,
+    graphifyStatus: [...p, "graphify", "status"] as const,
+    graphifyCheck: ["graphify", "check"] as const,
   };
 }
 

@@ -10,6 +10,7 @@ import type { SkillsManager } from "../../server/services/skills.js";
 import type { KnowledgeManager } from "../../server/services/knowledge.js";
 import type { GitManager } from "../../server/services/git.js";
 import type { TerminalManager } from "../../server/services/terminal.js";
+import type { GraphifyManager } from "../../server/services/graphify.js";
 
 import { setupProjectsIPC } from "./projects.js";
 import { setupSessionsIPC } from "./sessions.js";
@@ -27,6 +28,7 @@ import { setupFolderDialogIPC } from "./folder-dialog.js";
 import { setupGitIPC } from "./git.js";
 import { setupTerminalIPC } from "./terminal.js";
 import { setupAgentsIPC } from "./agents.js";
+import { setupGraphifyIPC } from "./graphify.js";
 import { setupWindowIPC } from "./window.js";
 import { Ai } from "../../server/services/ai/ai.js";
 
@@ -43,6 +45,7 @@ export function setupAllIPC(
   knowledgeManager: KnowledgeManager,
   gitManager: GitManager,
   terminalManager: TerminalManager,
+  graphifyManager: GraphifyManager,
 ) {
   // Single Ai instance shared across all IPC handlers
   const ai = new Ai();
@@ -76,6 +79,7 @@ export function setupAllIPC(
   setupSetupIPC(settingsManager, projectManager);
   setupGitIPC(getWindow, gitManager, projectManager, ai);
   setupTerminalIPC(getWindow, terminalManager, projectManager, settingsManager);
+  setupGraphifyIPC(getWindow, graphifyManager, projectManager, settingsManager, gitManager);
   setupAgentsIPC(
     getWindow,
     projectManager,

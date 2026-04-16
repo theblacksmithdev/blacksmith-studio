@@ -13,6 +13,7 @@ import SettingsPage, {
   EditorSettings,
   WorkspaceSettings,
   KnowledgeSettings,
+  GraphifySettings,
   DangerZone,
 } from "@/pages/settings";
 import { SingleAgentChat, AgentTeamChat } from "@/pages/home-page";
@@ -139,6 +140,11 @@ export const router = createHashRouter([
             path: "knowledge",
             element: <KnowledgeSettings />,
             handle: { title: "Knowledge Base" } satisfies RouteHandle,
+          },
+          {
+            path: "graphify",
+            element: <GraphifySettings />,
+            handle: { title: "Knowledge Graph" } satisfies RouteHandle,
           },
           {
             path: "danger",

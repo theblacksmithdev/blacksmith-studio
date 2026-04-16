@@ -1,6 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { AgentRoleDefinition } from "../types.js";
+import { GraphifyManager } from "../../graphify.js";
+
+const graphifyManager = new GraphifyManager();
 
 const IGNORE = new Set([
   "node_modules",
@@ -20,15 +23,28 @@ const IGNORE = new Set([
  * Builds a filtered project context tailored to an agent's scope.
  * Only includes files and directories relevant to the agent's role,
  * keeping token usage low and focus high.
+ *
+ * When a Graphify graph report is available, it's automatically injected
+ * as a compact project overview and the directory tree depth is reduced
+ * (the graph already captures structure). Key files are still included.
  */
 export function buildAgentContext(
   projectRoot: string,
   role: AgentRoleDefinition,
 ): string {
+  const graphReport = graphifyManager.getReport(projectRoot);
   const lines: string[] = [];
   const scopeDirs = role.scopeDirs.length > 0 ? role.scopeDirs : ["."];
 
-  // Scope-specific directory tree
+  // Inject graph report as a rich structural overview when available
+  if (graphReport) {
+    lines.push("## Project Knowledge Graph\n");
+    lines.push(graphReport);
+    lines.push("");
+  }
+
+  // Scope-specific directory tree — shallower when graph provides structure
+  const treeDepth = graphReport ? 2 : 4;
   lines.push(`## Scope: ${role.title}\n`);
   lines.push("```");
 
@@ -36,7 +52,7 @@ export function buildAgentContext(
     const absDir = path.join(projectRoot, dir);
     if (!fs.existsSync(absDir)) continue;
     lines.push(`${dir}/`);
-    buildFilteredTree(absDir, role.filePatterns, lines, 1, 4);
+    buildFilteredTree(absDir, role.filePatterns, lines, 1, treeDepth);
   }
 
   lines.push("```\n");

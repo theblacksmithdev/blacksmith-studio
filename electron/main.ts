@@ -138,6 +138,9 @@ app.whenReady().then(async () => {
   const knowledgeManager = new KnowledgeManager();
   const gitManager = new GitManager();
   const terminalManager = new TerminalManager();
+  const { GraphifyManager } =
+    await import("../server/services/graphify.js");
+  const graphifyManager = new GraphifyManager();
 
   // Check Claude availability
   const claudeStatus = await claudeManager.checkInstalled();
@@ -167,6 +170,7 @@ app.whenReady().then(async () => {
     knowledgeManager,
     gitManager,
     terminalManager,
+    graphifyManager,
   );
 
   app.on("activate", () => {

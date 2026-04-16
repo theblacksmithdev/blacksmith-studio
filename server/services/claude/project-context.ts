@@ -1,8 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { KnowledgeManager } from "../knowledge.js";
+import { GraphifyManager } from "../graphify.js";
 
 const knowledgeManager = new KnowledgeManager();
+const graphifyManager = new GraphifyManager();
 
 const IGNORE = new Set([
   "node_modules",
@@ -58,10 +60,25 @@ const CODE_EXTENSIONS = new Set([
 /**
  * Generate a compact project context snapshot that gives Claude
  * immediate understanding of the codebase without needing to scan.
+ *
+ * Automatically includes the Graphify knowledge graph report when available,
+ * reducing tree depth since the graph already captures structure.
  */
 export function generateProjectContext(projectRoot: string): string {
-  const lines: string[] = ["## Project Structure\n```"];
-  buildTree(projectRoot, projectRoot, lines, 0, 3);
+  const lines: string[] = [];
+
+  // Inject graph report as a rich structural overview when available
+  const graphReport = graphifyManager.getReport(projectRoot);
+  if (graphReport) {
+    lines.push("## Project Knowledge Graph\n");
+    lines.push(graphReport);
+    lines.push("");
+  }
+
+  // Directory tree — shallower when graph provides structure
+  const treeDepth = graphReport ? 2 : 3;
+  lines.push("## Project Structure\n```");
+  buildTree(projectRoot, projectRoot, lines, 0, treeDepth);
   lines.push("```\n");
 
   // Read key config/context files

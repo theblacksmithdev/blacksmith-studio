@@ -15,6 +15,7 @@ import { knowledge } from "./modules/knowledge";
 import { git } from "./modules/git";
 import { terminal } from "./modules/terminal";
 import { agents } from "./modules/agents";
+import { graphify } from "./modules/graphify";
 
 export const api = {
   projects,
@@ -34,4 +35,5 @@ export const api = {
   git,
   terminal,
   agents,
+  graphify,
 } as const;

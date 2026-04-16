@@ -115,6 +115,14 @@ export const GIT_RESOLVE_CONFLICT = "git:resolveConflict";
 export const GIT_COMMIT_DETAIL = "git:commitDetail";
 export const GIT_INIT = "git:init";
 
+// Graphify
+export const GRAPHIFY_CHECK = "graphify:check";
+export const GRAPHIFY_STATUS = "graphify:status";
+export const GRAPHIFY_BUILD = "graphify:build";
+export const GRAPHIFY_QUERY = "graphify:query";
+export const GRAPHIFY_CLEAN = "graphify:clean";
+export const GRAPHIFY_OPEN_VIZ = "graphify:openVisualization";
+
 // Agents
 export const AGENTS_LIST = "agents:list";
 export const AGENTS_ROUTE = "agents:route";
@@ -159,6 +167,7 @@ export const WINDOW_ON_FULLSCREEN = "window:onFullscreen";
 export const TERMINAL_ON_OUTPUT = "terminal:onOutput";
 export const TERMINAL_ON_EXIT = "terminal:onExit";
 export const GIT_ON_STATUS_CHANGE = "git:onStatusChange";
+export const GRAPHIFY_ON_BUILD_PROGRESS = "graphify:onBuildProgress";
 export const AGENTS_ON_EVENT = "agents:onEvent";
 export const AGENTS_ON_WORKFLOW_EVENT = "agents:onWorkflowEvent";
 export const AGENTS_ON_BUILD_EVENT = "agents:onBuildEvent";
@@ -249,6 +258,12 @@ export const INVOKE_CHANNELS = [
   GIT_RESOLVE_CONFLICT,
   GIT_COMMIT_DETAIL,
   GIT_INIT,
+  GRAPHIFY_CHECK,
+  GRAPHIFY_STATUS,
+  GRAPHIFY_BUILD,
+  GRAPHIFY_QUERY,
+  GRAPHIFY_CLEAN,
+  GRAPHIFY_OPEN_VIZ,
   AGENTS_LIST,
   AGENTS_ROUTE,
   AGENTS_DISPATCH,
@@ -290,6 +305,7 @@ export const SUBSCRIBE_CHANNELS = [
   TERMINAL_ON_OUTPUT,
   TERMINAL_ON_EXIT,
   GIT_ON_STATUS_CHANGE,
+  GRAPHIFY_ON_BUILD_PROGRESS,
   AGENTS_ON_EVENT,
   AGENTS_ON_WORKFLOW_EVENT,
   AGENTS_ON_BUILD_EVENT,

@@ -9,4 +9,5 @@ export { AppearanceSettings } from "./tabs/appearance";
 export { EditorSettings } from "./tabs/editor";
 export { WorkspaceSettings } from "./tabs/workspace";
 export { KnowledgeSettings } from "./tabs/knowledge";
+export { GraphifySettings } from "./tabs/graphify";
 export { DangerZone } from "./tabs/danger";

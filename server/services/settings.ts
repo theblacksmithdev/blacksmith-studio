@@ -23,6 +23,9 @@ const DEFAULTS: Record<string, any> = {
   "preview.runSplit": 55,
   "runner.nodePath": "",
   "agents.nodePositions": null,
+  "graphify.enabled": false,
+  "graphify.autoRebuild": true,
+  "graphify.maxAgeMinutes": 60,
 };
 
 const GLOBAL_DEFAULTS: Record<string, any> = {
