@@ -1,6 +1,6 @@
 import type { AgentExecuteOptions } from "../../base/index.js";
 import type { AgentRole, AgentEvent } from "../../types.js";
-import { replanDownstream, type DispatchTask } from "../pm-dispatcher.js";
+import { replanDownstream, type DispatchTask } from "../pm-dispatcher/index.js";
 import type { IEventEmitter, ICancellationToken } from "./types.js";
 
 /** Roles whose completion triggers downstream re-planning */

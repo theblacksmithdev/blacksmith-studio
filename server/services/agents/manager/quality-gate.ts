@@ -1,7 +1,7 @@
 import type { AgentExecuteOptions } from "../base/index.js";
 import type { AgentRole, AgentExecution, AgentEvent } from "../types.js";
 import type { ChangeSet } from "../utils/change-tracker.js";
-import type { ReviewLevel } from "./pm-dispatcher.js";
+import type { ReviewLevel } from "./pm-dispatcher/index.js";
 import { extractBugReport, buildBugFixPrompt } from "./bug-report.js";
 
 /** Roles that produce code and should go through the quality gate */

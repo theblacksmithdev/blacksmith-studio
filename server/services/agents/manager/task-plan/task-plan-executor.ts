@@ -2,7 +2,7 @@ import type { AgentExecuteOptions } from "../../base/index.js";
 import { takeSnapshot, computeChanges } from "../../utils/change-tracker.js";
 import type { AgentRole, AgentExecution, AgentEvent } from "../../types.js";
 import type { ArtifactManager } from "../../artifacts.js";
-import { refineTaskPrompt, type DispatchTask } from "../pm-dispatcher.js";
+import { refineTaskPrompt, type DispatchTask } from "../pm-dispatcher/index.js";
 import { needsQualityGate } from "../quality-gate.js";
 import type {
   IAgentExecutor,

@@ -1,5 +1,5 @@
 import type { AgentRole, AgentEvent } from "../../types.js";
-import type { DispatchPlan } from "../pm-dispatcher.js";
+import type { DispatchPlan } from "../pm-dispatcher/index.js";
 import type { IEventEmitter } from "../task-plan/types.js";
 import type { EventBus } from "./event-bus.js";
 

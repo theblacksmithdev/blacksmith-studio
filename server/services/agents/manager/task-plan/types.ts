@@ -1,7 +1,7 @@
 import type { AgentExecuteOptions } from "../../base/index.js";
 import type { ChangeSet } from "../../utils/change-tracker.js";
 import type { AgentRole, AgentExecution, AgentEvent } from "../../types.js";
-import type { DispatchTask, ReviewLevel } from "../pm-dispatcher.js";
+import type { DispatchTask, ReviewLevel } from "../pm-dispatcher/index.js";
 
 /* ── Interface Segregation: each collaborator depends only on what it needs ── */
 

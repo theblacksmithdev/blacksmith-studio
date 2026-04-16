@@ -9,7 +9,7 @@ import {
   dispatchWithPM,
   type DispatchPlan,
   type ReviewLevel,
-} from "../pm-dispatcher.js";
+} from "../pm-dispatcher/index.js";
 import { needsQualityGate, runQualityGate } from "../quality-gate.js";
 import { TaskPlanExecutor } from "../task-plan/index.js";
 import type { ICancellationToken } from "../task-plan/types.js";

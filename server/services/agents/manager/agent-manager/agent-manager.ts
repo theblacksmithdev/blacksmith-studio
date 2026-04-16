@@ -9,7 +9,7 @@ import type {
 import type { BaseAgent } from "../../base/index.js";
 import { createAgentRegistry } from "../../roles/index.js";
 import type { RouteResult } from "../router.js";
-import type { DispatchPlan } from "../pm-dispatcher.js";
+import type { DispatchPlan } from "../pm-dispatcher/index.js";
 import type { PipelineTemplate } from "../pipelines.js";
 import { EventBus } from "./event-bus.js";
 import { AgentEventEmitter } from "./agent-event-emitter.js";

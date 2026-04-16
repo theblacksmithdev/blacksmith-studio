@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import type { AgentRole, AgentExecution } from "../../types.js";
-import type { DispatchTask } from "../pm-dispatcher.js";
+import type { DispatchTask } from "../pm-dispatcher/index.js";
 import type { IEventEmitter } from "./types.js";
 
 /**

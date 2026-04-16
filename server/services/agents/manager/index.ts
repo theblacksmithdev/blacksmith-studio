@@ -4,7 +4,7 @@ export {
   dispatchWithPM,
   type DispatchPlan,
   type DispatchTask,
-} from "./pm-dispatcher.js";
+} from "./pm-dispatcher/index.js";
 export {
   needsQualityGate,
   runQualityGate,

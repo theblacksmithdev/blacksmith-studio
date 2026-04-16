@@ -1,6 +1,6 @@
 import type { AgentExecuteOptions } from "../../base/index.js";
 import type { AgentRole, AgentExecution } from "../../types.js";
-import type { DispatchTask } from "../pm-dispatcher.js";
+import type { DispatchTask } from "../pm-dispatcher/index.js";
 import type { IAgentExecutor } from "./types.js";
 
 /** Provider-agnostic tier → concrete model ID */
