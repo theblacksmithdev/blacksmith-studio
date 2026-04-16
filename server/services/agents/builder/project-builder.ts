@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import type { AgentManager } from "../manager/agent-manager.js";
+import type { AgentManager } from "../manager/agent-manager/index.js";
 import type { AgentExecuteOptions } from "../base/index.js";
 import type { AgentRole } from "../types.js";
 import type {

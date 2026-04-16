@@ -526,15 +526,22 @@ function buildFixPrompt(
   feedbackExec: AgentExecution,
 ): string {
   const source = feedbackType === "review" ? "code reviewer" : "QA engineer";
+  const maxFeedback = 8000;
+  const feedback = feedbackExec.responseText.trim();
+  const truncated = feedback.length > maxFeedback;
+  const feedbackContent = truncated
+    ? feedback.slice(0, maxFeedback) + "\n\n... (truncated)"
+    : feedback;
+
   return [
     `The ${source} found issues with your work on "${task.title}".`,
     "",
-    `You need to fix these issues. Read the ${source}'s feedback carefully and make the necessary changes.`,
+    `## ${source === "code reviewer" ? "Review" : "Test"} Feedback`,
     "",
-    `The ${source}'s session ID is ${feedbackExec.sessionId} — their feedback is in that conversation.`,
+    feedbackContent,
     "",
-    "Fix instructions:",
-    "- Address every issue raised.",
+    "## Fix Instructions",
+    "- Address every issue raised in the feedback above.",
     "- Do not introduce new issues while fixing.",
     "- After fixing, briefly summarize what you changed.",
   ].join("\n");

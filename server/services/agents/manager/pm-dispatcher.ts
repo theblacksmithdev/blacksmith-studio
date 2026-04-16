@@ -189,6 +189,10 @@ export async function dispatchWithPM(
     "--output-format",
     "stream-json",
     "--verbose",
+    "--permission-mode",
+    "bypassPermissions",
+    "--allowedTools",
+    "Read,Glob,Grep",
     "--append-system-prompt",
     PM_SYSTEM_PROMPT,
   ];
@@ -372,6 +376,10 @@ export async function refineTaskPrompt(
     "--output-format",
     "stream-json",
     "--verbose",
+    "--permission-mode",
+    "bypassPermissions",
+    "--allowedTools",
+    "Read,Glob,Grep",
     "--append-system-prompt",
     REFINE_SYSTEM_PROMPT,
   ];
@@ -510,6 +518,10 @@ export async function replanDownstream(
     "--output-format",
     "stream-json",
     "--verbose",
+    "--permission-mode",
+    "bypassPermissions",
+    "--allowedTools",
+    "Read,Glob,Grep",
     "--append-system-prompt",
     REPLAN_SYSTEM_PROMPT,
   ];

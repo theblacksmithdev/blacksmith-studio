@@ -67,7 +67,7 @@ export function streamExecution(opts: StreamOptions): Promise<AgentExecution> {
       handleChunk(
         chunk,
         execution,
-        fullResponse,
+        () => fullResponse,
         toolCalls,
         emit,
         evaluateHandoff,
@@ -139,7 +139,7 @@ export function streamExecution(opts: StreamOptions): Promise<AgentExecution> {
 function handleChunk(
   chunk: any,
   execution: AgentExecution,
-  fullResponse: string,
+  getFullResponse: () => string,
   toolCalls: ToolCallRecord[],
   emit: EmitFn,
   evaluateHandoff: EvaluateHandoffFn,
@@ -192,7 +192,7 @@ function handleChunk(
     }
 
     if (chunk.stop_reason) {
-      const handoff = evaluateHandoff(fullResponse, toolCalls);
+      const handoff = evaluateHandoff(getFullResponse(), toolCalls);
       if (handoff) {
         emit(
           {

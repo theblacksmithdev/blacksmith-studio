@@ -140,6 +140,8 @@ export interface AgentExecution {
   error: string | null;
   /** The agent's full text response. Available after execution completes. */
   responseText: string;
+  /** The dispatch task ID this execution fulfils (set by executeTaskPlan) */
+  taskId?: string;
 }
 
 /** Live state of a running agent process */

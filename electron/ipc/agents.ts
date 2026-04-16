@@ -187,9 +187,9 @@ export function setupAgentsIPC(
         );
 
         for (const exec of result.executions) {
-          const matchingTask = result.plan.tasks.find(
-            (t) => t.role === exec.agentId,
-          );
+          const matchingTask = exec.taskId
+            ? result.plan.tasks.find((t) => t.id === exec.taskId)
+            : result.plan.tasks.find((t) => t.role === exec.agentId);
           if (matchingTask) {
             sessionManager.updateTaskStatus(
               matchingTask.id,
@@ -204,6 +204,7 @@ export function setupAgentsIPC(
               },
             );
           }
+
         }
 
         const totalCost = result.executions.reduce(

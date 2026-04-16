@@ -57,6 +57,14 @@ export function buildCliArgs(params: {
     args.push("--session-id", sessionId);
   }
 
+  // Enforce tool restrictions from role definition
+  if (
+    Array.isArray(definition.allowedTools) &&
+    definition.allowedTools.length > 0
+  ) {
+    args.push("--allowedTools", definition.allowedTools.join(","));
+  }
+
   const model = config?.model ?? definition.preferredModel;
   if (model) args.push("--model", model);
 
