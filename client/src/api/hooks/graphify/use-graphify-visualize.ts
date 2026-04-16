@@ -1,16 +1,20 @@
-import { useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "@/api";
-import { useActiveProjectId } from "../_shared";
+import { useProjectKeys, useActiveProjectId } from "../_shared";
 
 /**
- * Returns a function that fetches the visualization URL for the current project.
+ * Fetches the visualization HTML content for the current project.
  * Returns null if no visualization is available.
+ * Only enabled when the project has a graph built.
  */
-export function useGraphifyVisualize() {
+export function useGraphifyVisualize(enabled = true) {
+  const keys = useProjectKeys();
   const projectId = useActiveProjectId();
 
-  return useCallback(async (): Promise<string | null> => {
-    if (!projectId) return null;
-    return api.graphify.getVisualizationUrl(projectId);
-  }, [projectId]);
+  return useQuery({
+    queryKey: keys.graphifyVisualization,
+    queryFn: () => api.graphify.getVisualizationUrl(projectId!),
+    enabled: !!projectId && enabled,
+    staleTime: 5 * 60_000,
+  });
 }

@@ -17,7 +17,8 @@ export function useGraphifySettings() {
   const buildMutation = useGraphifyBuild();
   const cleanMutation = useGraphifyClean();
   const setup = useGraphifySetup();
-  const openVisualization = useGraphifyVisualize();
+  const hasViz = !!graphStatus?.hasVisualization;
+  const { data: visualizationHtml } = useGraphifyVisualize(hasViz);
 
   const set = useCallback(
     (key: string, value: any) => updateSettings.mutate({ [key]: value }),
@@ -50,10 +51,12 @@ export function useGraphifySettings() {
     isBuilding: buildMutation.isPending || !!graphStatus?.building,
     buildResult: buildMutation.data,
 
+    // Visualization
+    visualizationHtml: visualizationHtml ?? null,
+
     // Actions
     build,
     clean,
-    openVisualization,
 
     // Setup flow
     setup,

@@ -42,6 +42,7 @@ function projectKeys(projectId: string) {
     pythonInstallations: ["python", "detect"] as const,
     pythonCheck: ["python", "check"] as const,
     graphifyStatus: [...p, "graphify", "status"] as const,
+    graphifyVisualization: [...p, "graphify", "visualization"] as const,
     graphifyCheck: ["graphify", "check"] as const,
   };
 }

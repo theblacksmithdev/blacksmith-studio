@@ -219,31 +219,3 @@ export const MetaChip = styled.span`
     flex-shrink: 0;
   }
 `;
-
-/* ── Helpers ── */
-
-export type GraphStatusLabel = "ok" | "stale" | "missing" | "building";
-
-export function formatTimeAgo(isoDate: string): string {
-  const seconds = Math.floor(
-    (Date.now() - new Date(isoDate).getTime()) / 1000,
-  );
-  if (seconds < 60) return "just now";
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
-
-export function getGraphStatus(
-  graphStatus: { exists: boolean; stale: boolean } | undefined,
-  isBuilding: boolean,
-): { label: GraphStatusLabel; text: string } {
-  if (isBuilding) return { label: "building", text: "Building graph..." };
-  if (!graphStatus?.exists)
-    return { label: "missing", text: "No graph built yet" };
-  if (graphStatus.stale) return { label: "stale", text: "Graph is stale" };
-  return { label: "ok", text: "Graph up to date" };
-}

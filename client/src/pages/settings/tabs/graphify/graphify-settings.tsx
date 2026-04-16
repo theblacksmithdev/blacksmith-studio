@@ -84,8 +84,8 @@ export function GraphifySettings() {
         isBuilding={gs.isBuilding}
         buildResult={gs.buildResult}
         enabled={gs.enabled}
+        visualizationHtml={gs.visualizationHtml}
         onBuild={gs.build}
-        onVisualize={gs.openVisualization}
         onClean={gs.clean}
       />
     </Flex>

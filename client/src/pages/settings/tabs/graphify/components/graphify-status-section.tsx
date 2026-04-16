@@ -26,17 +26,17 @@ import {
   MetaChip,
   CompactBtn,
   spin,
-  formatTimeAgo,
-  getGraphStatus,
 } from "./styles";
+import { getGraphStatus } from "@/lib/graphify";
+import { formatTimeAgo } from "@/lib/format";
 
 interface GraphifyStatusSectionProps {
   graphStatus: GraphifyStatus | undefined;
   isBuilding: boolean;
   buildResult: GraphifyBuildResult | undefined;
   enabled: boolean;
+  visualizationHtml: string | null;
   onBuild: () => void;
-  onVisualize: () => Promise<string | null>;
   onClean: () => void;
 }
 
@@ -45,15 +45,16 @@ export function GraphifyStatusSection({
   isBuilding,
   buildResult,
   enabled,
+  visualizationHtml,
   onBuild,
-  onVisualize,
   onClean,
 }: GraphifyStatusSectionProps) {
-  const [vizHtml, setVizHtml] = useState<string | null>(null);
+  const [showViz, setShowViz] = useState(false);
   const { label, text } = getGraphStatus(graphStatus, isBuilding);
   const builtAgo = graphStatus?.builtAt
     ? formatTimeAgo(graphStatus.builtAt)
     : null;
+  
 
   return (
     <>
@@ -146,13 +147,8 @@ export function GraphifyStatusSection({
 
               {graphStatus?.exists && (
                 <>
-                  {graphStatus.hasVisualization && (
-                    <CompactBtn
-                      onClick={async () => {
-                        const html = await onVisualize();
-                        if (html) setVizHtml(html);
-                      }}
-                    >
+                  {visualizationHtml && (
+                    <CompactBtn onClick={() => setShowViz(true)}>
                       <ExternalLink size={12} />
                       Visualize
                     </CompactBtn>
@@ -183,15 +179,15 @@ export function GraphifyStatusSection({
       </Box>
 
       {/* Visualization drawer */}
-      {vizHtml && (
+      {showViz && visualizationHtml && (
         <Drawer
           title="Knowledge Graph"
           subtitle="Interactive visualization of your codebase structure"
-          onClose={() => setVizHtml(null)}
+          onClose={() => setShowViz(false)}
           size="full"
           noPadding
         >
-          <IFrame srcDoc={vizHtml} title="Knowledge Graph Visualization" />
+          <IFrame srcDoc={visualizationHtml} title="Knowledge Graph Visualization" />
         </Drawer>
       )}
     </>
