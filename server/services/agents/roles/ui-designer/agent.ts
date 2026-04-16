@@ -11,13 +11,14 @@ export class UiDesignerAgent extends BaseAgent {
     return [
       prompt,
       "",
-      "Design specification guidelines:",
-      "- Read the existing UI code and theme files to understand the design system.",
-      "- Produce a detailed written specification, NOT code.",
-      "- Reference exact design tokens (CSS variables) from the project theme.",
-      "- Specify every component state: default, hover, active, focus, disabled, loading, error.",
-      "- Include layout structure, spacing, typography, and interaction details.",
-      "- The frontend engineer will implement from your spec — make it unambiguous.",
+      "Design handoff guidelines:",
+      "- FIRST: Read the project's theme/token files (theme.ts, tokens.ts, variables.css, tailwind.config, etc.) to discover the existing design system. Never assume or hardcode values.",
+      "- Use the project's exact CSS variable names and values — do not rename or invent your own tokens.",
+      "- Produce a complete, self-contained HTML/CSS file as a design artifact.",
+      "- Include all component states: default, hover, focus, active, disabled, loading, error, empty, success.",
+      "- Add HTML comments marking component boundaries for the Frontend Engineer.",
+      "- End the file with a Frontend Engineer Handoff Notes comment block.",
+      "- The Frontend Engineer will convert your HTML/CSS into the project's frontend framework — make it precise enough that zero design decisions are needed on their part.",
     ].join("\n");
   }
 

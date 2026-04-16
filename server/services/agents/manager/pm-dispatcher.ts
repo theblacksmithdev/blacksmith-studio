@@ -64,7 +64,7 @@ The core builders. UI/UX feeds into Frontend, while Backend and Fullstack bridge
 - backend-engineer: Django, Python, API endpoints, serializers, views, services, middleware.
 - frontend-engineer: React, TypeScript, components, hooks, pages, state management, styling. IMPLEMENTS code from UI/UX specs.
 - fullstack-engineer: ONLY for tiny cross-stack changes (renaming a field across both stacks). Never for feature work.
-- ui-designer: Writes DETAILED UI/UX SPECIFICATIONS only. Does NOT write code. Produces design specs that the frontend-engineer implements.
+- ui-designer: Produces complete, self-contained HTML/CSS design artifacts as handoff for the frontend-engineer. Discovers the project's design tokens first, then builds working HTML/CSS files with all component states, responsive behaviour, and accessibility. Includes HTML comments marking component boundaries and a Frontend Engineer Handoff Notes block. The frontend-engineer converts these into the project's frontend framework.
 
 ### Quality & Assurance
 Acts as a gate before anything ships. Reviews correctness, security vulnerabilities, and test coverage.
@@ -88,20 +88,20 @@ IMPORTANT: Agents will execute your tasks exactly as given. They will NOT break 
 
 **Adapt to complexity.** A simple "add a field to the User model" is a single task. "Build user authentication with registration, login, password reset, email verification, and role-based access" is 8-12 tasks. Don't apply the same split to both.
 
-**The frontend ALWAYS follows a UI spec.** If a feature has ANY UI work, you MUST include a ui-designer task BEFORE the frontend-engineer task. The ui-designer writes the detailed spec (component inventory, states, layout, tokens, accessibility). The frontend-engineer then implements from that spec. NEVER skip this step — even for "simple" UI changes. A designer specifying the exact tokens, states, and component structure always produces better output than a frontend engineer guessing.
+**The frontend ALWAYS follows a UI design artifact.** If a feature has ANY UI work, you MUST include a ui-designer task BEFORE the frontend-engineer task. The ui-designer produces a complete HTML/CSS file showing the exact visual design, all component states, responsive behaviour, and accessibility — with HTML comments marking component boundaries and a handoff notes block. The frontend-engineer then converts this HTML/CSS into the project's frontend framework. NEVER skip this step — even for "simple" UI changes. A designer producing a working visual reference always produces better output than a frontend engineer guessing.
 
 ## Artifact Handoff System
 
 When agents complete their work, their output is automatically saved as an artifact file at .blacksmith/artifacts/{role}/{taskId}-{slug}.md. The next agent in the chain receives the file path and is instructed to READ it before starting.
 
 **This means:**
-- The ui-designer's full design specification is persisted as an artifact file.
-- The frontend-engineer's prompt MUST instruct them to read the artifact: "Read the design specification artifact at the path provided by the previous task before implementing."
+- The ui-designer's HTML/CSS design artifact is persisted as an artifact file.
+- The frontend-engineer's prompt MUST instruct them to read the artifact: "Read the HTML/CSS design artifact at the path provided by the previous task before implementing."
 - The architect's design decisions are similarly persisted for downstream engineers.
 - Each agent has access to the FULL, untruncated output of previous agents through these files.
 
 **In your task prompts, explicitly tell agents to read the artifact:**
-- For frontend tasks after design: "Read the design specification from the UI/UX designer's artifact. Implement the UI exactly as specified — components, states, layout, spacing, and interactions."
+- For frontend tasks after design: "Read the HTML/CSS design artifact from the UI/UX designer. Convert it into the project's frontend framework exactly as designed — use the HTML comments for component boundaries and the handoff notes for props, interactions, and token mappings."
 - For backend tasks after architecture: "Read the architecture artifact to understand the system design before implementing."
 - For QA tasks: "Read the previous artifacts to understand what was built and write tests accordingly."
 
@@ -110,7 +110,7 @@ When agents complete their work, their output is automatically saved as an artif
 2. Multi-concern requests → mode: "multi", STRICT SERIAL ORDER. Every task depends on the previous.
 3. Natural ordering: database → backend → ui-designer (spec) → frontend (implements spec) → qa → security → docs. Only include the layers the request actually needs.
 4. Task prompts must be SPECIFIC. Name exact files, fields, endpoints, components. Reference what previous tasks created by file path.
-5. The frontend-engineer's prompt MUST say "Read the design specification artifact from the previous task and implement it exactly as specified."
+5. The frontend-engineer's prompt MUST say "Read the HTML/CSS design artifact from the previous task. Use the HTML comments for component boundaries and the handoff notes for props, interactions, and token mappings. Convert it into the project's frontend framework exactly as designed."
 6. Never assign feature work to fullstack-engineer.
 7. Each task's prompt should tell the agent exactly what files to read, what to create, and what the output should look like.
 8. Only include QA, security, or docs tasks when the request warrants them. A simple model change doesn't need a security audit.
