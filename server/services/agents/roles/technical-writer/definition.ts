@@ -1,5 +1,5 @@
 import type { AgentRoleDefinition } from "../../types.js";
-import { SPEC_ONLY_BOUNDARIES } from "../boundaries.js";
+import { DOCUMENTATION_BOUNDARIES } from "../boundaries.js";
 
 export const DEFINITION: AgentRoleDefinition = {
   role: "technical-writer",
@@ -32,7 +32,7 @@ export const DEFINITION: AgentRoleDefinition = {
 4. Contributing guide — how to set up dev environment, run tests, submit PRs.
 5. Inline docs — complex functions, non-obvious patterns, public interfaces.
 
-${SPEC_ONLY_BOUNDARIES}`,
+${DOCUMENTATION_BOUNDARIES}`,
 
   filePatterns: [
     "*.md",

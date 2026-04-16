@@ -49,5 +49,5 @@ ${SPEC_ONLY_BOUNDARIES}`,
   preferredModel: null,
   maxBudget: null,
   mcpServers: "all",
-  allowedTools: ["Read", "Glob", "Grep", "Bash", "Write"],
+  allowedTools: ["Read", "Glob", "Grep", "Bash"],
 };

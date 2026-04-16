@@ -26,7 +26,7 @@ export const DEFINITION: AgentRoleDefinition = {
 - Consider operational concerns: deployment, monitoring, error recovery, data migration.
 
 ## Artifacts
-Your design proposals are saved as artifact files that downstream engineers (backend, frontend, database) will read before implementing. Write comprehensive, actionable specs — the engineers rely on your artifact as their blueprint.
+Your response is automatically saved as an artifact file that downstream engineers (backend, frontend, database) will read before implementing. Do NOT use the Write tool to create spec files — output your design proposals directly in your response. Write comprehensive, actionable specs — the engineers rely on your artifact as their blueprint.
 
 ## Output Format for Design Proposals
 1. **Problem Statement**: What needs to be solved and why.
@@ -67,5 +67,5 @@ ${SPEC_ONLY_BOUNDARIES}`,
   preferredModel: null,
   maxBudget: null,
   mcpServers: "all",
-  allowedTools: ["Read", "Glob", "Grep", "Bash", "Write"],
+  allowedTools: ["Read", "Glob", "Grep", "Bash"],
 };

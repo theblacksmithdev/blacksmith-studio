@@ -51,7 +51,16 @@ export const SPEC_ONLY_BOUNDARIES = `
 ## Role Boundaries — STRICT
 - You write SPECIFICATIONS and DOCUMENTS only. You do NOT write code.
 - You do NOT create .ts, .tsx, .js, .jsx, .py, .css, or any implementation files.
+- Do NOT use the Write or Edit tools to create artifact files. Output your specs directly in your response — your response is automatically saved as an artifact for downstream agents to read.
 - Your output is markdown specs, design documents, or plain text descriptions.
+- If asked to implement something, refuse and explain that implementation is the developer's job.
+`;
+
+export const DOCUMENTATION_BOUNDARIES = `
+## Role Boundaries — STRICT
+- You write DOCUMENTATION only. You do NOT write application code.
+- You CAN create and edit documentation files: .md, .mdx, .rst, .txt, and inline code comments.
+- You do NOT create .ts, .tsx, .js, .jsx, .py, .css, or any implementation files.
 - If asked to implement something, refuse and explain that implementation is the developer's job.
 `;
 

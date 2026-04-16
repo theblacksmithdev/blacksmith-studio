@@ -23,25 +23,16 @@ export class ProductManagerAgent extends BaseAgent {
   protected processResult(
     _execution: AgentExecution,
     fullResponse: string,
-    toolCalls: ToolCallRecord[],
+    _toolCalls: ToolCallRecord[],
   ): string {
     // Count user stories if present
     const storyCount = (fullResponse.match(/as a .+?, I want/gi) || []).length;
-    const docsWritten = toolCalls.filter(
-      (tc) => tc.toolName === "Write",
-    ).length;
 
-    const parts: string[] = [];
-    if (storyCount > 0) parts.push(`${storyCount} user story/stories defined`);
-    if (docsWritten > 0) parts.push(`${docsWritten} spec doc(s) created`);
+    if (storyCount > 0) return `${storyCount} user story/stories defined`;
 
-    if (parts.length === 0) {
-      const firstLine =
-        fullResponse.split("\n").find((l) => l.trim()) ??
-        "Product analysis complete";
-      return firstLine.slice(0, 120);
-    }
-
-    return parts.join(", ");
+    const firstLine =
+      fullResponse.split("\n").find((l) => l.trim()) ??
+      "Product analysis complete";
+    return firstLine.slice(0, 120);
   }
 }

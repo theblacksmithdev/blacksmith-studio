@@ -14,10 +14,10 @@ export class UiDesignerAgent extends BaseAgent {
       "Design handoff guidelines:",
       "- FIRST: Read the project's theme/token files (theme.ts, tokens.ts, variables.css, tailwind.config, etc.) to discover the existing design system. Never assume or hardcode values.",
       "- Use the project's exact CSS variable names and values — do not rename or invent your own tokens.",
-      "- Produce a complete, self-contained HTML/CSS file as a design artifact.",
+      "- DO NOT write any files. Output the complete, self-contained HTML/CSS directly in your response — it will be saved automatically as a design artifact for the Frontend Engineer.",
       "- Include all component states: default, hover, focus, active, disabled, loading, error, empty, success.",
       "- Add HTML comments marking component boundaries for the Frontend Engineer.",
-      "- End the file with a Frontend Engineer Handoff Notes comment block.",
+      "- End with a Frontend Engineer Handoff Notes comment block.",
       "- The Frontend Engineer will convert your HTML/CSS into the project's frontend framework — make it precise enough that zero design decisions are needed on their part.",
     ].join("\n");
   }
@@ -25,13 +25,11 @@ export class UiDesignerAgent extends BaseAgent {
   protected processResult(
     _execution: AgentExecution,
     fullResponse: string,
-    toolCalls: ToolCallRecord[],
+    _toolCalls: ToolCallRecord[],
   ): string {
-    const specsWritten = toolCalls.filter(
-      (tc) => tc.toolName === "Write",
-    ).length;
-
-    if (specsWritten > 0) return `${specsWritten} design spec(s) written`;
+    // Check if the response contains an HTML design artifact
+    const hasHtml = fullResponse.includes("<!DOCTYPE html") || fullResponse.includes("<html");
+    if (hasHtml) return "Design artifact produced";
 
     const firstLine =
       fullResponse.split("\n").find((l) => l.trim()) ?? "Design spec complete";
