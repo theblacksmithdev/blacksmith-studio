@@ -1,7 +1,7 @@
 import type {
   MessageRepository,
   ToolCallRepository,
-} from "../sessions/index.js";
+} from "../chat-single-agent/index.js";
 import { extractFilePath, isFileTool } from "./file-tool-parser.js";
 import type {
   DispatchRepository,

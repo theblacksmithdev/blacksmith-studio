@@ -1,6 +1,6 @@
 import type { BrowserWindow } from "electron";
 import type { ProjectManager } from "../../server/services/projects.js";
-import type { SessionManager } from "../../server/services/sessions/index.js";
+import type { SessionManager } from "../../server/services/chat-single-agent/index.js";
 import type { SettingsManager } from "../../server/services/settings.js";
 import type { RunnerManager } from "../../server/services/runner/index.js";
 import type { RunnerConfigService } from "../../server/services/runner/runner-config.js";

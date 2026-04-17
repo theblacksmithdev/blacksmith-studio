@@ -2,7 +2,7 @@ import { getDatabase } from "../../db/index.js";
 import {
   MessageRepository,
   ToolCallRepository,
-} from "../sessions/index.js";
+} from "../chat-single-agent/index.js";
 import { ArtifactTracer, type ConversationArtifact } from "./artifact-tracer.js";
 import { formatDispatchHistory } from "./dispatch-history-formatter.js";
 import {

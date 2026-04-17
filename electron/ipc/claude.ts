@@ -1,7 +1,7 @@
 import { ipcMain, type BrowserWindow } from "electron";
 import crypto from "node:crypto";
 import type { Ai } from "../../server/services/ai/ai.js";
-import type { SessionManager } from "../../server/services/sessions/index.js";
+import type { SessionManager } from "../../server/services/chat-single-agent/index.js";
 import type { ProjectManager } from "../../server/services/projects.js";
 import type { SettingsManager } from "../../server/services/settings.js";
 import type { McpManager } from "../../server/services/mcp.js";

@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import type { SessionManager } from "../../server/services/sessions/index.js";
+import type { SessionManager } from "../../server/services/chat-single-agent/index.js";
 import type { ProjectManager } from "../../server/services/projects.js";
 import {
   SESSIONS_LIST,
