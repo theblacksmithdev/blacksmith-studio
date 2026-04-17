@@ -46,6 +46,24 @@ export class Dispatcher {
   async dispatch(
     options: AgentExecuteOptions,
   ): Promise<{ plan: DispatchPlan; executions: AgentExecution[] }> {
+    try {
+      const result = await this.runDispatch(options);
+      const anyFailed = result.executions.some((e) => e.status === "error");
+      this.emitter.emitPMStatus(
+        anyFailed ? "error" : "done",
+        anyFailed ? "Dispatch completed with errors" : "Dispatch complete",
+      );
+      return result;
+    } catch (err) {
+      // Ensure the PM spinner clears even when the dispatch blows up.
+      this.emitter.emitPMStatus("error", "Dispatch failed");
+      throw err;
+    }
+  }
+
+  private async runDispatch(
+    options: AgentExecuteOptions,
+  ): Promise<{ plan: DispatchPlan; executions: AgentExecution[] }> {
     // ── Fast path: explicit role mention ──
     const routeResult = this.route(options.prompt);
     if (routeResult.confidence === "high" && routeResult.role) {

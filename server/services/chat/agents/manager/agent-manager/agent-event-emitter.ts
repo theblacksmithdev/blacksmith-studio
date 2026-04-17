@@ -31,6 +31,25 @@ export class AgentEventEmitter implements IEventEmitter {
     });
   }
 
+  /**
+   * PM lifecycle status — flips the PM's UI state between executing / done
+   * / error. The first PM text chunk sets "executing"; the dispatcher
+   * resets to "done" (or "error") in a finally block so the spinner
+   * clears even when downstream tasks fail.
+   */
+  emitPMStatus(
+    status: "executing" | "done" | "error" | "idle",
+    message?: string,
+  ): void {
+    this.bus.emitAgentEvent({
+      type: "status",
+      agentId: "product-manager",
+      executionId: "",
+      timestamp: new Date().toISOString(),
+      data: { type: "status", status, message },
+    });
+  }
+
   /** Task status change for the task tray */
   emitTaskStatus(
     taskId: string,
