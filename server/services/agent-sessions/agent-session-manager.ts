@@ -1,4 +1,9 @@
 import { getDatabase } from "../../db/index.js";
+import {
+  MessageRepository,
+  ToolCallRepository,
+} from "../sessions/index.js";
+import { ArtifactTracer, type ConversationArtifact } from "./artifact-tracer.js";
 import { formatDispatchHistory } from "./dispatch-history-formatter.js";
 import {
   ChatMessageRepository,
@@ -39,16 +44,28 @@ export class AgentSessionManager {
   private readonly conversations: ConversationService;
   private readonly dispatches: DispatchService;
   private readonly chat: ChatService;
+  private readonly tracer: ArtifactTracer;
 
   constructor(db: Database = getDatabase()) {
     const conversationRepo = new ConversationRepository(db);
     const dispatchRepo = new DispatchRepository(db);
     const taskRepo = new TaskRepository(db);
     const chatRepo = new ChatMessageRepository(db);
+    // Repositories from the single-chat domain — the artifact tracer's
+    // final edges read the message + tool_call tables to resolve the
+    // files each task's agent actually touched.
+    const messageRepo = new MessageRepository(db);
+    const toolCallRepo = new ToolCallRepository(db);
 
     this.conversations = new ConversationService(conversationRepo, chatRepo);
     this.dispatches = new DispatchService(dispatchRepo, taskRepo);
     this.chat = new ChatService(chatRepo, this.conversations);
+    this.tracer = new ArtifactTracer(
+      dispatchRepo,
+      taskRepo,
+      messageRepo,
+      toolCallRepo,
+    );
   }
 
   /* ── Conversations ── */
@@ -173,5 +190,16 @@ export class AgentSessionManager {
 
   clearChatMessages(projectId: string): void {
     this.chat.clear(projectId);
+  }
+
+  /* ── Cross-domain: files touched during a conversation ── */
+
+  /**
+   * Trace every file the team's agents wrote or edited while working on
+   * an agent conversation. Reads across the agent and single-chat schemas
+   * — see {@link ArtifactTracer} for the full pipeline.
+   */
+  getConversationArtifacts(conversationId: string): ConversationArtifact[] {
+    return this.tracer.getArtifacts(conversationId);
   }
 }

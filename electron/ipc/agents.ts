@@ -8,7 +8,6 @@ import {
   ProjectBuilder,
 } from "../../server/services/agents/index.js";
 import { AgentSessionManager } from "../../server/services/agent-sessions/index.js";
-import type { SessionManager } from "../../server/services/sessions/index.js";
 import type { AgentRole } from "../../server/services/agents/types.js";
 import type { AgentExecuteOptions } from "../../server/services/agents/base/index.js";
 import {
@@ -75,7 +74,6 @@ export function setupAgentsIPC(
   projectManager: ProjectManager,
   settingsManager: SettingsManager,
   mcpManager: McpManager,
-  chatSessionManager: SessionManager,
   ai: Ai,
 ) {
   const agentManager = new AgentManager();
@@ -466,7 +464,7 @@ export function setupAgentsIPC(
   ipcMain.handle(
     AGENTS_GET_ARTIFACTS,
     (_e, data: { conversationId: string }) => {
-      return chatSessionManager.getConversationArtifacts(data.conversationId);
+      return sessionManager.getConversationArtifacts(data.conversationId);
     },
   );
 }

@@ -1,43 +1,40 @@
 import { getDatabase } from "../../db/index.js";
 import type { Session, SessionSummary, StoredMessage } from "../../types.js";
-import { ArtifactTracer } from "./artifact-tracer.js";
 import {
   MessageRepository,
   SessionRepository,
   ToolCallRepository,
 } from "./repositories/index.js";
 import { SessionService } from "./services/index.js";
-import type { ConversationArtifact, Database } from "./types.js";
+import type { Database } from "./types.js";
 
 /**
- * Facade over the session subsystem.
+ * Facade over the single-chat session subsystem.
  *
- * Single Responsibility: composition + delegation. The facade holds zero
- * SQL — reads go through SessionService, writes fan out to the three
- * repositories directly (single-statement write paths don't need a
- * service wrapper).
+ * Single Responsibility: composition + delegation for single-chat
+ * persistence (sessions / messages / tool_calls). Cross-domain work
+ * like "what files did agents touch during this conversation?" lives
+ * in agent-sessions/ — its input is an agent conversation ID, so
+ * that's where it belongs.
  *
  * Dependency Inversion: accepts a Database handle (defaulting to the
- * shared Drizzle singleton). Tests can inject an in-memory instance.
+ * shared Drizzle singleton) — tests inject an in-memory instance.
  */
 export class SessionManager {
   private readonly sessionRepo: SessionRepository;
   private readonly messageRepo: MessageRepository;
   private readonly toolCallRepo: ToolCallRepository;
   private readonly sessions: SessionService;
-  private readonly tracer: ArtifactTracer;
 
   constructor(db: Database = getDatabase()) {
     this.sessionRepo = new SessionRepository(db);
     this.messageRepo = new MessageRepository(db);
     this.toolCallRepo = new ToolCallRepository(db);
-
     this.sessions = new SessionService(
       this.sessionRepo,
       this.messageRepo,
       this.toolCallRepo,
     );
-    this.tracer = new ArtifactTracer(db, this.messageRepo, this.toolCallRepo);
   }
 
   /* ── Sessions ── */
@@ -100,11 +97,5 @@ export class SessionManager {
     }
 
     this.sessionRepo.touch(sessionId);
-  }
-
-  /* ── Cross-domain tracing ── */
-
-  getConversationArtifacts(conversationId: string): ConversationArtifact[] {
-    return this.tracer.getArtifacts(conversationId);
   }
 }

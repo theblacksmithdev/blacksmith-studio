@@ -81,12 +81,5 @@ export function setupAllIPC(
   setupTerminalIPC(getWindow, terminalManager, projectManager, settingsManager);
   setupPythonIPC(getWindow, pythonManager, settingsManager);
   setupGraphifyIPC(getWindow, graphifyManager, projectManager, settingsManager, gitManager);
-  setupAgentsIPC(
-    getWindow,
-    projectManager,
-    settingsManager,
-    mcpManager,
-    sessionManager,
-    ai,
-  );
+  setupAgentsIPC(getWindow, projectManager, settingsManager, mcpManager, ai);
 }

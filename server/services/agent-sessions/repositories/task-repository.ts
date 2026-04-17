@@ -1,4 +1,4 @@
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, inArray } from "drizzle-orm";
 import { agentDispatches, agentTasks } from "../../../db/schema.js";
 import type { Database } from "../types.js";
 import type { TaskRow } from "../mappers.js";
@@ -68,6 +68,27 @@ export class TaskRepository {
       .where(eq(agentTasks.dispatchId, dispatchId))
       .orderBy(agentTasks.orderIndex)
       .all();
+  }
+
+  /**
+   * Return the (sessionId, role) pairs for every task in a set of
+   * dispatches that actually ran a Claude session. Tasks without a
+   * session (never executed, cancelled pre-spawn, ...) are filtered
+   * out at the SQL boundary.
+   */
+  findSessionLinksByDispatches(
+    dispatchIds: string[],
+  ): { sessionId: string; role: string }[] {
+    if (dispatchIds.length === 0) return [];
+    return this.db
+      .select({ sessionId: agentTasks.sessionId, role: agentTasks.role })
+      .from(agentTasks)
+      .where(inArray(agentTasks.dispatchId, dispatchIds))
+      .all()
+      .filter(
+        (t): t is { sessionId: string; role: string } =>
+          typeof t.sessionId === "string" && t.sessionId.length > 0,
+      );
   }
 
   /**

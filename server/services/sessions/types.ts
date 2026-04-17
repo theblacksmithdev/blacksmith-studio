@@ -6,10 +6,3 @@ import { getDatabase } from "../../db/index.js";
  * an in-memory instance without touching the connection module.
  */
 export type Database = ReturnType<typeof getDatabase>;
-
-export interface ConversationArtifact {
-  path: string;
-  tool: string;
-  role: string;
-  timestamp: string;
-}

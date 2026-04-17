@@ -65,4 +65,18 @@ export class DispatchRepository {
       .limit(limit)
       .all();
   }
+
+  /**
+   * Return just the dispatch IDs for a conversation. Used by the
+   * artifact tracer to scope a cross-table search without loading
+   * the full dispatch rows.
+   */
+  findIdsByConversation(conversationId: string): string[] {
+    return this.db
+      .select({ id: agentDispatches.id })
+      .from(agentDispatches)
+      .where(eq(agentDispatches.conversationId, conversationId))
+      .all()
+      .map((row) => row.id);
+  }
 }

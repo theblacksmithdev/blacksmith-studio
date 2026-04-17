@@ -15,6 +15,11 @@ export {
   type TaskUpdate,
 } from "./repositories/index.js";
 export { formatDispatchHistory } from "./dispatch-history-formatter.js";
+export {
+  ArtifactTracer,
+  type ConversationArtifact,
+} from "./artifact-tracer.js";
+export { isFileTool, extractFilePath } from "./file-tool-parser.js";
 export type {
   AgentDispatchRecord,
   AgentTaskRecord,
