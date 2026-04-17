@@ -5,8 +5,10 @@ import type { SessionManager } from "../../server/services/sessions/index.js";
 import type { ProjectManager } from "../../server/services/projects.js";
 import type { SettingsManager } from "../../server/services/settings.js";
 import type { McpManager } from "../../server/services/mcp.js";
-import { STUDIO_SYSTEM_PROMPT } from "../../server/services/claude/system-prompt.js";
-import { getProjectContext } from "../../server/services/claude/project-context.js";
+import {
+  STUDIO_SYSTEM_PROMPT,
+  getProjectContext,
+} from "../../server/services/studio-context/index.js";
 import {
   CLAUDE_SEND_PROMPT,
   CLAUDE_CANCEL,

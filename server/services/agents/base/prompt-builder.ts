@@ -1,4 +1,4 @@
-import { STUDIO_SYSTEM_PROMPT } from "../../claude/system-prompt.js";
+import { STUDIO_SYSTEM_PROMPT } from "../../studio-context/index.js";
 import type { AgentRoleDefinition } from "../types.js";
 import type { AgentExecuteOptions } from "./types.js";
 

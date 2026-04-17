@@ -1,7 +1,6 @@
 import type { BrowserWindow } from "electron";
 import type { ProjectManager } from "../../server/services/projects.js";
 import type { SessionManager } from "../../server/services/sessions/index.js";
-import type { ClaudeManager } from "../../server/services/claude/index.js";
 import type { SettingsManager } from "../../server/services/settings.js";
 import type { RunnerManager } from "../../server/services/runner/index.js";
 import type { RunnerConfigService } from "../../server/services/runner/runner-config.js";
@@ -32,13 +31,13 @@ import { setupAgentsIPC } from "./agents.js";
 import { setupGraphifyIPC } from "./graphify.js";
 import { setupPythonIPC } from "./python.js";
 import { setupWindowIPC } from "./window.js";
-import { Ai } from "../../server/services/ai/ai.js";
+import type { Ai } from "../../server/services/ai/ai.js";
 
 export function setupAllIPC(
   getWindow: () => BrowserWindow | null,
   projectManager: ProjectManager,
   sessionManager: SessionManager,
-  claudeManager: ClaudeManager,
+  ai: Ai,
   settingsManager: SettingsManager,
   runnerManager: RunnerManager,
   runnerConfigService: RunnerConfigService,
@@ -50,8 +49,6 @@ export function setupAllIPC(
   graphifyManager: GraphifyManager,
   pythonManager: PythonManager,
 ) {
-  // Single Ai instance shared across all IPC handlers
-  const ai = new Ai();
 
   setupFolderDialogIPC();
   setupWindowIPC(getWindow);
@@ -76,7 +73,7 @@ export function setupAllIPC(
     settingsManager,
   );
   setupMcpIPC(mcpManager, projectManager, settingsManager);
-  setupHealthIPC(claudeManager, projectManager);
+  setupHealthIPC(ai, projectManager);
   setupKnowledgeIPC(knowledgeManager, projectManager);
   setupSkillsIPC(skillsManager, projectManager);
   setupSetupIPC(settingsManager, projectManager);
@@ -88,7 +85,6 @@ export function setupAllIPC(
     getWindow,
     projectManager,
     settingsManager,
-    claudeManager,
     mcpManager,
     sessionManager,
     ai,

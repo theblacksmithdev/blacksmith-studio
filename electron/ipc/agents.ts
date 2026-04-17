@@ -1,7 +1,6 @@
 import { ipcMain, type BrowserWindow } from "electron";
 import type { ProjectManager } from "../../server/services/projects.js";
 import type { SettingsManager } from "../../server/services/settings.js";
-import type { ClaudeManager } from "../../server/services/claude/index.js";
 import type { McpManager } from "../../server/services/mcp.js";
 import type { Ai } from "../../server/services/ai/ai.js";
 import {
@@ -46,7 +45,6 @@ import {
 function resolveBaseOptions(
   projectManager: ProjectManager,
   settingsManager: SettingsManager,
-  claudeManager: ClaudeManager,
   mcpManager: McpManager,
   ai: Ai,
   projectId: string,
@@ -59,7 +57,6 @@ function resolveBaseOptions(
   return {
     projectRoot: project.path,
     ai,
-    claudeBin: claudeManager.getClaudeBin(),
     nodePath:
       settingsManager.resolve(project.id, "runner.nodePath") || undefined,
     mcpConfigPath: mcpManager.getEnabledConfigPath(
@@ -77,7 +74,6 @@ export function setupAgentsIPC(
   getWindow: () => BrowserWindow | null,
   projectManager: ProjectManager,
   settingsManager: SettingsManager,
-  claudeManager: ClaudeManager,
   mcpManager: McpManager,
   chatSessionManager: SessionManager,
   ai: Ai,
@@ -133,7 +129,6 @@ export function setupAgentsIPC(
       const baseOptions = resolveBaseOptions(
         projectManager,
         settingsManager,
-        claudeManager,
         mcpManager,
         ai,
         data.projectId,
@@ -269,7 +264,6 @@ export function setupAgentsIPC(
       const baseOptions = resolveBaseOptions(
         projectManager,
         settingsManager,
-        claudeManager,
         mcpManager,
         ai,
         data.projectId,
@@ -314,7 +308,6 @@ export function setupAgentsIPC(
       const baseOptions = resolveBaseOptions(
         projectManager,
         settingsManager,
-        claudeManager,
         mcpManager,
         ai,
         data.projectId,
@@ -342,7 +335,6 @@ export function setupAgentsIPC(
       const baseOptions = resolveBaseOptions(
         projectManager,
         settingsManager,
-        claudeManager,
         mcpManager,
         ai,
         data.projectId,
@@ -367,7 +359,6 @@ export function setupAgentsIPC(
       const baseOptions = resolveBaseOptions(
         projectManager,
         settingsManager,
-        claudeManager,
         mcpManager,
         ai,
         data.projectId,
@@ -386,7 +377,6 @@ export function setupAgentsIPC(
       const baseOptions = resolveBaseOptions(
         projectManager,
         settingsManager,
-        claudeManager,
         mcpManager,
         ai,
         data.projectId,

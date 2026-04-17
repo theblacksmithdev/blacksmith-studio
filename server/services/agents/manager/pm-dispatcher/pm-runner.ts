@@ -1,6 +1,6 @@
 import type { AgentExecuteOptions } from "../../base/index.js";
 import { AiModelTier } from "../../../ai/types.js";
-import { getProjectContext } from "../../../claude/project-context.js";
+import { getProjectContext } from "../../../studio-context/index.js";
 
 export interface PMRunOptions {
   /** User-facing prompt sent to the AI provider. */

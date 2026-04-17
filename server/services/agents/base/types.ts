@@ -6,17 +6,15 @@ export interface AgentExecuteOptions {
   prompt: string;
   projectRoot: string;
   /**
-   * The AI router — owns provider selection and spawning. Optional for now
-   * while legacy call sites (base-agent, planner, assess) still spawn the
-   * Claude CLI directly; new call sites (pm-dispatcher) require it.
+   * The AI router — owns provider selection and spawning. Required at
+   * every active call site; marked optional only so tests and fixtures
+   * can construct partial options without wiring a full Ai instance.
    */
   ai?: Ai;
   /** Supply an existing session ID to resume a multi-turn conversation */
   sessionId?: string;
   /** If true and sessionId is provided, resume the session instead of creating a new one */
   resume?: boolean;
-  /** Claude CLI binary path (resolved by ClaudeManager — legacy; prefer `ai`) */
-  claudeBin?: string;
   /** Node binary path for correct PATH resolution */
   nodePath?: string;
   /** MCP config file path */

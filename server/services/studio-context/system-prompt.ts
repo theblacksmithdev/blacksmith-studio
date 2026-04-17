@@ -1,7 +1,9 @@
 /**
- * System prompt appended to every Claude Code session via --append-system-prompt.
- * Includes the same engineering principles that agents use, so the single chat
- * produces code at the same quality bar as the agent pipeline.
+ * System prompt appended to every AI session — provider-agnostic.
+ *
+ * Any provider (Claude CLI, Anthropic API, OpenAI, Ollama, ...) can append
+ * this to its native system-prompt slot. Keeps the single-chat experience
+ * and the agent pipeline at the same quality bar.
  */
 
 import { ALL_PRINCIPLES } from "../agents/principles/index.js";

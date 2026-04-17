@@ -6,7 +6,7 @@ import { setupAllIPC } from "./ipc/index.js";
 import { WINDOW_ON_FULLSCREEN } from "./ipc/channels.js";
 import { ProjectManager } from "../server/services/projects.js";
 import { SessionManager } from "../server/services/sessions/index.js";
-import { ClaudeManager } from "../server/services/claude/index.js";
+import { Ai } from "../server/services/ai/index.js";
 import { SettingsManager } from "../server/services/settings.js";
 import { RunnerManager } from "../server/services/runner/index.js";
 import { McpManager } from "../server/services/mcp.js";
@@ -120,7 +120,7 @@ function createMenu() {
 app.whenReady().then(async () => {
   // Instantiate services in main process
   const projectManager = new ProjectManager();
-  const claudeManager = new ClaudeManager();
+  const ai = new Ai();
   const sessionManager = new SessionManager();
   const settingsManager = new SettingsManager();
   const { RunnerConfigService } =
@@ -145,13 +145,15 @@ app.whenReady().then(async () => {
     await import("../server/services/graphify/index.js");
   const graphifyManager = new GraphifyManager(pythonManager);
 
-  // Check Claude availability
-  const claudeStatus = await claudeManager.checkInstalled();
-  if (claudeStatus.installed) {
-    console.log(`[studio] Claude Code ${claudeStatus.version} found`);
+  // Check AI provider availability
+  const providerStatus = await ai.checkStatus();
+  if (providerStatus.available) {
+    console.log(
+      `[studio] ${providerStatus.name}${providerStatus.version ? ` ${providerStatus.version}` : ""} found`,
+    );
   } else {
     console.warn(
-      "[studio] WARNING: Claude Code CLI not found. Prompts will fail.",
+      `[studio] WARNING: ${providerStatus.name} not available. Prompts will fail.`,
     );
   }
 
@@ -164,7 +166,7 @@ app.whenReady().then(async () => {
     () => mainWindow,
     projectManager,
     sessionManager,
-    claudeManager,
+    ai,
     settingsManager,
     runnerManager,
     runnerConfigService,
