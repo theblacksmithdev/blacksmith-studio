@@ -8,7 +8,7 @@ import {
   AgentManager,
   ProjectBuilder,
 } from "../../server/services/agents/index.js";
-import { AgentSessionManager } from "../../server/services/agent-sessions.js";
+import { AgentSessionManager } from "../../server/services/agent-sessions/index.js";
 import type { SessionManager } from "../../server/services/sessions/index.js";
 import type { AgentRole } from "../../server/services/agents/types.js";
 import type { AgentExecuteOptions } from "../../server/services/agents/base/index.js";
