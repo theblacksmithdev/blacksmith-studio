@@ -6,26 +6,16 @@ import { useCopy } from "./use-copy";
 
 interface BubbleActionsProps {
   content: string;
-  align?: "left" | "right";
-  position?: "top" | "bottom";
   extra?: ReactNode;
+  alwaysVisible?: boolean;
 }
 
 export function BubbleActions({
   content,
-  align = "left",
-  position = "top",
   extra,
+  alwaysVisible,
 }: BubbleActionsProps) {
   const { copied, copy } = useCopy();
-
-  const positional =
-    position === "top"
-      ? { top: 0 }
-      : { bottom: `calc(-1 * ${spacing.xl})` };
-
-  const lateral =
-    align === "right" ? { right: 0 } : { left: 0 };
 
   return (
     <Flex
@@ -33,13 +23,9 @@ export function BubbleActions({
       align="center"
       gap={spacing.xs}
       css={{
-        position: "absolute",
-        ...positional,
-        ...lateral,
-        opacity: 0,
-        transform: "translateY(-4px)",
-        transition: "opacity 0.15s ease, transform 0.15s ease",
-        pointerEvents: "none",
+        opacity: alwaysVisible ? 1 : 0,
+        pointerEvents: alwaysVisible ? "auto" : "none",
+        transition: "opacity 0.12s ease",
       }}
     >
       <Tooltip content={copied ? "Copied" : "Copy"}>

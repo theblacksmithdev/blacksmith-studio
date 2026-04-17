@@ -65,11 +65,6 @@ export function BubbleShell({
           width: maxWidth ? undefined : "100%",
           maxWidth: maxWidth ?? "100%",
           minWidth: 0,
-          "&:hover .msg-actions": {
-            opacity: 1,
-            pointerEvents: "auto",
-            transform: "translateY(0)",
-          },
           animation: `${bubbleKeyframes.animationName} ${bubbleTokens.enter.duration}ms ${bubbleTokens.enter.easing} both`,
         }}
       >

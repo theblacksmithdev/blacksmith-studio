@@ -7,10 +7,17 @@ interface BubbleHeaderProps {
   name?: string;
   time?: string | null;
   accent?: string;
+  trailing?: ReactNode;
 }
 
-export function BubbleHeader({ icon, name, time, accent }: BubbleHeaderProps) {
-  if (!icon && !name && !time) return null;
+export function BubbleHeader({
+  icon,
+  name,
+  time,
+  accent,
+  trailing,
+}: BubbleHeaderProps) {
+  if (!icon && !name && !time && !trailing) return null;
 
   return (
     <Flex align="center" gap={spacing.sm}>
@@ -49,6 +56,7 @@ export function BubbleHeader({ icon, name, time, accent }: BubbleHeaderProps) {
           {time}
         </Text>
       )}
+      {trailing}
     </Flex>
   );
 }

@@ -22,6 +22,13 @@ interface MessageBubbleProps {
   renderContent?: (content: string) => ReactNode;
 }
 
+const hoverRevealCss = {
+  "&:hover .msg-actions": {
+    opacity: 1,
+    pointerEvents: "auto" as const,
+  },
+};
+
 export const MessageBubble = memo(function MessageBubble({
   message,
   renderContent,
@@ -31,49 +38,82 @@ export const MessageBubble = memo(function MessageBubble({
 
   if (variant === "thinking") {
     return (
-      <ThinkingBubble
-        icon={message.senderIcon}
-        name={message.senderName}
-      />
+      <ThinkingBubble icon={message.senderIcon} name={message.senderName} />
     );
   }
 
   if (variant === "system") {
-    return <SystemPill icon={message.senderIcon ?? <Cpu size={11} />} content={message.content} />;
+    return (
+      <SystemPill
+        icon={message.senderIcon ?? <Cpu size={11} />}
+        content={message.content}
+      />
+    );
   }
 
   if (variant === "error") {
     return (
-      <BubbleShell
-        tone="error"
-        align="left"
-        maxWidth={bubbleTokens.maxWidthAgent}
+      <Box
+        css={{ width: "100%", minWidth: 0, ...hoverRevealCss }}
       >
-        <Flex align="flex-start" gap={spacing.sm}>
-          <Box css={{ paddingTop: "2px", color: "var(--studio-error)" }}>
-            <AlertTriangle size={14} />
-          </Box>
-          <Flex direction="column" gap={spacing.xs} css={{ flex: 1, minWidth: 0 }}>
-            <Text
-              variant="label"
-              css={{
-                fontWeight: 600,
-                color: "var(--studio-error)",
-              }}
+        <BubbleShell
+          tone="error"
+          align="left"
+          maxWidth={bubbleTokens.maxWidthAgent}
+        >
+          <Flex align="flex-start" gap={spacing.sm}>
+            <Box css={{ paddingTop: "2px", color: "var(--studio-error)" }}>
+              <AlertTriangle size={14} />
+            </Box>
+            <Flex
+              direction="column"
+              gap={spacing.xs}
+              css={{ flex: 1, minWidth: 0 }}
             >
-              {message.senderName ?? "Error"}
-            </Text>
-            <BubbleBody content={message.error ?? message.content} tone="muted" />
-            {message.footer}
+              <Flex align="center" gap={spacing.sm}>
+                <Text
+                  variant="label"
+                  css={{
+                    fontWeight: 600,
+                    color: "var(--studio-error)",
+                    flex: 1,
+                  }}
+                >
+                  {message.senderName ?? "Error"}
+                </Text>
+                {time && (
+                  <Text variant="tiny" color="muted">
+                    {time}
+                  </Text>
+                )}
+                <BubbleActions
+                  content={message.error ?? message.content}
+                />
+              </Flex>
+              <BubbleBody
+                content={message.error ?? message.content}
+                tone="muted"
+              />
+              {message.footer}
+            </Flex>
           </Flex>
-        </Flex>
-      </BubbleShell>
+        </BubbleShell>
+      </Box>
     );
   }
 
   if (variant === "user") {
     return (
-      <Box css={{ width: "100%", minWidth: 0, position: "relative" }}>
+      <Box
+        css={{
+          width: "100%",
+          minWidth: 0,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-end",
+          ...hoverRevealCss,
+        }}
+      >
         <BubbleShell
           tone="user"
           align="right"
@@ -84,42 +124,46 @@ export const MessageBubble = memo(function MessageBubble({
             <BubbleAttachments items={message.attachments} onAccent />
           )}
         </BubbleShell>
-        {time && (
-          <Flex justify="flex-end" css={{ marginTop: spacing.xs }}>
+        <Flex
+          align="center"
+          gap={spacing.xs}
+          css={{ marginTop: spacing.xs }}
+        >
+          {time && (
             <Text variant="tiny" color="muted">
               {time}
             </Text>
-          </Flex>
-        )}
-        <BubbleActions
-          content={message.content}
-          align="right"
-          position="bottom"
-        />
+          )}
+          <BubbleActions content={message.content} />
+        </Flex>
       </Box>
     );
   }
 
-  const tone: BubbleVariant extends never ? never : "agent" | "assistant" =
-    variant === "agent" ? "agent" : "assistant";
+  const tone: "agent" | "assistant" = variant === "agent" ? "agent" : "assistant";
 
   return (
-    <Box css={{ width: "100%", minWidth: 0, position: "relative" }}>
+    <Box
+      css={{
+        width: "100%",
+        minWidth: 0,
+        ...hoverRevealCss,
+      }}
+    >
       <Flex direction="column" gap={spacing.xs} css={{ minWidth: 0 }}>
         <BubbleHeader
           icon={message.senderIcon}
           name={message.senderName}
           time={time}
           accent={message.senderAccent}
+          trailing={<BubbleActions content={message.content} />}
         />
         <BubbleShell
           tone={tone}
           align="left"
           accent={message.senderAccent}
           maxWidth={
-            tone === "agent"
-              ? bubbleTokens.maxWidthAgent
-              : undefined
+            tone === "agent" ? bubbleTokens.maxWidthAgent : undefined
           }
         >
           <BubbleBody content={message.content} renderContent={renderContent} />
@@ -130,7 +174,6 @@ export const MessageBubble = memo(function MessageBubble({
           {message.metadata}
         </BubbleShell>
       </Flex>
-      <BubbleActions content={message.content} align="right" position="top" />
     </Box>
   );
 });
