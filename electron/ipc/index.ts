@@ -1,6 +1,6 @@
 import type { BrowserWindow } from "electron";
 import type { ProjectManager } from "../../server/services/projects.js";
-import type { SessionManager } from "../../server/services/sessions.js";
+import type { SessionManager } from "../../server/services/sessions/index.js";
 import type { ClaudeManager } from "../../server/services/claude/index.js";
 import type { SettingsManager } from "../../server/services/settings.js";
 import type { RunnerManager } from "../../server/services/runner/index.js";
@@ -10,7 +10,7 @@ import type { SkillsManager } from "../../server/services/skills.js";
 import type { KnowledgeManager } from "../../server/services/knowledge.js";
 import type { GitManager } from "../../server/services/git/index.js";
 import type { TerminalManager } from "../../server/services/terminal.js";
-import type { GraphifyManager } from "../../server/services/graphify.js";
+import type { GraphifyManager } from "../../server/services/graphify/index.js";
 import type { PythonManager } from "../../server/services/python/index.js";
 
 import { setupProjectsIPC } from "./projects.js";

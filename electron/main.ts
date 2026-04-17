@@ -5,7 +5,7 @@ import fixPath from "fix-path";
 import { setupAllIPC } from "./ipc/index.js";
 import { WINDOW_ON_FULLSCREEN } from "./ipc/channels.js";
 import { ProjectManager } from "../server/services/projects.js";
-import { SessionManager } from "../server/services/sessions.js";
+import { SessionManager } from "../server/services/sessions/index.js";
 import { ClaudeManager } from "../server/services/claude/index.js";
 import { SettingsManager } from "../server/services/settings.js";
 import { RunnerManager } from "../server/services/runner/index.js";
@@ -142,7 +142,7 @@ app.whenReady().then(async () => {
     await import("../server/services/python/index.js");
   const pythonManager = new PythonManager();
   const { GraphifyManager } =
-    await import("../server/services/graphify.js");
+    await import("../server/services/graphify/index.js");
   const graphifyManager = new GraphifyManager(pythonManager);
 
   // Check Claude availability

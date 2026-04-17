@@ -4,7 +4,7 @@ import { KnowledgeManager } from "../knowledge.js";
 
 const knowledgeManager = new KnowledgeManager();
 
-import { getGraphContext } from "../graphify-context.js";
+import { getGraphContext } from "../graphify/index.js";
 
 const IGNORE = new Set([
   "node_modules",

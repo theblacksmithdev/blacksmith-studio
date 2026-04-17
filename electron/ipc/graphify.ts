@@ -3,7 +3,7 @@ import { ipcMain } from "electron";
 import type { BrowserWindow } from "electron";
 import type { ProjectManager } from "../../server/services/projects.js";
 import type { SettingsManager } from "../../server/services/settings.js";
-import type { GraphifyManager } from "../../server/services/graphify.js";
+import type { GraphifyManager } from "../../server/services/graphify/index.js";
 import type { GitManager } from "../../server/services/git/index.js";
 import {
   GRAPHIFY_CHECK,

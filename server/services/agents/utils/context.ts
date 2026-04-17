@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { AgentRoleDefinition } from "../types.js";
-import { getGraphContext } from "../../graphify-context.js";
+import { getGraphContext } from "../../graphify/index.js";
 
 const IGNORE = new Set([
   "node_modules",
