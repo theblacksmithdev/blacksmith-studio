@@ -34,6 +34,9 @@ export {
 
 export {
   AgentManager,
+  ConversationContext,
+  type ConversationMessage,
+  type ConversationContextInit,
   routePrompt,
   type RouteResult,
   dispatchWithPM,

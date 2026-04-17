@@ -37,7 +37,14 @@ export class ConversationService {
       updatedAt: now,
     });
 
-    return { id, title: convTitle, createdAt: now, updatedAt: now };
+    return {
+      id,
+      title: convTitle,
+      pmSessionId: null,
+      lastPlanSummary: null,
+      createdAt: now,
+      updatedAt: now,
+    };
   }
 
   list(projectId: string, limit = 50): ConversationSummary[] {
@@ -58,6 +65,16 @@ export class ConversationService {
 
   touch(id: string): void {
     this.conversations.touch(id);
+  }
+
+  /** Persist the PM's Claude session id — called once, on the first dispatch. */
+  setPMSession(id: string, pmSessionId: string): void {
+    this.conversations.setPMSession(id, pmSessionId);
+  }
+
+  /** Cache the latest PM plan summary on the conversation. */
+  setLastPlanSummary(id: string, summary: string): void {
+    this.conversations.setLastPlanSummary(id, summary);
   }
 
   remove(id: string): void {

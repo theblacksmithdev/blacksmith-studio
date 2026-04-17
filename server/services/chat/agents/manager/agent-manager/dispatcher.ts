@@ -94,7 +94,11 @@ export class Dispatcher {
 
     this.emitter.emitDispatchPlan(plan);
 
-    const execution = await this.executor.execute({ ...options, role });
+    const execution = await this.executor.execute({
+      ...options,
+      role,
+      prompt: this.prependConversationPreamble(options, options.prompt, plan),
+    });
     const executions = [execution];
 
     if (execution.status === "done" && needsQualityGate(role, "light")) {
@@ -119,7 +123,7 @@ export class Dispatcher {
     const snapshot = takeSnapshot(options.projectRoot);
     const execution = await this.executor.execute({
       ...options,
-      prompt: task.prompt,
+      prompt: this.prependConversationPreamble(options, task.prompt, plan),
       role: task.role,
     });
     const executions = [execution];
@@ -155,6 +159,25 @@ export class Dispatcher {
     const executions = await taskPlan.execute(plan.tasks, options, artifacts);
 
     return { plan, executions };
+  }
+
+  /**
+   * Prepend the conversation preamble (original user request + PM plan
+   * summary) to a prompt when this is the first turn for a role. On
+   * resume (role already has a session) the agent already saw the
+   * preamble on a prior turn — re-injecting it would be noise.
+   */
+  private prependConversationPreamble(
+    options: AgentExecuteOptions,
+    prompt: string,
+    plan: DispatchPlan,
+  ): string {
+    const ctx = options.conversationContext;
+    if (!ctx) return prompt;
+    if (options.resume && options.sessionId) return prompt;
+
+    const preamble = ctx.formatWorkerPreamble(plan.summary);
+    return `${preamble}\n\n---\n\n${prompt}`;
   }
 
   /** Run the quality gate — wraps the quality-gate module with session + cancel context */

@@ -8,6 +8,10 @@ import {
   AgentManager,
   ProjectBuilder,
 } from "../../server/services/chat/agents/index.js";
+import {
+  ConversationContext,
+  type ConversationMessage,
+} from "../../server/services/chat/agents/manager/conversation-context.js";
 import { AgentSessionManager } from "../../server/services/chat/multi-agents/index.js";
 import type { AgentRole } from "../../server/services/chat/agents/types.js";
 import type { AgentExecuteOptions } from "../../server/services/chat/agents/base/index.js";
@@ -41,6 +45,53 @@ import {
   MULTI_AGENTS_ON_BUILD_EVENT,
   MULTI_AGENTS_ON_INPUT_REQUEST,
 } from "./channels.js";
+
+/**
+ * Load prior conversation state (transcript + PM session id + last plan)
+ * and wrap it in a ConversationContext so the dispatcher, PM, and every
+ * downstream worker share one view of the user's intent.
+ *
+ * When `conversationId` is absent (one-off dispatch, no thread), returns
+ * a minimal context carrying just the current user prompt — the PM will
+ * start fresh and no session id will be persisted.
+ */
+function buildConversationContext(
+  sessionManager: AgentSessionManager,
+  projectId: string,
+  userPrompt: string,
+  conversationId: string | undefined,
+): ConversationContext {
+  if (!conversationId) {
+    return new ConversationContext({ originalUserPrompt: userPrompt });
+  }
+
+  const conversation = sessionManager.getConversation(conversationId);
+  const messages = sessionManager.listChatMessages(projectId, conversationId);
+
+  // The latest message is the one we just wrote in the handler. Strip it
+  // so the history block represents "what came before this turn".
+  const prior = messages.slice(0, -1);
+  const history: ConversationMessage[] = prior.map((m) => ({
+    role: asMessageRole(m.role),
+    agentRole: m.agentRole ?? undefined,
+    content: m.content,
+    timestamp: m.timestamp,
+  }));
+
+  return new ConversationContext({
+    originalUserPrompt: userPrompt,
+    conversationId,
+    history,
+    pmSessionId: conversation?.pmSessionId ?? undefined,
+    latestPlanSummary: conversation?.lastPlanSummary ?? undefined,
+  });
+}
+
+function asMessageRole(role: string): ConversationMessage["role"] {
+  return role === "user" || role === "system" || role === "agent"
+    ? role
+    : "system";
+}
 
 function resolveBaseOptions(
   projectManager: ProjectManager,
@@ -141,11 +192,15 @@ export function setupMultiAgentsIPC(
         data.conversationId,
       );
 
-      // Inject recent dispatch history so the PM knows what was done before
-      const history = sessionManager.getRecentDispatchContext(project.id);
-      const promptWithHistory = history
-        ? `${history}\n\n---\n\nNew request:\n${data.prompt}`
-        : data.prompt;
+      // Build the conversation context that travels with the dispatch so
+      // the PM resumes its Claude session across messages and every
+      // downstream worker sees the original user request + PM plan.
+      const conversationContext = buildConversationContext(
+        sessionManager,
+        project.id,
+        data.prompt,
+        data.conversationId,
+      );
 
       // Load persisted sessions so agents can resume Claude conversations
       const savedSessions = new Map<string, string>();
@@ -160,8 +215,33 @@ export function setupMultiAgentsIPC(
 
       const result = await agentManager.dispatch({
         ...baseOptions,
-        prompt: promptWithHistory,
+        prompt: data.prompt,
+        conversationContext,
       });
+
+      // Persist the PM's Claude session id on first dispatch so the next
+      // user message resumes the same session instead of starting fresh.
+      if (
+        data.conversationId &&
+        result.plan.pmSessionId &&
+        !conversationContext.pmSessionId
+      ) {
+        sessionManager.setConversationPMSession(
+          data.conversationId,
+          result.plan.pmSessionId,
+        );
+      }
+      // Cache the latest plan summary on the conversation for quick context.
+      if (
+        data.conversationId &&
+        result.plan.mode !== "clarification" &&
+        result.plan.summary
+      ) {
+        sessionManager.setConversationPlanSummary(
+          data.conversationId,
+          result.plan.summary,
+        );
+      }
 
       // Persist the dispatch and its tasks
       if (

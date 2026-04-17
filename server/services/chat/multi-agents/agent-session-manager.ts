@@ -89,6 +89,19 @@ export class AgentSessionManager {
     this.conversations.touch(conversationId);
   }
 
+  /**
+   * Remember the PM's Claude session id for this conversation so subsequent
+   * user messages resume with full history instead of starting fresh.
+   */
+  setConversationPMSession(conversationId: string, pmSessionId: string): void {
+    this.conversations.setPMSession(conversationId, pmSessionId);
+  }
+
+  /** Cache the PM's latest plan summary on the conversation row. */
+  setConversationPlanSummary(conversationId: string, summary: string): void {
+    this.conversations.setLastPlanSummary(conversationId, summary);
+  }
+
   deleteConversation(conversationId: string): void {
     this.conversations.remove(conversationId);
   }

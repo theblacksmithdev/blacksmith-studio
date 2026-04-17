@@ -36,7 +36,13 @@ export class TaskContextBuilder {
   ): Promise<AgentExecution> {
     const isFirstRunForRole = !pipelineSessions.has(task.role);
     const contextPrefix = isFirstRunForRole
-      ? this.buildFirstRunContext(task, completed, artifactPaths, allTasks)
+      ? this.buildFirstRunContext(
+          task,
+          completed,
+          artifactPaths,
+          allTasks,
+          baseOptions,
+        )
       : this.buildContinuationContext(task, allTasks);
 
     // Use pipeline session for continuation within the same dispatch.
@@ -77,8 +83,16 @@ export class TaskContextBuilder {
     completed: Map<string, AgentExecution>,
     artifactPaths: Map<string, string>,
     allTasks: DispatchTask[],
+    baseOptions: AgentExecuteOptions,
   ): string {
     const parts: string[] = [];
+
+    // 0. Original user request + PM plan summary (so every worker sees the
+    //    overall intent, not just its isolated task prompt)
+    const ctx = baseOptions.conversationContext;
+    if (ctx) {
+      parts.push(ctx.formatWorkerPreamble(ctx.latestPlanSummary));
+    }
 
     // 1. All artifacts from previous agents
     for (const [prevTaskId, prevExec] of completed) {

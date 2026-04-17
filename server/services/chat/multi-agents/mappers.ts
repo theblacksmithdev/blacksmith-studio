@@ -26,6 +26,8 @@ export function mapConversation(row: ConversationRow): ConversationRecord {
   return {
     id: row.id,
     title: row.title,
+    pmSessionId: row.pmSessionId ?? null,
+    lastPlanSummary: row.lastPlanSummary ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };

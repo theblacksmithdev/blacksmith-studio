@@ -1,4 +1,9 @@
 export { AgentManager } from "./agent-manager/index.js";
+export {
+  ConversationContext,
+  type ConversationMessage,
+  type ConversationContextInit,
+} from "./conversation-context.js";
 export { routePrompt, type RouteResult } from "./router.js";
 export {
   dispatchWithPM,

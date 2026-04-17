@@ -43,6 +43,10 @@ export interface AgentChatRecord {
 export interface ConversationRecord {
   id: string;
   title: string;
+  /** Claude CLI session id the PM uses for this conversation (set after first dispatch). */
+  pmSessionId: string | null;
+  /** Most recent PM plan summary, cached for UI + downstream context. */
+  lastPlanSummary: string | null;
   createdAt: string;
   updatedAt: string;
 }

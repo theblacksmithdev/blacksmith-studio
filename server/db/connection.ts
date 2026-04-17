@@ -168,6 +168,8 @@ export function getDatabase() {
     "ALTER TABLE agent_tasks ADD COLUMN task_type TEXT",
     "ALTER TABLE agent_tasks ADD COLUMN parent_task_id TEXT",
     "ALTER TABLE runner_configs ADD COLUMN setup_command TEXT",
+    "ALTER TABLE agent_conversations ADD COLUMN pm_session_id TEXT",
+    "ALTER TABLE agent_conversations ADD COLUMN last_plan_summary TEXT",
   ];
 
   for (const sql of migrations) {

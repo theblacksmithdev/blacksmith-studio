@@ -16,6 +16,16 @@ export interface PMRunOptions {
    * use Fast — they're structural rewrites, not creative work.
    */
   model?: AiModelTier;
+  /**
+   * Claude CLI session id for the PM. When `resume` is true, the provider
+   * passes --resume so the PM continues its prior conversation; when
+   * false, --session-id seeds a brand new session with this id. Omit for
+   * one-shot planning calls (refine/replan) that should not share
+   * conversational state.
+   */
+  sessionId?: string;
+  /** Resume the PM's prior session instead of starting a new one. */
+  resume?: boolean;
   /** Invoked for each assistant text delta as it streams in. */
   onAssistantText?: (chunk: { text: string; isFinal: boolean }) => void;
   /** Invoked once when the final `result` frame arrives, with the full collected text. */
@@ -61,6 +71,8 @@ export async function runPM(opts: PMRunOptions): Promise<PMRunResult> {
     permissionMode: "bypassPermissions",
     allowedTools: ["Read", "Glob", "Grep"],
     tolerantExit: true,
+    sessionId: opts.sessionId,
+    resume: opts.resume,
     onText: (delta, isFinal) => {
       collected += delta;
       opts.onAssistantText?.({ text: delta, isFinal });

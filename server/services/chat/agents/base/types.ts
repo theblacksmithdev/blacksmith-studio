@@ -1,5 +1,6 @@
 import type { AgentRole, AgentConfig } from "../types.js";
 import type { Ai } from "../../../ai/ai.js";
+import type { ConversationContext } from "../manager/conversation-context.js";
 
 /** Options passed to BaseAgent.execute() */
 export interface AgentExecuteOptions {
@@ -25,6 +26,15 @@ export interface AgentExecuteOptions {
   agentConfig?: AgentConfig;
   /** Project-level permission mode override (overrides role definition default) */
   permissionMode?: string;
+  /**
+   * Cross-agent conversation state: the original user request, prior
+   * chat transcript, and the PM's persisted Claude session id. Threaded
+   * from the IPC layer so the PM can resume and every downstream worker
+   * can see the user's intent and the PM's overall plan — not just an
+   * isolated task prompt. Optional so legacy call sites (tests, pipelines,
+   * standalone workflows) continue to work.
+   */
+  conversationContext?: ConversationContext;
 }
 
 export interface ToolCallRecord {

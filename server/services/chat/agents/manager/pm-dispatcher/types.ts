@@ -34,4 +34,11 @@ export interface DispatchPlan {
   tasks: DispatchTask[];
   /** Brief explanation of the plan, or the PM's question for clarification mode */
   summary: string;
+  /**
+   * Claude CLI session id the PM used for this dispatch. Populated whenever
+   * the PM was invoked (any mode). The IPC layer persists this on the
+   * conversation so the next user message resumes the same PM session
+   * instead of starting fresh. Undefined for direct (non-PM) plans.
+   */
+  pmSessionId?: string;
 }

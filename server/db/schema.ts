@@ -73,6 +73,15 @@ export const globalSettings = sqliteTable("global_settings", {
 
 /**
  * Agent conversations — a conversation thread in the agents panel.
+ *
+ * `pmSessionId` is the Claude CLI session id the PM uses for this
+ * conversation. Populated on the first dispatch and reused via --resume
+ * on every subsequent user message so the PM retains full history
+ * instead of starting fresh each turn.
+ *
+ * `lastPlanSummary` caches the most recent PM plan so downstream agents
+ * (and the UI) can show "what the PM is working toward" without walking
+ * the dispatch history.
  */
 export const agentConversations = sqliteTable("agent_conversations", {
   id: text("id").primaryKey(),
@@ -80,6 +89,8 @@ export const agentConversations = sqliteTable("agent_conversations", {
     .notNull()
     .references(() => projects.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
+  pmSessionId: text("pm_session_id"),
+  lastPlanSummary: text("last_plan_summary"),
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });

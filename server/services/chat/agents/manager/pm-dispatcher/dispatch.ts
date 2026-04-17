@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import type { AgentExecuteOptions } from "../../base/index.js";
 import type { DispatchPlan } from "./types.js";
 import { PM_DISPATCH_PROMPT } from "./prompts.js";
@@ -8,6 +9,12 @@ import { parsePlan } from "./parse-plan.js";
 /**
  * Use the PM agent (via Claude) to decompose a prompt into a task plan.
  * Streams activity/message events in real-time via the emit callback.
+ *
+ * Conversation-aware: if `baseOptions.conversationContext` carries a PM
+ * session id, the PM resumes that Claude session instead of starting
+ * fresh. Otherwise a new session id is minted so the caller can persist
+ * it and resume on the next user message. Either way, the session id
+ * used for this call is returned on the {@link DispatchPlan}.
  */
 export async function dispatchWithPM(
   prompt: string,
@@ -17,11 +24,26 @@ export async function dispatchWithPM(
   const pm = new PMEventEmitter(emit);
   let firstChunkEmitted = false;
 
+  const ctx = baseOptions.conversationContext;
+  const resume = !!ctx?.pmSessionId;
+  const sessionId = ctx?.pmSessionId ?? crypto.randomUUID();
+
+  // On a fresh PM session we seed the first turn with a prior-transcript
+  // preamble built from SQLite. On resume, Claude already has the
+  // history in its own session — we just send the new user request.
+  const historyBlock = ctx?.formatHistoryForPM() ?? "";
+  const prefix = historyBlock
+    ? `${historyBlock}\n\n---\n\nNew request from the user:\n\n`
+    : "";
+  const pmPrompt = `${prefix}Analyze this request and produce a task plan:\n\n${prompt}`;
+
   const { text } = await runPM({
-    prompt: `Analyze this request and produce a task plan:\n\n${prompt}`,
+    prompt: pmPrompt,
     systemPrompt: PM_DISPATCH_PROMPT,
     baseOptions,
     label: "dispatch",
+    sessionId,
+    resume,
     onAssistantText: ({ text, isFinal }) => {
       if (!firstChunkEmitted) {
         firstChunkEmitted = true;
@@ -41,7 +63,9 @@ export async function dispatchWithPM(
   }
 
   console.log(
-    `[pm-dispatcher] Raw response (${text.length} chars): ${text.slice(0, 500)}...`,
+    `[pm-dispatcher] Raw response (${text.length} chars, session=${sessionId}, resumed=${resume}): ${text.slice(0, 500)}...`,
   );
-  return parsePlan(text);
+  const plan = parsePlan(text);
+  plan.pmSessionId = sessionId;
+  return plan;
 }
