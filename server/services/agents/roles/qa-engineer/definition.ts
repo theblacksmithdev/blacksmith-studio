@@ -1,6 +1,6 @@
 import type { AgentRoleDefinition } from "../../types.js";
 import { QA_BOUNDARIES } from "../boundaries.js";
-import { MODULARIZATION_REVIEW_CHECKLIST } from "../principles.js";
+import { MODULARIZATION_REVIEW_CHECKLIST } from "../../principles/index.js";
 
 export const DEFINITION: AgentRoleDefinition = {
   role: "qa-engineer",
