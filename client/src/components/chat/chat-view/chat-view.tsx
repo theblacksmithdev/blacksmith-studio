@@ -81,23 +81,19 @@ export function ChatView() {
     </Flex>
   );
 
-  const mainContent = previewOpen ? (
+  const mainContent = (
     <SplitPanel
       left={chatContent}
       defaultWidth={600}
       minWidth={360}
       maxWidth={900}
       storageKey="chat.previewSplit"
+      reverse
+      open={previewOpen}
     >
       <PreviewPanel onClose={closePreview} />
     </SplitPanel>
-  ) : (
-    chatContent
   );
-
-  if (!historyOpen) {
-    return <Root>{mainContent}</Root>;
-  }
 
   return (
     <Root>
@@ -107,6 +103,7 @@ export function ChatView() {
         minWidth={200}
         maxWidth={400}
         storageKey="chat.historyWidth"
+        open={historyOpen}
       >
         {mainContent}
       </SplitPanel>

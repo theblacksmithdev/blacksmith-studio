@@ -4,7 +4,7 @@ import { useUiStore } from "@/stores/ui-store";
 import { useActiveProjectId } from "@/api/hooks/_shared";
 import { SidebarTooltip } from "./sidebar-tooltip";
 import { NavButton, NavLabel } from "./nav-item";
-import { projectNav, bottomNav } from "./nav-config";
+import { primaryNav, projectNav, bottomNav, type NavEntry } from "./nav-config";
 import { RunnerBadge } from "./runner-badge";
 import { NewChatButton } from "./new-chat-button";
 import { UserMenu } from "./user-menu";
@@ -52,49 +52,45 @@ export function Sidebar() {
 
   const isActive = (match: string) => pathname.includes(match);
 
+  const renderSection = (entries: NavEntry[]) => (
+    <Section>
+      {entries.map(({ id, icon: Icon, label, path, match }) => (
+        <SidebarTooltip key={id} label={label} visible={!expanded}>
+          <NavButton
+            active={isActive(match)}
+            expanded={expanded}
+            onClick={() => pid && navigate(path(pid))}
+          >
+            <Icon size={18} style={{ flexShrink: 0 }} />
+            <NavLabel visible={expanded}>{label}</NavLabel>
+            {id === "run" && <RunnerBadge />}
+          </NavButton>
+        </SidebarTooltip>
+      ))}
+    </Section>
+  );
+
   return (
     <Nav expanded={expanded}>
       {isInsideProject && pid ? (
         <>
-          {/* Home button */}
+          {/* Home / New Chat */}
           <SidebarTooltip label="Home" visible={!expanded}>
             <NewChatButton expanded={expanded} />
           </SidebarTooltip>
 
-          {/* Main nav — Files, Source Control */}
-          <Section>
-            {projectNav.map(({ id, icon: Icon, label, path, match }) => (
-              <SidebarTooltip key={id} label={label} visible={!expanded}>
-                <NavButton
-                  active={isActive(match)}
-                  expanded={expanded}
-                  onClick={() => navigate(path(pid))}
-                >
-                  <Icon size={18} style={{ flexShrink: 0 }} />
-                  <NavLabel visible={expanded}>{label}</NavLabel>
-                </NavButton>
-              </SidebarTooltip>
-            ))}
-          </Section>
+          {/* Primary AI surfaces — Chat, Agents Team */}
+          {renderSection(primaryNav)}
+
+          <Divider />
+
+          {/* Workspace — Files, Source Control, Skills, MCP */}
+          {renderSection(projectNav)}
 
           <Spacer />
 
-          {/* Bottom nav — Dev Servers, Settings */}
-          <Section>
-            {bottomNav.map(({ id, icon: Icon, label, path, match }) => (
-              <SidebarTooltip key={id} label={label} visible={!expanded}>
-                <NavButton
-                  active={isActive(match)}
-                  expanded={expanded}
-                  onClick={() => navigate(path(pid))}
-                >
-                  <Icon size={18} style={{ flexShrink: 0 }} />
-                  <NavLabel visible={expanded}>{label}</NavLabel>
-                  {id === "run" && <RunnerBadge />}
-                </NavButton>
-              </SidebarTooltip>
-            ))}
-          </Section>
+          {/* Bottom nav — Dev Services */}
+          {renderSection(bottomNav)}
         </>
       ) : (
         <Spacer />

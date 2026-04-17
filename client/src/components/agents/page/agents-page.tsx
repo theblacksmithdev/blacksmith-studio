@@ -231,19 +231,16 @@ export function AgentsPage({ conversationId, onSend }: AgentsPageProps) {
 
   return (
     <Layout>
-      {chatOpen ? (
-        <SplitPanel
-          left={chatPanel}
-          defaultWidth={360}
-          minWidth={280}
-          maxWidth={500}
-          storageKey="agents.chatWidth"
-        >
-          {mainPanel}
-        </SplitPanel>
-      ) : (
-        mainPanel
-      )}
+      <SplitPanel
+        left={chatPanel}
+        defaultWidth={360}
+        minWidth={280}
+        maxWidth={500}
+        storageKey="agents.chatWidth"
+        open={chatOpen}
+      >
+        {mainPanel}
+      </SplitPanel>
 
       {drawerOpen && <TaskDrawer onClose={() => setDrawerOpen(false)} />}
 

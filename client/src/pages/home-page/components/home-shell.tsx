@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
 import styled from "@emotion/styled";
-import { Box } from "@chakra-ui/react";
 import { History } from "lucide-react";
 import { HistoryPanel } from "@/components/chat/history-panel";
 import { useUiStore } from "@/stores/ui-store";
 import { Tooltip } from "@/components/shared/tooltip";
 import { SplitPanel } from "@/components/shared/layout";
+import { StudioBackground } from "@/components/shared/studio-background";
 
 const Page = styled.div`
   display: flex;
@@ -13,6 +13,7 @@ const Page = styled.div`
   flex: 1;
   height: 100%;
   min-height: 0;
+  position: relative;
 `;
 
 const TopBar = styled.div`
@@ -20,6 +21,8 @@ const TopBar = styled.div`
   align-items: center;
   padding: 8px 14px;
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 `;
 
 const TopBarBtn = styled.button<{ active: boolean }>`
@@ -51,6 +54,8 @@ const Content = styled.div`
   justify-content: center;
   overflow: auto;
   min-height: 0;
+  position: relative;
+  z-index: 1;
 `;
 
 const Stack = styled.div`
@@ -79,6 +84,7 @@ function MainContent({
 }) {
   return (
     <Page>
+      <StudioBackground />
       <TopBar>
         <Tooltip content={historyOpen ? "Close history" : "History"}>
           <TopBarBtn active={historyOpen} onClick={toggleHistory}>
@@ -98,18 +104,6 @@ export function HomeShell({ children }: HomeShellProps) {
   const historyOpen = useUiStore((s) => s.historyPanelOpen);
   const toggleHistory = useUiStore((s) => s.toggleHistoryPanel);
 
-  const mainContent = (
-    <MainContent historyOpen={historyOpen} toggleHistory={toggleHistory}>
-      {children}
-    </MainContent>
-  );
-
-  if (!historyOpen) {
-    return (
-      <Box css={{ height: "100%", overflow: "hidden" }}>{mainContent}</Box>
-    );
-  }
-
   return (
     <SplitPanel
       left={<HistoryPanel />}
@@ -117,8 +111,11 @@ export function HomeShell({ children }: HomeShellProps) {
       minWidth={200}
       maxWidth={400}
       storageKey="home.historyWidth"
+      open={historyOpen}
     >
-      {mainContent}
+      <MainContent historyOpen={historyOpen} toggleHistory={toggleHistory}>
+        {children}
+      </MainContent>
     </SplitPanel>
   );
 }

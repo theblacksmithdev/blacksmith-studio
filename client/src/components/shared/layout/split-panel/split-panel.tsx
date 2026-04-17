@@ -7,34 +7,35 @@ import {
 } from "react";
 import { Flex, Box } from "@chakra-ui/react";
 
-/**
- * SplitPanel — Resizable two-pane layout built on Chakra UI.
- *
- * Usage:
- *   <SplitPanel
- *     left={<ExplorerPanel />}
- *     right={<EditorPanel />}
- *     defaultWidth={260}
- *     minWidth={180}
- *     maxWidth={500}
- *     storageKey="files.panelWidth"
- *   />
- */
-
 export type SplitDirection = "horizontal" | "vertical";
 
 interface SplitPanelProps {
-  /** Left / top panel content */
   left: ReactNode;
-  /** Right / bottom panel content (main area) */
   children: ReactNode;
   defaultWidth?: number;
   minWidth?: number;
   maxWidth?: number;
   storageKey?: string;
   direction?: SplitDirection;
-  /** When true, children (right/bottom) is the fixed-size panel instead of left (top). */
   reverse?: boolean;
+  open?: boolean;
+}
+
+const OPEN_CLOSE_EASING = "cubic-bezier(0.16, 1, 0.3, 1)";
+const OPEN_CLOSE_DURATION = 220;
+
+function loadInitialSize(
+  storageKey: string | undefined,
+  defaultWidth: number,
+  minWidth: number,
+  maxWidth: number,
+): number {
+  if (!storageKey) return defaultWidth;
+  const saved = localStorage.getItem(storageKey);
+  if (!saved) return defaultWidth;
+  const n = parseInt(saved, 10);
+  if (isNaN(n) || n < minWidth || n > maxWidth) return defaultWidth;
+  return n;
 }
 
 export function SplitPanel({
@@ -46,81 +47,115 @@ export function SplitPanel({
   storageKey,
   direction = "horizontal",
   reverse = false,
+  open = true,
 }: SplitPanelProps) {
   const isVertical = direction === "vertical";
+  const sizeDimension: "width" | "height" = isVertical ? "height" : "width";
 
-  const [size, setSize] = useState(() => {
-    if (storageKey) {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        const n = parseInt(saved, 10);
-        if (!isNaN(n) && n >= minWidth && n <= maxWidth) return n;
-      }
-    }
-    return defaultWidth;
-  });
-
+  const [committedSize, setCommittedSize] = useState(() =>
+    loadInitialSize(storageKey, defaultWidth, minWidth, maxWidth),
+  );
   const [dragging, setDragging] = useState(false);
-  const startRef = useRef({ pos: 0, size: 0 });
 
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
+  const fixedPanelRef = useRef<HTMLDivElement>(null);
+  const draggingRef = useRef(false);
+  const startRef = useRef({ pos: 0, size: 0 });
+  const liveSizeRef = useRef(committedSize);
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!dragging) liveSizeRef.current = committedSize;
+  }, [committedSize, dragging]);
+
+  useEffect(() => {
+    if (storageKey) localStorage.setItem(storageKey, String(committedSize));
+  }, [committedSize, storageKey]);
+
+  const scheduleDragSizeUpdate = useCallback(
+    (next: number) => {
+      liveSizeRef.current = next;
+      if (rafRef.current !== null) return;
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = null;
+        const el = fixedPanelRef.current;
+        if (!el) return;
+        el.style[sizeDimension] = `${liveSizeRef.current}px`;
+      });
+    },
+    [sizeDimension],
+  );
+
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
       e.preventDefault();
+      (e.currentTarget as Element).setPointerCapture(e.pointerId);
+      draggingRef.current = true;
       setDragging(true);
       startRef.current = {
         pos: isVertical ? e.clientY : e.clientX,
-        size,
+        size: liveSizeRef.current,
       };
     },
-    [size, isVertical],
+    [isVertical],
   );
 
-  useEffect(() => {
-    if (!dragging) return;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const raw = isVertical
-        ? e.clientY - startRef.current.pos
-        : e.clientX - startRef.current.pos;
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!draggingRef.current) return;
+      const raw =
+        (isVertical ? e.clientY : e.clientX) - startRef.current.pos;
       const delta = reverse ? -raw : raw;
       const next = Math.max(
         minWidth,
         Math.min(maxWidth, startRef.current.size + delta),
       );
-      setSize(next);
-    };
+      scheduleDragSizeUpdate(next);
+    },
+    [isVertical, reverse, minWidth, maxWidth, scheduleDragSizeUpdate],
+  );
 
-    const handleMouseUp = () => {
+  const handlePointerUp = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!draggingRef.current) return;
+      draggingRef.current = false;
+      try {
+        (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+      } catch {
+        /* already released */
+      }
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+      const el = fixedPanelRef.current;
+      if (el) el.style[sizeDimension] = "";
       setDragging(false);
-    };
+      setCommittedSize(liveSizeRef.current);
+    },
+    [sizeDimension],
+  );
 
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-    document.body.style.userSelect = "none";
-    document.body.style.cursor = isVertical ? "row-resize" : "col-resize";
+  useEffect(
+    () => () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    },
+    [],
+  );
 
-    return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-      document.body.style.userSelect = "";
-      document.body.style.cursor = "";
-    };
-  }, [dragging, minWidth, maxWidth, isVertical]);
-
-  useEffect(() => {
-    if (storageKey && !dragging) {
-      localStorage.setItem(storageKey, String(size));
-    }
-  }, [size, storageKey, dragging]);
+  const renderedSize = open ? committedSize : 0;
 
   const fixedPanel = (
     <Box
+      ref={fixedPanelRef}
       css={{
         flexShrink: 0,
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
-        ...(isVertical ? { height: size } : { width: size }),
+        [sizeDimension]: renderedSize,
+        transition: dragging
+          ? "none"
+          : `${sizeDimension} ${OPEN_CLOSE_DURATION}ms ${OPEN_CLOSE_EASING}`,
       }}
     >
       {reverse ? children : left}
@@ -144,28 +179,41 @@ export function SplitPanel({
 
   const separator = (
     <Box
+      aria-hidden={!open}
       css={{
         position: "relative",
         flexShrink: 0,
+        opacity: open ? 1 : 0,
+        pointerEvents: open ? "auto" : "none",
+        transition: dragging
+          ? "none"
+          : `opacity ${OPEN_CLOSE_DURATION}ms ${OPEN_CLOSE_EASING}, border-color 0.15s ease`,
         ...(isVertical
           ? {
               width: "100%",
               height: 0,
-              borderTop: `1px solid ${dragging ? "var(--studio-border-hover)" : "var(--studio-border)"}`,
+              borderTop: `1px solid ${
+                dragging ? "var(--studio-border-hover)" : "var(--studio-border)"
+              }`,
             }
           : {
               height: "100%",
               width: 0,
-              borderLeft: `1px solid ${dragging ? "var(--studio-border-hover)" : "var(--studio-border)"}`,
+              borderLeft: `1px solid ${
+                dragging ? "var(--studio-border-hover)" : "var(--studio-border)"
+              }`,
             }),
-        transition: dragging ? "none" : "border-color 0.15s ease",
       }}
     >
       <Box
-        onMouseDown={handleMouseDown}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
         css={{
           position: "absolute",
           zIndex: 2,
+          touchAction: "none",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -208,7 +256,17 @@ export function SplitPanel({
   return (
     <Flex
       direction={isVertical ? "column" : "row"}
-      css={{ height: "100%", width: "100%", overflow: "hidden" }}
+      css={{
+        height: "100%",
+        width: "100%",
+        overflow: "hidden",
+        ...(dragging
+          ? {
+              userSelect: "none",
+              cursor: isVertical ? "row-resize" : "col-resize",
+            }
+          : {}),
+      }}
     >
       {reverse ? flexPanel : fixedPanel}
       {separator}

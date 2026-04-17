@@ -46,7 +46,10 @@ export const useUiStore = create<UiState>((set) => ({
   setSidebarExpanded: (sidebarExpanded) => set({ sidebarExpanded }),
   toggleSidebar: () => set((s) => ({ sidebarExpanded: !s.sidebarExpanded })),
 
-  historyPanelOpen: false,
+  // Open by default — prior conversations were hidden behind a toggle that
+  // most users never discovered. Users who want a wider chat can still
+  // collapse it; the preference is carried within the session.
+  historyPanelOpen: true,
   setHistoryPanelOpen: (historyPanelOpen) => set({ historyPanelOpen }),
   toggleHistoryPanel: () =>
     set((s) => ({ historyPanelOpen: !s.historyPanelOpen })),

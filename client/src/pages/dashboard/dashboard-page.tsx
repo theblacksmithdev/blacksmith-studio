@@ -5,6 +5,7 @@ import { keyframes } from "@emotion/react";
 import { Box, Flex } from "@chakra-ui/react";
 import { Text, Button, Modal, spacing, radii } from "@/components/shared/ui";
 import { AddProjectModal } from "@/components/projects/add-project-modal";
+import { StudioBackground } from "@/components/shared/studio-background";
 import { useProjectsQuery } from "@/api/hooks/projects";
 import { HeroSection } from "./components/hero-section";
 import { ProjectCard } from "./components/project-card";
@@ -20,6 +21,7 @@ const Page = styled.div`
   height: 100%;
   overflow-y: auto;
   background: var(--studio-bg-main);
+  position: relative;
 `;
 
 const Content = styled.div`
@@ -28,6 +30,8 @@ const Content = styled.div`
   align-items: center;
   min-height: 100%;
   padding: ${spacing["6xl"]} ${spacing["2xl"]} ${spacing["4xl"]};
+  position: relative;
+  z-index: 1;
 `;
 
 const Inner = styled.div`
@@ -134,6 +138,7 @@ export default function DashboardPage() {
 
   return (
     <Page>
+      <StudioBackground />
       <Content>
         <Inner>
           <HeroSection />
