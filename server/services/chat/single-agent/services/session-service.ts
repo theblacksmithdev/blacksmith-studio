@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import type { Session, SessionSummary } from "../../../types.js";
+import type { Session, SessionSummary } from "../../../../types.js";
 import type {
   MessageRepository,
   SessionRepository,

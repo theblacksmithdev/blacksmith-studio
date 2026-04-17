@@ -1,6 +1,6 @@
 import { eq, and } from "drizzle-orm";
-import { agentChatMessages } from "../../../db/schema.js";
-import type { Database } from "../types.js";
+import { agentChatMessages } from "../../../../db/schema.js";
+import type { Database } from "../../../../db/index.js";
 import type { ChatMessageRow } from "../mappers.js";
 
 /**

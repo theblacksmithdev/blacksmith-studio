@@ -1,12 +1,11 @@
-import { getDatabase } from "../../db/index.js";
-import type { Session, SessionSummary, StoredMessage } from "../../types.js";
+import { getDatabase, type Database } from "../../../db/index.js";
+import type { Session, SessionSummary, StoredMessage } from "../../../types.js";
 import {
   MessageRepository,
   SessionRepository,
   ToolCallRepository,
 } from "./repositories/index.js";
 import { SessionService } from "./services/index.js";
-import type { Database } from "./types.js";
 
 /**
  * Facade over the single-chat session subsystem.

@@ -3,13 +3,14 @@ import type { ProjectManager } from "../../server/services/projects.js";
 import type { SettingsManager } from "../../server/services/settings.js";
 import type { McpManager } from "../../server/services/mcp.js";
 import type { Ai } from "../../server/services/ai/ai.js";
+import { resolveAiInvocationSettings } from "../../server/services/studio-context/index.js";
 import {
   AgentManager,
   ProjectBuilder,
-} from "../../server/services/chat-agents-team/agents/index.js";
-import { AgentSessionManager } from "../../server/services/chat-agents-team/index.js";
-import type { AgentRole } from "../../server/services/chat-agents-team/agents/types.js";
-import type { AgentExecuteOptions } from "../../server/services/chat-agents-team/agents/base/index.js";
+} from "../../server/services/chat/agents/index.js";
+import { AgentSessionManager } from "../../server/services/chat/multi-agents/index.js";
+import type { AgentRole } from "../../server/services/chat/agents/types.js";
+import type { AgentExecuteOptions } from "../../server/services/chat/agents/base/index.js";
 import {
   AGENTS_LIST,
   AGENTS_ROUTE,
@@ -51,21 +52,19 @@ function resolveBaseOptions(
   const project = projectManager.get(projectId);
   if (!project) throw new Error("Project not found");
 
-  const allSettings = settingsManager.getAll(project.id);
+  const settings = resolveAiInvocationSettings(
+    project,
+    settingsManager,
+    mcpManager,
+  );
 
   return {
-    projectRoot: project.path,
     ai,
-    nodePath:
-      settingsManager.resolve(project.id, "runner.nodePath") || undefined,
-    mcpConfigPath: mcpManager.getEnabledConfigPath(
-      project.path,
-      Array.isArray(allSettings["mcp.disabledServers"])
-        ? allSettings["mcp.disabledServers"]
-        : [],
-    ),
-    projectInstructions: allSettings["ai.customInstructions"] || undefined,
-    permissionMode: allSettings["ai.permissionMode"] || undefined,
+    projectRoot: settings.projectRoot,
+    nodePath: settings.nodePath,
+    mcpConfigPath: settings.mcpConfigPath,
+    projectInstructions: settings.customInstructions,
+    permissionMode: settings.permissionMode,
   };
 }
 

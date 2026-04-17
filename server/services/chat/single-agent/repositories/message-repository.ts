@@ -1,6 +1,6 @@
 import { eq, desc, inArray } from "drizzle-orm";
-import { messages } from "../../../db/schema.js";
-import type { Database } from "../types.js";
+import { messages } from "../../../../db/schema.js";
+import type { Database } from "../../../../db/index.js";
 import type { MessageRow } from "../mappers.js";
 
 /**

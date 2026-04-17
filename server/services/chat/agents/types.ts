@@ -7,7 +7,8 @@ export type AgentTeam =
   | "architecture"
   | "engineering"
   | "quality"
-  | "documentation";
+  | "documentation"
+  | "generalist";
 
 export interface AgentTeamDefinition {
   team: AgentTeam;
@@ -58,6 +59,13 @@ export const AGENT_TEAMS: AgentTeamDefinition[] = [
       "Maintains technical documentation, API references, and developer guides to keep the team aligned.",
     roles: ["technical-writer"],
   },
+  {
+    team: "generalist",
+    title: "Generalist",
+    description:
+      "A catch-all engineer that handles any kind of task end-to-end — used by the single-agent chat where the user talks directly to one AI without a specialised team.",
+    roles: ["generalist"],
+  },
 ];
 
 /* ── Agent Identity ── */
@@ -75,7 +83,8 @@ export type AgentRole =
   | "technical-writer"
   | "code-reviewer"
   | "architect"
-  | "product-manager";
+  | "product-manager"
+  | "generalist";
 
 /** Static metadata that defines an agent role */
 export interface AgentRoleDefinition {

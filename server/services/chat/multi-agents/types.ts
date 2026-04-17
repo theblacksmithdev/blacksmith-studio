@@ -1,8 +1,3 @@
-import { getDatabase } from "../../db/index.js";
-
-/** Shared Drizzle handle — repositories accept this via constructor. */
-export type Database = ReturnType<typeof getDatabase>;
-
 /* ── Domain types ── */
 
 export interface AgentDispatchRecord {

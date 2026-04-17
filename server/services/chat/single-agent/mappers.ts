@@ -1,5 +1,5 @@
-import type { StoredMessage, ToolCall } from "../../types.js";
-import type { messages, toolCalls, sessions } from "../../db/schema.js";
+import type { StoredMessage, ToolCall } from "../../../types.js";
+import type { messages, toolCalls, sessions } from "../../../db/schema.js";
 
 type SessionRow = typeof sessions.$inferSelect;
 type MessageRow = typeof messages.$inferSelect;

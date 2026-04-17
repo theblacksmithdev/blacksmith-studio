@@ -1,6 +1,6 @@
 import { eq, inArray } from "drizzle-orm";
-import { toolCalls } from "../../../db/schema.js";
-import type { Database } from "../types.js";
+import { toolCalls } from "../../../../db/schema.js";
+import type { Database } from "../../../../db/index.js";
 import type { ToolCallRow } from "../mappers.js";
 
 /**

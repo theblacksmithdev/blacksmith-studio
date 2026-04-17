@@ -1,6 +1,6 @@
 import { eq, desc } from "drizzle-orm";
-import { sessions } from "../../../db/schema.js";
-import type { Database } from "../types.js";
+import { sessions } from "../../../../db/schema.js";
+import type { Database } from "../../../../db/index.js";
 import type { SessionRow } from "../mappers.js";
 
 /**

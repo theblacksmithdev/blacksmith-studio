@@ -1,6 +1,6 @@
 import { eq, desc, and, inArray } from "drizzle-orm";
-import { agentDispatches, agentTasks } from "../../../db/schema.js";
-import type { Database } from "../types.js";
+import { agentDispatches, agentTasks } from "../../../../db/schema.js";
+import type { Database } from "../../../../db/index.js";
 import type { TaskRow } from "../mappers.js";
 
 export interface TaskInsert {

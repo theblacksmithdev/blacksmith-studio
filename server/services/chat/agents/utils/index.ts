@@ -8,3 +8,4 @@ export {
   type ChangeSet,
   type ChangedFile,
 } from "./change-tracker.js";
+export { isFileTool, extractFilePath } from "./file-tool-parser.js";

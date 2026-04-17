@@ -5,4 +5,4 @@ export {
   MessageRepository,
   ToolCallRepository,
 } from "./repositories/index.js";
-export type { Database } from "./types.js";
+export type { Database } from "../../../db/index.js";

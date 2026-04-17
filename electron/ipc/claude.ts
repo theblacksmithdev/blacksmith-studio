@@ -1,13 +1,14 @@
 import { ipcMain, type BrowserWindow } from "electron";
 import crypto from "node:crypto";
 import type { Ai } from "../../server/services/ai/ai.js";
-import type { SessionManager } from "../../server/services/chat-single-agent/index.js";
+import type { SessionManager } from "../../server/services/chat/single-agent/index.js";
 import type { ProjectManager } from "../../server/services/projects.js";
 import type { SettingsManager } from "../../server/services/settings.js";
 import type { McpManager } from "../../server/services/mcp.js";
 import {
   STUDIO_SYSTEM_PROMPT,
   getProjectContext,
+  resolveAiInvocationSettings,
 } from "../../server/services/studio-context/index.js";
 import {
   CLAUDE_SEND_PROMPT,
@@ -45,7 +46,7 @@ export function setupClaudeIPC(
         return;
       }
 
-      const { id: projectId, path: projectPath } = project;
+      const { path: projectPath } = project;
 
       const existingSession = sessionManager.getSession(sessionId);
       const isResume = !!(
@@ -59,7 +60,11 @@ export function setupClaudeIPC(
         timestamp: new Date().toISOString(),
       });
 
-      const allSettings = settingsManager.getAll(projectId);
+      const settings = resolveAiInvocationSettings(
+        project,
+        settingsManager,
+        mcpManager,
+      );
 
       let lastContent = "";
       const toolCalls: any[] = [];
@@ -74,19 +79,12 @@ export function setupClaudeIPC(
             ? getProjectContext(projectPath)
             : undefined,
           cwd: projectPath,
-          model: allSettings["ai.model"] || undefined,
-          maxBudget: allSettings["ai.maxBudget"] || undefined,
-          permissionMode:
-            allSettings["ai.permissionMode"] || "bypassPermissions",
-          customInstructions: allSettings["ai.customInstructions"] || undefined,
-          mcpConfigPath: mcpManager.getEnabledConfigPath(
-            projectPath,
-            Array.isArray(allSettings["mcp.disabledServers"])
-              ? allSettings["mcp.disabledServers"]
-              : [],
-          ),
-          nodePath:
-            settingsManager.resolve(projectId, "runner.nodePath") || undefined,
+          model: settings.model,
+          maxBudget: settings.maxBudget,
+          permissionMode: settings.permissionMode ?? "bypassPermissions",
+          customInstructions: settings.customInstructions,
+          mcpConfigPath: settings.mcpConfigPath,
+          nodePath: settings.nodePath,
           onChunk: (chunk) => {
             if (chunk.type === "assistant") {
               const textBlocks = (chunk.message?.content || []).filter(

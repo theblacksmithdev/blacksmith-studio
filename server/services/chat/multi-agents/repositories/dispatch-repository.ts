@@ -1,6 +1,6 @@
 import { eq, desc } from "drizzle-orm";
-import { agentDispatches } from "../../../db/schema.js";
-import type { Database } from "../types.js";
+import { agentDispatches } from "../../../../db/schema.js";
+import type { Database } from "../../../../db/index.js";
 import type { DispatchRow } from "../mappers.js";
 
 export interface DispatchInsert {

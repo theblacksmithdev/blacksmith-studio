@@ -3,7 +3,7 @@ import type {
   agentConversations,
   agentDispatches,
   agentTasks,
-} from "../../db/schema.js";
+} from "../../../db/schema.js";
 import type {
   AgentChatRecord,
   AgentDispatchRecord,

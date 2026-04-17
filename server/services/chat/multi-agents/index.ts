@@ -19,7 +19,6 @@ export {
   ArtifactTracer,
   type ConversationArtifact,
 } from "./artifact-tracer.js";
-export { isFileTool, extractFilePath } from "./file-tool-parser.js";
 export type {
   AgentDispatchRecord,
   AgentTaskRecord,
@@ -29,5 +28,5 @@ export type {
   TaskInput,
   SubTaskInput,
   TaskStatusUpdate,
-  Database,
 } from "./types.js";
+export type { Database } from "../../../db/index.js";

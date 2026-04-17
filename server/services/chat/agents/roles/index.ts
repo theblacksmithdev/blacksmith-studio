@@ -10,6 +10,7 @@ export { DevOpsEngineerAgent } from "./devops-engineer/index.js";
 export { SecurityEngineerAgent } from "./security-engineer/index.js";
 export { TechnicalWriterAgent } from "./technical-writer/index.js";
 export { ProductManagerAgent } from "./product-manager/index.js";
+export { GeneralistAgent } from "./generalist/index.js";
 
 import { FrontendEngineerAgent } from "./frontend-engineer/index.js";
 import { BackendEngineerAgent } from "./backend-engineer/index.js";
@@ -23,11 +24,19 @@ import { DevOpsEngineerAgent } from "./devops-engineer/index.js";
 import { SecurityEngineerAgent } from "./security-engineer/index.js";
 import { TechnicalWriterAgent } from "./technical-writer/index.js";
 import { ProductManagerAgent } from "./product-manager/index.js";
+import { GeneralistAgent } from "./generalist/index.js";
 import type { AgentRole, AgentTeam, AgentTeamDefinition } from "../types.js";
 import { AGENT_TEAMS } from "../types.js";
 import type { BaseAgent } from "../base/index.js";
 
-/** Registry of all available agent roles. Instantiates one agent per role. */
+/**
+ * Registry of the specialised team agents available to the multi-agent
+ * workflow. The PM routes user requests to these roles.
+ *
+ * The generalist role is intentionally excluded — it belongs to the
+ * single-agent chat and must never be a PM dispatch target. Consumers
+ * of the multi-agent registry should not see it.
+ */
 export function createAgentRegistry(): Map<AgentRole, BaseAgent> {
   const registry = new Map<AgentRole, BaseAgent>();
 

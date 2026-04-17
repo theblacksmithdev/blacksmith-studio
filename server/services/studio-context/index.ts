@@ -8,3 +8,7 @@ export {
   readKeyFiles,
   type KeyFile,
 } from "./project-context/index.js";
+export {
+  resolveAiInvocationSettings,
+  type AiInvocationSettings,
+} from "./ai-invocation-settings.js";

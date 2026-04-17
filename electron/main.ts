@@ -5,7 +5,7 @@ import fixPath from "fix-path";
 import { setupAllIPC } from "./ipc/index.js";
 import { WINDOW_ON_FULLSCREEN } from "./ipc/channels.js";
 import { ProjectManager } from "../server/services/projects.js";
-import { SessionManager } from "../server/services/chat-single-agent/index.js";
+import { SessionManager } from "../server/services/chat/single-agent/index.js";
 import { Ai } from "../server/services/ai/index.js";
 import { SettingsManager } from "../server/services/settings.js";
 import { RunnerManager } from "../server/services/runner/index.js";
