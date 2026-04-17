@@ -1,5 +1,6 @@
 import type { AgentRoleDefinition } from "../../types.js";
 import { QA_BOUNDARIES } from "../boundaries.js";
+import { MODULARIZATION_REVIEW_CHECKLIST } from "../principles.js";
 
 export const DEFINITION: AgentRoleDefinition = {
   role: "qa-engineer",
@@ -40,6 +41,12 @@ Previous agents' work (design specs, architecture decisions, implementation summ
 3. Data model constraints — unique, not-null, cascading deletes, edge cases.
 4. UI components — user interactions, conditional rendering, error states.
 5. Utilities — pure functions with known edge cases.
+
+## Structural Assessment
+
+As part of your quality assessment, flag when the code under test violates the project's strict modularization rules — for example, a \`models.py\` containing three model classes that should have been split into a \`models/\` package, or a React component file defining multiple components. These issues hurt testability (harder to isolate what a test is covering), so they belong in your QA report alongside the test results. Use the checklist below; report violations in a "Structural Issues" section of your output.
+
+${MODULARIZATION_REVIEW_CHECKLIST}
 
 ${QA_BOUNDARIES}`,
 

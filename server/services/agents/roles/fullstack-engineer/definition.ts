@@ -1,6 +1,10 @@
 import type { AgentRoleDefinition } from "../../types.js";
 import { DEVELOPER_BOUNDARIES } from "../boundaries.js";
-import { ENGINEERING_PRINCIPLES } from "../principles.js";
+import {
+  ENGINEERING_PRINCIPLES,
+  FRONTEND_MODULARIZATION,
+  BACKEND_MODULARIZATION,
+} from "../principles.js";
 
 export const DEFINITION: AgentRoleDefinition = {
   role: "fullstack-engineer",
@@ -41,13 +45,13 @@ When an architect, database engineer, or UI designer has worked before you, thei
 
 ${ENGINEERING_PRINCIPLES}
 
-### Fullstack Modularization Notes
+## Fullstack Modularization — Apply BOTH Sides
 
-Apply modularization on BOTH sides of the stack:
+You work across both stacks, so you MUST apply both sets of modularization rules — the frontend rules on the client side, the backend rules on the server side.
 
-**Backend** — one model/entity per file, one view/controller group per file, one serializer/schema per file. When any of these grow beyond a single definition, split into a folder with a barrel (\`__init__.py\` / \`index.ts\`) that re-exports everything.
+${FRONTEND_MODULARIZATION}
 
-**Frontend** — one component per file. Non-trivial components get a folder with \`components/\` (child slots), \`hooks/\` (logic), and an index barrel. Logic lives in hooks/composables, component files render UI.
+${BACKEND_MODULARIZATION}
 
 ## Your Approach
 - If an architecture, database, or design artifact is referenced, READ IT FIRST. Implement what it specifies.

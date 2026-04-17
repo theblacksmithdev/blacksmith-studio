@@ -5,11 +5,124 @@
  */
 
 export const MODULARIZATION_PRINCIPLE = `
-## Code Modularization — STRICT
+## Code Modularization — STRICT, MANDATORY
 
 This follows the **"Replace Module with Package"** pattern (also known as "exploded modules" or "modular packages") — a direct application of the Single Responsibility Principle at the file level. Instead of one file accumulating multiple unrelated definitions, you split it into a folder where each file owns one definition, with a barrel (index/\`__init__.py\`/\`index.ts\`) preserving the original public API. This applies recursively — if a sub-module grows, split it further. The pattern is framework-agnostic and applies to any language or stack.
 
-**The principle:** One definition per file. A folder with an index/barrel replaces the monolithic file. The folder's public API stays identical to what the single file exported.`;
+**The principle:** One definition per file. A folder with an index/barrel replaces the monolithic file. The folder's public API stays identical to what the single file exported.
+
+**These rules are MANDATORY.** You MUST apply them unless the user's prompt explicitly says otherwise (e.g. "keep everything in one file", "don't modularize this"). Reviewers and QA agents WILL flag violations. If the existing codebase uses a different pattern, match the codebase — but never add a new monolithic file that bundles multiple concerns.`;
+
+export const FRONTEND_MODULARIZATION = `
+### Frontend Modularization Rules — STRICT, MANDATORY
+
+Every component file must contain exactly ONE component. Never define multiple components in the same file.
+
+**When a component is non-trivial** (has children slots, hooks/composables, or multiple sub-components), it MUST be a folder:
+
+\`\`\`
+ComponentName/
+  index.ts              — barrel export (re-exports the main component)
+  ComponentName.tsx     — the main/root component
+  components/           — child/slot components, one per file
+    Header.tsx
+    Body.tsx
+    Footer.tsx
+  hooks/                — all logic, data fetching, state management
+    use-component-data.ts
+    use-component-actions.ts
+\`\`\`
+
+**Frontend-specific rules (MUST be followed unless the user explicitly says not to):**
+- **One component per file.** If you're about to define a second component in the same file, stop — create a new file in \`components/\`.
+- **Logic lives in hooks/composables.** Component files render UI. Custom hooks/composables handle data fetching, mutations, computed state, event handlers, and non-trivial logic.
+- **Children/slots are separate components.** If a section of the UI is a distinct visual block (header, body, sidebar, footer, item row, empty state), it is its own file in \`components/\`.
+- **The root component composes.** It imports from \`components/\` and \`hooks/\`, wires them together, and renders the layout. Minimal logic in the root.
+- **Barrel exports keep imports clean.** The index file re-exports the main component so consumers import from the folder, not the file.
+- **Small, truly simple components** (a styled wrapper, a single element with props) can be a flat file — no folder needed. Use judgment: if it has or will have children slots or hooks, make it a folder from the start.`;
+
+export const BACKEND_MODULARIZATION = `
+### Backend Modularization Rules — STRICT, MANDATORY
+
+**Django — when models.py has multiple models:**
+\`\`\`
+app/models.py  →  app/models/
+                    __init__.py        # re-exports all models
+                    user.py            # User model
+                    organization.py    # Organization model
+                    membership.py      # Membership model
+\`\`\`
+Same pattern for views/, serializers/, services/, forms/, admin/, signals/, tasks/, permissions/:
+\`\`\`
+app/views/
+  __init__.py          # re-exports all views
+  user_views.py        # UserListView, UserDetailView
+  org_views.py         # OrgListView, OrgDetailView
+
+app/serializers/
+  __init__.py
+  user_serializer.py
+  org_serializer.py
+\`\`\`
+
+**Express/NestJS:**
+\`\`\`
+modules/users/
+  index.ts             # barrel export
+  users.controller.ts
+  users.service.ts
+  users.model.ts
+  users.routes.ts
+\`\`\`
+
+**FastAPI:**
+\`\`\`
+app/routers/
+  __init__.py
+  users.py
+  organizations.py
+app/models/
+  __init__.py
+  user.py
+  organization.py
+app/services/
+  __init__.py
+  user_service.py
+\`\`\`
+
+**Backend-specific rules (MUST be followed unless the user explicitly says not to):**
+- **One model/entity per file.** If a models file has more than one model class, split it into a folder.
+- **One view/controller group per file.** Group by resource, not by HTTP method.
+- **One serializer/schema per file** when there are multiple resources.
+- **Services get their own files.** One service class per file, grouped in a services folder.
+- **The barrel (\`__init__.py\` / \`index.ts\`) re-exports everything** so external imports don't change.
+- **Apply recursively.** If a sub-folder's files grow to contain multiple concerns, split again.
+- **Read the existing structure first.** If the project already modularizes differently, match their pattern — don't impose a new one.`;
+
+export const MODULARIZATION_REVIEW_CHECKLIST = `
+### Modularization Review Checklist
+
+When reviewing or assessing code, verify the modularization rules are followed. These are STRICT project rules — violations must be flagged unless the originating user prompt explicitly waived them.
+
+**Frontend violations to flag:**
+- Two or more components defined in the same file.
+- A non-trivial component (has children slots, hooks, or multiple sub-components) implemented as a flat file instead of a folder.
+- Data fetching, mutations, or non-trivial state logic living inline in a component instead of a custom hook/composable.
+- A root component containing substantial logic rather than composing from \`components/\` + \`hooks/\`.
+- Missing barrel (\`index.ts\`) export for a component folder.
+
+**Backend violations to flag:**
+- A \`models.py\` / models file containing two or more model classes.
+- A \`views.py\` / controller file containing multiple unrelated resource groups.
+- A \`serializers.py\` / schemas file containing multiple unrelated resources.
+- Service classes co-located in the same file when they represent different concerns.
+- A module folder missing a barrel (\`__init__.py\` / \`index.ts\`) that re-exports its members.
+
+**Cross-cutting:**
+- Any file accumulating multiple unrelated definitions that should have been split per the "Replace Module with Package" principle.
+- Refactors that undo an existing folder structure by collapsing it back into a single file.
+
+When you flag a violation, say which rule was broken, which file(s) need to be split, and the target folder structure.`;
 
 export const FP_PRINCIPLES = `
 ## Functional Programming Principles

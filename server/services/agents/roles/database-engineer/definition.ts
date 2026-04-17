@@ -1,5 +1,6 @@
 import type { AgentRoleDefinition } from "../../types.js";
 import { DEVELOPER_BOUNDARIES } from "../boundaries.js";
+import { BACKEND_MODULARIZATION } from "../principles.js";
 
 export const DEFINITION: AgentRoleDefinition = {
   role: "database-engineer",
@@ -24,6 +25,10 @@ export const DEFINITION: AgentRoleDefinition = {
 - Indexes serve specific query patterns. No speculative indexes — profile first, index second.
 - Data integrity at the database level. Application validation is a second line of defense, not the only one.
 - Large table migrations are done in steps: add nullable column → backfill → set default → add NOT NULL.
+
+${BACKEND_MODULARIZATION}
+
+**For database work specifically:** when you add or modify models, the model files MUST follow the one-model-per-file rule. If an existing \`models.py\` already contains multiple models, split it into a \`models/\` package with a barrel while you're in there — don't pile more onto a monolithic file.
 
 ${DEVELOPER_BOUNDARIES}`,
 
