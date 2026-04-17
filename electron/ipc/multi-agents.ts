@@ -12,34 +12,34 @@ import { AgentSessionManager } from "../../server/services/chat/multi-agents/ind
 import type { AgentRole } from "../../server/services/chat/agents/types.js";
 import type { AgentExecuteOptions } from "../../server/services/chat/agents/base/index.js";
 import {
-  AGENTS_LIST,
-  AGENTS_ROUTE,
-  AGENTS_DISPATCH,
-  AGENTS_EXECUTE,
-  AGENTS_CANCEL,
-  AGENTS_CANCEL_ALL,
-  AGENTS_HISTORY,
-  AGENTS_LIST_PIPELINES,
-  AGENTS_RUN_PIPELINE,
-  AGENTS_RUN_WORKFLOW,
-  AGENTS_BUILD,
-  AGENTS_BUILD_RESUME,
-  AGENTS_BUILD_CANCEL,
-  AGENTS_BUILD_PROGRESS,
-  AGENTS_RESPOND,
-  AGENTS_SET_AUTO_APPROVE,
-  AGENTS_LIST_DISPATCHES,
-  AGENTS_GET_DISPATCH,
-  AGENTS_LIST_CHAT,
-  AGENTS_CLEAR_CHAT,
-  AGENTS_CREATE_CONVERSATION,
-  AGENTS_LIST_CONVERSATIONS,
-  AGENTS_DELETE_CONVERSATION,
-  AGENTS_GET_ARTIFACTS,
-  AGENTS_ON_EVENT,
-  AGENTS_ON_WORKFLOW_EVENT,
-  AGENTS_ON_BUILD_EVENT,
-  AGENTS_ON_INPUT_REQUEST,
+  MULTI_AGENTS_LIST,
+  MULTI_AGENTS_ROUTE,
+  MULTI_AGENTS_DISPATCH,
+  MULTI_AGENTS_EXECUTE,
+  MULTI_AGENTS_CANCEL,
+  MULTI_AGENTS_CANCEL_ALL,
+  MULTI_AGENTS_HISTORY,
+  MULTI_AGENTS_LIST_PIPELINES,
+  MULTI_AGENTS_RUN_PIPELINE,
+  MULTI_AGENTS_RUN_WORKFLOW,
+  MULTI_AGENTS_BUILD,
+  MULTI_AGENTS_BUILD_RESUME,
+  MULTI_AGENTS_BUILD_CANCEL,
+  MULTI_AGENTS_BUILD_PROGRESS,
+  MULTI_AGENTS_RESPOND,
+  MULTI_AGENTS_SET_AUTO_APPROVE,
+  MULTI_AGENTS_LIST_DISPATCHES,
+  MULTI_AGENTS_GET_DISPATCH,
+  MULTI_AGENTS_LIST_CHAT,
+  MULTI_AGENTS_CLEAR_CHAT,
+  MULTI_AGENTS_CREATE_CONVERSATION,
+  MULTI_AGENTS_LIST_CONVERSATIONS,
+  MULTI_AGENTS_DELETE_CONVERSATION,
+  MULTI_AGENTS_GET_ARTIFACTS,
+  MULTI_AGENTS_ON_EVENT,
+  MULTI_AGENTS_ON_WORKFLOW_EVENT,
+  MULTI_AGENTS_ON_BUILD_EVENT,
+  MULTI_AGENTS_ON_INPUT_REQUEST,
 } from "./channels.js";
 
 function resolveBaseOptions(
@@ -68,7 +68,7 @@ function resolveBaseOptions(
   };
 }
 
-export function setupAgentsIPC(
+export function setupMultiAgentsIPC(
   getWindow: () => BrowserWindow | null,
   projectManager: ProjectManager,
   settingsManager: SettingsManager,
@@ -81,7 +81,7 @@ export function setupAgentsIPC(
 
   // ── Forward agent events to renderer ──
   agentManager.onAgentEvent((event) => {
-    getWindow()?.webContents.send(AGENTS_ON_EVENT, event);
+    getWindow()?.webContents.send(MULTI_AGENTS_ON_EVENT, event);
 
     // Persist task status changes
     if (event.data.type === "task_status") {
@@ -91,31 +91,31 @@ export function setupAgentsIPC(
   });
 
   agentManager.onWorkflowEvent((event) => {
-    getWindow()?.webContents.send(AGENTS_ON_WORKFLOW_EVENT, event);
+    getWindow()?.webContents.send(MULTI_AGENTS_ON_WORKFLOW_EVENT, event);
   });
 
   projectBuilder.onEvent((event) => {
-    getWindow()?.webContents.send(AGENTS_ON_BUILD_EVENT, event);
+    getWindow()?.webContents.send(MULTI_AGENTS_ON_BUILD_EVENT, event);
   });
 
   projectBuilder.humanInput.onRequest((request) => {
-    getWindow()?.webContents.send(AGENTS_ON_INPUT_REQUEST, request);
+    getWindow()?.webContents.send(MULTI_AGENTS_ON_INPUT_REQUEST, request);
   });
 
   // ── Agent Registry ──
 
-  ipcMain.handle(AGENTS_LIST, () => {
+  ipcMain.handle(MULTI_AGENTS_LIST, () => {
     return agentManager.listAgents();
   });
 
-  ipcMain.handle(AGENTS_ROUTE, (_e, data: { prompt: string }) => {
+  ipcMain.handle(MULTI_AGENTS_ROUTE, (_e, data: { prompt: string }) => {
     return agentManager.route(data.prompt);
   });
 
   // ── PM-First Dispatch ──
 
   ipcMain.handle(
-    AGENTS_DISPATCH,
+    MULTI_AGENTS_DISPATCH,
     async (
       _e,
       data: { projectId: string; prompt: string; conversationId?: string },
@@ -253,7 +253,7 @@ export function setupAgentsIPC(
   // ── Direct Single Agent Execution ──
 
   ipcMain.handle(
-    AGENTS_EXECUTE,
+    MULTI_AGENTS_EXECUTE,
     async (
       _e,
       data: { projectId: string; prompt: string; role?: AgentRole },
@@ -273,26 +273,26 @@ export function setupAgentsIPC(
     },
   );
 
-  ipcMain.handle(AGENTS_CANCEL, (_e, data: { role: AgentRole }) => {
+  ipcMain.handle(MULTI_AGENTS_CANCEL, (_e, data: { role: AgentRole }) => {
     agentManager.cancel(data.role);
   });
 
-  ipcMain.handle(AGENTS_CANCEL_ALL, () => {
+  ipcMain.handle(MULTI_AGENTS_CANCEL_ALL, () => {
     agentManager.cancelAll();
   });
 
-  ipcMain.handle(AGENTS_HISTORY, (_e, data?: { limit?: number }) => {
+  ipcMain.handle(MULTI_AGENTS_HISTORY, (_e, data?: { limit?: number }) => {
     return agentManager.getExecutionHistory(data?.limit);
   });
 
   // ── Pipelines & Workflows ──
 
-  ipcMain.handle(AGENTS_LIST_PIPELINES, () => {
+  ipcMain.handle(MULTI_AGENTS_LIST_PIPELINES, () => {
     return agentManager.listPipelines();
   });
 
   ipcMain.handle(
-    AGENTS_RUN_PIPELINE,
+    MULTI_AGENTS_RUN_PIPELINE,
     async (
       _e,
       data: {
@@ -319,7 +319,7 @@ export function setupAgentsIPC(
   );
 
   ipcMain.handle(
-    AGENTS_RUN_WORKFLOW,
+    MULTI_AGENTS_RUN_WORKFLOW,
     async (
       _e,
       data: {
@@ -348,7 +348,7 @@ export function setupAgentsIPC(
   // ── Project Builder ──
 
   ipcMain.handle(
-    AGENTS_BUILD,
+    MULTI_AGENTS_BUILD,
     async (
       _e,
       data: { projectId: string; requirements: string; maxBudgetUsd?: number },
@@ -369,7 +369,7 @@ export function setupAgentsIPC(
   );
 
   ipcMain.handle(
-    AGENTS_BUILD_RESUME,
+    MULTI_AGENTS_BUILD_RESUME,
     async (_e, data: { projectId: string; maxBudgetUsd?: number }) => {
       const baseOptions = resolveBaseOptions(
         projectManager,
@@ -382,31 +382,31 @@ export function setupAgentsIPC(
     },
   );
 
-  ipcMain.handle(AGENTS_BUILD_CANCEL, () => {
+  ipcMain.handle(MULTI_AGENTS_BUILD_CANCEL, () => {
     projectBuilder.cancel();
   });
 
-  ipcMain.handle(AGENTS_BUILD_PROGRESS, () => {
+  ipcMain.handle(MULTI_AGENTS_BUILD_PROGRESS, () => {
     return projectBuilder.progress;
   });
 
   // ── Human Input ──
 
   ipcMain.handle(
-    AGENTS_RESPOND,
+    MULTI_AGENTS_RESPOND,
     (_e, data: { requestId: string; value: string }) => {
       return projectBuilder.humanInput.respond(data.requestId, data.value);
     },
   );
 
-  ipcMain.handle(AGENTS_SET_AUTO_APPROVE, (_e, data: { enabled: boolean }) => {
+  ipcMain.handle(MULTI_AGENTS_SET_AUTO_APPROVE, (_e, data: { enabled: boolean }) => {
     projectBuilder.humanInput.autoApprove = data.enabled;
   });
 
   // ── Persistence ──
 
   ipcMain.handle(
-    AGENTS_LIST_DISPATCHES,
+    MULTI_AGENTS_LIST_DISPATCHES,
     (_e, data: { projectId: string; limit?: number }) => {
       const project = projectManager.get(data.projectId);
       if (!project) throw new Error("Project not found");
@@ -414,12 +414,12 @@ export function setupAgentsIPC(
     },
   );
 
-  ipcMain.handle(AGENTS_GET_DISPATCH, (_e, data: { dispatchId: string }) => {
+  ipcMain.handle(MULTI_AGENTS_GET_DISPATCH, (_e, data: { dispatchId: string }) => {
     return sessionManager.getDispatch(data.dispatchId);
   });
 
   ipcMain.handle(
-    AGENTS_LIST_CHAT,
+    MULTI_AGENTS_LIST_CHAT,
     (_e, data: { projectId: string; conversationId?: string }) => {
       const project = projectManager.get(data.projectId);
       if (!project) throw new Error("Project not found");
@@ -427,7 +427,7 @@ export function setupAgentsIPC(
     },
   );
 
-  ipcMain.handle(AGENTS_CLEAR_CHAT, (_e, data: { projectId: string }) => {
+  ipcMain.handle(MULTI_AGENTS_CLEAR_CHAT, (_e, data: { projectId: string }) => {
     const project = projectManager.get(data.projectId);
     if (!project) throw new Error("Project not found");
     sessionManager.clearChatMessages(project.id);
@@ -436,7 +436,7 @@ export function setupAgentsIPC(
   // ── Conversations ──
 
   ipcMain.handle(
-    AGENTS_CREATE_CONVERSATION,
+    MULTI_AGENTS_CREATE_CONVERSATION,
     (_e, data: { projectId: string; title?: string }) => {
       const project = projectManager.get(data.projectId);
       if (!project) throw new Error("Project not found");
@@ -445,7 +445,7 @@ export function setupAgentsIPC(
   );
 
   ipcMain.handle(
-    AGENTS_LIST_CONVERSATIONS,
+    MULTI_AGENTS_LIST_CONVERSATIONS,
     (_e, data: { projectId: string }) => {
       const project = projectManager.get(data.projectId);
       if (!project) throw new Error("Project not found");
@@ -454,14 +454,14 @@ export function setupAgentsIPC(
   );
 
   ipcMain.handle(
-    AGENTS_DELETE_CONVERSATION,
+    MULTI_AGENTS_DELETE_CONVERSATION,
     (_e, data: { conversationId: string }) => {
       sessionManager.deleteConversation(data.conversationId);
     },
   );
 
   ipcMain.handle(
-    AGENTS_GET_ARTIFACTS,
+    MULTI_AGENTS_GET_ARTIFACTS,
     (_e, data: { conversationId: string }) => {
       return sessionManager.getConversationArtifacts(data.conversationId);
     },

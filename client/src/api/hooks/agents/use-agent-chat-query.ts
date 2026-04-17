@@ -14,7 +14,7 @@ export function useAgentChatQuery(conversationId?: string) {
     queryKey: conversationId
       ? keys.agentChat(conversationId)
       : ([...keys.agents, "chat"] as const),
-    queryFn: () => api.agents.listChat(projectId!, conversationId),
+    queryFn: () => api.multiAgents.listChat(projectId!, conversationId),
     enabled: !!projectId && !!conversationId,
   });
 }

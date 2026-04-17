@@ -17,7 +17,7 @@ import { setupSessionsIPC } from "./sessions.js";
 import { setupFilesIPC } from "./files.js";
 import { setupTemplatesIPC } from "./templates.js";
 import { setupSettingsIPC } from "./settings.js";
-import { setupClaudeIPC } from "./claude.js";
+import { setupSingleAgentIPC } from "./single-agent.js";
 import { setupRunnerIPC } from "./runner.js";
 import { setupHealthIPC } from "./health.js";
 import { setupMcpIPC } from "./mcp.js";
@@ -27,7 +27,7 @@ import { setupSetupIPC } from "./setup.js";
 import { setupFolderDialogIPC } from "./folder-dialog.js";
 import { setupGitIPC } from "./git.js";
 import { setupTerminalIPC } from "./terminal.js";
-import { setupAgentsIPC } from "./agents.js";
+import { setupMultiAgentsIPC } from "./multi-agents.js";
 import { setupGraphifyIPC } from "./graphify.js";
 import { setupPythonIPC } from "./python.js";
 import { setupWindowIPC } from "./window.js";
@@ -57,7 +57,7 @@ export function setupAllIPC(
   setupFilesIPC(projectManager);
   setupTemplatesIPC();
   setupSettingsIPC(settingsManager, projectManager);
-  setupClaudeIPC(
+  setupSingleAgentIPC(
     getWindow,
     ai,
     sessionManager,
@@ -81,5 +81,5 @@ export function setupAllIPC(
   setupTerminalIPC(getWindow, terminalManager, projectManager, settingsManager);
   setupPythonIPC(getWindow, pythonManager, settingsManager);
   setupGraphifyIPC(getWindow, graphifyManager, projectManager, settingsManager, gitManager);
-  setupAgentsIPC(getWindow, projectManager, settingsManager, mcpManager, ai);
+  setupMultiAgentsIPC(getWindow, projectManager, settingsManager, mcpManager, ai);
 }

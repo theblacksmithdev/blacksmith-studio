@@ -16,6 +16,6 @@ export function useSendPrompt() {
     }: {
       sessionId: string;
       prompt: string;
-    }) => api.claude.sendPrompt({ projectId: projectId!, sessionId, prompt }),
+    }) => api.singleAgent.sendPrompt({ projectId: projectId!, sessionId, prompt }),
   });
 }

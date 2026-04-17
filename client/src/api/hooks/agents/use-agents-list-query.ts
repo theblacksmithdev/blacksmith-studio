@@ -10,6 +10,6 @@ export function useAgentsListQuery() {
 
   return useQuery({
     queryKey: keys.agents,
-    queryFn: () => api.agents.list(),
+    queryFn: () => api.multiAgents.list(),
   });
 }

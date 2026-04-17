@@ -10,6 +10,6 @@ export function useAgentBuildResume() {
 
   return useMutation({
     mutationFn: (maxBudgetUsd?: number) =>
-      api.agents.buildResume(projectId!, maxBudgetUsd),
+      api.multiAgents.buildResume(projectId!, maxBudgetUsd),
   });
 }

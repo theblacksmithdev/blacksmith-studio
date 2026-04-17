@@ -11,7 +11,7 @@ export function useAgentConversationsQuery() {
 
   return useQuery({
     queryKey: keys.agentConversations,
-    queryFn: () => api.agents.listConversations(projectId!),
+    queryFn: () => api.multiAgents.listConversations(projectId!),
     enabled: !!projectId,
   });
 }

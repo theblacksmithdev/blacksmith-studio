@@ -10,6 +10,6 @@ export function useAgentPipelinesQuery() {
 
   return useQuery({
     queryKey: keys.agentPipelines,
-    queryFn: () => api.agents.listPipelines(),
+    queryFn: () => api.multiAgents.listPipelines(),
   });
 }

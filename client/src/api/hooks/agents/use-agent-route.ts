@@ -6,6 +6,6 @@ import { api } from "@/api";
  */
 export function useAgentRoute() {
   return useMutation({
-    mutationFn: (prompt: string) => api.agents.route(prompt),
+    mutationFn: (prompt: string) => api.multiAgents.route(prompt),
   });
 }

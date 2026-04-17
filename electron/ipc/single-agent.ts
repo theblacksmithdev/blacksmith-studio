@@ -11,15 +11,15 @@ import {
   resolveAiInvocationSettings,
 } from "../../server/services/studio-context/index.js";
 import {
-  CLAUDE_SEND_PROMPT,
-  CLAUDE_CANCEL,
-  CLAUDE_ON_MESSAGE,
-  CLAUDE_ON_TOOL_USE,
-  CLAUDE_ON_DONE,
-  CLAUDE_ON_ERROR,
+  SINGLE_AGENT_SEND_PROMPT,
+  SINGLE_AGENT_CANCEL,
+  SINGLE_AGENT_ON_MESSAGE,
+  SINGLE_AGENT_ON_TOOL_USE,
+  SINGLE_AGENT_ON_DONE,
+  SINGLE_AGENT_ON_ERROR,
 } from "./channels.js";
 
-export function setupClaudeIPC(
+export function setupSingleAgentIPC(
   getWindow: () => BrowserWindow | null,
   ai: Ai,
   sessionManager: SessionManager,
@@ -28,7 +28,7 @@ export function setupClaudeIPC(
   mcpManager: McpManager,
 ) {
   ipcMain.handle(
-    CLAUDE_SEND_PROMPT,
+    SINGLE_AGENT_SEND_PROMPT,
     async (
       _e,
       data: { projectId: string; sessionId: string; prompt: string },
@@ -38,7 +38,7 @@ export function setupClaudeIPC(
       const win = getWindow();
 
       if (!project) {
-        win?.webContents.send(CLAUDE_ON_ERROR, {
+        win?.webContents.send(SINGLE_AGENT_ON_ERROR, {
           sessionId,
           error: "Project not found.",
           code: "NO_PROJECT",
@@ -96,7 +96,7 @@ export function setupClaudeIPC(
 
               if (textBlocks.length > 0) {
                 lastContent = textBlocks.map((b: any) => b.text).join("");
-                win?.webContents.send(CLAUDE_ON_MESSAGE, {
+                win?.webContents.send(SINGLE_AGENT_ON_MESSAGE, {
                   sessionId,
                   content: lastContent,
                   isPartial: !chunk.stop_reason,
@@ -109,7 +109,7 @@ export function setupClaudeIPC(
                   toolName: tool.name,
                   input: tool.input,
                 });
-                win?.webContents.send(CLAUDE_ON_TOOL_USE, {
+                win?.webContents.send(SINGLE_AGENT_ON_TOOL_USE, {
                   sessionId,
                   toolId: tool.id,
                   toolName: tool.name,
@@ -126,7 +126,7 @@ export function setupClaudeIPC(
                   timestamp: new Date().toISOString(),
                 });
               }
-              win?.webContents.send(CLAUDE_ON_DONE, {
+              win?.webContents.send(SINGLE_AGENT_ON_DONE, {
                 sessionId,
                 costUsd: chunk.cost_usd || 0,
                 durationMs: chunk.duration_ms || 0,
@@ -144,7 +144,7 @@ export function setupClaudeIPC(
           content: `Error: ${error.message}`,
           timestamp: new Date().toISOString(),
         });
-        win?.webContents.send(CLAUDE_ON_ERROR, {
+        win?.webContents.send(SINGLE_AGENT_ON_ERROR, {
           sessionId,
           error: error.message || "Unknown error",
           code: "PROCESS_ERROR",
@@ -153,7 +153,7 @@ export function setupClaudeIPC(
     },
   );
 
-  ipcMain.handle(CLAUDE_CANCEL, (_e, data: { sessionId: string }) => {
+  ipcMain.handle(SINGLE_AGENT_CANCEL, (_e, data: { sessionId: string }) => {
     ai.cancel(data.sessionId);
   });
 }

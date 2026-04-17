@@ -6,6 +6,6 @@ import { api } from "@/api";
  */
 export function useAgentCancelAll() {
   return useMutation({
-    mutationFn: () => api.agents.cancelAll(),
+    mutationFn: () => api.multiAgents.cancelAll(),
   });
 }

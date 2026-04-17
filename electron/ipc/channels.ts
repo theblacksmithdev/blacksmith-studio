@@ -56,8 +56,8 @@ export const RUNNER_GET_LOGS = "runner:getLogs";
 export const RUNNER_SETUP = "runner:setup";
 
 // Claude
-export const CLAUDE_SEND_PROMPT = "claude:sendPrompt";
-export const CLAUDE_CANCEL = "claude:cancel";
+export const SINGLE_AGENT_SEND_PROMPT = "singleAgent:sendPrompt";
+export const SINGLE_AGENT_CANCEL = "singleAgent:cancel";
 
 // MCP
 export const MCP_LIST = "mcp:list";
@@ -133,30 +133,30 @@ export const GRAPHIFY_CLEAN = "graphify:clean";
 export const GRAPHIFY_OPEN_VIZ = "graphify:openVisualization";
 
 // Agents
-export const AGENTS_LIST = "agents:list";
-export const AGENTS_ROUTE = "agents:route";
-export const AGENTS_DISPATCH = "agents:dispatch";
-export const AGENTS_EXECUTE = "agents:execute";
-export const AGENTS_CANCEL = "agents:cancel";
-export const AGENTS_CANCEL_ALL = "agents:cancelAll";
-export const AGENTS_HISTORY = "agents:history";
-export const AGENTS_LIST_PIPELINES = "agents:listPipelines";
-export const AGENTS_RUN_PIPELINE = "agents:runPipeline";
-export const AGENTS_RUN_WORKFLOW = "agents:runWorkflow";
-export const AGENTS_BUILD = "agents:build";
-export const AGENTS_BUILD_RESUME = "agents:buildResume";
-export const AGENTS_BUILD_CANCEL = "agents:buildCancel";
-export const AGENTS_BUILD_PROGRESS = "agents:buildProgress";
-export const AGENTS_RESPOND = "agents:respond";
-export const AGENTS_SET_AUTO_APPROVE = "agents:setAutoApprove";
-export const AGENTS_LIST_DISPATCHES = "agents:listDispatches";
-export const AGENTS_GET_DISPATCH = "agents:getDispatch";
-export const AGENTS_LIST_CHAT = "agents:listChat";
-export const AGENTS_CLEAR_CHAT = "agents:clearChat";
-export const AGENTS_CREATE_CONVERSATION = "agents:createConversation";
-export const AGENTS_LIST_CONVERSATIONS = "agents:listConversations";
-export const AGENTS_DELETE_CONVERSATION = "agents:deleteConversation";
-export const AGENTS_GET_ARTIFACTS = "agents:getArtifacts";
+export const MULTI_AGENTS_LIST = "multiAgents:list";
+export const MULTI_AGENTS_ROUTE = "multiAgents:route";
+export const MULTI_AGENTS_DISPATCH = "multiAgents:dispatch";
+export const MULTI_AGENTS_EXECUTE = "multiAgents:execute";
+export const MULTI_AGENTS_CANCEL = "multiAgents:cancel";
+export const MULTI_AGENTS_CANCEL_ALL = "multiAgents:cancelAll";
+export const MULTI_AGENTS_HISTORY = "multiAgents:history";
+export const MULTI_AGENTS_LIST_PIPELINES = "multiAgents:listPipelines";
+export const MULTI_AGENTS_RUN_PIPELINE = "multiAgents:runPipeline";
+export const MULTI_AGENTS_RUN_WORKFLOW = "multiAgents:runWorkflow";
+export const MULTI_AGENTS_BUILD = "multiAgents:build";
+export const MULTI_AGENTS_BUILD_RESUME = "multiAgents:buildResume";
+export const MULTI_AGENTS_BUILD_CANCEL = "multiAgents:buildCancel";
+export const MULTI_AGENTS_BUILD_PROGRESS = "multiAgents:buildProgress";
+export const MULTI_AGENTS_RESPOND = "multiAgents:respond";
+export const MULTI_AGENTS_SET_AUTO_APPROVE = "multiAgents:setAutoApprove";
+export const MULTI_AGENTS_LIST_DISPATCHES = "multiAgents:listDispatches";
+export const MULTI_AGENTS_GET_DISPATCH = "multiAgents:getDispatch";
+export const MULTI_AGENTS_LIST_CHAT = "multiAgents:listChat";
+export const MULTI_AGENTS_CLEAR_CHAT = "multiAgents:clearChat";
+export const MULTI_AGENTS_CREATE_CONVERSATION = "multiAgents:createConversation";
+export const MULTI_AGENTS_LIST_CONVERSATIONS = "multiAgents:listConversations";
+export const MULTI_AGENTS_DELETE_CONVERSATION = "multiAgents:deleteConversation";
+export const MULTI_AGENTS_GET_ARTIFACTS = "multiAgents:getArtifacts";
 
 // ─── Push/Stream Channels ───
 
@@ -165,10 +165,10 @@ export const PROJECTS_ON_CREATE_OUTPUT = "projects:onCreateOutput";
 export const PROJECTS_ON_CREATE_DONE = "projects:onCreateDone";
 export const PROJECTS_ON_CREATE_ERROR = "projects:onCreateError";
 
-export const CLAUDE_ON_MESSAGE = "claude:onMessage";
-export const CLAUDE_ON_TOOL_USE = "claude:onToolUse";
-export const CLAUDE_ON_DONE = "claude:onDone";
-export const CLAUDE_ON_ERROR = "claude:onError";
+export const SINGLE_AGENT_ON_MESSAGE = "singleAgent:onMessage";
+export const SINGLE_AGENT_ON_TOOL_USE = "singleAgent:onToolUse";
+export const SINGLE_AGENT_ON_DONE = "singleAgent:onDone";
+export const SINGLE_AGENT_ON_ERROR = "singleAgent:onError";
 export const FILES_ON_CHANGED = "files:onChanged";
 export const RUNNER_ON_STATUS = "runner:onStatus";
 export const RUNNER_ON_OUTPUT = "runner:onOutput";
@@ -178,10 +178,10 @@ export const TERMINAL_ON_EXIT = "terminal:onExit";
 export const GIT_ON_STATUS_CHANGE = "git:onStatusChange";
 export const PYTHON_ON_PROGRESS = "python:onProgress";
 export const GRAPHIFY_ON_BUILD_PROGRESS = "graphify:onBuildProgress";
-export const AGENTS_ON_EVENT = "agents:onEvent";
-export const AGENTS_ON_WORKFLOW_EVENT = "agents:onWorkflowEvent";
-export const AGENTS_ON_BUILD_EVENT = "agents:onBuildEvent";
-export const AGENTS_ON_INPUT_REQUEST = "agents:onInputRequest";
+export const MULTI_AGENTS_ON_EVENT = "multiAgents:onEvent";
+export const MULTI_AGENTS_ON_WORKFLOW_EVENT = "multiAgents:onWorkflowEvent";
+export const MULTI_AGENTS_ON_BUILD_EVENT = "multiAgents:onBuildEvent";
+export const MULTI_AGENTS_ON_INPUT_REQUEST = "multiAgents:onInputRequest";
 
 // Channel allowlists for preload security
 export const INVOKE_CHANNELS = [
@@ -226,8 +226,8 @@ export const INVOKE_CHANNELS = [
   RUNNER_DETECT_RUNNERS,
   RUNNER_GET_LOGS,
   RUNNER_SETUP,
-  CLAUDE_SEND_PROMPT,
-  CLAUDE_CANCEL,
+  SINGLE_AGENT_SEND_PROMPT,
+  SINGLE_AGENT_CANCEL,
   MCP_LIST,
   MCP_ADD,
   MCP_UPDATE,
@@ -281,40 +281,40 @@ export const INVOKE_CHANNELS = [
   GRAPHIFY_QUERY,
   GRAPHIFY_CLEAN,
   GRAPHIFY_OPEN_VIZ,
-  AGENTS_LIST,
-  AGENTS_ROUTE,
-  AGENTS_DISPATCH,
-  AGENTS_EXECUTE,
-  AGENTS_CANCEL,
-  AGENTS_CANCEL_ALL,
-  AGENTS_HISTORY,
-  AGENTS_LIST_PIPELINES,
-  AGENTS_RUN_PIPELINE,
-  AGENTS_RUN_WORKFLOW,
-  AGENTS_BUILD,
-  AGENTS_BUILD_RESUME,
-  AGENTS_BUILD_CANCEL,
-  AGENTS_BUILD_PROGRESS,
-  AGENTS_RESPOND,
-  AGENTS_SET_AUTO_APPROVE,
-  AGENTS_LIST_DISPATCHES,
-  AGENTS_GET_DISPATCH,
-  AGENTS_LIST_CHAT,
-  AGENTS_CLEAR_CHAT,
-  AGENTS_CREATE_CONVERSATION,
-  AGENTS_LIST_CONVERSATIONS,
-  AGENTS_DELETE_CONVERSATION,
-  AGENTS_GET_ARTIFACTS,
+  MULTI_AGENTS_LIST,
+  MULTI_AGENTS_ROUTE,
+  MULTI_AGENTS_DISPATCH,
+  MULTI_AGENTS_EXECUTE,
+  MULTI_AGENTS_CANCEL,
+  MULTI_AGENTS_CANCEL_ALL,
+  MULTI_AGENTS_HISTORY,
+  MULTI_AGENTS_LIST_PIPELINES,
+  MULTI_AGENTS_RUN_PIPELINE,
+  MULTI_AGENTS_RUN_WORKFLOW,
+  MULTI_AGENTS_BUILD,
+  MULTI_AGENTS_BUILD_RESUME,
+  MULTI_AGENTS_BUILD_CANCEL,
+  MULTI_AGENTS_BUILD_PROGRESS,
+  MULTI_AGENTS_RESPOND,
+  MULTI_AGENTS_SET_AUTO_APPROVE,
+  MULTI_AGENTS_LIST_DISPATCHES,
+  MULTI_AGENTS_GET_DISPATCH,
+  MULTI_AGENTS_LIST_CHAT,
+  MULTI_AGENTS_CLEAR_CHAT,
+  MULTI_AGENTS_CREATE_CONVERSATION,
+  MULTI_AGENTS_LIST_CONVERSATIONS,
+  MULTI_AGENTS_DELETE_CONVERSATION,
+  MULTI_AGENTS_GET_ARTIFACTS,
 ] as const;
 
 export const SUBSCRIBE_CHANNELS = [
   PROJECTS_ON_CREATE_OUTPUT,
   PROJECTS_ON_CREATE_DONE,
   PROJECTS_ON_CREATE_ERROR,
-  CLAUDE_ON_MESSAGE,
-  CLAUDE_ON_TOOL_USE,
-  CLAUDE_ON_DONE,
-  CLAUDE_ON_ERROR,
+  SINGLE_AGENT_ON_MESSAGE,
+  SINGLE_AGENT_ON_TOOL_USE,
+  SINGLE_AGENT_ON_DONE,
+  SINGLE_AGENT_ON_ERROR,
   FILES_ON_CHANGED,
   RUNNER_ON_STATUS,
   RUNNER_ON_OUTPUT,
@@ -324,8 +324,8 @@ export const SUBSCRIBE_CHANNELS = [
   GIT_ON_STATUS_CHANGE,
   PYTHON_ON_PROGRESS,
   GRAPHIFY_ON_BUILD_PROGRESS,
-  AGENTS_ON_EVENT,
-  AGENTS_ON_WORKFLOW_EVENT,
-  AGENTS_ON_BUILD_EVENT,
-  AGENTS_ON_INPUT_REQUEST,
+  MULTI_AGENTS_ON_EVENT,
+  MULTI_AGENTS_ON_WORKFLOW_EVENT,
+  MULTI_AGENTS_ON_BUILD_EVENT,
+  MULTI_AGENTS_ON_INPUT_REQUEST,
 ] as const;

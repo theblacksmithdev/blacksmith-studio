@@ -370,7 +370,7 @@ export function AgentInnerView({ agent, onBack }: AgentInnerViewProps) {
           timestamp: new Date().toISOString(),
         },
       ]);
-      api.agents.execute(projectId!, { prompt: text, role: agent.role });
+      api.multiAgents.execute(projectId!, { prompt: text, role: agent.role });
     },
     [isActive, agent.role],
   );

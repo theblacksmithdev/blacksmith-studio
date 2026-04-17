@@ -11,7 +11,7 @@ export function useAgentEvents() {
 
   useEffect(() => {
     const unsubs = [
-      api.agents.onEvent((event) => {
+      api.multiAgents.onEvent((event) => {
         handleAgentEvent(event);
 
         if (event.data.type === "activity") {
@@ -32,11 +32,11 @@ export function useAgentEvents() {
           });
         }
       }),
-      api.agents.onBuildEvent((event) => {
+      api.multiAgents.onBuildEvent((event) => {
         handleBuildEvent(event);
         addLiveMessage({ role: "system", content: event.data.message });
       }),
-      api.agents.onInputRequest((request) => {
+      api.multiAgents.onInputRequest((request) => {
         addInputRequest(request);
       }),
     ];

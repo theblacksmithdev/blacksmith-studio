@@ -12,15 +12,15 @@ import type {
   InputRequest,
 } from "../types";
 
-export const agents = {
+export const multiAgents = {
   // ── Registry ──
-  list: () => raw.invoke<AgentInfo[]>("agents:list"),
+  list: () => raw.invoke<AgentInfo[]>("multiAgents:list"),
   route: (prompt: string) =>
-    raw.invoke<AgentRouteResult>("agents:route", { prompt }),
+    raw.invoke<AgentRouteResult>("multiAgents:route", { prompt }),
 
   // ── PM-First Dispatch (main entry point) ──
   dispatch: (projectId: string, prompt: string, conversationId?: string) =>
-    raw.invoke<DispatchResult>("agents:dispatch", {
+    raw.invoke<DispatchResult>("multiAgents:dispatch", {
       projectId,
       prompt,
       conversationId,
@@ -28,18 +28,18 @@ export const agents = {
 
   // ── Direct Single Execution ──
   execute: (projectId: string, data: { prompt: string; role?: AgentRole }) =>
-    raw.invoke<AgentExecution>("agents:execute", { projectId, ...data }),
-  cancel: (role: AgentRole) => raw.invoke<void>("agents:cancel", { role }),
-  cancelAll: () => raw.invoke<void>("agents:cancelAll"),
+    raw.invoke<AgentExecution>("multiAgents:execute", { projectId, ...data }),
+  cancel: (role: AgentRole) => raw.invoke<void>("multiAgents:cancel", { role }),
+  cancelAll: () => raw.invoke<void>("multiAgents:cancelAll"),
   history: (limit?: number) =>
-    raw.invoke<AgentExecution[]>("agents:history", { limit }),
+    raw.invoke<AgentExecution[]>("multiAgents:history", { limit }),
 
   // ── Pipelines & Workflows ──
-  listPipelines: () => raw.invoke<PipelineTemplate[]>("agents:listPipelines"),
+  listPipelines: () => raw.invoke<PipelineTemplate[]>("multiAgents:listPipelines"),
   runPipeline: (
     projectId: string,
     data: { pipelineId: string; prompt: string; maxBudgetUsd?: number },
-  ) => raw.invoke<any>("agents:runPipeline", { projectId, ...data }),
+  ) => raw.invoke<any>("multiAgents:runPipeline", { projectId, ...data }),
   runWorkflow: (
     projectId: string,
     data: {
@@ -47,53 +47,53 @@ export const agents = {
       steps: { role: AgentRole; prompt: string; dependsOn?: number }[];
       maxBudgetUsd?: number;
     },
-  ) => raw.invoke<any>("agents:runWorkflow", { projectId, ...data }),
+  ) => raw.invoke<any>("multiAgents:runWorkflow", { projectId, ...data }),
 
   // ── Project Builder ──
   build: (
     projectId: string,
     data: { requirements: string; maxBudgetUsd?: number },
-  ) => raw.invoke<any>("agents:build", { projectId, ...data }),
+  ) => raw.invoke<any>("multiAgents:build", { projectId, ...data }),
   buildResume: (projectId: string, maxBudgetUsd?: number) =>
-    raw.invoke<any>("agents:buildResume", { projectId, maxBudgetUsd }),
-  buildCancel: () => raw.invoke<void>("agents:buildCancel"),
-  buildProgress: () => raw.invoke<any>("agents:buildProgress"),
+    raw.invoke<any>("multiAgents:buildResume", { projectId, maxBudgetUsd }),
+  buildCancel: () => raw.invoke<void>("multiAgents:buildCancel"),
+  buildProgress: () => raw.invoke<any>("multiAgents:buildProgress"),
 
   // ── Human Input ──
   respond: (requestId: string, value: string) =>
-    raw.invoke<boolean>("agents:respond", { requestId, value }),
+    raw.invoke<boolean>("multiAgents:respond", { requestId, value }),
   setAutoApprove: (enabled: boolean) =>
-    raw.invoke<void>("agents:setAutoApprove", { enabled }),
+    raw.invoke<void>("multiAgents:setAutoApprove", { enabled }),
 
   // ── Persistence ──
   listDispatches: (projectId: string, limit?: number) =>
-    raw.invoke<any[]>("agents:listDispatches", { projectId, limit }),
+    raw.invoke<any[]>("multiAgents:listDispatches", { projectId, limit }),
   getDispatch: (dispatchId: string) =>
-    raw.invoke<any>("agents:getDispatch", { dispatchId }),
+    raw.invoke<any>("multiAgents:getDispatch", { dispatchId }),
   listChat: (projectId: string, conversationId?: string) =>
-    raw.invoke<any[]>("agents:listChat", { projectId, conversationId }),
+    raw.invoke<any[]>("multiAgents:listChat", { projectId, conversationId }),
   clearChat: (projectId: string) =>
-    raw.invoke<void>("agents:clearChat", { projectId }),
+    raw.invoke<void>("multiAgents:clearChat", { projectId }),
 
   // ── Conversations ──
   createConversation: (projectId: string, title?: string) =>
-    raw.invoke<any>("agents:createConversation", { projectId, title }),
+    raw.invoke<any>("multiAgents:createConversation", { projectId, title }),
   listConversations: (projectId: string) =>
-    raw.invoke<any[]>("agents:listConversations", { projectId }),
+    raw.invoke<any[]>("multiAgents:listConversations", { projectId }),
   deleteConversation: (conversationId: string) =>
-    raw.invoke<void>("agents:deleteConversation", { conversationId }),
+    raw.invoke<void>("multiAgents:deleteConversation", { conversationId }),
   getArtifacts: (conversationId: string) =>
     raw.invoke<
       { path: string; tool: string; role: string; timestamp: string }[]
-    >("agents:getArtifacts", { conversationId }),
+    >("multiAgents:getArtifacts", { conversationId }),
 
   // ── Subscriptions (push events from main process) ──
   onEvent: (cb: (event: AgentEvent) => void) =>
-    raw.subscribe("agents:onEvent", cb),
+    raw.subscribe("multiAgents:onEvent", cb),
   onWorkflowEvent: (cb: (event: WorkflowEvent) => void) =>
-    raw.subscribe("agents:onWorkflowEvent", cb),
+    raw.subscribe("multiAgents:onWorkflowEvent", cb),
   onBuildEvent: (cb: (event: BuildEvent) => void) =>
-    raw.subscribe("agents:onBuildEvent", cb),
+    raw.subscribe("multiAgents:onBuildEvent", cb),
   onInputRequest: (cb: (request: InputRequest) => void) =>
-    raw.subscribe("agents:onInputRequest", cb),
+    raw.subscribe("multiAgents:onInputRequest", cb),
 } as const;

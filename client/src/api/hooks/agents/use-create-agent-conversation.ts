@@ -12,7 +12,7 @@ export function useCreateAgentConversation() {
 
   return useMutation({
     mutationFn: (title?: string) =>
-      api.agents.createConversation(projectId!, title),
+      api.multiAgents.createConversation(projectId!, title),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: keys.agentConversations });
     },

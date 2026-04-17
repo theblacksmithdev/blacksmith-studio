@@ -13,6 +13,6 @@ export function useRunPipeline() {
       pipelineId: string;
       prompt: string;
       maxBudgetUsd?: number;
-    }) => api.agents.runPipeline(projectId!, data),
+    }) => api.multiAgents.runPipeline(projectId!, data),
   });
 }

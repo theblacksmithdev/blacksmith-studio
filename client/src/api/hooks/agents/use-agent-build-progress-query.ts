@@ -10,6 +10,6 @@ export function useAgentBuildProgressQuery() {
 
   return useQuery({
     queryKey: keys.agentBuildProgress,
-    queryFn: () => api.agents.buildProgress(),
+    queryFn: () => api.multiAgents.buildProgress(),
   });
 }

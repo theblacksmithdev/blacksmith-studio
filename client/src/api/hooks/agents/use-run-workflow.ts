@@ -14,6 +14,6 @@ export function useRunWorkflow() {
       name: string;
       steps: { role: AgentRole; prompt: string; dependsOn?: number }[];
       maxBudgetUsd?: number;
-    }) => api.agents.runWorkflow(projectId!, data),
+    }) => api.multiAgents.runWorkflow(projectId!, data),
   });
 }

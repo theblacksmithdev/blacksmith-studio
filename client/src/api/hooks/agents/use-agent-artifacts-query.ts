@@ -7,7 +7,7 @@ import { api } from "@/api";
 export function useAgentArtifactsQuery(conversationId: string | undefined) {
   return useQuery({
     queryKey: ["agents", "artifacts", conversationId] as const,
-    queryFn: () => api.agents.getArtifacts(conversationId!),
+    queryFn: () => api.multiAgents.getArtifacts(conversationId!),
     enabled: !!conversationId,
   });
 }

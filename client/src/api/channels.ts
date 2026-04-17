@@ -1,10 +1,10 @@
-import { claude } from "./modules/claude";
+import { singleAgent } from "./modules/single-agent";
 import { projects } from "./modules/projects";
 import { files } from "./modules/files";
 import { runner } from "./modules/runner";
 import { git } from "./modules/git";
 import { terminal } from "./modules/terminal";
-import { agents } from "./modules/agents";
+import { multiAgents } from "./modules/multi-agents";
 import { python } from "./modules/python";
 import { graphify } from "./modules/graphify";
 import { windowApi } from "./modules/window";
@@ -30,10 +30,10 @@ type SubscribeFn<T> = (cb: (data: T) => void) => () => void;
  */
 export const channels = {
   // Claude
-  "claude:message": claude.onMessage,
-  "claude:toolUse": claude.onToolUse,
-  "claude:done": claude.onDone,
-  "claude:error": claude.onError,
+  "singleAgent:message": singleAgent.onMessage,
+  "singleAgent:toolUse": singleAgent.onToolUse,
+  "singleAgent:done": singleAgent.onDone,
+  "singleAgent:error": singleAgent.onError,
 
   // Projects
   "projects:createOutput": projects.onCreateOutput,
@@ -55,10 +55,10 @@ export const channels = {
   "terminal:exit": terminal.onExit,
 
   // Agents
-  "agents:event": agents.onEvent,
-  "agents:workflowEvent": agents.onWorkflowEvent,
-  "agents:buildEvent": agents.onBuildEvent,
-  "agents:inputRequest": agents.onInputRequest,
+  "multiAgents:event": multiAgents.onEvent,
+  "multiAgents:workflowEvent": multiAgents.onWorkflowEvent,
+  "multiAgents:buildEvent": multiAgents.onBuildEvent,
+  "multiAgents:inputRequest": multiAgents.onInputRequest,
 
   // Python
   "python:progress": python.onProgress,

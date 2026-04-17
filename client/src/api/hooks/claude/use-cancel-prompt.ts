@@ -6,6 +6,6 @@ import { api } from "@/api";
  */
 export function useCancelPrompt() {
   return useMutation({
-    mutationFn: (sessionId: string) => api.claude.cancel({ sessionId }),
+    mutationFn: (sessionId: string) => api.singleAgent.cancel({ sessionId }),
   });
 }

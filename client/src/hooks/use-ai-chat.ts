@@ -21,18 +21,18 @@ export function useAiChat() {
 
   useEffect(() => {
     const unsubs = [
-      api.claude.onMessage((data) => {
+      api.singleAgent.onMessage((data) => {
         lastContentRef.current = data.content;
         chatStore.getState().updateStreamingMessage(data.content);
       }),
-      api.claude.onToolUse((data) => {
+      api.singleAgent.onToolUse((data) => {
         chatStore.getState().addToolCall({
           toolId: data.toolId,
           toolName: data.toolName,
           input: data.input,
         });
       }),
-      api.claude.onDone(() => {
+      api.singleAgent.onDone(() => {
         chatStore
           .getState()
           .appendPendingAssistantMessage(lastContentRef.current);
@@ -45,7 +45,7 @@ export function useAiChat() {
           });
         }
       }),
-      api.claude.onError((data) => {
+      api.singleAgent.onError((data) => {
         chatStore
           .getState()
           .appendPendingAssistantMessage(`Error: ${data.error}`);
@@ -67,13 +67,13 @@ export function useAiChat() {
       store.setStreaming(true);
       store.updateStreamingMessage("");
       lastContentRef.current = "";
-      api.claude.sendPrompt({ projectId: projectId!, sessionId, prompt });
+      api.singleAgent.sendPrompt({ projectId: projectId!, sessionId, prompt });
     },
     [projectId],
   );
 
   const cancelPrompt = useCallback((sessionId: string) => {
-    api.claude.cancel({ sessionId });
+    api.singleAgent.cancel({ sessionId });
     chatStore.getState().setStreaming(false);
   }, []);
 

@@ -7,7 +7,7 @@ import { api } from "@/api";
 export function useAgentDispatchQuery(dispatchId: string | undefined) {
   return useQuery({
     queryKey: ["agents", "dispatch", dispatchId] as const,
-    queryFn: () => api.agents.getDispatch(dispatchId!),
+    queryFn: () => api.multiAgents.getDispatch(dispatchId!),
     enabled: !!dispatchId,
   });
 }

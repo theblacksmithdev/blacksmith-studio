@@ -11,7 +11,7 @@ export function useDeleteAgentConversation() {
 
   return useMutation({
     mutationFn: (conversationId: string) =>
-      api.agents.deleteConversation(conversationId),
+      api.multiAgents.deleteConversation(conversationId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: keys.agentConversations });
     },

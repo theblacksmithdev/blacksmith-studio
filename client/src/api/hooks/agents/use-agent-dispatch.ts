@@ -18,7 +18,7 @@ export function useAgentDispatch() {
     }: {
       prompt: string;
       conversationId?: string;
-    }) => api.agents.dispatch(projectId!, prompt, conversationId),
+    }) => api.multiAgents.dispatch(projectId!, prompt, conversationId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: keys.agentConversations });
     },

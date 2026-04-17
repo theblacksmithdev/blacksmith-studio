@@ -10,6 +10,6 @@ export function useAgentHistoryQuery(limit?: number) {
 
   return useQuery({
     queryKey: keys.agentHistory,
-    queryFn: () => api.agents.history(limit),
+    queryFn: () => api.multiAgents.history(limit),
   });
 }

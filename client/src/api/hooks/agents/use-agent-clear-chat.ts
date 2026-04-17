@@ -11,7 +11,7 @@ export function useAgentClearChat() {
   const projectId = useActiveProjectId();
 
   return useMutation({
-    mutationFn: () => api.agents.clearChat(projectId!),
+    mutationFn: () => api.multiAgents.clearChat(projectId!),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: keys.agentConversations });
     },

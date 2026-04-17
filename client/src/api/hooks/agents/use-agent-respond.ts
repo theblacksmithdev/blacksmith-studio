@@ -7,6 +7,6 @@ import { api } from "@/api";
 export function useAgentRespond() {
   return useMutation({
     mutationFn: ({ requestId, value }: { requestId: string; value: string }) =>
-      api.agents.respond(requestId, value),
+      api.multiAgents.respond(requestId, value),
   });
 }

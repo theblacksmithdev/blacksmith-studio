@@ -10,7 +10,7 @@ export function useAgentDispatchesQuery(limit?: number) {
 
   return useQuery({
     queryKey: ["agents", projectId, "dispatches", limit] as const,
-    queryFn: () => api.agents.listDispatches(projectId!, limit),
+    queryFn: () => api.multiAgents.listDispatches(projectId!, limit),
     enabled: !!projectId,
   });
 }

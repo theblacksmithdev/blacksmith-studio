@@ -10,6 +10,6 @@ export function useAgentBuild() {
 
   return useMutation({
     mutationFn: (data: { requirements: string; maxBudgetUsd?: number }) =>
-      api.agents.build(projectId!, data),
+      api.multiAgents.build(projectId!, data),
   });
 }

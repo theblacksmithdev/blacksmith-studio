@@ -11,6 +11,6 @@ export function useAgentExecute() {
 
   return useMutation({
     mutationFn: (data: { prompt: string; role?: AgentRole }) =>
-      api.agents.execute(projectId!, data),
+      api.multiAgents.execute(projectId!, data),
   });
 }

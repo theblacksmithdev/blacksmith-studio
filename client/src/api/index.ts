@@ -3,7 +3,7 @@ import { sessions } from "./modules/sessions";
 import { files } from "./modules/files";
 import { settings } from "./modules/settings";
 import { runner } from "./modules/runner";
-import { claude } from "./modules/claude";
+import { singleAgent } from "./modules/single-agent";
 import { templates } from "./modules/templates";
 import { health } from "./modules/health";
 import { windowApi } from "./modules/window";
@@ -14,7 +14,7 @@ import { skills } from "./modules/skills";
 import { knowledge } from "./modules/knowledge";
 import { git } from "./modules/git";
 import { terminal } from "./modules/terminal";
-import { agents } from "./modules/agents";
+import { multiAgents } from "./modules/multi-agents";
 import { python } from "./modules/python";
 import { graphify } from "./modules/graphify";
 
@@ -24,7 +24,7 @@ export const api = {
   files,
   settings,
   runner,
-  claude,
+  singleAgent,
   templates,
   health,
   window: windowApi,
@@ -35,7 +35,7 @@ export const api = {
   knowledge,
   git,
   terminal,
-  agents,
+  multiAgents,
   python,
   graphify,
 } as const;

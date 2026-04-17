@@ -6,6 +6,6 @@ import { api } from "@/api";
  */
 export function useAgentSetAutoApprove() {
   return useMutation({
-    mutationFn: (enabled: boolean) => api.agents.setAutoApprove(enabled),
+    mutationFn: (enabled: boolean) => api.multiAgents.setAutoApprove(enabled),
   });
 }

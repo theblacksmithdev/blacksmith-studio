@@ -7,6 +7,6 @@ import type { AgentRole } from "@/api/types";
  */
 export function useAgentCancel() {
   return useMutation({
-    mutationFn: (role: AgentRole) => api.agents.cancel(role),
+    mutationFn: (role: AgentRole) => api.multiAgents.cancel(role),
   });
 }
