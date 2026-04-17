@@ -20,22 +20,25 @@
  *
  * The scanner respects quoted strings: braces or brackets inside `"..."`
  * don't affect the depth counter. Escape sequences inside strings are
- * handled so `"\""` doesn't prematurely end the string.
+ * handled so `"\""` doesn't prematurely end the string. Prose before the
+ * JSON and a trailing ``` fence (or other commentary) after it are ignored,
+ * so no pre-stripping of markdown fences is needed — that was previously
+ * done but caused truncation when `prompt` strings contained their own
+ * ``` fenced snippets.
  */
 export function extractJsonStructure(
   raw: string,
   open: "{" | "[",
 ): string | null {
   const close = open === "{" ? "}" : "]";
-  const stripped = stripCodeFence(raw);
 
   let start = -1;
   let depth = 0;
   let inString = false;
   let escape = false;
 
-  for (let i = 0; i < stripped.length; i++) {
-    const ch = stripped[i];
+  for (let i = 0; i < raw.length; i++) {
+    const ch = raw[i];
 
     if (escape) {
       escape = false;
@@ -58,22 +61,10 @@ export function extractJsonStructure(
       if (depth === 0) continue;
       depth--;
       if (depth === 0 && start !== -1) {
-        return stripped.slice(start, i + 1);
+        return raw.slice(start, i + 1);
       }
     }
   }
 
   return null;
-}
-
-/**
- * Strip a surrounding markdown code fence if present. Accepts fences with
- * or without a language tag (``` or ```json). If the response contains
- * prose outside the fence, returns the fenced content so the scanner sees
- * just the JSON body.
- */
-function stripCodeFence(raw: string): string {
-  const trimmed = raw.trim();
-  const match = trimmed.match(/```(?:json|JSON)?\s*\n?([\s\S]*?)\n?\s*```/);
-  return match ? match[1] : trimmed;
 }
