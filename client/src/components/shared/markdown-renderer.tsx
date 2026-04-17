@@ -1,108 +1,11 @@
-import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
-import { Box, Code, Text, Heading, Link } from "@chakra-ui/react";
-import { Copy, Check } from "lucide-react";
+import { Box, Text, Heading, Link } from "@chakra-ui/react";
+import { CodeBlock, InlineCode } from "@/components/shared/code-block";
 
 interface MarkdownRendererProps {
   content: string;
-}
-
-function CodeBlock({
-  className,
-  children,
-}: {
-  className?: string;
-  children: React.ReactNode;
-}) {
-  const [copied, setCopied] = useState(false);
-  const language = className?.replace("language-", "") || "";
-  const code = String(children).replace(/\n$/, "");
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <Box
-      css={{
-        borderRadius: "8px",
-        border: "1px solid var(--studio-border)",
-        overflow: "hidden",
-        marginBottom: "12px",
-        background: "var(--studio-code-bg)",
-      }}
-    >
-      {/* Header bar */}
-      <Box
-        css={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "6px 12px",
-          borderBottom: "1px solid var(--studio-border)",
-          background: "rgba(255,255,255,0.02)",
-        }}
-      >
-        <Text
-          css={{
-            fontSize: "12px",
-            color: "var(--studio-text-tertiary)",
-            textTransform: "uppercase",
-            letterSpacing: "0.04em",
-            fontWeight: 500,
-          }}
-        >
-          {language || "code"}
-        </Text>
-        <Box
-          as="button"
-          onClick={handleCopy}
-          css={{
-            display: "flex",
-            alignItems: "center",
-            gap: "4px",
-            padding: "2px 6px",
-            borderRadius: "4px",
-            background: "transparent",
-            border: "none",
-            color: copied
-              ? "var(--studio-green)"
-              : "var(--studio-text-tertiary)",
-            fontSize: "12px",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-            "&:hover": {
-              color: "var(--studio-text-secondary)",
-              background: "var(--studio-border)",
-            },
-          }}
-        >
-          {copied ? <Check size={12} /> : <Copy size={12} />}
-          {copied ? "Copied" : "Copy"}
-        </Box>
-      </Box>
-
-      {/* Code content */}
-      <Box
-        as="pre"
-        css={{
-          padding: "12px 16px",
-          overflowX: "auto",
-          margin: 0,
-          fontSize: "14px",
-          lineHeight: "20px",
-          fontFamily:
-            "'SF Mono', 'Fira Code', 'Fira Mono', Menlo, Consolas, monospace",
-        }}
-      >
-        <code className={className}>{children}</code>
-      </Box>
-    </Box>
-  );
 }
 
 export function MarkdownRenderer({ content }: MarkdownRendererProps) {
@@ -193,27 +96,16 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
               {children}
             </Link>
           ),
-          code: ({ className, children, ...props }) => {
+          code: ({ className, children }) => {
             const isInline = !className;
-            if (isInline) {
-              return (
-                <Code
-                  css={{
-                    background: "var(--studio-bg-surface)",
-                    color: "#e879f9",
-                    fontSize: "0.9em",
-                    padding: "2px 6px",
-                    borderRadius: "4px",
-                    border: "1px solid var(--studio-border)",
-                    fontFamily:
-                      "'SF Mono', 'Fira Code', 'Fira Mono', Menlo, Consolas, monospace",
-                  }}
-                >
-                  {children}
-                </Code>
-              );
-            }
-            return <CodeBlock className={className}>{children}</CodeBlock>;
+            if (isInline) return <InlineCode>{children}</InlineCode>;
+            const language = className?.replace("language-", "") || undefined;
+            const code = String(children).replace(/\n$/, "");
+            return (
+              <Box css={{ marginBottom: "12px" }}>
+                <CodeBlock code={code} language={language} />
+              </Box>
+            );
           },
           blockquote: ({ children }) => (
             <Box
