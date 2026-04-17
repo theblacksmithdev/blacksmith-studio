@@ -4,7 +4,7 @@ import {
   FRONTEND_MODULARIZATION,
   BACKEND_MODULARIZATION,
   MODULARIZATION_REVIEW_CHECKLIST,
-} from "../../principles/index.js";
+} from "../../../../studio-context/principles/index.js";
 
 export const DEFINITION: AgentRoleDefinition = {
   role: "code-reviewer",

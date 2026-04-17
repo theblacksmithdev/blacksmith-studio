@@ -4,7 +4,7 @@ import {
   ENGINEERING_PRINCIPLES,
   FRONTEND_MODULARIZATION,
   BACKEND_MODULARIZATION,
-} from "../../principles/index.js";
+} from "../../../../studio-context/principles/index.js";
 
 export const DEFINITION: AgentRoleDefinition = {
   role: "fullstack-engineer",

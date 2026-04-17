@@ -6,10 +6,10 @@ import type { Ai } from "../../server/services/ai/ai.js";
 import {
   AgentManager,
   ProjectBuilder,
-} from "../../server/services/agents/index.js";
+} from "../../server/services/chat-agents-team/agents/index.js";
 import { AgentSessionManager } from "../../server/services/chat-agents-team/index.js";
-import type { AgentRole } from "../../server/services/agents/types.js";
-import type { AgentExecuteOptions } from "../../server/services/agents/base/index.js";
+import type { AgentRole } from "../../server/services/chat-agents-team/agents/types.js";
+import type { AgentExecuteOptions } from "../../server/services/chat-agents-team/agents/base/index.js";
 import {
   AGENTS_LIST,
   AGENTS_ROUTE,

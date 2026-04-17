@@ -1,6 +1,6 @@
 import type { AgentRoleDefinition } from "../../types.js";
 import { DEVELOPER_BOUNDARIES } from "../boundaries.js";
-import { ENGINEERING_PRINCIPLES, BACKEND_MODULARIZATION } from "../../principles/index.js";
+import { ENGINEERING_PRINCIPLES, BACKEND_MODULARIZATION } from "../../../../studio-context/principles/index.js";
 
 export const DEFINITION: AgentRoleDefinition = {
   role: "backend-engineer",

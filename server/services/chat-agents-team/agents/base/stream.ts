@@ -1,4 +1,4 @@
-import type { AiStreamHandle } from "../../ai/index.js";
+import type { AiStreamHandle } from "../../../ai/index.js";
 import { describeToolUse, describeMessageStart } from "../utils/activity.js";
 import type { AgentStatus, AgentExecution, AgentEventData } from "../types.js";
 import type { ToolCallRecord, HandoffDescriptor } from "./types.js";

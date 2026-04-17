@@ -1,7 +1,7 @@
 import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { nodeEnv } from "../../node-env.js";
+import { nodeEnv } from "../../../node-env.js";
 
 export interface VerificationResult {
   passed: boolean;

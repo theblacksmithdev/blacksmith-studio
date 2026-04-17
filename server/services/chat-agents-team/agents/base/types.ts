@@ -1,5 +1,5 @@
 import type { AgentRole, AgentConfig } from "../types.js";
-import type { Ai } from "../../ai/ai.js";
+import type { Ai } from "../../../ai/ai.js";
 
 /** Options passed to BaseAgent.execute() */
 export interface AgentExecuteOptions {

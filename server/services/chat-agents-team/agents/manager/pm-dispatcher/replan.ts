@@ -12,7 +12,7 @@ import {
 import { PM_REPLAN_PROMPT, PM_REPLAN_GATE_PROMPT } from "./prompts.js";
 import { PMEventEmitter, type EmitFn } from "./pm-emitter.js";
 import { runPM } from "./pm-runner.js";
-import { AiModelTier } from "../../../ai/types.js";
+import { AiModelTier } from "../../../../ai/types.js";
 import { extractJsonStructure } from "../../utils/json-extract.js";
 
 /** Artifacts smaller than this don't have enough content to warrant restructuring. */

@@ -3,7 +3,7 @@ import type { DispatchTask } from "./types.js";
 import { PM_REFINE_PROMPT } from "./prompts.js";
 import { PMEventEmitter, type EmitFn } from "./pm-emitter.js";
 import { runPM } from "./pm-runner.js";
-import { AiModelTier } from "../../../ai/types.js";
+import { AiModelTier } from "../../../../ai/types.js";
 
 /**
  * Two-phase PM refinement: refine a task's prompt using artifacts from

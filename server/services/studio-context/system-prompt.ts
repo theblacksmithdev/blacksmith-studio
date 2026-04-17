@@ -6,7 +6,7 @@
  * and the agent pipeline at the same quality bar.
  */
 
-import { ALL_PRINCIPLES } from "../agents/principles/index.js";
+import { ALL_PRINCIPLES } from "./principles/index.js";
 
 const BASE_PROMPT = `
 You are being used through Blacksmith Studio, a desktop IDE for building any project — web apps, APIs, CLI tools, data pipelines, mobile apps, libraries, DevOps scripts, ML models, games, embedded systems, or anything else. Produce production-grade code appropriate to the project type.
