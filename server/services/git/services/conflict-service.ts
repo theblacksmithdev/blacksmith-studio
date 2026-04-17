@@ -1,5 +1,5 @@
 import type { GitEventBus } from "../event-bus.js";
-import type { IGitClient } from "../git-client.js";
+import type { GitClient } from "../git-client.js";
 import type { ConflictFile } from "../types.js";
 
 export type ConflictResolution = "ours" | "theirs";
@@ -13,7 +13,7 @@ export type ConflictResolution = "ours" | "theirs";
  */
 export class ConflictService {
   constructor(
-    private readonly client: IGitClient,
+    private readonly client: GitClient,
     private readonly bus: GitEventBus,
   ) {}
 

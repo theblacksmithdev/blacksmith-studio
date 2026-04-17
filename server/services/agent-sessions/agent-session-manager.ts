@@ -1,5 +1,5 @@
 import { getDatabase } from "../../db/index.js";
-import { DispatchHistoryFormatter } from "./dispatch-history-formatter.js";
+import { formatDispatchHistory } from "./dispatch-history-formatter.js";
 import {
   ChatMessageRepository,
   ConversationRepository,
@@ -39,7 +39,6 @@ export class AgentSessionManager {
   private readonly conversations: ConversationService;
   private readonly dispatches: DispatchService;
   private readonly chat: ChatService;
-  private readonly history: DispatchHistoryFormatter;
 
   constructor(db: Database = getDatabase()) {
     const conversationRepo = new ConversationRepository(db);
@@ -50,7 +49,6 @@ export class AgentSessionManager {
     this.conversations = new ConversationService(conversationRepo, chatRepo);
     this.dispatches = new DispatchService(dispatchRepo, taskRepo);
     this.chat = new ChatService(chatRepo, this.conversations);
-    this.history = new DispatchHistoryFormatter(this.dispatches);
   }
 
   /* ── Conversations ── */
@@ -142,7 +140,7 @@ export class AgentSessionManager {
   }
 
   getRecentDispatchContext(projectId: string, limit = 5): string {
-    return this.history.format(projectId, limit);
+    return formatDispatchHistory(this.dispatches.list(projectId, limit));
   }
 
   /* ── Chat Messages ── */

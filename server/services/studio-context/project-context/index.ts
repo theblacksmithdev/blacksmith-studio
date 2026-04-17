@@ -3,8 +3,8 @@ import { ProjectContextCache } from "./context-cache.js";
 
 export { ProjectContextBuilder } from "./project-context-builder.js";
 export { ProjectContextCache } from "./context-cache.js";
-export { TreeScanner } from "./tree-scanner.js";
-export { KeyFilesReader, type KeyFile } from "./key-files-reader.js";
+export { scanTree } from "./tree-scanner.js";
+export { readKeyFiles, type KeyFile } from "./key-files-reader.js";
 export * from "./constants.js";
 
 /**

@@ -14,7 +14,7 @@ export {
   type TaskInsert,
   type TaskUpdate,
 } from "./repositories/index.js";
-export { DispatchHistoryFormatter } from "./dispatch-history-formatter.js";
+export { formatDispatchHistory } from "./dispatch-history-formatter.js";
 export type {
   AgentDispatchRecord,
   AgentTaskRecord,

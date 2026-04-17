@@ -1,43 +1,43 @@
 import { getDatabase } from "../../db/index.js";
 import type { Session, SessionSummary, StoredMessage } from "../../types.js";
 import { ArtifactTracer } from "./artifact-tracer.js";
-import { FileToolParser } from "./file-tool-parser.js";
 import {
   MessageRepository,
   SessionRepository,
   ToolCallRepository,
 } from "./repositories/index.js";
-import { MessageService, SessionService } from "./services/index.js";
+import { SessionService } from "./services/index.js";
 import type { ConversationArtifact, Database } from "./types.js";
 
 /**
  * Facade over the session subsystem.
  *
- * Single Responsibility: composition + delegation. Every public method
- * routes to exactly one collaborator. The facade itself holds zero SQL
- * and zero domain logic.
+ * Single Responsibility: composition + delegation. The facade holds zero
+ * SQL — reads go through SessionService, writes fan out to the three
+ * repositories directly (single-statement write paths don't need a
+ * service wrapper).
  *
  * Dependency Inversion: accepts a Database handle (defaulting to the
- * shared Drizzle singleton). Callers that want an isolated database —
- * tests, multi-tenant shards — pass their own.
- *
- * Public API is preserved byte-for-byte with the pre-refactor
- * SessionManager so IPC handlers don't change.
+ * shared Drizzle singleton). Tests can inject an in-memory instance.
  */
 export class SessionManager {
+  private readonly sessionRepo: SessionRepository;
+  private readonly messageRepo: MessageRepository;
+  private readonly toolCallRepo: ToolCallRepository;
   private readonly sessions: SessionService;
-  private readonly messages: MessageService;
   private readonly tracer: ArtifactTracer;
 
   constructor(db: Database = getDatabase()) {
-    const sessionRepo = new SessionRepository(db);
-    const messageRepo = new MessageRepository(db);
-    const toolCallRepo = new ToolCallRepository(db);
-    const parser = new FileToolParser();
+    this.sessionRepo = new SessionRepository(db);
+    this.messageRepo = new MessageRepository(db);
+    this.toolCallRepo = new ToolCallRepository(db);
 
-    this.sessions = new SessionService(sessionRepo, messageRepo, toolCallRepo);
-    this.messages = new MessageService(sessionRepo, messageRepo, toolCallRepo);
-    this.tracer = new ArtifactTracer(db, messageRepo, toolCallRepo, parser);
+    this.sessions = new SessionService(
+      this.sessionRepo,
+      this.messageRepo,
+      this.toolCallRepo,
+    );
+    this.tracer = new ArtifactTracer(db, this.messageRepo, this.toolCallRepo);
   }
 
   /* ── Sessions ── */
@@ -72,8 +72,34 @@ export class SessionManager {
 
   /* ── Messages ── */
 
+  /**
+   * Append a message to a session. Writes the message row, fans out any
+   * tool-call rows, and touches the parent session's `updatedAt` — the
+   * three-repo dance is kept inline here because it's a single write path
+   * and wrapping it in a service adds indirection without clarity.
+   */
   addMessage(sessionId: string, message: StoredMessage): void {
-    this.messages.add(sessionId, message);
+    this.messageRepo.insert({
+      id: message.id,
+      sessionId,
+      role: message.role,
+      content: message.content,
+      timestamp: message.timestamp,
+    });
+
+    if (message.toolCalls) {
+      for (const tc of message.toolCalls) {
+        this.toolCallRepo.insert({
+          messageId: message.id,
+          toolId: tc.toolId,
+          toolName: tc.toolName,
+          input: JSON.stringify(tc.input),
+          output: tc.output ?? null,
+        });
+      }
+    }
+
+    this.sessionRepo.touch(sessionId);
   }
 
   /* ── Cross-domain tracing ── */

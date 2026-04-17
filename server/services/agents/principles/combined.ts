@@ -1,4 +1,4 @@
-import { MODULARIZATION_PRINCIPLE } from "./modularization/index.js";
+import { MODULARIZATION_PRINCIPLE } from "./modularization-principle.js";
 import { FP_PRINCIPLES } from "./fp.js";
 import { SOLID_PRINCIPLES } from "./solid.js";
 import { DESIGN_PRINCIPLES } from "./design.js";

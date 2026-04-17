@@ -1,11 +1,14 @@
 import type { PythonManager } from "../python/index.js";
 import { ArtifactStore } from "./artifact-store.js";
-import { BuildRunner, BuildTracker } from "./build-runner.js";
+import { BuildRunner } from "./build-runner.js";
 import { ClaudeMdSection } from "./claude-md-section.js";
-import { DEFAULT_STALE_AFTER_MS } from "./constants.js";
+import {
+  BIN_NAME,
+  DEFAULT_STALE_AFTER_MS,
+  QUERY_TIMEOUT_MS,
+} from "./constants.js";
 import { Installer } from "./installer.js";
 import { GraphifyPaths } from "./paths.js";
-import { QueryRunner } from "./query-runner.js";
 import type {
   GraphifyBuildResult,
   GraphifyInstallCheck,
@@ -17,26 +20,17 @@ import type {
 /**
  * Facade over the graphify subsystem.
  *
- * Single Responsibility: composition and delegation. Every method routes
- * to exactly one collaborator. The public API is preserved byte-for-byte
- * with the pre-refactor GraphifyManager so IPC handlers don't change.
- *
- * The installer, build runner, and query runner are constructed once and
- * shared across all project roots. Per-project state (paths, artifact
- * store, CLAUDE.md) is built on demand per call — project roots are
- * passed in at the method boundary, not stored.
+ * Single Responsibility: composition and delegation. Holds the
+ * long-lived collaborators (Installer, BuildRunner) and builds
+ * per-project ArtifactStores on demand.
  */
 export class GraphifyManager {
   private readonly installer: Installer;
   private readonly builder: BuildRunner;
-  private readonly queryRunner: QueryRunner;
-  private readonly tracker: BuildTracker;
 
-  constructor(pythonManager: PythonManager) {
-    this.installer = new Installer(pythonManager);
-    this.tracker = new BuildTracker();
-    this.builder = new BuildRunner(pythonManager, this.installer, this.tracker);
-    this.queryRunner = new QueryRunner(pythonManager);
+  constructor(private readonly python: PythonManager) {
+    this.installer = new Installer(python);
+    this.builder = new BuildRunner(python, this.installer);
   }
 
   /* ── Install ── */
@@ -61,8 +55,14 @@ export class GraphifyManager {
     return this.builder.run(projectRoot, onProgress);
   }
 
-  query(projectRoot: string, question: string): Promise<string> {
-    return this.queryRunner.query(projectRoot, question);
+  async query(projectRoot: string, question: string): Promise<string> {
+    const output = await this.python.packages.run(
+      BIN_NAME,
+      ["query", question],
+      { cwd: projectRoot, timeout: QUERY_TIMEOUT_MS },
+    );
+    if (output === null) throw new Error("Query failed");
+    return output;
   }
 
   /* ── Status ── */
@@ -71,9 +71,9 @@ export class GraphifyManager {
     projectRoot: string,
     maxAgeMs: number = DEFAULT_STALE_AFTER_MS,
   ): GraphifyStatus {
-    const store = new ArtifactStore(new GraphifyPaths(projectRoot));
+    const store = this.storeFor(projectRoot);
     const installed = this.installer.isInstalled();
-    const building = this.tracker.isBuilding(projectRoot);
+    const building = this.builder.isBuilding(projectRoot);
     const hasVisualization = store.hasVisualization();
 
     const meta = store.readMeta();
@@ -106,15 +106,15 @@ export class GraphifyManager {
   /* ── Artifact reads ── */
 
   getReport(projectRoot: string): string | null {
-    return new ArtifactStore(new GraphifyPaths(projectRoot)).readReport();
+    return this.storeFor(projectRoot).readReport();
   }
 
   getGraph(projectRoot: string): object | null {
-    return new ArtifactStore(new GraphifyPaths(projectRoot)).readGraph();
+    return this.storeFor(projectRoot).readGraph();
   }
 
   getVisualizationPath(projectRoot: string): string | null {
-    return new ArtifactStore(new GraphifyPaths(projectRoot)).visualizationPath();
+    return this.storeFor(projectRoot).visualizationPath();
   }
 
   /* ── Cleanup ── */
@@ -123,5 +123,9 @@ export class GraphifyManager {
     const paths = new GraphifyPaths(projectRoot);
     new ArtifactStore(paths).clean();
     new ClaudeMdSection(paths).remove();
+  }
+
+  private storeFor(projectRoot: string): ArtifactStore {
+    return new ArtifactStore(new GraphifyPaths(projectRoot));
   }
 }

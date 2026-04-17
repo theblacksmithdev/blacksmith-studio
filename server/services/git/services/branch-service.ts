@@ -1,5 +1,5 @@
 import type { GitEventBus } from "../event-bus.js";
-import type { IGitClient } from "../git-client.js";
+import type { GitClient } from "../git-client.js";
 import type { BranchInfo } from "../types.js";
 
 export interface MergeResult {
@@ -15,7 +15,7 @@ export interface MergeResult {
  */
 export class BranchService {
   constructor(
-    private readonly client: IGitClient,
+    private readonly client: GitClient,
     private readonly bus: GitEventBus,
   ) {}
 

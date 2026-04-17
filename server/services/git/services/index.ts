@@ -8,4 +8,3 @@ export {
   ConflictService,
   type ConflictResolution,
 } from "./conflict-service.js";
-export { RepoLifecycleService } from "./repo-lifecycle-service.js";

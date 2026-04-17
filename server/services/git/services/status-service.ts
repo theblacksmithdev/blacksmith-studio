@@ -1,5 +1,5 @@
 import type { SimpleGit, StatusResult } from "simple-git";
-import type { IGitClient } from "../git-client.js";
+import type { GitClient } from "../git-client.js";
 import type {
   GitStatus,
   SyncResolution,
@@ -15,7 +15,7 @@ import type {
  * typed result, never the raw simple-git StatusResult.
  */
 export class StatusService {
-  constructor(private readonly client: IGitClient) {}
+  constructor(private readonly client: GitClient) {}
 
   async getStatus(projectPath: string): Promise<GitStatus> {
     const git = this.client.of(projectPath);

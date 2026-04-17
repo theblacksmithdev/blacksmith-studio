@@ -1,6 +1,9 @@
 import type { PythonManager } from "../python/index.js";
 import { ArtifactStore } from "./artifact-store.js";
-import { ClaudeMdSection, GraphifySectionBuilder } from "./claude-md-section.js";
+import {
+  ClaudeMdSection,
+  buildGraphifySection,
+} from "./claude-md-section.js";
 import { BIN_NAME, BUILD_TIMEOUT_MS } from "./constants.js";
 import type { Installer } from "./installer.js";
 import { GraphifyPaths } from "./paths.js";
@@ -12,55 +15,32 @@ import type {
 import { VisualizationGenerator } from "./visualization/index.js";
 
 /**
- * Tracks project roots that are currently mid-build to prevent concurrent
- * rebuilds. Kept as its own value object rather than a loose set so the
- * BuildRunner stays stateless between projects.
- */
-export class BuildTracker {
-  private readonly inFlight = new Set<string>();
-
-  isBuilding(projectRoot: string): boolean {
-    return this.inFlight.has(projectRoot);
-  }
-
-  begin(projectRoot: string): void {
-    this.inFlight.add(projectRoot);
-  }
-
-  end(projectRoot: string): void {
-    this.inFlight.delete(projectRoot);
-  }
-}
-
-/**
  * Orchestrates a full graphify build.
  *
- * Single Responsibility: run `graphify update .`, persist its output, and
- * do the post-processing (visualization, meta, CLAUDE.md). The actual
- * filesystem work, HTML generation, and CLAUDE.md manipulation are
- * delegated to focused collaborators so the orchestrator stays thin.
+ * Owns the in-flight set that guards against concurrent rebuilds of the
+ * same project — small enough not to warrant its own class.
  *
- * Dependency Inversion: depends on Installer + PythonManager for the CLI
- * invocation, and an injected ArtifactStore/VisualizationGenerator/section
- * manager for persistence. All collaborators are constructed once and
- * parameterised by the project root for each call.
+ * After the CLI succeeds the post-processing is sequential: collect
+ * artifacts → generate visualization → write meta → update CLAUDE.md.
+ * Each step is idempotent so replays are safe.
  */
 export class BuildRunner {
+  private readonly inFlight = new Set<string>();
+
   constructor(
     private readonly python: PythonManager,
     private readonly installer: Installer,
-    private readonly tracker: BuildTracker = new BuildTracker(),
   ) {}
 
-  get buildTracker(): BuildTracker {
-    return this.tracker;
+  isBuilding(projectRoot: string): boolean {
+    return this.inFlight.has(projectRoot);
   }
 
   async run(
     projectRoot: string,
     onProgress?: ProgressCallback,
   ): Promise<GraphifyBuildResult> {
-    if (this.tracker.isBuilding(projectRoot)) {
+    if (this.inFlight.has(projectRoot)) {
       return {
         success: false,
         durationMs: 0,
@@ -68,7 +48,7 @@ export class BuildRunner {
       };
     }
 
-    this.tracker.begin(projectRoot);
+    this.inFlight.add(projectRoot);
     const start = Date.now();
 
     try {
@@ -88,15 +68,11 @@ export class BuildRunner {
 
       return { success: result.success, durationMs, error: result.error };
     } finally {
-      this.tracker.end(projectRoot);
+      this.inFlight.delete(projectRoot);
     }
   }
 
-  /**
-   * After a successful build: move artifacts into the managed dir,
-   * generate the visualization, write meta, and update CLAUDE.md.
-   * Each step is idempotent on re-run.
-   */
+  /** Collect artifacts, generate viz, write meta, update CLAUDE.md. */
   private async postProcess(
     projectRoot: string,
     durationMs: number,
@@ -117,15 +93,9 @@ export class BuildRunner {
     };
     store.writeMeta(meta);
 
-    this.updateClaudeMd(paths, store);
-  }
-
-  private updateClaudeMd(paths: GraphifyPaths, store: ArtifactStore): void {
     const graph = store.readGraph();
     const nodes = graph?.nodes?.length ?? 0;
     const edges = graph?.links?.length ?? 0;
-
-    const body = new GraphifySectionBuilder().build({ nodes, edges });
-    new ClaudeMdSection(paths).upsert(body);
+    new ClaudeMdSection(paths).upsert(buildGraphifySection({ nodes, edges }));
   }
 }

@@ -6,7 +6,7 @@ import {
   COMMIT_SYSTEM_PROMPT,
   MAX_AI_DIFF_SIZE,
 } from "../constants.js";
-import type { IGitClient } from "../git-client.js";
+import type { GitClient } from "../git-client.js";
 
 /**
  * Produces a commit message from the current diff.
@@ -17,7 +17,7 @@ import type { IGitClient } from "../git-client.js";
  * it falls back to a mechanical summary from file-status counts.
  */
 export class CommitMessageGenerator {
-  constructor(private readonly client: IGitClient) {}
+  constructor(private readonly client: GitClient) {}
 
   async generate(projectPath: string, ai?: Ai): Promise<string> {
     const git = this.client.of(projectPath);

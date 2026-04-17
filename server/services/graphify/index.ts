@@ -2,11 +2,10 @@ export { GraphifyManager } from "./graphify-manager.js";
 export { GraphifyPaths } from "./paths.js";
 export { ArtifactStore } from "./artifact-store.js";
 export { Installer } from "./installer.js";
-export { BuildRunner, BuildTracker } from "./build-runner.js";
-export { QueryRunner } from "./query-runner.js";
+export { BuildRunner } from "./build-runner.js";
 export {
   ClaudeMdSection,
-  GraphifySectionBuilder,
+  buildGraphifySection,
 } from "./claude-md-section.js";
 
 export type {

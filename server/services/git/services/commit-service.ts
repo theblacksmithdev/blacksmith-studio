@@ -1,8 +1,8 @@
 import type { DefaultLogFields, ListLogLine } from "simple-git";
 import { EMPTY_TREE_HASH } from "../constants.js";
-import { DiffFormatter } from "../diff-formatter.js";
+import { capDiff } from "../diff-formatter.js";
 import type { GitEventBus } from "../event-bus.js";
-import type { IGitClient } from "../git-client.js";
+import type { GitClient } from "../git-client.js";
 import type { CommitDetail, CommitEntry, CommitFile } from "../types.js";
 
 /**
@@ -13,7 +13,7 @@ import type { CommitDetail, CommitEntry, CommitFile } from "../types.js";
  */
 export class CommitService {
   constructor(
-    private readonly client: IGitClient,
+    private readonly client: GitClient,
     private readonly bus: GitEventBus,
   ) {}
 
@@ -96,7 +96,7 @@ export class CommitService {
       author,
       date,
       files,
-      diff: DiffFormatter.cap(rawDiff, "too large to display"),
+      diff: capDiff(rawDiff, "too large to display"),
     };
   }
 }

@@ -1,6 +1,6 @@
 import type { Ai } from "../ai/ai.js";
 import type { PaginationInput, PaginatedResult } from "../../types.js";
-import { GitClient, type IGitClient } from "./git-client.js";
+import { GitClient } from "./git-client.js";
 import { GitEventBus } from "./event-bus.js";
 import { GitWatcher } from "./watcher.js";
 import {
@@ -11,7 +11,6 @@ import {
   BranchService,
   SyncService,
   ConflictService,
-  RepoLifecycleService,
   type MergeResult,
   type SyncResult,
   type ConflictResolution,
@@ -40,6 +39,7 @@ export class GitManager {
   private readonly bus: GitEventBus;
   private readonly watcher: GitWatcher;
 
+  private readonly client: GitClient;
   private readonly status: StatusService;
   private readonly files: FilesService;
   private readonly commits: CommitService;
@@ -47,11 +47,11 @@ export class GitManager {
   private readonly branches: BranchService;
   private readonly syncer: SyncService;
   private readonly conflicts: ConflictService;
-  private readonly lifecycle: RepoLifecycleService;
 
-  constructor(client: IGitClient = new GitClient()) {
+  constructor(client: GitClient = new GitClient()) {
     this.bus = new GitEventBus();
     this.watcher = new GitWatcher(this.bus);
+    this.client = client;
 
     this.status = new StatusService(client);
     this.files = new FilesService(client);
@@ -60,7 +60,6 @@ export class GitManager {
     this.branches = new BranchService(client, this.bus);
     this.syncer = new SyncService(client, this.bus);
     this.conflicts = new ConflictService(client, this.bus);
-    this.lifecycle = new RepoLifecycleService(client, this.bus);
   }
 
   /* ── Status ── */
@@ -152,8 +151,12 @@ export class GitManager {
 
   /* ── Lifecycle ── */
 
-  init(projectPath: string): Promise<void> {
-    return this.lifecycle.init(projectPath);
+  async init(projectPath: string): Promise<void> {
+    const git = this.client.of(projectPath);
+    await git.init();
+    await git.add(".");
+    await git.commit("Initial project setup");
+    this.bus.emitStatusChange(projectPath);
   }
 
   /* ── Events ── */

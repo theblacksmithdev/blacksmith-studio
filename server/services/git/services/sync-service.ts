@@ -1,5 +1,5 @@
 import type { GitEventBus } from "../event-bus.js";
-import type { IGitClient } from "../git-client.js";
+import type { GitClient } from "../git-client.js";
 
 export interface SyncResult {
   success: boolean;
@@ -15,7 +15,7 @@ export interface SyncResult {
  */
 export class SyncService {
   constructor(
-    private readonly client: IGitClient,
+    private readonly client: GitClient,
     private readonly bus: GitEventBus,
   ) {}
 

@@ -3,7 +3,7 @@ import { agentDispatches, agentTasks } from "../../db/schema.js";
 import type { Database, ConversationArtifact } from "./types.js";
 import type { MessageRepository } from "./repositories/index.js";
 import type { ToolCallRepository } from "./repositories/index.js";
-import type { FileToolParser } from "./file-tool-parser.js";
+import { extractFilePath, isFileTool } from "./file-tool-parser.js";
 
 /**
  * Traces every file a set of agents touched while working on a conversation.
@@ -22,7 +22,6 @@ export class ArtifactTracer {
     private readonly db: Database,
     private readonly messages: MessageRepository,
     private readonly toolCalls: ToolCallRepository,
-    private readonly parser: FileToolParser,
   ) {}
 
   getArtifacts(conversationId: string): ConversationArtifact[] {
@@ -49,9 +48,9 @@ export class ArtifactTracer {
     const artifacts: ConversationArtifact[] = [];
 
     for (const tc of toolCallRows) {
-      if (!this.parser.isFileTool(tc.toolName)) continue;
+      if (!isFileTool(tc.toolName)) continue;
 
-      const filePath = this.parser.extractPath(tc.input);
+      const filePath = extractFilePath(tc.input);
       if (!filePath || seen.has(filePath)) continue;
       seen.add(filePath);
 

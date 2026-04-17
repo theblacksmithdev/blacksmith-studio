@@ -67,27 +67,28 @@ export class ClaudeMdSection {
 }
 
 /**
- * Builds the body text for the Graphify section of CLAUDE.md.
+ * Build the body text for the Graphify section of CLAUDE.md.
  *
  * Kept separate from the section manager so the protocol (sentinels,
  * upsert, remove) and the content (what instructions the section carries)
  * evolve independently.
  */
-export class GraphifySectionBuilder {
-  build(stats: { nodes: number; edges: number }): string {
-    const date = new Date().toISOString().split("T")[0];
-    return [
-      "## Knowledge Graph (Graphify)",
-      "",
-      "This project has a pre-built knowledge graph at `.blacksmith/graphify/`.",
-      "",
-      "Rules:",
-      "- Before exploring the codebase with Glob/Grep/Read, read `.blacksmith/graphify/GRAPH_REPORT.md`",
-      "  for the structural overview — god nodes, communities, and file relationships.",
-      "- Use the graph to navigate directly to relevant files instead of scanning broadly.",
-      "- Only Read files you need to modify or understand in detail — the graph already maps the structure.",
-      "",
-      `Stats: ${stats.nodes} nodes · ${stats.edges} edges · Built ${date}`,
-    ].join("\n");
-  }
+export function buildGraphifySection(stats: {
+  nodes: number;
+  edges: number;
+}): string {
+  const date = new Date().toISOString().split("T")[0];
+  return [
+    "## Knowledge Graph (Graphify)",
+    "",
+    "This project has a pre-built knowledge graph at `.blacksmith/graphify/`.",
+    "",
+    "Rules:",
+    "- Before exploring the codebase with Glob/Grep/Read, read `.blacksmith/graphify/GRAPH_REPORT.md`",
+    "  for the structural overview — god nodes, communities, and file relationships.",
+    "- Use the graph to navigate directly to relevant files instead of scanning broadly.",
+    "- Only Read files you need to modify or understand in detail — the graph already maps the structure.",
+    "",
+    `Stats: ${stats.nodes} nodes · ${stats.edges} edges · Built ${date}`,
+  ].join("\n");
 }

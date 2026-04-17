@@ -4,7 +4,7 @@ export {
   createProjectContextProvider,
   ProjectContextBuilder,
   ProjectContextCache,
-  TreeScanner,
-  KeyFilesReader,
+  scanTree,
+  readKeyFiles,
   type KeyFile,
 } from "./project-context/index.js";

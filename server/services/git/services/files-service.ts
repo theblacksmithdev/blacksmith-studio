@@ -2,8 +2,8 @@ import path from "node:path";
 import { stat, readFile } from "node:fs/promises";
 import { paginate, type PaginationInput, type PaginatedResult } from "../../../types.js";
 import { MAX_DIFF_SIZE } from "../constants.js";
-import { DiffFormatter } from "../diff-formatter.js";
-import type { IGitClient } from "../git-client.js";
+import { capDiff, asAllAdditionsDiff } from "../diff-formatter.js";
+import type { GitClient } from "../git-client.js";
 import type { ChangedFile, FileStatus } from "../types.js";
 
 /**
@@ -14,7 +14,7 @@ import type { ChangedFile, FileStatus } from "../types.js";
  * the staged / unstaged / untracked cases uniformly.
  */
 export class FilesService {
-  constructor(private readonly client: IGitClient) {}
+  constructor(private readonly client: GitClient) {}
 
   async getChangedFiles(
     projectPath: string,
@@ -40,10 +40,10 @@ export class FilesService {
     const git = this.client.of(projectPath);
 
     const staged = await git.diff(["--cached", "--", filePath]);
-    if (staged) return DiffFormatter.cap(staged);
+    if (staged) return capDiff(staged);
 
     const unstaged = await git.diff(["--", filePath]);
-    if (unstaged) return DiffFormatter.cap(unstaged);
+    if (unstaged) return capDiff(unstaged);
 
     return this.readUntracked(projectPath, filePath);
   }
@@ -58,7 +58,7 @@ export class FilesService {
       const fileStat = await stat(absPath).catch(() => null);
       if (!fileStat || fileStat.size > MAX_DIFF_SIZE) return "";
       const content = await readFile(absPath, "utf-8");
-      return DiffFormatter.asAllAdditions(content);
+      return asAllAdditionsDiff(content);
     } catch {
       return "";
     }

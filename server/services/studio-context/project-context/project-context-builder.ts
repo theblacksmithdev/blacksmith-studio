@@ -4,31 +4,21 @@ import {
   TREE_DEPTH_WITHOUT_GRAPH,
   TREE_DEPTH_WITH_GRAPH,
 } from "./constants.js";
-import { KeyFilesReader, type KeyFile } from "./key-files-reader.js";
-import { TreeScanner } from "./tree-scanner.js";
+import { readKeyFiles, type KeyFile } from "./key-files-reader.js";
+import { scanTree } from "./tree-scanner.js";
 
 /**
- * Assembles the project context string injected before every AI prompt.
+ * Assemble the project context string injected before every AI prompt.
  *
- * Single Responsibility: composition. Delegates filesystem traversal to
- * TreeScanner, key-file reading to KeyFilesReader, graph context to the
- * graphify module, and knowledge-base docs to KnowledgeManager. Output
- * is a deterministic markdown block with sectioned headings.
+ * Composes: graph context (graphify) + directory tree + key config files
+ * + knowledge-base docs. Output is a deterministic markdown block with
+ * sectioned headings.
  *
- * Dependency Inversion: collaborators are constructor-injected with
- * sensible defaults — tests can swap in stubs without touching the
- * builder.
- *
- * Open/Closed: adding a new section (e.g. "## Open TODOs") means adding
- * a new append*() method and one call in build() — existing sections stay
- * untouched.
+ * Adding a new section means adding an `append*()` method and one call
+ * in `build()` — existing sections stay untouched.
  */
 export class ProjectContextBuilder {
-  constructor(
-    private readonly treeScanner: TreeScanner = new TreeScanner(),
-    private readonly keyFilesReader: KeyFilesReader = new KeyFilesReader(),
-    private readonly knowledge: KnowledgeManager = new KnowledgeManager(),
-  ) {}
+  constructor(private readonly knowledge = new KnowledgeManager()) {}
 
   build(projectRoot: string): string {
     const lines: string[] = [];
@@ -36,7 +26,7 @@ export class ProjectContextBuilder {
 
     this.appendGraphReport(lines, graphReport);
     this.appendTree(lines, projectRoot, graphReport);
-    this.appendKeyFiles(lines, this.keyFilesReader.read(projectRoot));
+    this.appendKeyFiles(lines, readKeyFiles(projectRoot));
     this.appendKnowledge(lines, projectRoot);
 
     return lines.join("\n");
@@ -60,10 +50,8 @@ export class ProjectContextBuilder {
     graphReport: string | null,
   ): void {
     const depth = graphReport ? TREE_DEPTH_WITH_GRAPH : TREE_DEPTH_WITHOUT_GRAPH;
-    const treeLines = this.treeScanner.scan(projectRoot, depth);
-
     out.push("## Project Structure\n```");
-    out.push(...treeLines);
+    out.push(...scanTree(projectRoot, depth));
     out.push("```\n");
   }
 
