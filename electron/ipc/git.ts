@@ -1,5 +1,5 @@
 import { ipcMain, type BrowserWindow } from "electron";
-import type { GitManager } from "../../server/services/git.js";
+import type { GitManager } from "../../server/services/git/index.js";
 import type { ProjectManager } from "../../server/services/projects.js";
 import type { Ai } from "../../server/services/ai/ai.js";
 import {

@@ -8,7 +8,7 @@ import type { RunnerConfigService } from "../../server/services/runner/runner-co
 import type { McpManager } from "../../server/services/mcp.js";
 import type { SkillsManager } from "../../server/services/skills.js";
 import type { KnowledgeManager } from "../../server/services/knowledge.js";
-import type { GitManager } from "../../server/services/git.js";
+import type { GitManager } from "../../server/services/git/index.js";
 import type { TerminalManager } from "../../server/services/terminal.js";
 import type { GraphifyManager } from "../../server/services/graphify.js";
 import type { PythonManager } from "../../server/services/python/index.js";

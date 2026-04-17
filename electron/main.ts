@@ -12,7 +12,7 @@ import { RunnerManager } from "../server/services/runner/index.js";
 import { McpManager } from "../server/services/mcp.js";
 import { SkillsManager } from "../server/services/skills.js";
 import { KnowledgeManager } from "../server/services/knowledge.js";
-import { GitManager } from "../server/services/git.js";
+import { GitManager } from "../server/services/git/index.js";
 import { TerminalManager } from "../server/services/terminal.js";
 import { closeDatabase } from "../server/db/index.js";
 

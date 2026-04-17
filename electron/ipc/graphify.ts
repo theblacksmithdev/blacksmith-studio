@@ -4,7 +4,7 @@ import type { BrowserWindow } from "electron";
 import type { ProjectManager } from "../../server/services/projects.js";
 import type { SettingsManager } from "../../server/services/settings.js";
 import type { GraphifyManager } from "../../server/services/graphify.js";
-import type { GitManager } from "../../server/services/git.js";
+import type { GitManager } from "../../server/services/git/index.js";
 import {
   GRAPHIFY_CHECK,
   GRAPHIFY_SETUP,
