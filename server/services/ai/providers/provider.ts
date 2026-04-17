@@ -6,6 +6,9 @@ import type {
   AiModelTier,
 } from "../types.js";
 
+/** Either a generic tier or a concrete provider-specific model ID. */
+export type ModelSelector = AiModelTier | string;
+
 /**
  * Abstract AI provider — all providers implement this contract.
  *
@@ -23,6 +26,10 @@ export abstract class AiProvider {
   /** Streaming session — returns a handle with promise + process */
   abstract stream(options: AiStreamOptions): AiStreamHandle;
 
-  /** Map a generic model tier to this provider's specific model name */
-  abstract resolveModel(tier: AiModelTier): string;
+  /**
+   * Resolve a model selector to this provider's concrete model name.
+   * Tiers are mapped via the provider's MODEL_MAP; raw strings are passed
+   * through unchanged so callers can pin specific versions.
+   */
+  abstract resolveModel(selector: ModelSelector): string;
 }

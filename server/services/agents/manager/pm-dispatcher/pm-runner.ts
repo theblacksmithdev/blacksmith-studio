@@ -1,5 +1,6 @@
 import type { AgentExecuteOptions } from "../../base/index.js";
 import { AiModelTier } from "../../../ai/types.js";
+import { getProjectContext } from "../../../claude/project-context.js";
 
 export interface PMRunOptions {
   /** User-facing prompt sent to the AI provider. */
@@ -43,9 +44,17 @@ export async function runPM(opts: PMRunOptions): Promise<PMRunResult> {
 
   let collected = "";
 
+  // Inject the cached project context (Graphify report + tree + key files +
+  // knowledge base) so Claude doesn't burn a Read/Glob/Grep tool-use phase
+  // discovering the project on every PM call. The helper caches per project
+  // root with a 1-minute TTL, so dispatch + subsequent refine/replan calls
+  // share the same context.
+  const projectContext = safeGetProjectContext(opts.baseOptions.projectRoot);
+
   const { text } = await ai.streamText({
     prompt: opts.prompt,
     systemPrompt: opts.systemPrompt,
+    projectContext,
     model: opts.model ?? AiModelTier.Balanced,
     cwd: opts.baseOptions.projectRoot,
     nodePath: opts.baseOptions.nodePath,
@@ -62,4 +71,22 @@ export async function runPM(opts: PMRunOptions): Promise<PMRunResult> {
   });
 
   return { text };
+}
+
+/**
+ * Swallow project-context generation errors so a PM call never fails just
+ * because context assembly hit an unreadable file. Returns empty string on
+ * failure — the PM can still fall back to its own Read/Glob/Grep.
+ */
+function safeGetProjectContext(projectRoot: string): string | undefined {
+  try {
+    const ctx = getProjectContext(projectRoot);
+    return ctx.trim() ? ctx : undefined;
+  } catch (err: any) {
+    console.warn(
+      `[pm-runner] Failed to build project context, skipping:`,
+      err?.message,
+    );
+    return undefined;
+  }
 }

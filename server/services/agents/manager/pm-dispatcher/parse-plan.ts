@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import type { AgentRole } from "../../types.js";
 import type { DispatchPlan, DispatchTask } from "./types.js";
 import { VALID_ROLES, VALID_MODELS, VALID_REVIEW_LEVELS } from "./constants.js";
+import { extractJsonStructure } from "../../utils/json-extract.js";
 
 /**
  * Coerce a raw JSON task object from the PM into a fully-validated
@@ -44,22 +45,23 @@ export function normalizeTask(
  * - `dependsOn` values are remapped from PM-local IDs to the prefixed IDs.
  */
 export function parsePlan(raw: string): DispatchPlan {
-  const braceStart = raw.indexOf("{");
-  const braceEnd = raw.lastIndexOf("}");
+  const candidate = extractJsonStructure(raw, "{");
 
-  if (braceStart === -1 || braceEnd <= braceStart) {
+  if (!candidate) {
     console.log(
-      `[pm-dispatcher] No JSON in response — treating as clarification`,
+      `[pm-dispatcher] No JSON object in response — treating as clarification`,
     );
     return { mode: "clarification", tasks: [], summary: raw.trim() };
   }
 
   let parsed: any;
   try {
-    parsed = JSON.parse(raw.slice(braceStart, braceEnd + 1));
-  } catch {
-    console.log(
-      `[pm-dispatcher] JSON parse failed — treating as clarification`,
+    parsed = JSON.parse(candidate);
+  } catch (err: any) {
+    console.warn(
+      `[pm-dispatcher] JSON parse failed — treating as clarification. ` +
+        `Error: ${err?.message}. Raw response (${raw.length} chars):\n${raw.slice(0, 2000)}` +
+        (raw.length > 2000 ? "\n... [truncated]" : ""),
     );
     return { mode: "clarification", tasks: [], summary: raw.trim() };
   }
@@ -71,45 +73,73 @@ export function parsePlan(raw: string): DispatchPlan {
   const prefix = crypto.randomUUID().slice(0, 8);
   const idMap = new Map<string, string>();
 
-  const validate = (raw: any, index: number): DispatchTask => {
-    const originalId = raw.id ?? `t${index}`;
+  const validate = (rawTask: any, index: number): DispatchTask => {
+    const originalId = rawTask.id ?? `t${index}`;
     const uniqueId = `${prefix}-${originalId}`;
     idMap.set(originalId, uniqueId);
-    return normalizeTask(raw, index, uniqueId);
+    return normalizeTask(rawTask, index, uniqueId);
   };
 
-  if (mode === "single" && parsed.task) {
-    const task = validate(parsed.task, 0);
-    return { mode: "single", task, tasks: [task], summary };
+  try {
+    if (mode === "single" && parsed.task) {
+      const task = validate(parsed.task, 0);
+      return { mode: "single", task, tasks: [task], summary };
+    }
+
+    const tasks: DispatchTask[] = (parsed.tasks || []).map(
+      (t: any, i: number) => validate(t, i),
+    );
+
+    // Remap dependency references from PM's original IDs to prefixed IDs
+    for (const task of tasks) {
+      task.dependsOn = task.dependsOn
+        .map((dep: string) => {
+          const mapped = idMap.get(dep);
+          if (!mapped) {
+            console.warn(
+              `[pm-dispatcher] Task "${task.id}" references unknown dep "${dep}", removing`,
+            );
+            return null;
+          }
+          return mapped;
+        })
+        .filter(Boolean) as string[];
+    }
+
+    if (tasks.length === 0) {
+      console.warn(
+        `[pm-dispatcher] PM produced an empty task plan — treating as clarification. ` +
+          `Raw response (${raw.length} chars):\n${raw.slice(0, 2000)}` +
+          (raw.length > 2000 ? "\n... [truncated]" : ""),
+      );
+      return {
+        mode: "clarification",
+        tasks: [],
+        summary:
+          "I couldn't produce a complete plan for that request. Could you share more detail about what you're trying to build?",
+      };
+    }
+
+    if (tasks.length === 1) {
+      return { mode: "single", task: tasks[0], tasks, summary };
+    }
+
+    return { mode: "multi", tasks, summary };
+  } catch (err: any) {
+    // A task failed validation (missing prompt, invalid role, etc.). Log
+    // the raw response for diagnosis and fall back to clarification mode
+    // instead of throwing — a hard error here breaks the IPC handler and
+    // gives the user no path forward.
+    console.warn(
+      `[pm-dispatcher] Plan validation failed (${err?.message}) — treating as clarification. ` +
+        `Raw response (${raw.length} chars):\n${raw.slice(0, 2000)}` +
+        (raw.length > 2000 ? "\n... [truncated]" : ""),
+    );
+    return {
+      mode: "clarification",
+      tasks: [],
+      summary:
+        "I started decomposing your request but produced an incomplete plan. Could you rephrase with a bit more detail about what you want built?",
+    };
   }
-
-  const tasks: DispatchTask[] = (parsed.tasks || []).map(
-    (t: any, i: number) => validate(t, i),
-  );
-
-  // Remap dependency references from PM's original IDs to prefixed IDs
-  for (const task of tasks) {
-    task.dependsOn = task.dependsOn
-      .map((dep: string) => {
-        const mapped = idMap.get(dep);
-        if (!mapped) {
-          console.warn(
-            `[pm-dispatcher] Task "${task.id}" references unknown dep "${dep}", removing`,
-          );
-          return null;
-        }
-        return mapped;
-      })
-      .filter(Boolean) as string[];
-  }
-
-  if (tasks.length === 0) {
-    throw new Error("PM produced an empty task plan");
-  }
-
-  if (tasks.length === 1) {
-    return { mode: "single", task: tasks[0], tasks, summary };
-  }
-
-  return { mode: "multi", tasks, summary };
 }

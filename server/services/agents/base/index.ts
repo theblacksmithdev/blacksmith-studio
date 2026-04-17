@@ -6,8 +6,9 @@ export type {
   HandoffDescriptor,
   ValidationResult,
 } from "./types.js";
-export { buildSystemPrompt, buildCliArgs } from "./prompt-builder.js";
-export { streamExecution } from "./stream.js";
+export { buildSystemPrompt } from "./prompt-builder.js";
+export { createChunkHandler, finalizeStream } from "./stream.js";
+export type { ChunkState } from "./stream.js";
 export {
   assessComplexity,
   type SubTask,

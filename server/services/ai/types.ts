@@ -19,7 +19,12 @@ export enum AiProviderType {
 export interface AiCompletionOptions {
   prompt: string;
   systemPrompt?: string;
-  model?: AiModelTier;
+  /**
+   * Model selector. Either a provider-agnostic tier (mapped by the provider
+   * to its own model name) or a specific model ID (e.g. "claude-sonnet-4-6")
+   * that the provider passes through unchanged.
+   */
+  model?: AiModelTier | string;
   cwd?: string;
   timeout?: number;
   /** Disable tools (pass '--tools ""' to CLI) */

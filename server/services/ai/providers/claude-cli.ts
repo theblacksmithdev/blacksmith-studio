@@ -8,7 +8,7 @@ import type {
   AiStreamHandle,
   AiProviderStatus,
 } from "../types.js";
-import { AiProvider } from "./provider.js";
+import { AiProvider, type ModelSelector } from "./provider.js";
 
 const MODEL_MAP: Record<AiModelTier, string> = {
   [AiModelTier.Fast]: "haiku",
@@ -33,8 +33,10 @@ export class ClaudeCliProvider extends AiProvider {
     return this.binPath;
   }
 
-  resolveModel(tier: AiModelTier): string {
-    return MODEL_MAP[tier] ?? tier;
+  resolveModel(selector: ModelSelector): string {
+    // AiModelTier values are strings, so this indexing works for both tiers
+    // and concrete IDs. Unknown strings pass through to the CLI as-is.
+    return (MODEL_MAP as Record<string, string>)[selector] ?? selector;
   }
 
   async checkStatus(): Promise<AiProviderStatus> {

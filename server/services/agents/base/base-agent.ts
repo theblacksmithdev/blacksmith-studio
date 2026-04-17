@@ -1,6 +1,4 @@
 import crypto from "node:crypto";
-import { spawn } from "node:child_process";
-import { nodeEnv } from "../../node-env.js";
 import { buildAgentContext } from "../utils/context.js";
 import type {
   AgentRole,
@@ -18,8 +16,8 @@ import type {
   HandoffDescriptor,
   ValidationResult,
 } from "./types.js";
-import { buildSystemPrompt, buildCliArgs } from "./prompt-builder.js";
-import { streamExecution } from "./stream.js";
+import { buildSystemPrompt } from "./prompt-builder.js";
+import { createChunkHandler, finalizeStream, type ChunkState } from "./stream.js";
 
 /**
  * Abstract base class for all AI agents.
@@ -29,6 +27,7 @@ import { streamExecution } from "./stream.js";
  */
 export abstract class BaseAgent {
   private _activeProcess: AgentProcess | null = null;
+  private _activeState: ChunkState | null = null;
   private _listeners: AgentEventCallback[] = [];
   protected _settled = false;
 
@@ -94,6 +93,9 @@ export abstract class BaseAgent {
     if (!this._activeProcess || this._settled) return;
     const { execution, process } = this._activeProcess;
     this._settled = true;
+    // Mark the chunk state as settled too, so when ai.stream's promise
+    // rejects from the kill, finalizeStream won't re-emit an error.
+    if (this._activeState) this._activeState.settled = true;
 
     console.log(`[agent:${this.role}] Cancelling execution ${execution.id}`);
     process.kill("SIGTERM");
@@ -108,6 +110,7 @@ export abstract class BaseAgent {
       execution,
     );
     this._activeProcess = null;
+    this._activeState = null;
   }
 
   /* ── Single-pass execution (also used by DecomposableAgent for sub-tasks) ── */
@@ -161,44 +164,61 @@ export abstract class BaseAgent {
       ? `${fullContext}\n\n---\n\nTask: ${transformedPrompt}`
       : transformedPrompt;
 
-    // Args
+    if (!options.ai) {
+      throw new Error(
+        "BaseAgent requires options.ai — the Ai router was not wired in.",
+      );
+    }
+
     const systemPrompt = buildSystemPrompt(this.definition, options);
-    const args = buildCliArgs({
-      sessionId,
-      isResume,
+    const config = options.agentConfig;
+    const model = config?.model ?? this.definition.preferredModel;
+    const budget = config?.maxBudget ?? this.definition.maxBudget;
+
+    // Stream via the Ai router
+    this.setStatus(execution, "executing");
+
+    const { onChunk, state } = createChunkHandler(
+      execution,
+      (data, exec) => this.emit(data, exec),
+      (resp, tools) => this.evaluateHandoff(resp, tools),
+    );
+
+    const handle = options.ai.stream({
       prompt: cliPrompt,
       systemPrompt,
-      definition: this.definition,
-      options,
-    });
-
-    // Spawn
-    this.setStatus(execution, "executing");
-    const claudeBin = options.claudeBin ?? "claude";
-    const proc = spawn(claudeBin, args, {
+      sessionId,
+      resume: isResume,
+      model: model ?? undefined,
+      maxBudget: budget != null && budget > 0 ? budget : null,
+      mcpConfigPath: options.mcpConfigPath,
+      permissionMode: options.permissionMode ?? this.definition.permissionMode,
+      allowedTools:
+        Array.isArray(this.definition.allowedTools) &&
+        this.definition.allowedTools.length > 0
+          ? this.definition.allowedTools
+          : undefined,
       cwd: options.projectRoot,
-      stdio: ["ignore", "pipe", "pipe"],
-      env: nodeEnv(options.nodePath),
-      timeout: 3_600_000,
+      nodePath: options.nodePath,
+      onChunk,
     });
 
-    this._activeProcess = { execution, process: proc };
+    this._activeProcess = { execution, process: handle.process };
+    this._activeState = state;
 
-    // Stream
-    const result = await streamExecution({
-      proc,
+    const result = await finalizeStream({
+      handle,
+      state,
       execution,
       emit: (data, exec) => this.emit(data, exec),
       processResult: (exec, resp, tools) =>
         this.processResult(exec, resp, tools),
-      evaluateHandoff: (resp, tools) => this.evaluateHandoff(resp, tools),
-      getSettled: () => this._settled,
-      setSettled: (v) => {
-        this._settled = v;
-      },
     });
 
+    // Keep _settled in sync for callers outside this function (cancel path)
+    this._settled = state.settled;
     this._activeProcess = null;
+    this._activeState = null;
     return result;
   }
 

@@ -1,11 +1,9 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { spawn } from "node:child_process";
-import { createNdjsonParser } from "../../claude/ndjson-parser.js";
-import { nodeEnv } from "../../node-env.js";
 import type { AgentExecuteOptions } from "../base/index.js";
 import type { AgentRole } from "../types.js";
+import { extractJsonStructure } from "../utils/json-extract.js";
 import type { BuildPlan, BuildPhase, BuildTask } from "./types.js";
 
 const PLANNING_SYSTEM_PROMPT = `You are a technical project planner. Given product requirements, you produce a structured JSON build plan that a team of AI agents will execute to build the application.
@@ -91,12 +89,18 @@ const VALID_ROLES = new Set<string>([
 ]);
 
 /**
- * Generate a structured build plan from requirements by spawning Claude.
+ * Generate a structured build plan from requirements via the Ai router.
  */
 export async function generatePlan(
   requirements: string,
   baseOptions: Omit<AgentExecuteOptions, "prompt">,
 ): Promise<BuildPlan> {
+  if (!baseOptions.ai) {
+    throw new Error(
+      "Build planner requires baseOptions.ai — the Ai router was not wired in.",
+    );
+  }
+
   const existingContext = scanProjectState(baseOptions.projectRoot);
 
   const prompt = [
@@ -111,81 +115,18 @@ export async function generatePlan(
     .filter(Boolean)
     .join("\n");
 
-  const claudeBin = baseOptions.claudeBin ?? "claude";
-  const args = [
-    "-p",
+  const { text: fullText } = await baseOptions.ai.streamText({
     prompt,
-    "--output-format",
-    "stream-json",
-    "--verbose",
-    "--permission-mode",
-    "default",
-    "--append-system-prompt",
-    PLANNING_SYSTEM_PROMPT,
-  ];
-
-  const fullText = await new Promise<string>((resolve, reject) => {
-    const proc = spawn(claudeBin, args, {
-      cwd: baseOptions.projectRoot,
-      stdio: ["ignore", "pipe", "pipe"],
-      env: nodeEnv(baseOptions.nodePath),
-    });
-
-    let text = "";
-    let stderr = "";
-
-    const parser = createNdjsonParser((chunk: any) => {
-      if (chunk.type === "assistant") {
-        for (const b of chunk.message?.content || []) {
-          if (b.type === "text") text += b.text;
-        }
-      }
-    });
-
-    proc.stdout!.on("data", (d: Buffer) => parser.write(d.toString()));
-    proc.stderr!.on("data", (d: Buffer) => {
-      stderr += d.toString();
-    });
-
-    proc.on("close", (code, signal) => {
-      parser.flush();
-
-      if (signal) {
-        if (text.trim()) {
-          console.warn(
-            `[planner] Process killed by ${signal}, using partial response`,
-          );
-          resolve(text);
-        } else {
-          reject(
-            new Error(`Planning killed by ${signal} before producing output`),
-          );
-        }
-        return;
-      }
-
-      if (code !== 0 && code !== null) {
-        if (text.trim()) {
-          console.warn(
-            `[planner] Exit code ${code} but has output, attempting to parse`,
-          );
-          resolve(text);
-        } else {
-          reject(
-            new Error(
-              stderr.trim() || `Planning process exited with code ${code}`,
-            ),
-          );
-        }
-      } else {
-        resolve(text);
-      }
-    });
-
-    proc.on("error", (err) =>
-      reject(new Error(`Planning spawn failed: ${err.message}`)),
-    );
+    systemPrompt: PLANNING_SYSTEM_PROMPT,
+    cwd: baseOptions.projectRoot,
+    nodePath: baseOptions.nodePath,
+    permissionMode: "default",
+    tolerantExit: true,
   });
+
+  if (!fullText.trim()) {
+    throw new Error("Planner returned empty response");
+  }
 
   return parsePlan(fullText);
 }
@@ -238,17 +179,20 @@ function scanProjectState(projectRoot: string): string {
 
 /** Parse and validate a raw Claude response into a BuildPlan. */
 function parsePlan(raw: string): BuildPlan {
-  const braceStart = raw.indexOf("{");
-  const braceEnd = raw.lastIndexOf("}");
+  const candidate = extractJsonStructure(raw, "{");
 
-  if (braceStart === -1 || braceEnd <= braceStart) {
+  if (!candidate) {
     throw new Error("No JSON object found in planner response");
   }
 
   let parsed: any;
   try {
-    parsed = JSON.parse(raw.slice(braceStart, braceEnd + 1));
-  } catch {
+    parsed = JSON.parse(candidate);
+  } catch (err: any) {
+    console.warn(
+      `[planner] Parse failed (${err?.message}). Raw (${raw.length} chars):\n${raw.slice(0, 2000)}` +
+        (raw.length > 2000 ? "\n... [truncated]" : ""),
+    );
     throw new Error("Failed to parse build plan JSON from planner response");
   }
 

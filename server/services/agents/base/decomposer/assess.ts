@@ -1,8 +1,6 @@
-import { spawn } from "node:child_process";
-import { createNdjsonParser } from "../../../claude/ndjson-parser.js";
-import { nodeEnv } from "../../../node-env.js";
 import type { AgentRoleDefinition } from "../../types.js";
 import type { AgentExecuteOptions } from "../types.js";
+import { extractJsonStructure } from "../../utils/json-extract.js";
 import { DECOMPOSER_PROMPT } from "./prompt.js";
 
 export interface SubTask {
@@ -21,6 +19,9 @@ export interface ComplexityAssessment {
 /** Minimum prompt length to even consider assessment (short prompts are always simple) */
 const MIN_PROMPT_LENGTH = 300;
 
+/** Safety timeout — assessment shouldn't take more than 30s */
+const ASSESS_TIMEOUT_MS = 30_000;
+
 /**
  * Assess whether a task is too complex for one pass and optionally decompose it.
  * Returns immediately with { simple: true } for short/simple prompts.
@@ -31,7 +32,6 @@ export async function assessComplexity(
   definition: AgentRoleDefinition,
   options: AgentExecuteOptions,
 ): Promise<ComplexityAssessment> {
-  // Short prompts are always simple — skip the assessment
   if (prompt.length < MIN_PROMPT_LENGTH) {
     return { simple: true, subtasks: [] };
   }
@@ -55,74 +55,30 @@ export async function assessComplexity(
     return { simple: true, subtasks: [] };
   }
 
-  // Run Claude assessment (no tools, single turn)
-  const claudeBin = options.claudeBin ?? "claude";
-  const assessPrompt = `You are a ${definition.title}.\n\nAssess this task:\n${prompt}`;
-
-  const args = [
-    "-p",
-    assessPrompt,
-    "--output-format",
-    "stream-json",
-    "--verbose",
-    "--tools",
-    "",
-    "--append-system-prompt",
-    DECOMPOSER_PROMPT,
-  ];
-
-  try {
-    const fullText = await new Promise<string>((resolve) => {
-      const proc = spawn(claudeBin, args, {
-        cwd: options.projectRoot,
-        stdio: ["ignore", "pipe", "pipe"],
-        env: nodeEnv(options.nodePath),
-      });
-
-      let text = "";
-      const parser = createNdjsonParser((chunk: any) => {
-        if (chunk.type === "assistant") {
-          for (const b of chunk.message?.content || []) {
-            if (b.type === "text") text += b.text;
-          }
-        }
-      });
-
-      proc.stdout!.on("data", (d: Buffer) => parser.write(d.toString()));
-      proc.stderr!.on("data", () => {});
-
-      proc.on("close", () => {
-        parser.flush();
-        resolve(text);
-      });
-
-      proc.on("error", () => resolve(""));
-
-      // Safety timeout — assessment shouldn't take more than 30s
-      setTimeout(() => {
-        try {
-          proc.kill();
-        } catch {}
-      }, 30_000);
-    });
-
-    return parseAssessment(fullText);
-  } catch {
-    // If assessment fails, treat as simple (don't block execution)
+  if (!options.ai) {
+    console.warn("[assess] Skipping assessment — Ai router not wired in");
     return { simple: true, subtasks: [] };
   }
+
+  const text = await options.ai.complete({
+    prompt: `You are a ${definition.title}.\n\nAssess this task:\n${prompt}`,
+    systemPrompt: DECOMPOSER_PROMPT,
+    cwd: options.projectRoot,
+    disableTools: true,
+    timeout: ASSESS_TIMEOUT_MS,
+  });
+
+  return parseAssessment(text ?? "");
 }
 
 function parseAssessment(raw: string): ComplexityAssessment {
-  const braceStart = raw.indexOf("{");
-  const braceEnd = raw.lastIndexOf("}");
-
-  if (braceStart === -1 || braceEnd <= braceStart) {
+  const candidate = extractJsonStructure(raw, "{");
+  if (!candidate) {
     return { simple: true, subtasks: [] };
   }
 
   try {
-    const parsed = JSON.parse(raw.slice(braceStart, braceEnd + 1));
+    const parsed = JSON.parse(candidate);
 
     if (
       parsed.simple === true ||

@@ -5,11 +5,7 @@ export type {
   HandoffDescriptor,
   ValidationResult,
 } from "./base/index.js";
-export {
-  buildSystemPrompt,
-  buildCliArgs,
-  streamExecution,
-} from "./base/index.js";
+export { buildSystemPrompt } from "./base/index.js";
 
 export type {
   AgentRole,

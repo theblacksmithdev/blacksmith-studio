@@ -1,4 +1,5 @@
 import type { AgentRole, AgentExecution } from "../types.js";
+import { extractJsonStructure } from "../utils/json-extract.js";
 
 /** Structured bug report produced by QA when it finds a major issue it can't fix */
 export interface BugReport {
@@ -24,13 +25,11 @@ export function extractBugReport(execution: AgentExecution): BugReport | null {
 
   const afterMarker = text.slice(idx + marker.length).trim();
 
-  // Extract JSON from after the marker
-  const braceStart = afterMarker.indexOf("{");
-  const braceEnd = afterMarker.lastIndexOf("}");
-  if (braceStart === -1 || braceEnd <= braceStart) return null;
+  const candidate = extractJsonStructure(afterMarker, "{");
+  if (!candidate) return null;
 
   try {
-    const parsed = JSON.parse(afterMarker.slice(braceStart, braceEnd + 1));
+    const parsed = JSON.parse(candidate);
 
     if (!parsed.description || !parsed.file) return null;
 

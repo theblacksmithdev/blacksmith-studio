@@ -1,5 +1,4 @@
-import type { ChildProcess } from "node:child_process";
-import { createNdjsonParser } from "../../claude/ndjson-parser.js";
+import type { AiStreamHandle } from "../../ai/index.js";
 import { describeToolUse, describeMessageStart } from "../utils/activity.js";
 import type { AgentStatus, AgentExecution, AgentEventData } from "../types.js";
 import type { ToolCallRecord, HandoffDescriptor } from "./types.js";
@@ -15,144 +14,124 @@ type EvaluateHandoffFn = (
   toolCalls: ToolCallRecord[],
 ) => HandoffDescriptor | null;
 
-interface StreamOptions {
-  proc: ChildProcess;
+/**
+ * Mutable chunk-processing state shared between the onChunk callback
+ * (consumed inside the Ai provider) and the finalizeStream call that
+ * awaits completion. Callers build it via `createChunkHandler`.
+ */
+export interface ChunkState {
+  fullResponse: string;
+  toolCalls: ToolCallRecord[];
+  firstMessageEmitted: boolean;
+  settled: boolean;
+}
+
+export interface StreamExecutionOptions {
+  handle: AiStreamHandle;
+  state: ChunkState;
   execution: AgentExecution;
   emit: EmitFn;
   processResult: ProcessResultFn;
-  evaluateHandoff: EvaluateHandoffFn;
-  getSettled: () => boolean;
-  setSettled: (v: boolean) => void;
 }
 
 /**
- * Streams the Claude CLI process, parses NDJSON, emits events, and
- * returns the final execution record. Never throws — errors are
- * captured in execution.error so callers don't need try/catch.
+ * Build a chunk handler + initial state for streaming an agent execution.
+ * The handler is passed to `ai.stream({ onChunk })` so parsed NDJSON events
+ * flow back into our agent-level emit/response-tracking logic.
  */
-export function streamExecution(opts: StreamOptions): Promise<AgentExecution> {
-  const {
-    proc,
-    execution,
-    emit,
-    processResult,
-    evaluateHandoff,
-    getSettled,
-    setSettled,
-  } = opts;
+export function createChunkHandler(
+  execution: AgentExecution,
+  emit: EmitFn,
+  evaluateHandoff: EvaluateHandoffFn,
+): { onChunk: (chunk: any) => void; state: ChunkState } {
+  const state: ChunkState = {
+    fullResponse: "",
+    toolCalls: [],
+    firstMessageEmitted: false,
+    settled: false,
+  };
 
-  return new Promise((resolve) => {
-    let fullResponse = "";
-    const toolCalls: ToolCallRecord[] = [];
-    let stderrBuffer = "";
-    let firstMessageEmitted = false;
+  const onChunk = (chunk: any) => {
+    if (state.settled) return;
+    handleChunk(chunk, execution, state, emit, evaluateHandoff);
+  };
 
-    const finish = (status: AgentStatus, error?: string) => {
-      if (getSettled()) {
-        resolve(execution);
-        return;
-      }
-      setSettled(true);
+  return { onChunk, state };
+}
 
-      execution.status = status;
-      execution.error = error ?? null;
-      execution.responseText = fullResponse;
-      execution.completedAt = new Date().toISOString();
-      execution.durationMs =
-        Date.now() - new Date(execution.startedAt).getTime();
-    };
+/**
+ * Await the Ai stream, finalize the execution record, and emit the terminal
+ * event. Never throws — failures are captured on `execution.error`.
+ */
+export async function finalizeStream(
+  opts: StreamExecutionOptions,
+): Promise<AgentExecution> {
+  const { handle, state, execution, emit, processResult } = opts;
 
-    const parser = createNdjsonParser((chunk: any) => {
-      if (getSettled()) return;
-      handleChunk(
-        chunk,
-        execution,
-        () => fullResponse,
-        toolCalls,
-        emit,
-        evaluateHandoff,
-        firstMessageEmitted,
-        (text) => {
-          fullResponse += text;
-        },
-        () => {
-          firstMessageEmitted = true;
-        },
-      );
-    });
+  const finish = (status: AgentStatus, error?: string) => {
+    if (state.settled) return;
+    state.settled = true;
+    execution.status = status;
+    execution.error = error ?? null;
+    execution.responseText = state.fullResponse;
+    execution.completedAt = new Date().toISOString();
+    execution.durationMs =
+      Date.now() - new Date(execution.startedAt).getTime();
+  };
 
-    proc.stdout!.on("data", (data: Buffer) => parser.write(data.toString()));
-    proc.stderr!.on("data", (data: Buffer) => {
-      stderrBuffer += data.toString();
-    });
+  try {
+    await handle.promise;
+  } catch (err: any) {
+    finish("error", err?.message ?? String(err));
+    emit(
+      { type: "error", error: execution.error!, recoverable: false },
+      execution,
+    );
+    return execution;
+  }
 
-    proc.on("error", (err) => {
-      finish("error", `Spawn failed: ${err.message}`);
-      emit(
-        { type: "error", error: execution.error!, recoverable: false },
-        execution,
-      );
-      resolve(execution);
-    });
+  if (state.settled) return execution;
 
-    proc.on("close", async (code) => {
-      parser.flush();
+  try {
+    const summary = await processResult(
+      execution,
+      state.fullResponse,
+      state.toolCalls,
+    );
+    finish("done");
+    emit(
+      {
+        type: "done",
+        costUsd: execution.costUsd,
+        durationMs: execution.durationMs,
+        summary,
+      },
+      execution,
+    );
+  } catch (err: any) {
+    finish("error", `Result processing failed: ${err.message}`);
+    emit(
+      { type: "error", error: execution.error!, recoverable: false },
+      execution,
+    );
+  }
 
-      if (getSettled()) {
-        resolve(execution);
-        return;
-      }
-
-      if (code !== 0 && code !== null) {
-        const error = stderrBuffer.trim() || `Process exited with code ${code}`;
-        finish("error", error);
-        emit({ type: "error", error, recoverable: false }, execution);
-        resolve(execution);
-        return;
-      }
-
-      try {
-        const summary = await processResult(execution, fullResponse, toolCalls);
-        finish("done");
-        emit(
-          {
-            type: "done",
-            costUsd: execution.costUsd,
-            durationMs: execution.durationMs,
-            summary,
-          },
-          execution,
-        );
-      } catch (err: any) {
-        finish("error", `Result processing failed: ${err.message}`);
-        emit(
-          { type: "error", error: execution.error!, recoverable: false },
-          execution,
-        );
-      }
-
-      resolve(execution);
-    });
-  });
+  return execution;
 }
 
 function handleChunk(
   chunk: any,
   execution: AgentExecution,
-  getFullResponse: () => string,
-  toolCalls: ToolCallRecord[],
+  state: ChunkState,
   emit: EmitFn,
   evaluateHandoff: EvaluateHandoffFn,
-  firstMessageEmitted: boolean,
-  appendResponse: (text: string) => void,
-  markFirstMessage: () => void,
 ): void {
   if (chunk.type === "assistant") {
     const contentBlocks = chunk.message?.content || [];
 
     for (const block of contentBlocks) {
       if (block.type === "text") {
-        appendResponse(block.text);
+        state.fullResponse += block.text;
         emit(
           {
             type: "message",
@@ -162,20 +141,19 @@ function handleChunk(
           execution,
         );
 
-        if (!firstMessageEmitted) {
+        if (!state.firstMessageEmitted) {
           const description = describeMessageStart(block.text);
           if (description) {
-            markFirstMessage();
+            state.firstMessageEmitted = true;
             emit({ type: "activity", description }, execution);
           }
         }
       } else if (block.type === "tool_use") {
-        const record: ToolCallRecord = {
+        state.toolCalls.push({
           toolId: block.id,
           toolName: block.name,
           input: block.input,
-        };
-        toolCalls.push(record);
+        });
         emit(
           {
             type: "tool_use",
@@ -185,14 +163,15 @@ function handleChunk(
           },
           execution,
         );
-
-        const description = describeToolUse(block.name, block.input);
-        emit({ type: "activity", description }, execution);
+        emit(
+          { type: "activity", description: describeToolUse(block.name, block.input) },
+          execution,
+        );
       }
     }
 
     if (chunk.stop_reason) {
-      const handoff = evaluateHandoff(getFullResponse(), toolCalls);
+      const handoff = evaluateHandoff(state.fullResponse, state.toolCalls);
       if (handoff) {
         emit(
           {
