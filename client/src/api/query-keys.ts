@@ -53,6 +53,14 @@ function projectKeys(projectId: string) {
     artifact: (id: string) => [...p, "artifacts", "item", id] as const,
     artifactContent: (id: string) =>
       [...p, "artifacts", "item", id, "content"] as const,
+    commandToolchains: [...p, "commands", "toolchains"] as const,
+    commandRuns: (conversationId?: string) =>
+      [...p, "commands", "runs", conversationId ?? "_all"] as const,
+    commandRun: (runId: string) => [...p, "commands", "run", runId] as const,
+    commandAvailability: (toolchainId: string, scope: "studio" | "project") =>
+      [...p, "commands", "available", toolchainId, scope] as const,
+    commandEnv: (toolchainId: string, scope: "studio" | "project") =>
+      [...p, "commands", "env", toolchainId, scope] as const,
     runnerConfigs: [...p, "runner", "configs"] as const,
     pythonInstallations: ["python", "detect"] as const,
     pythonCheck: ["python", "check"] as const,

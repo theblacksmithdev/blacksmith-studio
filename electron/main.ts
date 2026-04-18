@@ -15,6 +15,24 @@ import {
   ArtifactRepository,
   ArtifactService,
 } from "../server/services/artifacts/index.js";
+import {
+  BinaryDetector,
+  CommandEnvBuilder,
+  CommandEventEmitter,
+  CommandResolver,
+  CommandRunRepository,
+  CommandRunner,
+  CommandService,
+  DefaultCommandPolicy,
+  EnvScrubber,
+  NodeToolchain,
+  NodeVersionDetector,
+  PlatformInfo,
+  PythonToolchain,
+  PythonVenvDetector,
+  RawToolchain,
+  ToolchainRegistry,
+} from "../server/services/commands/index.js";
 import { getDatabase } from "../server/db/index.js";
 import { Ai } from "../server/services/ai/index.js";
 import { SettingsManager } from "../server/services/settings.js";
@@ -143,6 +161,49 @@ app.whenReady().then(async () => {
     },
   });
   const settingsManager = new SettingsManager();
+
+  // ── Command subsystem (toolchain-pluggable subprocess execution) ──
+  const platformInfo = new PlatformInfo();
+  const binaryDetector = new BinaryDetector(platformInfo);
+  const toolchainRegistry = new ToolchainRegistry();
+  toolchainRegistry.register(
+    new PythonToolchain(
+      new PythonVenvDetector(platformInfo),
+      binaryDetector,
+      platformInfo,
+    ),
+  );
+  toolchainRegistry.register(
+    new NodeToolchain(new NodeVersionDetector(), binaryDetector, platformInfo),
+  );
+  toolchainRegistry.register(new RawToolchain());
+  const envScrubber = new EnvScrubber();
+  const commandResolver = new CommandResolver(
+    toolchainRegistry,
+    new CommandEnvBuilder(envScrubber),
+    {
+      getPath: (projectId: string) => {
+        const project = projectManager.get(projectId);
+        if (!project) throw new Error(`Project not found: ${projectId}`);
+        return project.path;
+      },
+    },
+    {
+      getExplicitPath: (projectId: string, toolchainId: string) => {
+        const key = `commands.${toolchainId}.resolution`;
+        const value = settingsManager.resolve(projectId, key);
+        return typeof value === "string" && value.length > 0 ? value : null;
+      },
+    },
+  );
+  const commandService = new CommandService(
+    toolchainRegistry,
+    commandResolver,
+    new CommandRunner(),
+    new CommandRunRepository(db),
+    new CommandEventEmitter(eventService),
+    new DefaultCommandPolicy(),
+  );
   const { RunnerConfigService } =
     await import("../server/services/runner/runner-config.js");
   const runnerConfigService = new RunnerConfigService();
@@ -188,6 +249,7 @@ app.whenReady().then(async () => {
     agentSessionManager,
     eventService,
     artifactService,
+    commandService,
     ai,
     settingsManager,
     runnerManager,

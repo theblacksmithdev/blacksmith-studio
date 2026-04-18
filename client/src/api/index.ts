@@ -18,6 +18,7 @@ import { multiAgents } from "./modules/multi-agents";
 import { conversationEvents } from "./modules/conversation-events";
 import { agentTasks } from "./modules/agent-tasks";
 import { artifacts } from "./modules/artifacts";
+import { commands } from "./modules/commands";
 import { python } from "./modules/python";
 import { graphify } from "./modules/graphify";
 import { attachments } from "./modules/attachments";
@@ -43,6 +44,7 @@ export const api = {
   conversationEvents,
   agentTasks,
   artifacts,
+  commands,
   python,
   graphify,
   attachments,

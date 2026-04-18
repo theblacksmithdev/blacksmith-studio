@@ -2,6 +2,7 @@ import * as pty from "node-pty";
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
+import { platform } from "./platform/index.js";
 
 interface TerminalSession {
   id: string;
@@ -26,7 +27,7 @@ export class TerminalManager {
   private resolveShell(): string {
     if (process.env.SHELL && fs.existsSync(process.env.SHELL))
       return process.env.SHELL;
-    if (os.platform() === "win32") return "powershell.exe";
+    if (platform.isWindows) return "powershell.exe";
     for (const sh of ["/bin/zsh", "/bin/bash", "/bin/sh"]) {
       if (fs.existsSync(sh)) return sh;
     }

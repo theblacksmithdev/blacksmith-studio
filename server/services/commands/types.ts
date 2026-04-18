@@ -27,6 +27,11 @@ export interface CommandSpec {
   cwd?: string;
   timeoutMs?: number;
   env?: Record<string, string>;
+  /**
+   * Payload piped to the child's stdin before the handle is closed.
+   * Only set when the spawned process expects input (e.g. `python -`).
+   */
+  stdin?: string;
   /** Optional audit metadata — surfaces in the command_executed event. */
   description?: string;
   conversationId?: string;

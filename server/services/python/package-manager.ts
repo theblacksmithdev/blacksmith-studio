@@ -3,10 +3,11 @@ import path from "node:path";
 import os from "node:os";
 import { spawn, type ChildProcess } from "node:child_process";
 import { createRequire } from "node:module";
+import { platform } from "../platform/index.js";
 
 const VENV_DIR = path.join(os.homedir(), ".blacksmith-studio", "venv");
-const IS_WIN = process.platform === "win32";
-const BIN_DIR = IS_WIN ? "Scripts" : "bin";
+const IS_WIN = platform.isWindows;
+const BIN_DIR = platform.venvBinDir;
 
 export interface PackageResult {
   success: boolean;

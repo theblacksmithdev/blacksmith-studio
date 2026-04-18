@@ -201,6 +201,40 @@ export function EventRow({ event }: EventRowProps) {
         </RowShell>
       );
     }
+    case "command_executed": {
+      const toolchain = String(payload?.toolchainId ?? "raw");
+      const preset = payload?.preset ? String(payload.preset) : null;
+      const scope = String(payload?.scope ?? "project");
+      const status = String(payload?.status ?? "");
+      const cmd = String(payload?.command ?? "");
+      const argv = Array.isArray(payload?.args)
+        ? (payload?.args as string[]).join(" ")
+        : "";
+      const envDisplay = payload?.resolvedEnvDisplay
+        ? String(payload.resolvedEnvDisplay)
+        : null;
+      const duration = payload?.durationMs;
+      const tone = status === "error" || status === "timeout" ? "error" : "accent";
+      return (
+        <RowShell tone={tone}>
+          <RowIcon>
+            {toolchain} · {time}
+          </RowIcon>
+          <RowBody>
+            <RowTitle>
+              {preset ?? cmd}
+              {argv && ` ${argv}`}
+            </RowTitle>
+            <RowMeta>
+              {scope}
+              {envDisplay && ` · ${envDisplay}`}
+              {` · ${status}`}
+              {duration != null && ` · ${Number(duration)}ms`}
+            </RowMeta>
+          </RowBody>
+        </RowShell>
+      );
+    }
     case "error": {
       const message = String(payload?.error ?? "Unknown error");
       return (

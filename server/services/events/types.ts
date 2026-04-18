@@ -21,6 +21,7 @@ export type EventType =
   | "task_status_change"
   | "task_result"
   | "agent_activity"
+  | "command_executed"
   | "error";
 
 export interface ConversationEvent {

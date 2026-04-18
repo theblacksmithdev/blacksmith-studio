@@ -437,5 +437,9 @@ Quality is not negotiable and is not dependent on the complexity of the request.
     "mcp__blacksmith_context__tag_artifact",
     "mcp__blacksmith_context__rename_artifact",
     "mcp__blacksmith_context__delete_artifact",
+    "mcp__blacksmith_context__list_toolchains",
+    "mcp__blacksmith_context__check_command_available",
+    "mcp__blacksmith_context__resolve_command_env",
+    "mcp__blacksmith_context__run_command",
   ],
 };

@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { PlatformInfo } from "../../platform/index.js";
 
 export interface PythonEnvDetection {
   kind: "venv" | "poetry" | "pipenv" | "conda" | "pyenv";
@@ -21,6 +22,8 @@ export interface PythonEnvDetection {
  * interpretation simply by creating its marker file.
  */
 export class PythonVenvDetector {
+  constructor(private readonly platform: PlatformInfo) {}
+
   detect(projectRoot: string): PythonEnvDetection | null {
     return (
       this.tryLocalVenv(projectRoot, ".venv") ??
@@ -38,14 +41,8 @@ export class PythonVenvDetector {
     folder: string,
   ): PythonEnvDetection | null {
     const root = path.join(projectRoot, folder);
-    const bin = path.join(
-      root,
-      process.platform === "win32" ? "Scripts" : "bin",
-    );
-    const pythonPath = path.join(
-      bin,
-      process.platform === "win32" ? "python.exe" : "python",
-    );
+    const bin = path.join(root, this.platform.venvBinDir);
+    const pythonPath = path.join(bin, this.platform.binaryName("python"));
     if (!fs.existsSync(pythonPath)) return null;
     return {
       kind: "venv",

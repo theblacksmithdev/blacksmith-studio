@@ -1,6 +1,7 @@
 import type { ContextQueryService } from "./context-query-service.js";
 import type { ContextWriteService } from "./context-write-service.js";
 import type { ArtifactService } from "../../artifacts/index.js";
+import type { CommandService, CommandSpec } from "../../commands/index.js";
 import type { ContextToolDefinition } from "./types.js";
 
 export interface ToolHandler {
@@ -18,6 +19,7 @@ export function buildToolRegistry(
   query: ContextQueryService,
   write: ContextWriteService,
   artifacts: ArtifactService,
+  commands: CommandService,
 ): Record<string, ToolHandler> {
   return {
     query_conversation_history: {
@@ -290,5 +292,194 @@ export function buildToolRegistry(
         return { ok: true, id };
       },
     },
+
+    /* ── Command tools ── */
+
+    list_toolchains: {
+      definition: {
+        name: "list_toolchains",
+        description:
+          "List every toolchain registered in the CommandService (Python, Node, Raw, …). Use this to discover which presets (pip, npm, …) are available before calling run_command.",
+        inputSchema: { type: "object", properties: {} },
+      },
+      execute: () => ({ toolchains: commands.listToolchains() }),
+    },
+
+    check_command_available: {
+      definition: {
+        name: "check_command_available",
+        description:
+          "Check whether a toolchain's runtime is resolvable in this project (e.g. does `python` exist in a .venv?). Returns { ok, version?, error? }.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            projectId: { type: "string" },
+            toolchainId: {
+              type: "string",
+              description: "Toolchain id such as 'python' or 'node'.",
+            },
+          },
+          required: ["projectId", "toolchainId"],
+        },
+      },
+      execute: async (args) => {
+        const { projectId, toolchainId } = args as {
+          projectId: string;
+          toolchainId: string;
+        };
+        return commands.checkAvailable({
+          projectId,
+          toolchainId,
+          scope: "project",
+        });
+      },
+    },
+
+    resolve_command_env: {
+      definition: {
+        name: "resolve_command_env",
+        description:
+          "Inspect the environment a toolchain resolves to for a project — useful for 'which python is going to run?' debugging before calling run_command.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            projectId: { type: "string" },
+            toolchainId: { type: "string" },
+          },
+          required: ["projectId", "toolchainId"],
+        },
+      },
+      execute: (args) => {
+        const { projectId, toolchainId } = args as {
+          projectId: string;
+          toolchainId: string;
+        };
+        return (
+          commands.resolveEnv({
+            projectId,
+            toolchainId,
+            scope: "project",
+          }) ?? { env: null }
+        );
+      },
+    },
+
+    run_command: {
+      definition: {
+        name: "run_command",
+        description:
+          "Run a subprocess through the unified CommandService — auto-resolves the correct interpreter from the project's venv / .nvmrc / poetry / etc., streams output, and records an audit row. Prefer this over raw Bash for python, pip, pytest, node, npm, npx, pnpm, yarn. Use `command` for non-preset invocations (make, pytest plugins, custom binaries). Always set `projectId`. Scope is fixed to the project — studio-scoped runs are not available to agents. Pass `description` to explain what you're running for the audit trail.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            projectId: { type: "string" },
+            preset: {
+              type: "string",
+              description:
+                "One of the presets returned by list_toolchains (e.g. 'pip', 'npm', 'pytest'). Preferred over raw command.",
+            },
+            command: {
+              type: "string",
+              description: "Raw command when no preset fits. Ignored if preset is set.",
+            },
+            args: {
+              type: "array",
+              items: { type: "string" },
+              description: "Command arguments, already tokenised.",
+            },
+            cwd: {
+              type: "string",
+              description: "Override working directory. Defaults to the project root.",
+            },
+            timeoutMs: { type: "number", default: 600000 },
+            description: {
+              type: "string",
+              description: "Short rationale for the audit trail.",
+            },
+            conversationId: { type: "string" },
+            taskId: { type: "string" },
+            agentRole: { type: "string" },
+          },
+          required: ["projectId"],
+        },
+      },
+      execute: async (args) => {
+        const spec: CommandSpec = {
+          scope: "project",
+          projectId: String((args as { projectId: string }).projectId),
+          preset:
+            typeof (args as { preset?: string }).preset === "string"
+              ? (args as { preset?: string }).preset
+              : undefined,
+          command:
+            typeof (args as { command?: string }).command === "string"
+              ? (args as { command?: string }).command
+              : undefined,
+          args: Array.isArray((args as { args?: unknown[] }).args)
+            ? ((args as { args?: string[] }).args ?? []).map(String)
+            : undefined,
+          cwd:
+            typeof (args as { cwd?: string }).cwd === "string"
+              ? (args as { cwd?: string }).cwd
+              : undefined,
+          timeoutMs:
+            typeof (args as { timeoutMs?: number }).timeoutMs === "number"
+              ? (args as { timeoutMs?: number }).timeoutMs
+              : 600_000,
+          description:
+            typeof (args as { description?: string }).description === "string"
+              ? (args as { description?: string }).description
+              : undefined,
+          conversationId:
+            typeof (args as { conversationId?: string }).conversationId ===
+            "string"
+              ? (args as { conversationId?: string }).conversationId
+              : undefined,
+          taskId:
+            typeof (args as { taskId?: string }).taskId === "string"
+              ? (args as { taskId?: string }).taskId
+              : undefined,
+          agentRole:
+            typeof (args as { agentRole?: string }).agentRole === "string"
+              ? (args as { agentRole?: string }).agentRole
+              : undefined,
+        };
+        try {
+          const result = await commands.run(spec);
+          return {
+            runId: result.runId,
+            status: result.status,
+            exitCode: result.exitCode,
+            stdout: truncateOutput(result.stdout),
+            stderr: truncateOutput(result.stderr),
+            durationMs: result.durationMs,
+            toolchainId: result.toolchainId,
+            resolvedEnvDisplay: result.resolvedEnvDisplay,
+          };
+        } catch (err) {
+          const error = err as { code?: string; message?: string; hint?: string };
+          return {
+            error: {
+              code: error.code ?? "UNKNOWN",
+              message: error.message ?? String(err),
+              hint: error.hint,
+            },
+          };
+        }
+      },
+    },
   };
+}
+
+// Per-call cap for tool-return payload so Claude's context isn't
+// flooded by a chatty command. The backend keeps the full output in
+// `command_runs` for later inspection.
+const TOOL_OUTPUT_LIMIT = 8_000;
+
+function truncateOutput(s: string): string {
+  if (s.length <= TOOL_OUTPUT_LIMIT) return s;
+  return (
+    s.slice(0, TOOL_OUTPUT_LIMIT) +
+    `\n…[truncated, full output in command run record]`
+  );
 }

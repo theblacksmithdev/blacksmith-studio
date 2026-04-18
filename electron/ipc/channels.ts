@@ -174,6 +174,16 @@ export const CONVERSATION_EVENTS_LIST_BY_DISPATCH =
   "conversationEvents:listByDispatch";
 export const CONVERSATION_EVENTS_LIST_BY_TASK = "conversationEvents:listByTask";
 
+// Commands (unified subprocess execution across toolchains)
+export const COMMANDS_RUN = "commands:run";
+export const COMMANDS_STREAM_START = "commands:streamStart";
+export const COMMANDS_CANCEL = "commands:cancel";
+export const COMMANDS_CHECK_AVAILABLE = "commands:checkAvailable";
+export const COMMANDS_RESOLVE_ENV = "commands:resolveEnv";
+export const COMMANDS_LIST_TOOLCHAINS = "commands:listToolchains";
+export const COMMANDS_LIST_RUNS = "commands:listRuns";
+export const COMMANDS_GET_RUN = "commands:getRun";
+
 // Artifacts (markdown outputs under .blacksmith/artifacts/)
 export const ARTIFACTS_LIST = "artifacts:list";
 export const ARTIFACTS_GET = "artifacts:get";
@@ -218,6 +228,8 @@ export const MULTI_AGENTS_ON_BUILD_EVENT = "multiAgents:onBuildEvent";
 export const MULTI_AGENTS_ON_INPUT_REQUEST = "multiAgents:onInputRequest";
 export const CONVERSATION_EVENTS_ON_APPEND = "conversationEvents:onAppend";
 export const ARTIFACTS_ON_CHANGED = "artifacts:onChanged";
+export const COMMANDS_ON_OUTPUT = "commands:onOutput";
+export const COMMANDS_ON_STATUS = "commands:onStatus";
 
 // Channel allowlists for preload security
 export const INVOKE_CHANNELS = [
@@ -364,6 +376,14 @@ export const INVOKE_CHANNELS = [
   ARTIFACTS_SET_TAGS,
   ARTIFACTS_CREATE,
   ARTIFACTS_BACKFILL,
+  COMMANDS_RUN,
+  COMMANDS_STREAM_START,
+  COMMANDS_CANCEL,
+  COMMANDS_CHECK_AVAILABLE,
+  COMMANDS_RESOLVE_ENV,
+  COMMANDS_LIST_TOOLCHAINS,
+  COMMANDS_LIST_RUNS,
+  COMMANDS_GET_RUN,
 ] as const;
 
 export const SUBSCRIBE_CHANNELS = [
@@ -389,4 +409,6 @@ export const SUBSCRIBE_CHANNELS = [
   MULTI_AGENTS_ON_INPUT_REQUEST,
   CONVERSATION_EVENTS_ON_APPEND,
   ARTIFACTS_ON_CHANGED,
+  COMMANDS_ON_OUTPUT,
+  COMMANDS_ON_STATUS,
 ] as const;

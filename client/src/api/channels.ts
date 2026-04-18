@@ -7,6 +7,7 @@ import { terminal } from "./modules/terminal";
 import { multiAgents } from "./modules/multi-agents";
 import { conversationEvents } from "./modules/conversation-events";
 import { artifacts } from "./modules/artifacts";
+import { commands } from "./modules/commands";
 import { python } from "./modules/python";
 import { graphify } from "./modules/graphify";
 import { windowApi } from "./modules/window";
@@ -67,6 +68,10 @@ export const channels = {
 
   // Artifact mutations (file + DB) for library + conversation panel
   "artifacts:changed": artifacts.onChanged,
+
+  // Commands — streamed subprocess output + status
+  "commands:output": commands.onOutput,
+  "commands:status": commands.onStatus,
 
   // Python
   "python:progress": python.onProgress,

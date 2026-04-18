@@ -6,6 +6,7 @@ import {
   type PythonEnvDetection,
 } from "../detectors/python-venv-detector.js";
 import { NoProjectEnvError, NoStudioEnvError } from "../errors.js";
+import { PlatformInfo } from "../../platform/index.js";
 import type {
   ProjectContext,
   ResolvedBinary,
@@ -45,6 +46,7 @@ export class PythonToolchain implements Toolchain {
   constructor(
     private readonly venvDetector: PythonVenvDetector,
     private readonly binaries_: BinaryDetector,
+    private readonly platform: PlatformInfo,
   ) {}
 
   detectStudioEnv(ctx: StudioContext): ToolchainEnv | null {
@@ -52,8 +54,8 @@ export class PythonToolchain implements Toolchain {
     // PackageManager via the bundled uv. We only report it as an env
     // when the interpreter actually exists on disk.
     const root = path.join(ctx.studioRoot, "venv");
-    const bin = path.join(root, process.platform === "win32" ? "Scripts" : "bin");
-    const pythonPath = path.join(bin, pythonBinName());
+    const bin = path.join(root, this.platform.venvBinDir);
+    const pythonPath = path.join(bin, this.platform.binaryName("python"));
     if (!this.binaries_.firstExisting([pythonPath])) return null;
     return {
       scope: "studio",
@@ -92,7 +94,7 @@ export class PythonToolchain implements Toolchain {
         prependArgs: [...env.invoker.args, canonicalName(binary)],
       };
     }
-    const candidate = path.join(env.bin, platformBinaryName(binary));
+    const candidate = path.join(env.bin, this.platform.binaryName(binary));
     const resolved = this.binaries_.firstExisting([candidate]);
     if (resolved) return { command: resolved, prependArgs: [] };
     // Fall back to PATH (set by envVars) so `python` still works when
@@ -150,14 +152,6 @@ export class PythonToolchain implements Toolchain {
       invoker: d.invoker,
     };
   }
-}
-
-function platformBinaryName(binary: string): string {
-  return process.platform === "win32" ? `${binary}.exe` : binary;
-}
-
-function pythonBinName(): string {
-  return process.platform === "win32" ? "python.exe" : "python";
 }
 
 function canonicalName(binary: string): string {

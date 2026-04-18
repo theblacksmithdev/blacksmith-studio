@@ -21,6 +21,7 @@ export const Path = {
   AgentsNew: "/:projectId/agents/new",
   AgentsConversation: "/:projectId/agents/:conversationId",
   Artifacts: "/:projectId/artifacts",
+  Commands: "/:projectId/commands",
 } as const;
 
 // ─── Path builders ───
@@ -97,4 +98,8 @@ export function settingsGraphifyPath(projectId: string) {
 
 export function artifactsPath(projectId: string) {
   return `/${projectId}/artifacts`;
+}
+
+export function commandsPath(projectId: string) {
+  return `/${projectId}/commands`;
 }

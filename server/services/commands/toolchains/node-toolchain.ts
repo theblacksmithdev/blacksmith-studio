@@ -7,6 +7,7 @@ import {
   type NodeVersionHint,
 } from "../detectors/node-version-detector.js";
 import { NoProjectEnvError, NoStudioEnvError } from "../errors.js";
+import { PlatformInfo } from "../../platform/index.js";
 import type {
   ProjectContext,
   ResolvedBinary,
@@ -40,6 +41,7 @@ export class NodeToolchain implements Toolchain {
   constructor(
     private readonly versionDetector: NodeVersionDetector,
     private readonly binaries_: BinaryDetector,
+    private readonly platform: PlatformInfo,
   ) {}
 
   detectStudioEnv(_ctx: StudioContext): ToolchainEnv | null {
@@ -88,13 +90,13 @@ export class NodeToolchain implements Toolchain {
       envVars: {
         // node_modules/.bin prepended through the resolver's PATH
         // merger — encoded as a marker env var the service understands.
-        BLACKSMITH_PROJECT_BIN: extraBins.join(path.delimiter),
+        BLACKSMITH_PROJECT_BIN: extraBins.join(this.platform.pathDelimiter),
       },
     };
   }
 
   resolveBinary(binary: string, env: ToolchainEnv): ResolvedBinary {
-    const direct = path.join(env.bin, platformBinaryName(binary));
+    const direct = path.join(env.bin, this.platform.shimName(binary));
     const resolved = this.binaries_.firstExisting([direct]);
     if (resolved) return { command: resolved, prependArgs: [] };
     return { command: binary, prependArgs: [] };
@@ -148,7 +150,7 @@ export class NodeToolchain implements Toolchain {
   private resolveVersionManagerBin(
     hint: NodeVersionHint,
   ): { bin: string; displayName: string } | null {
-    const home = process.env.HOME ?? "";
+    const home = this.platform.homeDir();
     if (!home) return null;
     const wanted = hint.version.replace(/^v/, "");
     const nvmDir = process.env.NVM_DIR ?? path.join(home, ".nvm");
@@ -191,6 +193,3 @@ export class NodeToolchain implements Toolchain {
   }
 }
 
-function platformBinaryName(binary: string): string {
-  return process.platform === "win32" ? `${binary}.cmd` : binary;
-}

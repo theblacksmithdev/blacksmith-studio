@@ -6,6 +6,29 @@ import {
   ArtifactService,
 } from "../../artifacts/index.js";
 import { ProjectManager } from "../../projects.js";
+import { SettingsManager } from "../../settings.js";
+import {
+  ConversationEventService,
+  EventRepository,
+} from "../../events/index.js";
+import {
+  BinaryDetector,
+  CommandEnvBuilder,
+  CommandEventEmitter,
+  CommandResolver,
+  CommandRunRepository,
+  CommandRunner,
+  CommandService,
+  DefaultCommandPolicy,
+  EnvScrubber,
+  NodeToolchain,
+  NodeVersionDetector,
+  PlatformInfo,
+  PythonToolchain,
+  PythonVenvDetector,
+  RawToolchain,
+  ToolchainRegistry,
+} from "../../commands/index.js";
 import { ContextMcpServer } from "./context-mcp-server.js";
 import { ContextQueryService } from "./context-query-service.js";
 import { ContextWriteService } from "./context-write-service.js";
@@ -25,6 +48,8 @@ function main() {
   const sessionManager = new SessionManager(db);
   const agentSessionManager = new AgentSessionManager(db);
   const projectManager = new ProjectManager();
+  const settingsManager = new SettingsManager();
+  const eventService = new ConversationEventService(new EventRepository(db));
   const artifactService = new ArtifactService(new ArtifactRepository(db), {
     getPath: (projectId: string) => {
       const project = projectManager.get(projectId);
@@ -32,6 +57,51 @@ function main() {
       return project.path;
     },
   });
+
+  // ── Command subsystem (same composition as main process) ──
+  const platformInfo = new PlatformInfo();
+  const binaryDetector = new BinaryDetector(platformInfo);
+  const toolchainRegistry = new ToolchainRegistry();
+  toolchainRegistry.register(
+    new PythonToolchain(
+      new PythonVenvDetector(platformInfo),
+      binaryDetector,
+      platformInfo,
+    ),
+  );
+  toolchainRegistry.register(
+    new NodeToolchain(new NodeVersionDetector(), binaryDetector, platformInfo),
+  );
+  toolchainRegistry.register(new RawToolchain());
+  const envScrubber = new EnvScrubber();
+  const commandResolver = new CommandResolver(
+    toolchainRegistry,
+    new CommandEnvBuilder(envScrubber),
+    {
+      getPath: (projectId: string) => {
+        const project = projectManager.get(projectId);
+        if (!project) throw new Error(`Project not found: ${projectId}`);
+        return project.path;
+      },
+    },
+    {
+      getExplicitPath: (projectId: string, toolchainId: string) => {
+        const value = settingsManager.resolve(
+          projectId,
+          `commands.${toolchainId}.resolution`,
+        );
+        return typeof value === "string" && value.length > 0 ? value : null;
+      },
+    },
+  );
+  const commandService = new CommandService(
+    toolchainRegistry,
+    commandResolver,
+    new CommandRunner(),
+    new CommandRunRepository(db),
+    new CommandEventEmitter(eventService),
+    new DefaultCommandPolicy(),
+  );
 
   const queryService = new ContextQueryService(
     db,
@@ -44,6 +114,7 @@ function main() {
     queryService,
     writeService,
     artifactService,
+    commandService,
   );
   attachStdioTransport(server);
 

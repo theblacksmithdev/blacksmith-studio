@@ -1,6 +1,7 @@
 import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { PlatformInfo } from "../../platform/index.js";
 
 /**
  * Locate an executable by name — the generic building block every
@@ -11,6 +12,8 @@ import path from "node:path";
  * Python, Node, venvs, or settings — pure OS-level lookup.
  */
 export class BinaryDetector {
+  constructor(private readonly platform: PlatformInfo) {}
+
   /**
    * Return the absolute path to the first candidate on disk, or null if
    * none exist. `candidates` is a priority-ordered list; callers decide
@@ -29,8 +32,9 @@ export class BinaryDetector {
    * portable than `which`) and `where` on Windows.
    */
   whichFromPath(name: string): string | null {
-    const isWindows = process.platform === "win32";
-    const cmd = isWindows ? `where ${name}` : `command -v ${name}`;
+    const cmd = this.platform.isWindows
+      ? `where ${name}`
+      : `command -v ${name}`;
     try {
       const out = execSync(cmd, { encoding: "utf-8", stdio: ["ignore", "pipe", "ignore"] })
         .trim()

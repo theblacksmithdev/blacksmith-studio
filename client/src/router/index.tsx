@@ -30,6 +30,7 @@ import SourceControlPage from "@/pages/source-control";
 import AgentsNewPage from "@/pages/agents/new";
 import AgentsConversationPage from "@/pages/agents/conversation";
 import ArtifactsPage from "@/pages/artifacts";
+import CommandsRoute from "@/pages/commands";
 
 export interface RouteHandle {
   title?: string;
@@ -104,6 +105,11 @@ export const router = createHashRouter([
         path: "artifacts",
         element: <ArtifactsPage />,
         handle: { title: "Artifacts" } satisfies RouteHandle,
+      },
+      {
+        path: "commands",
+        element: <CommandsRoute />,
+        handle: { title: "Commands" } satisfies RouteHandle,
       },
 
       // Settings with nested routes

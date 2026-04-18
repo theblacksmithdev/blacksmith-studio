@@ -77,3 +77,37 @@ export class InvalidCommandSpecError extends CommandError {
     this.name = "InvalidCommandSpecError";
   }
 }
+
+export class TooManyConcurrentCommandsError extends CommandError {
+  constructor(
+    public readonly projectId: string,
+    public readonly limit: number,
+  ) {
+    super(
+      `Too many concurrent commands running for project (${limit}).`,
+      "TOO_MANY_CONCURRENT",
+      "Wait for existing commands to finish, or raise commands.concurrencyLimit in project settings.",
+    );
+    this.name = "TooManyConcurrentCommandsError";
+  }
+}
+
+export class CommandPolicyDeniedError extends CommandError {
+  constructor(message: string, hint?: string) {
+    super(message, "COMMAND_POLICY_DENIED", hint);
+    this.name = "CommandPolicyDeniedError";
+  }
+}
+
+export class InvalidCwdError extends CommandError {
+  constructor(
+    public readonly attemptedCwd: string,
+    public readonly projectRoot: string,
+  ) {
+    super(
+      `cwd "${attemptedCwd}" must stay within project root ${projectRoot}.`,
+      "INVALID_CWD",
+    );
+    this.name = "InvalidCwdError";
+  }
+}

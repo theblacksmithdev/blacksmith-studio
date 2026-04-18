@@ -9,6 +9,7 @@ import {
   Sparkles,
   Plug,
   FileCode,
+  Terminal,
 } from "lucide-react";
 import {
   codePath,
@@ -20,6 +21,7 @@ import {
   skillsBrowserPath,
   mcpBrowserPath,
   artifactsPath,
+  commandsPath,
 } from "@/router/paths";
 
 export interface NavEntry {
@@ -83,6 +85,13 @@ export const projectNav: NavEntry[] = [
     label: "Artifacts",
     path: artifactsPath,
     match: "/artifacts",
+  },
+  {
+    id: "commands",
+    icon: Terminal,
+    label: "Commands",
+    path: commandsPath,
+    match: "/commands",
   },
 ];
 

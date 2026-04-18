@@ -1,5 +1,6 @@
 export * from "./types.js";
 export * from "./errors.js";
+export { platform, PlatformInfo, type PlatformId } from "../platform/index.js";
 export {
   ToolchainRegistry,
   PythonToolchain,
@@ -30,3 +31,29 @@ export {
   type CommandRunRow,
   type CommandRunUpdate,
 } from "./repositories/command-run-repository.js";
+export { CommandEnvBuilder } from "./command-env.js";
+export { EnvScrubber, type EnvScrubberOptions } from "./env-scrubber.js";
+export {
+  DefaultCommandPolicy,
+  type CommandPolicy,
+  type DefaultPolicyOptions,
+} from "./command-policy.js";
+export {
+  CommandResolver,
+  type ProjectPathResolver,
+  type ProjectSettingsResolver,
+} from "./command-resolver.js";
+export {
+  CommandRunner,
+  type RunnerHandle,
+  type OutputListener,
+  type StatusListener,
+  type CommandRunnerOptions,
+  type RunnerStartOptions,
+} from "./command-runner.js";
+export { CommandEventEmitter } from "./command-event-emitter.js";
+export {
+  CommandService,
+  type CommandServiceOptions,
+  type ToolchainInfo,
+} from "./command-service.js";

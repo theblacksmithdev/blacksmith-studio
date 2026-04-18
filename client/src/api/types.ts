@@ -534,6 +534,7 @@ export type ConversationEventType =
   | "task_status_change"
   | "task_result"
   | "agent_activity"
+  | "command_executed"
   | "error";
 
 export interface ConversationEvent {
@@ -647,6 +648,101 @@ export interface ArtifactCreateInput {
 export type ArtifactChange =
   | { kind: "upsert"; artifact: Artifact }
   | { kind: "delete"; id: string; projectId: string };
+
+/* ── Commands (unified subprocess execution) ── */
+
+export type CommandScope = "studio" | "project";
+
+export type CommandStatus =
+  | "running"
+  | "done"
+  | "error"
+  | "cancelled"
+  | "timeout";
+
+export interface CommandSpec {
+  scope: CommandScope;
+  projectId: string;
+  preset?: string;
+  command?: string;
+  args?: string[];
+  cwd?: string;
+  timeoutMs?: number;
+  env?: Record<string, string>;
+  description?: string;
+  conversationId?: string;
+  taskId?: string;
+  agentRole?: string;
+}
+
+export interface CommandResult {
+  runId: string;
+  status: CommandStatus;
+  exitCode: number | null;
+  stdout: string;
+  stderr: string;
+  startedAt: string;
+  finishedAt: string;
+  durationMs: number;
+  toolchainId: string;
+  resolvedEnvDisplay: string | null;
+}
+
+export interface CommandOutputChunk {
+  runId: string;
+  stream: "stdout" | "stderr";
+  chunk: string;
+}
+
+export interface CommandStatusChange {
+  runId: string;
+  status: CommandStatus;
+  exitCode: number | null;
+  durationMs: number | null;
+}
+
+export interface ToolchainInfo {
+  id: string;
+  displayName: string;
+  presetOwnership: readonly string[];
+  binaries: readonly string[];
+}
+
+export interface ToolchainEnv {
+  scope: CommandScope;
+  toolchainId: string;
+  displayName: string;
+  root: string;
+  bin: string;
+  envVars: Record<string, string>;
+  invoker?: { command: string; args: string[] };
+}
+
+export interface CommandRunRecord {
+  id: string;
+  projectId: string;
+  conversationId: string | null;
+  taskId: string | null;
+  agentRole: string | null;
+  toolchainId: string;
+  preset: string | null;
+  scope: CommandScope;
+  command: string;
+  args: string;
+  cwd: string;
+  resolvedEnvDisplay: string | null;
+  exitCode: number | null;
+  stdout: string | null;
+  stderr: string | null;
+  startedAt: string;
+  finishedAt: string | null;
+  durationMs: number | null;
+  status: CommandStatus;
+}
+
+export interface CommandErrorShape {
+  error: { code: string; message: string; hint?: string };
+}
 
 /* ── Re-exports for convenience ── */
 
