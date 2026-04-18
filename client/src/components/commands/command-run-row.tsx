@@ -1,51 +1,62 @@
 import { formatDistanceToNow } from "date-fns";
+import { Terminal } from "lucide-react";
 import type { CommandRunRecord } from "@/api/types";
 import {
+  MetaDot,
+  RowBody,
   RowMeta,
   RowShell,
   RowTitle,
   StatusBadge,
+  ToolchainTile,
 } from "./styles";
 
 interface CommandRunRowProps {
   run: CommandRunRecord;
+  selected?: boolean;
   onOpen: (runId: string) => void;
 }
 
 /**
- * Single command run row — toolchain chip, command invocation,
- * duration, status pill, relative time.
+ * Single command run row — toolchain tile + command text + meta +
+ * status badge. Selected row gets the accent strip + surface tint
+ * (matches the artifact list aesthetic).
  */
-export function CommandRunRow({ run, onOpen }: CommandRunRowProps) {
+export function CommandRunRow({ run, selected, onOpen }: CommandRunRowProps) {
   const argv = safeJoinArgs(run.args);
   const age = safeDistance(run.startedAt);
-  const durationLabel =
-    run.durationMs != null ? `${formatDuration(run.durationMs)}` : "—";
+  const duration =
+    run.durationMs != null ? formatDuration(run.durationMs) : null;
+
+  const label = run.preset
+    ? `${run.preset}${argv ? ` ${argv}` : ""}`
+    : `${basename(run.command)}${argv ? ` ${argv}` : ""}`;
 
   return (
-    <RowShell onClick={() => onOpen(run.id)}>
-      <div style={{ minWidth: 0 }}>
-        <RowTitle>
-          {run.preset ? `${run.preset} ` : ""}
-          {basename(run.command)}
-          {argv ? ` ${argv}` : ""}
-        </RowTitle>
+    <RowShell
+      onClick={() => onOpen(run.id)}
+      $selected={!!selected}
+      aria-pressed={!!selected}
+    >
+      <ToolchainTile>
+        <Terminal size={15} />
+      </ToolchainTile>
+      <RowBody>
+        <RowTitle>{label}</RowTitle>
         <RowMeta>
           <span>{run.toolchainId}</span>
-          <span>·</span>
+          <MetaDot />
           <span>{run.scope}</span>
-          {run.resolvedEnvDisplay && (
+          {duration && (
             <>
-              <span>·</span>
-              <span>{run.resolvedEnvDisplay}</span>
+              <MetaDot />
+              <span>{duration}</span>
             </>
           )}
-          <span>·</span>
-          <span>{durationLabel}</span>
-          <span>·</span>
+          <MetaDot />
           <span>{age}</span>
         </RowMeta>
-      </div>
+      </RowBody>
       <StatusBadge $status={run.status}>{run.status}</StatusBadge>
     </RowShell>
   );

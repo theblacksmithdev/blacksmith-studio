@@ -32,7 +32,9 @@ import AgentsConversationPage from "@/pages/agents/conversation";
 import ArtifactsLayout from "@/pages/artifacts";
 import ArtifactsEmptyRoute from "@/pages/artifacts/empty-route";
 import ArtifactDetailRoute from "@/pages/artifacts/detail-route";
-import CommandsRoute from "@/pages/commands";
+import CommandsLayout from "@/pages/commands";
+import CommandsEmptyRoute from "@/pages/commands/empty-route";
+import CommandRunDetailRoute from "@/pages/commands/detail-route";
 
 export interface RouteHandle {
   title?: string;
@@ -118,8 +120,16 @@ export const router = createHashRouter([
       },
       {
         path: "commands",
-        element: <CommandsRoute />,
+        element: <CommandsLayout />,
         handle: { title: "Commands" } satisfies RouteHandle,
+        children: [
+          { index: true, element: <CommandsEmptyRoute /> },
+          {
+            path: ":runId",
+            element: <CommandRunDetailRoute />,
+            handle: { title: "Command run" } satisfies RouteHandle,
+          },
+        ],
       },
 
       // Settings with nested routes

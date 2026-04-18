@@ -1,122 +1,64 @@
-import { useState } from "react";
-import { Flex } from "@chakra-ui/react";
-import { Cpu } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useToolchainsQuery } from "@/api/hooks/commands";
+import { EnvScopeCard } from "./env-scope-card";
 import {
-  useCommandAvailabilityQuery,
-  useResolvedEnvQuery,
-  useToolchainsQuery,
-} from "@/api/hooks/commands";
-import type { CommandScope } from "@/api/types";
-import {
-  FieldLabel,
-  FieldRow,
-  FieldValue,
-  InspectorCard,
-  Select,
-  StatusBadge,
+  FilterChip,
+  FilterRow,
+  InspectorHint,
+  InspectorRoot,
+  ToolchainChipRow,
 } from "./styles";
 
 /**
  * "Which python? which node?" inspector.
  *
- * Pick a toolchain + scope → see the resolved env display, bin path,
- * detected version, and whether it's actually runnable right now.
- * Purely read-only; nothing is mutated.
+ * Pick a toolchain via the chip row; both scopes — Project and Studio
+ * — render side-by-side as `EnvScopeCard`s so the user can compare
+ * where a given runtime would resolve to in each.
  */
 export function EnvInspector() {
   const { data: toolchains = [] } = useToolchainsQuery();
   const [toolchainId, setToolchainId] = useState<string>("");
-  const [scope, setScope] = useState<CommandScope>("project");
 
-  const effectiveToolchain =
-    toolchainId || toolchains[0]?.id || "";
+  useEffect(() => {
+    if (!toolchainId && toolchains.length > 0) {
+      setToolchainId(toolchains[0]!.id);
+    }
+  }, [toolchainId, toolchains]);
 
-  const { data: env } = useResolvedEnvQuery(effectiveToolchain, scope);
-  const { data: availability } = useCommandAvailabilityQuery(
-    effectiveToolchain,
-    scope,
-  );
+  if (toolchains.length === 0) {
+    return (
+      <InspectorRoot>
+        <InspectorHint>No toolchains registered yet.</InspectorHint>
+      </InspectorRoot>
+    );
+  }
+
+  const activeId = toolchainId || toolchains[0]!.id;
 
   return (
-    <InspectorCard>
-      <Flex align="center" gap="8px">
-        <Cpu size={14} style={{ color: "var(--studio-text-muted)" }} />
-        <span
-          style={{
-            fontSize: "13px",
-            fontWeight: 600,
-            color: "var(--studio-text-primary)",
-          }}
-        >
-          Environment inspector
-        </span>
-      </Flex>
+    <InspectorRoot>
+      <InspectorHint>
+        See how this toolchain resolves in each scope before running a
+        command.
+      </InspectorHint>
 
-      <Flex gap="8px" wrap="wrap">
-        <Select
-          value={effectiveToolchain}
-          onChange={(e) => setToolchainId(e.target.value)}
-          aria-label="Toolchain"
-        >
+      <ToolchainChipRow>
+        <FilterRow>
           {toolchains.map((tc) => (
-            <option key={tc.id} value={tc.id}>
+            <FilterChip
+              key={tc.id}
+              $active={activeId === tc.id}
+              onClick={() => setToolchainId(tc.id)}
+            >
               {tc.displayName}
-            </option>
+            </FilterChip>
           ))}
-        </Select>
-        <Select
-          value={scope}
-          onChange={(e) => setScope(e.target.value as CommandScope)}
-          aria-label="Scope"
-        >
-          <option value="project">project</option>
-          <option value="studio">studio</option>
-        </Select>
-      </Flex>
+        </FilterRow>
+      </ToolchainChipRow>
 
-      {env ? (
-        <>
-          <FieldRow>
-            <FieldLabel>resolved</FieldLabel>
-            <FieldValue>{env.displayName}</FieldValue>
-          </FieldRow>
-          <FieldRow>
-            <FieldLabel>bin</FieldLabel>
-            <FieldValue>{env.bin || "—"}</FieldValue>
-          </FieldRow>
-          {env.invoker && (
-            <FieldRow>
-              <FieldLabel>invoker</FieldLabel>
-              <FieldValue>
-                {env.invoker.command}
-                {env.invoker.args.length > 0
-                  ? ` ${env.invoker.args.join(" ")}`
-                  : ""}
-              </FieldValue>
-            </FieldRow>
-          )}
-        </>
-      ) : (
-        <FieldRow>
-          <FieldLabel>resolved</FieldLabel>
-          <FieldValue>No environment detected</FieldValue>
-        </FieldRow>
-      )}
-
-      {availability && (
-        <FieldRow>
-          <FieldLabel>status</FieldLabel>
-          <StatusBadge $status={availability.ok ? "done" : "error"}>
-            {availability.ok ? "available" : "unavailable"}
-          </StatusBadge>
-          {availability.version && (
-            <FieldValue>{availability.version}</FieldValue>
-          )}
-          {availability.error && (
-            <FieldValue>· {availability.error}</FieldValue>
-          )}
-        </FieldRow>
-      )}
-    </InspectorCard>
+      <EnvScopeCard toolchainId={activeId} scope="project" />
+      <EnvScopeCard toolchainId={activeId} scope="studio" />
+    </InspectorRoot>
   );
 }

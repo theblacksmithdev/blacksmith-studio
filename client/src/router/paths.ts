@@ -23,6 +23,7 @@ export const Path = {
   Artifacts: "/:projectId/artifacts",
   ArtifactDetail: "/:projectId/artifacts/:artifactId",
   Commands: "/:projectId/commands",
+  CommandRun: "/:projectId/commands/:runId",
 } as const;
 
 // ─── Path builders ───
@@ -107,4 +108,8 @@ export function artifactDetailPath(projectId: string, artifactId: string) {
 
 export function commandsPath(projectId: string) {
   return `/${projectId}/commands`;
+}
+
+export function commandRunPath(projectId: string, runId: string) {
+  return `/${projectId}/commands/${runId}`;
 }
