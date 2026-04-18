@@ -1,44 +1,13 @@
 import { Flex } from "@chakra-ui/react";
 import styled from "@emotion/styled";
-import { Boxes, FolderOpen, Globe } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import { Boxes } from "lucide-react";
 import { Text } from "@/components/shared/ui";
-import { EnvInspector } from "@/components/commands/env-inspector";
-import { GlobalDefaultsForm } from "./global-defaults-form";
-
-type EnvScope = "project" | "global";
-
-const ToggleWrap = styled.div`
-  display: inline-flex;
-  padding: 3px;
-  border-radius: 10px;
-  background: var(--studio-bg-sidebar);
-  border: 1px solid var(--studio-border);
-  gap: 2px;
-`;
-
-const ToggleBtn = styled.button<{ $active?: boolean }>`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 28px;
-  padding: 0 14px;
-  border: none;
-  border-radius: 7px;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.12s ease;
-  background: ${(p) => (p.$active ? "var(--studio-bg-main)" : "transparent")};
-  color: ${(p) =>
-    p.$active ? "var(--studio-text-primary)" : "var(--studio-text-muted)"};
-  box-shadow: ${(p) => (p.$active ? "0 1px 2px rgba(0, 0, 0, 0.12)" : "none")};
-
-  &:hover {
-    color: var(--studio-text-primary);
-  }
-`;
+import {
+  InterpreterRow,
+  ScopeToggle,
+  StudioVenvRow,
+} from "./components";
+import { useEnvScope } from "./hooks";
 
 const Hint = styled.p`
   margin: 0;
@@ -48,30 +17,21 @@ const Hint = styled.p`
 `;
 
 /**
- * Settings → Environments — single surface for every kind of
- * interpreter / venv configuration, with a scope toggle on top.
+ * Settings → Environments — single surface for every interpreter /
+ * venv configuration.
  *
- *   · "This project" delegates to <EnvInspector />, the same component
- *     the Commands page mounts. Shows per-project resolution, managed
- *     venv lifecycle, and override pin.
- *   · "Global defaults" edits the user-level defaults that any
- *     project falls back to, plus studio-venv maintenance (shared
- *     across all projects).
+ * The page is a thin orchestrator: it owns the scope toggle and
+ * renders the same row components for both "This project" and
+ * "Global defaults". Each row is self-contained (hook + presentation),
+ * so the two tabs look structurally identical — Python on top, Node
+ * below — with scope-specific actions surfaced inside each row.
+ *
+ * The studio-venv row appears only at global scope because
+ * `~/.blacksmith-studio/venv/` is user-wide infrastructure, not
+ * project state.
  */
 export function EnvironmentsSettings() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const scope: EnvScope =
-    searchParams.get("scope") === "global" ? "global" : "project";
-
-  const handleToggle = (next: EnvScope) => {
-    const params = new URLSearchParams(searchParams);
-    if (next === "project") {
-      params.delete("scope");
-    } else {
-      params.set("scope", next);
-    }
-    setSearchParams(params, { replace: true });
-  };
+  const { scope, setScope } = useEnvScope();
 
   return (
     <Flex direction="column" gap="20px">
@@ -90,34 +50,18 @@ export function EnvironmentsSettings() {
       </Flex>
 
       <Hint>
-        Pin the Python and Node interpreters each toolchain uses, manage
-        project-local virtual environments, and maintain the shared
-        Blacksmith studio venv. Per-project overrides fall back to your
-        global defaults.
+        Pin Python and Node interpreters, manage project-local virtual
+        environments, and maintain the shared Blacksmith studio venv.
+        Project overrides fall back to your global defaults.
       </Hint>
 
-      <ToggleWrap role="tablist" aria-label="Environment scope">
-        <ToggleBtn
-          role="tab"
-          aria-selected={scope === "project"}
-          $active={scope === "project"}
-          onClick={() => handleToggle("project")}
-        >
-          <FolderOpen size={13} />
-          This project
-        </ToggleBtn>
-        <ToggleBtn
-          role="tab"
-          aria-selected={scope === "global"}
-          $active={scope === "global"}
-          onClick={() => handleToggle("global")}
-        >
-          <Globe size={13} />
-          Global defaults
-        </ToggleBtn>
-      </ToggleWrap>
+      <ScopeToggle value={scope} onChange={setScope} />
 
-      {scope === "project" ? <EnvInspector /> : <GlobalDefaultsForm />}
+      <Flex direction="column" gap="18px">
+        <InterpreterRow toolchainId="python" scope={scope} />
+        <InterpreterRow toolchainId="node" scope={scope} />
+        {scope === "global" && <StudioVenvRow />}
+      </Flex>
     </Flex>
   );
 }
