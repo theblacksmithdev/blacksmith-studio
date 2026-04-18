@@ -180,6 +180,37 @@ export const taskNotes = sqliteTable("task_notes", {
 });
 
 /**
+ * Command runs — audit trail for every process the app spawns through
+ * the CommandService (UI, agents via MCP, internal tooling). `scope`
+ * distinguishes Blacksmith-internal venv/env runs from user-project
+ * runs. `stdout` / `stderr` are truncated at the service layer to keep
+ * rows reasonable; large outputs are capped with a summary footer.
+ */
+export const commandRuns = sqliteTable("command_runs", {
+  id: text("id").primaryKey(),
+  projectId: text("project_id")
+    .notNull()
+    .references(() => projects.id, { onDelete: "cascade" }),
+  conversationId: text("conversation_id"),
+  taskId: text("task_id"),
+  agentRole: text("agent_role"),
+  toolchainId: text("toolchain_id").notNull(),
+  preset: text("preset"),
+  scope: text("scope", { enum: ["studio", "project"] }).notNull(),
+  command: text("command").notNull(),
+  args: text("args").notNull(), // JSON array
+  cwd: text("cwd").notNull(),
+  resolvedEnvDisplay: text("resolved_env_display"),
+  exitCode: integer("exit_code"),
+  stdout: text("stdout"),
+  stderr: text("stderr"),
+  startedAt: text("started_at").notNull(),
+  finishedAt: text("finished_at"),
+  durationMs: integer("duration_ms"),
+  status: text("status").notNull(), // 'running'|'done'|'error'|'cancelled'|'timeout'
+});
+
+/**
  * Artifacts — markdown outputs produced by agents (auto-saved from task
  * responses) plus any user-created notes pinned under
  * `.blacksmith/artifacts/{role}/`.

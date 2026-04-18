@@ -164,6 +164,28 @@ export function getDatabase() {
       created_at TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS command_runs (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+      conversation_id TEXT,
+      task_id TEXT,
+      agent_role TEXT,
+      toolchain_id TEXT NOT NULL,
+      preset TEXT,
+      scope TEXT NOT NULL CHECK(scope IN ('studio', 'project')),
+      command TEXT NOT NULL,
+      args TEXT NOT NULL,
+      cwd TEXT NOT NULL,
+      resolved_env_display TEXT,
+      exit_code INTEGER,
+      stdout TEXT,
+      stderr TEXT,
+      started_at TEXT NOT NULL,
+      finished_at TEXT,
+      duration_ms INTEGER,
+      status TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS artifacts (
       id TEXT PRIMARY KEY,
       project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
@@ -207,6 +229,9 @@ export function getDatabase() {
     CREATE INDEX IF NOT EXISTS idx_conversation_events_scope_conv_seq ON conversation_events(scope, conversation_id, sequence);
     CREATE INDEX IF NOT EXISTS idx_conversation_events_dispatch_id ON conversation_events(dispatch_id);
     CREATE INDEX IF NOT EXISTS idx_conversation_events_task_id ON conversation_events(task_id);
+    CREATE INDEX IF NOT EXISTS idx_command_runs_project_id_started_at ON command_runs(project_id, started_at);
+    CREATE INDEX IF NOT EXISTS idx_command_runs_conversation_id ON command_runs(conversation_id);
+    CREATE INDEX IF NOT EXISTS idx_command_runs_task_id ON command_runs(task_id);
     CREATE INDEX IF NOT EXISTS idx_artifacts_project_id ON artifacts(project_id);
     CREATE INDEX IF NOT EXISTS idx_artifacts_conversation_id ON artifacts(conversation_id);
     CREATE INDEX IF NOT EXISTS idx_artifacts_role ON artifacts(role);
