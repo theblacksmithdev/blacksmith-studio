@@ -29,11 +29,7 @@ export {
   ToolStatusDot,
   describeTool,
 } from "./tool-call";
-export type {
-  ToolCallData,
-  ToolStatus,
-  ToolDescriptor,
-} from "./tool-call";
+export type { ToolCallData, ToolStatus, ToolDescriptor } from "./tool-call";
 export {
   AttachmentPickerButton,
   AttachmentChip,

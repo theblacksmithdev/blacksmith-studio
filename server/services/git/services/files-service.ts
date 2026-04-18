@@ -1,6 +1,10 @@
 import path from "node:path";
 import { stat, readFile } from "node:fs/promises";
-import { paginate, type PaginationInput, type PaginatedResult } from "../../../types.js";
+import {
+  paginate,
+  type PaginationInput,
+  type PaginatedResult,
+} from "../../../types.js";
 import { MAX_DIFF_SIZE } from "../constants.js";
 import { capDiff, asAllAdditionsDiff } from "../diff-formatter.js";
 import type { GitClient } from "../git-client.js";

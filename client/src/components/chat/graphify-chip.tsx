@@ -6,10 +6,7 @@ import styled from "@emotion/styled";
 import { Loader2, ArrowRight, Zap } from "lucide-react";
 import { Text, spacing, radii } from "@/components/shared/ui";
 import { SettingToggle } from "@/pages/settings/components/setting-toggle";
-import {
-  useGraphifyStatus,
-  useGraphifyBuild,
-} from "@/api/hooks/graphify";
+import { useGraphifyStatus, useGraphifyBuild } from "@/api/hooks/graphify";
 import { useSettingsQuery, useUpdateSettings } from "@/api/hooks/settings";
 import { useActiveProjectId } from "@/api/hooks/_shared";
 import { getGraphStatus, type GraphStatusLabel } from "@/lib/graphify";
@@ -163,10 +160,7 @@ export function GraphifyChip() {
         }}
       >
         {isBuilding ? (
-          <Loader2
-            size={10}
-            style={{ animation: "spin 1s linear infinite" }}
-          />
+          <Loader2 size={10} style={{ animation: "spin 1s linear infinite" }} />
         ) : (
           <Dot $status={enabled ? label : "missing"} />
         )}
@@ -187,8 +181,7 @@ export function GraphifyChip() {
                     triggerRef.current.getBoundingClientRect().top +
                     6
                   : 0,
-                left:
-                  triggerRef.current?.getBoundingClientRect().left ?? 0,
+                left: triggerRef.current?.getBoundingClientRect().left ?? 0,
               }}
             >
               {/* Status */}

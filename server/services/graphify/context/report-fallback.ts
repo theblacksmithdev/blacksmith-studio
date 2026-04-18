@@ -9,9 +9,7 @@ import { GraphifyPaths } from "../paths.js";
  * Uses a smaller cap than ArtifactStore.readReport() because this content
  * is destined for an LLM prompt — tighter budget.
  */
-export function readGraphReportForContext(
-  projectRoot: string,
-): string | null {
+export function readGraphReportForContext(projectRoot: string): string | null {
   const paths = new GraphifyPaths(projectRoot);
   const reportPath = paths.report();
   if (!fs.existsSync(reportPath)) return null;

@@ -1,5 +1,9 @@
 import type { AgentExecuteOptions } from "../../base/index.js";
-import { takeSnapshot, computeChanges, type ChangeSnapshot } from "../../utils/change-tracker.js";
+import {
+  takeSnapshot,
+  computeChanges,
+  type ChangeSnapshot,
+} from "../../utils/change-tracker.js";
 import type { AgentRole, AgentExecution, AgentEvent } from "../../types.js";
 import type { ArtifactManager } from "../../artifacts.js";
 import { refineTaskPrompt, type DispatchTask } from "../pm-dispatcher/index.js";
@@ -69,7 +73,10 @@ export class TaskPlanExecutor {
     };
 
     let wake: (() => void) | null = null;
-    const nextEvent = () => new Promise<void>((r) => { wake = r; });
+    const nextEvent = () =>
+      new Promise<void>((r) => {
+        wake = r;
+      });
     const notifyLoopTick = () => {
       const fn = wake;
       wake = null;
@@ -82,7 +89,11 @@ export class TaskPlanExecutor {
       if (this.cancellation.isCancelled()) {
         await Promise.allSettled(inFlight.values());
         state.executions.push(
-          ...this.factory.skipRemaining(tasks, state.completed, "Cancelled by user"),
+          ...this.factory.skipRemaining(
+            tasks,
+            state.completed,
+            "Cancelled by user",
+          ),
         );
         break;
       }
@@ -237,7 +248,15 @@ export class TaskPlanExecutor {
         return;
       }
 
-      await this.onTaskCompleted(task, execution, tasks, baseOptions, artifacts, state, preSnapshot);
+      await this.onTaskCompleted(
+        task,
+        execution,
+        tasks,
+        baseOptions,
+        artifacts,
+        state,
+        preSnapshot,
+      );
     } catch (err: any) {
       this.emitter.emitTaskStatus(task.id, "error", task.title, task.role);
       this.emitter.emitPM(
@@ -245,7 +264,11 @@ export class TaskPlanExecutor {
       );
       this.emitter.emitPM("Stopping remaining tasks due to crash");
 
-      const failed = this.factory.createFailed(task.role, task.prompt, err.message);
+      const failed = this.factory.createFailed(
+        task.role,
+        task.prompt,
+        err.message,
+      );
       state.completed.set(task.id, failed);
       state.executions.push(failed);
     }
@@ -258,7 +281,12 @@ export class TaskPlanExecutor {
     baseOptions: AgentExecuteOptions,
     state: PipelineState,
   ): Promise<AgentExecution> {
-    const refinedTask = await this.maybeRefineTask(task, tasks, baseOptions, state);
+    const refinedTask = await this.maybeRefineTask(
+      task,
+      tasks,
+      baseOptions,
+      state,
+    );
     return this.contextBuilder.executeWithContext(
       refinedTask,
       baseOptions,
@@ -298,7 +326,8 @@ export class TaskPlanExecutor {
     }
 
     this.emitter.emitTaskStatus(task.id, "done", task.title, task.role);
-    const cost = execution.costUsd > 0 ? ` ($${execution.costUsd.toFixed(4)})` : "";
+    const cost =
+      execution.costUsd > 0 ? ` ($${execution.costUsd.toFixed(4)})` : "";
     this.emitter.emitPM(
       `${task.role} completed "${task.title}"${cost} — marking done`,
     );
@@ -364,7 +393,11 @@ export class TaskPlanExecutor {
     state: PipelineState,
   ): Promise<DispatchTask> {
     const isFirstForRole = !state.pipelineSessions.has(task.role);
-    if (!isFirstForRole || state.artifactPaths.size === 0 || this.cancellation.isCancelled()) {
+    if (
+      !isFirstForRole ||
+      state.artifactPaths.size === 0 ||
+      this.cancellation.isCancelled()
+    ) {
       return task;
     }
 

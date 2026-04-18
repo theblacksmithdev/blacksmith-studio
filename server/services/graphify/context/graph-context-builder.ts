@@ -46,7 +46,10 @@ export class GraphContextBuilder {
   private appendFileMap(out: string[], entries: FileMapEntry[]): void {
     if (entries.length === 0) return;
     out.push("### File Map");
-    for (const { file, symbols } of entries.slice(0, FileMapper.DEFAULT_LIMIT)) {
+    for (const { file, symbols } of entries.slice(
+      0,
+      FileMapper.DEFAULT_LIMIT,
+    )) {
       out.push(`- \`${file}\`: ${symbols.join(", ")}`);
     }
     out.push("");

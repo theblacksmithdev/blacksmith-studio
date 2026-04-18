@@ -96,17 +96,11 @@ export class TaskRepository {
    * Joins dispatches (for project scoping + recency) with tasks (for role
    * + status). Returns null if no completed task by that role exists.
    */
-  findLatestSessionForRole(
-    projectId: string,
-    role: string,
-  ): string | null {
+  findLatestSessionForRole(projectId: string, role: string): string | null {
     const row = this.db
       .select({ sessionId: agentTasks.sessionId })
       .from(agentTasks)
-      .innerJoin(
-        agentDispatches,
-        eq(agentTasks.dispatchId, agentDispatches.id),
-      )
+      .innerJoin(agentDispatches, eq(agentTasks.dispatchId, agentDispatches.id))
       .where(
         and(
           eq(agentDispatches.projectId, projectId),

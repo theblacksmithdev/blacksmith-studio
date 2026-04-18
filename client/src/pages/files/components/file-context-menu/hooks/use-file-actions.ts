@@ -48,10 +48,7 @@ export function useFileActions({
   const closeOthers = () => run(() => closeOtherTabs(filePath));
   const closeAll = () => run(() => closeAllTabs());
 
-  const rename = (
-    newName: string,
-    onFinish?: (ok: boolean) => void,
-  ): void => {
+  const rename = (newName: string, onFinish?: (ok: boolean) => void): void => {
     const trimmed = newName.trim();
     if (!trimmed || trimmed === getName(filePath)) {
       onFinish?.(false);

@@ -35,25 +35,22 @@ export function setupGraphifyIPC(
     return graphifyManager.checkInstalled();
   });
 
-  ipcMain.handle(
-    GRAPHIFY_SETUP,
-    async (_e, data?: { projectId?: string }) => {
-      const win = getWindow();
+  ipcMain.handle(GRAPHIFY_SETUP, async (_e, data?: { projectId?: string }) => {
+    const win = getWindow();
 
-      // Resolve the user's configured Python path from settings
-      let pythonPath: string | undefined;
-      if (data?.projectId) {
-        pythonPath =
-          (settingsManager.resolve(data.projectId, "python.pythonPath") as
-            | string
-            | undefined) || undefined;
-      }
+    // Resolve the user's configured Python path from settings
+    let pythonPath: string | undefined;
+    if (data?.projectId) {
+      pythonPath =
+        (settingsManager.resolve(data.projectId, "python.pythonPath") as
+          | string
+          | undefined) || undefined;
+    }
 
-      return graphifyManager.setup(pythonPath, (line) => {
-        win?.webContents.send(GRAPHIFY_ON_BUILD_PROGRESS, { line });
-      });
-    },
-  );
+    return graphifyManager.setup(pythonPath, (line) => {
+      win?.webContents.send(GRAPHIFY_ON_BUILD_PROGRESS, { line });
+    });
+  });
 
   ipcMain.handle(GRAPHIFY_STATUS, (_e, data: { projectId: string }) => {
     const root = resolveProjectPath(projectManager, data.projectId);
@@ -132,14 +129,10 @@ export function setupGraphifyIPC(
                 `[graphify] Auto-rebuild complete (${(result.durationMs / 1000).toFixed(1)}s)`,
               );
             } else {
-              console.warn(
-                `[graphify] Auto-rebuild failed: ${result.error}`,
-              );
+              console.warn(`[graphify] Auto-rebuild failed: ${result.error}`);
             }
           } catch (err: any) {
-            console.warn(
-              `[graphify] Auto-rebuild error: ${err.message}`,
-            );
+            console.warn(`[graphify] Auto-rebuild error: ${err.message}`);
           }
         }, REBUILD_DEBOUNCE_MS),
       );

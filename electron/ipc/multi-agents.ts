@@ -296,7 +296,6 @@ export function setupMultiAgentsIPC(
               },
             );
           }
-
         }
 
         const totalCost = result.executions.reduce(
@@ -494,9 +493,12 @@ export function setupMultiAgentsIPC(
     },
   );
 
-  ipcMain.handle(MULTI_AGENTS_SET_AUTO_APPROVE, (_e, data: { enabled: boolean }) => {
-    projectBuilder.humanInput.autoApprove = data.enabled;
-  });
+  ipcMain.handle(
+    MULTI_AGENTS_SET_AUTO_APPROVE,
+    (_e, data: { enabled: boolean }) => {
+      projectBuilder.humanInput.autoApprove = data.enabled;
+    },
+  );
 
   // ── Persistence ──
 
@@ -509,9 +511,12 @@ export function setupMultiAgentsIPC(
     },
   );
 
-  ipcMain.handle(MULTI_AGENTS_GET_DISPATCH, (_e, data: { dispatchId: string }) => {
-    return sessionManager.getDispatch(data.dispatchId);
-  });
+  ipcMain.handle(
+    MULTI_AGENTS_GET_DISPATCH,
+    (_e, data: { dispatchId: string }) => {
+      return sessionManager.getDispatch(data.dispatchId);
+    },
+  );
 
   ipcMain.handle(
     MULTI_AGENTS_LIST_CHAT,

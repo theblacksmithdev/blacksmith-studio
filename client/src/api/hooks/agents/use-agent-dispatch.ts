@@ -22,12 +22,7 @@ export function useAgentDispatch() {
       conversationId?: string;
       attachments?: AttachmentRecord[];
     }) =>
-      api.multiAgents.dispatch(
-        projectId!,
-        prompt,
-        conversationId,
-        attachments,
-      ),
+      api.multiAgents.dispatch(projectId!, prompt, conversationId, attachments),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: keys.agentConversations });
     },

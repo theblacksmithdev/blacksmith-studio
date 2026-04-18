@@ -49,7 +49,9 @@ export class ProjectContextBuilder {
     projectRoot: string,
     graphReport: string | null,
   ): void {
-    const depth = graphReport ? TREE_DEPTH_WITH_GRAPH : TREE_DEPTH_WITHOUT_GRAPH;
+    const depth = graphReport
+      ? TREE_DEPTH_WITH_GRAPH
+      : TREE_DEPTH_WITHOUT_GRAPH;
     out.push("## Project Structure\n```");
     out.push(...scanTree(projectRoot, depth));
     out.push("```\n");
@@ -61,8 +63,7 @@ export class ProjectContextBuilder {
     out.push(
       keyFiles
         .map(
-          (file) =>
-            `### ${file.relativePath}\n\`\`\`\n${file.content}\n\`\`\``,
+          (file) => `### ${file.relativePath}\n\`\`\`\n${file.content}\n\`\`\``,
         )
         .join("\n\n"),
     );

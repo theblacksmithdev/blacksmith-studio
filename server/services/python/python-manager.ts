@@ -56,8 +56,7 @@ export class PythonManager {
       const parts = version.split(".").map(Number);
       const min = MIN_PYTHON_VERSION.split(".").map(Number);
       const meetsMinimum =
-        parts[0] > min[0] ||
-        (parts[0] === min[0] && parts[1] >= min[1]);
+        parts[0] > min[0] || (parts[0] === min[0] && parts[1] >= min[1]);
 
       return { installed: true, version, meetsMinimum, venvReady };
     } catch {
@@ -113,5 +112,4 @@ export class PythonManager {
       return null;
     }
   }
-
 }

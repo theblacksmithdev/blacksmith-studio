@@ -35,8 +35,7 @@ function meetsMinimum(version: string): boolean {
 }
 
 function findPyenvVersions(): PythonInstallation[] {
-  const pyenvRoot =
-    process.env.PYENV_ROOT || path.join(os.homedir(), ".pyenv");
+  const pyenvRoot = process.env.PYENV_ROOT || path.join(os.homedir(), ".pyenv");
   const versionsDir = path.join(pyenvRoot, "versions");
   if (!fs.existsSync(versionsDir)) return [];
 

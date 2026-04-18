@@ -159,9 +159,11 @@ export const MULTI_AGENTS_LIST_DISPATCHES = "multiAgents:listDispatches";
 export const MULTI_AGENTS_GET_DISPATCH = "multiAgents:getDispatch";
 export const MULTI_AGENTS_LIST_CHAT = "multiAgents:listChat";
 export const MULTI_AGENTS_CLEAR_CHAT = "multiAgents:clearChat";
-export const MULTI_AGENTS_CREATE_CONVERSATION = "multiAgents:createConversation";
+export const MULTI_AGENTS_CREATE_CONVERSATION =
+  "multiAgents:createConversation";
 export const MULTI_AGENTS_LIST_CONVERSATIONS = "multiAgents:listConversations";
-export const MULTI_AGENTS_DELETE_CONVERSATION = "multiAgents:deleteConversation";
+export const MULTI_AGENTS_DELETE_CONVERSATION =
+  "multiAgents:deleteConversation";
 export const MULTI_AGENTS_GET_ARTIFACTS = "multiAgents:getArtifacts";
 
 // ─── Push/Stream Channels ───

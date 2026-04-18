@@ -1,9 +1,6 @@
 import type { PythonManager } from "../python/index.js";
 import { ArtifactStore } from "./artifact-store.js";
-import {
-  ClaudeMdSection,
-  buildGraphifySection,
-} from "./claude-md-section.js";
+import { ClaudeMdSection, buildGraphifySection } from "./claude-md-section.js";
 import { BIN_NAME, BUILD_TIMEOUT_MS } from "./constants.js";
 import type { Installer } from "./installer.js";
 import { GraphifyPaths } from "./paths.js";

@@ -1,10 +1,7 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGitStore } from "@/stores/git-store";
-import {
-  useActiveProjectId,
-  useChannelEffect,
-} from "@/api/hooks/_shared";
+import { useActiveProjectId, useChannelEffect } from "@/api/hooks/_shared";
 import { useGitStatusQuery } from "@/api/hooks/git";
 import { queryKeys } from "@/api/query-keys";
 

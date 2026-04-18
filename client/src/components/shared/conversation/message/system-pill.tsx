@@ -10,7 +10,11 @@ interface SystemPillProps {
   tone?: "neutral" | "error";
 }
 
-export function SystemPill({ icon, content, tone = "neutral" }: SystemPillProps) {
+export function SystemPill({
+  icon,
+  content,
+  tone = "neutral",
+}: SystemPillProps) {
   const error = tone === "error";
   const { copied, copy } = useCopy();
 
@@ -28,9 +32,7 @@ export function SystemPill({ icon, content, tone = "neutral" }: SystemPillProps)
           border: `1px solid ${
             error ? "var(--studio-error)" : "var(--studio-border)"
           }`,
-          color: error
-            ? "var(--studio-error)"
-            : "var(--studio-text-secondary)",
+          color: error ? "var(--studio-error)" : "var(--studio-text-secondary)",
           maxWidth: "80%",
           "&:hover .system-pill-copy": {
             opacity: 1,

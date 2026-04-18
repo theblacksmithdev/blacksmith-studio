@@ -28,7 +28,8 @@ export class UiDesignerAgent extends BaseAgent {
     _toolCalls: ToolCallRecord[],
   ): string {
     // Check if the response contains an HTML design artifact
-    const hasHtml = fullResponse.includes("<!DOCTYPE html") || fullResponse.includes("<html");
+    const hasHtml =
+      fullResponse.includes("<!DOCTYPE html") || fullResponse.includes("<html");
     if (hasHtml) return "Design artifact produced";
 
     const firstLine =

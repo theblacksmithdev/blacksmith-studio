@@ -102,8 +102,7 @@ export function SplitPanel({
   const handlePointerMove = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
       if (!draggingRef.current) return;
-      const raw =
-        (isVertical ? e.clientY : e.clientX) - startRef.current.pos;
+      const raw = (isVertical ? e.clientY : e.clientX) - startRef.current.pos;
       const delta = reverse ? -raw : raw;
       const next = Math.max(
         minWidth,

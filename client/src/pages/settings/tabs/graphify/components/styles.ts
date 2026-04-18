@@ -21,9 +21,7 @@ export const ActionBtn = styled.button<{ $variant?: "danger" }>`
   border-radius: 8px;
   border: 1px solid
     ${(p) =>
-      p.$variant === "danger"
-        ? "var(--studio-error)"
-        : "var(--studio-border)"};
+      p.$variant === "danger" ? "var(--studio-error)" : "var(--studio-border)"};
   background: ${(p) =>
     p.$variant === "danger"
       ? "var(--studio-error-subtle)"
@@ -203,8 +201,7 @@ export const ResultBar = styled.div<{ $success: boolean }>`
       p.$success ? "var(--studio-green-border)" : "var(--studio-error)"};
   background: ${(p) =>
     p.$success ? "var(--studio-green-subtle)" : "var(--studio-error-subtle)"};
-  color: ${(p) =>
-    p.$success ? "var(--studio-green)" : "var(--studio-error)"};
+  color: ${(p) => (p.$success ? "var(--studio-green)" : "var(--studio-error)")};
   font-size: 12px;
   font-weight: 450;
 `;

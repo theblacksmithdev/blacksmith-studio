@@ -137,9 +137,7 @@ export class TaskContextBuilder {
       );
     }
 
-    return parts.length > 0
-      ? parts.join("\n\n---\n\n") + "\n\n---\n\n"
-      : "";
+    return parts.length > 0 ? parts.join("\n\n---\n\n") + "\n\n---\n\n" : "";
   }
 
   /** Lightweight preamble for a role that already has context in session */

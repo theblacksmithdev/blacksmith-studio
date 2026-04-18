@@ -17,7 +17,11 @@ import type {
   ValidationResult,
 } from "./types.js";
 import { buildSystemPrompt } from "./prompt-builder.js";
-import { createChunkHandler, finalizeStream, type ChunkState } from "./stream.js";
+import {
+  createChunkHandler,
+  finalizeStream,
+  type ChunkState,
+} from "./stream.js";
 
 /**
  * Abstract base class for all AI agents.

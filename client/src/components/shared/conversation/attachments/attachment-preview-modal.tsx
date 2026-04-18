@@ -66,8 +66,8 @@ export function AttachmentPreviewModal({
           onOpenExternal={handleOpenExternal}
           error={
             image.isError
-              ? (image.error as Error | undefined)?.message ??
-                "Unable to load image"
+              ? ((image.error as Error | undefined)?.message ??
+                "Unable to load image")
               : "Unable to load image"
           }
         />
@@ -89,8 +89,8 @@ export function AttachmentPreviewModal({
 
   const textError = isText
     ? textQuery.isError
-      ? (textQuery.error as Error | undefined)?.message ??
-        "Failed to read file"
+      ? ((textQuery.error as Error | undefined)?.message ??
+        "Failed to read file")
       : textQuery.tooLarge
         ? "File is too large to preview inline."
         : null
@@ -104,11 +104,7 @@ export function AttachmentPreviewModal({
       error={textError}
     >
       {isText && textQuery.isLoading && (
-        <Flex
-          align="center"
-          justify="center"
-          css={{ padding: spacing["4xl"] }}
-        >
+        <Flex align="center" justify="center" css={{ padding: spacing["4xl"] }}>
           <Text variant="caption" color="muted">
             Loading preview...
           </Text>

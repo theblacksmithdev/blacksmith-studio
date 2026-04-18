@@ -13,7 +13,11 @@ import type {
   TaskStatusUpdate,
 } from "../types.js";
 
-const TERMINAL_DISPATCH_STATUSES = new Set(["completed", "failed", "cancelled"]);
+const TERMINAL_DISPATCH_STATUSES = new Set([
+  "completed",
+  "failed",
+  "cancelled",
+]);
 
 /**
  * High-level operations on dispatches and their tasks.

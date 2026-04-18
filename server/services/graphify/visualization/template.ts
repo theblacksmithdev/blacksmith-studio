@@ -14,13 +14,8 @@ export interface VisTemplateInput {
  * string builder so markup edits don't touch any orchestration code.
  */
 export function renderVisualizationHtml(input: VisTemplateInput): string {
-  const {
-    nodeCount,
-    edgeCount,
-    communityCount,
-    visNodesJson,
-    visEdgesJson,
-  } = input;
+  const { nodeCount, edgeCount, communityCount, visNodesJson, visEdgesJson } =
+    input;
 
   return `<!DOCTYPE html>
 <html lang="en">

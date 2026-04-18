@@ -3,10 +3,7 @@ export { GraphifyPaths } from "./paths.js";
 export { ArtifactStore } from "./artifact-store.js";
 export { Installer } from "./installer.js";
 export { BuildRunner } from "./build-runner.js";
-export {
-  ClaudeMdSection,
-  buildGraphifySection,
-} from "./claude-md-section.js";
+export { ClaudeMdSection, buildGraphifySection } from "./claude-md-section.js";
 
 export type {
   GraphifyMeta,

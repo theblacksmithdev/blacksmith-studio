@@ -37,7 +37,9 @@ export function buildAgentContext(
   // Inject graph report as a rich structural overview when available
   if (graphReport) {
     lines.push("## Project Knowledge Graph");
-    lines.push("(Pre-built codebase structure — trust this for navigation. Read specific files only when you need implementation details.)\n");
+    lines.push(
+      "(Pre-built codebase structure — trust this for navigation. Read specific files only when you need implementation details.)\n",
+    );
     lines.push(graphReport);
     lines.push("");
   }

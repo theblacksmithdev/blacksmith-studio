@@ -3,7 +3,10 @@ import {
   MessageRepository,
   ToolCallRepository,
 } from "../single-agent/index.js";
-import { ArtifactTracer, type ConversationArtifact } from "./artifact-tracer.js";
+import {
+  ArtifactTracer,
+  type ConversationArtifact,
+} from "./artifact-tracer.js";
 import { formatDispatchHistory } from "./dispatch-history-formatter.js";
 import {
   ChatMessageRepository,

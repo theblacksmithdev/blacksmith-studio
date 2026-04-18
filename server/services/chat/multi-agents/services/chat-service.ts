@@ -1,10 +1,7 @@
 import crypto from "node:crypto";
 import { mapChatMessage } from "../mappers.js";
 import type { ChatMessageRepository } from "../repositories/index.js";
-import type {
-  AgentChatRecord,
-  ChatAttachmentInput,
-} from "../types.js";
+import type { AgentChatRecord, ChatAttachmentInput } from "../types.js";
 import type { ConversationService } from "./conversation-service.js";
 
 /**

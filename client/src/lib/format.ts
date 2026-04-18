@@ -9,11 +9,8 @@ export function truncate(text: string, maxLength = 80): string {
   return text.slice(0, maxLength) + "...";
 }
 
-
 export function formatTimeAgo(isoDate: string): string {
-  const seconds = Math.floor(
-    (Date.now() - new Date(isoDate).getTime()) / 1000,
-  );
+  const seconds = Math.floor((Date.now() - new Date(isoDate).getTime()) / 1000);
   if (seconds < 60) return "just now";
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes}m ago`;

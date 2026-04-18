@@ -1,4 +1,7 @@
-import type { AttachmentRecord, AttachmentKind } from "@/api/modules/attachments";
+import type {
+  AttachmentRecord,
+  AttachmentKind,
+} from "@/api/modules/attachments";
 
 export type { AttachmentRecord, AttachmentKind };
 

@@ -43,8 +43,12 @@ export function resolveAiInvocationSettings(
     projectRoot: project.path,
     nodePath:
       settingsManager.resolve(project.id, "runner.nodePath") || undefined,
-    mcpConfigPath: mcpManager.getEnabledConfigPath(project.path, disabledServers),
-    permissionMode: (all["ai.permissionMode"] as string | undefined) || undefined,
+    mcpConfigPath: mcpManager.getEnabledConfigPath(
+      project.path,
+      disabledServers,
+    ),
+    permissionMode:
+      (all["ai.permissionMode"] as string | undefined) || undefined,
     customInstructions:
       (all["ai.customInstructions"] as string | undefined) || undefined,
     model: (all["ai.model"] as string | undefined) || undefined,

@@ -1,10 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import {
-  CODE_EXTENSIONS,
-  IGNORED_DIRS,
-  KEY_FILES,
-} from "./constants.js";
+import { CODE_EXTENSIONS, IGNORED_DIRS, KEY_FILES } from "./constants.js";
 
 /**
  * Walk a project directory and emit an indented tree listing.

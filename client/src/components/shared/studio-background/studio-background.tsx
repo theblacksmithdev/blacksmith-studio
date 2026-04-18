@@ -41,16 +41,8 @@ const Grid = styled.div`
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(
-      to right,
-      var(--studio-border-hover) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      to bottom,
-      var(--studio-border-hover) 1px,
-      transparent 1px
-    );
+    linear-gradient(to right, var(--studio-border-hover) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--studio-border-hover) 1px, transparent 1px);
   background-size: ${GRID_SIZE}px ${GRID_SIZE}px;
   mask-image: ${GRID_MASK};
   -webkit-mask-image: ${GRID_MASK};
@@ -59,12 +51,11 @@ const Grid = styled.div`
 const Wash = styled.div`
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(
-      ellipse 120% 80% at 50% 40%,
-      var(--studio-bg-surface) 0%,
-      transparent 65%
-    );
+  background: radial-gradient(
+    ellipse 120% 80% at 50% 40%,
+    var(--studio-bg-surface) 0%,
+    transparent 65%
+  );
   opacity: ${WASH_OPACITY};
 `;
 

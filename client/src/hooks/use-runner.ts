@@ -5,10 +5,7 @@ import {
   type RunnerService,
   type LogEntry,
 } from "@/stores/runner-store";
-import {
-  useActiveProjectId,
-  useChannelEffect,
-} from "@/api/hooks/_shared";
+import { useActiveProjectId, useChannelEffect } from "@/api/hooks/_shared";
 import {
   useDetectRunners,
   useStartRunner,

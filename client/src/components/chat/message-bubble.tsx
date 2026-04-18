@@ -28,11 +28,7 @@ export const MessageBubble = memo(function MessageBubble({
     senderIcon:
       message.role === "assistant" ? <ClaudeAvatar size={22} /> : undefined,
     footer: hasTools ? (
-      <Flex
-        direction="column"
-        gap={spacing.xs}
-        css={{ marginTop: spacing.sm }}
-      >
+      <Flex direction="column" gap={spacing.xs} css={{ marginTop: spacing.sm }}>
         {message.toolCalls!.map((tc) => (
           <ToolCallCard key={tc.toolId} toolCall={tc} />
         ))}

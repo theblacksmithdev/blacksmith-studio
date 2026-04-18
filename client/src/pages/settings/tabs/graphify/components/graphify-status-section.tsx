@@ -54,7 +54,6 @@ export function GraphifyStatusSection({
   const builtAgo = graphStatus?.builtAt
     ? formatTimeAgo(graphStatus.builtAt)
     : null;
-  
 
   return (
     <>
@@ -187,7 +186,10 @@ export function GraphifyStatusSection({
           size="full"
           noPadding
         >
-          <IFrame srcDoc={visualizationHtml} title="Knowledge Graph Visualization" />
+          <IFrame
+            srcDoc={visualizationHtml}
+            title="Knowledge Graph Visualization"
+          />
         </Drawer>
       )}
     </>

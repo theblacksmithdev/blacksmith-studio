@@ -88,7 +88,9 @@ export function CodeBody({
       >
         <code
           className={
-            highlighted.language ? `hljs language-${highlighted.language}` : "hljs"
+            highlighted.language
+              ? `hljs language-${highlighted.language}`
+              : "hljs"
           }
           dangerouslySetInnerHTML={{ __html: highlighted.html }}
         />

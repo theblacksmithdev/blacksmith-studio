@@ -4,11 +4,7 @@ import path from "node:path";
 import type { AgentExecuteOptions } from "../../base/index.js";
 import type { AgentRole } from "../../types.js";
 import type { DispatchTask } from "./types.js";
-import {
-  VALID_ROLES,
-  VALID_MODELS,
-  VALID_REVIEW_LEVELS,
-} from "./constants.js";
+import { VALID_ROLES, VALID_MODELS, VALID_REVIEW_LEVELS } from "./constants.js";
 import { PM_REPLAN_PROMPT, PM_REPLAN_GATE_PROMPT } from "./prompts.js";
 import { PMEventEmitter, type EmitFn } from "./pm-emitter.js";
 import { runPM } from "./pm-runner.js";
@@ -107,7 +103,9 @@ export async function replanDownstream(
 
     const newTasks = parseReplanResponse(text, completedTask.id);
     if (!newTasks) {
-      pm.activity("Re-plan did not produce valid tasks — keeping original plan");
+      pm.activity(
+        "Re-plan did not produce valid tasks — keeping original plan",
+      );
       return remainingTasks;
     }
 

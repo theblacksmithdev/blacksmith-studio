@@ -68,8 +68,7 @@ function LineRow({ line }: { line: DiffLine }) {
       : line.kind === "remove"
         ? "rgba(211,47,47,0.08)"
         : "transparent";
-  const marker =
-    line.kind === "add" ? "+" : line.kind === "remove" ? "−" : " ";
+  const marker = line.kind === "add" ? "+" : line.kind === "remove" ? "−" : " ";
   const markerColor =
     line.kind === "add"
       ? "var(--studio-green)"

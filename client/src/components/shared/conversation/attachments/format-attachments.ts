@@ -30,12 +30,9 @@ export function formatAttachmentPromptBlock(
 ): string {
   if (records.length === 0) return "";
   const lines = records.map((r) => `- @${r.relPath} (${r.kind}, ${r.name})`);
-  return [
-    "",
-    "",
-    "Attached files (read via the Read tool):",
-    ...lines,
-  ].join("\n");
+  return ["", "", "Attached files (read via the Read tool):", ...lines].join(
+    "\n",
+  );
 }
 
 function formatSize(bytes: number): string {

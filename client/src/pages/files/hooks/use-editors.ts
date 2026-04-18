@@ -1,7 +1,4 @@
-import {
-  useDetectEditorsQuery,
-  useOpenInEditor,
-} from "@/api/hooks/files";
+import { useDetectEditorsQuery, useOpenInEditor } from "@/api/hooks/files";
 import { useGlobalSettings } from "@/hooks/use-global-settings";
 
 export function useEditors() {

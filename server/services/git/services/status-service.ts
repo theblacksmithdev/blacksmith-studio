@@ -44,7 +44,8 @@ export class StatusService {
 
     try {
       const remotes = await git.getRemotes();
-      if (remotes.length === 0) return { ahead: 0, behind: 0, hasRemote: false };
+      if (remotes.length === 0)
+        return { ahead: 0, behind: 0, hasRemote: false };
 
       // Use cached tracking info rather than calling git fetch here — fetch
       // is a network call and would block for seconds. Fetch happens during

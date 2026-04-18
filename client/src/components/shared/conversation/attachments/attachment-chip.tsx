@@ -67,9 +67,7 @@ export function AttachmentChip({ item, onRemove }: AttachmentChipProps) {
         variant="caption"
         css={{
           fontWeight: 500,
-          color: isError
-            ? "var(--studio-error)"
-            : "var(--studio-text-primary)",
+          color: isError ? "var(--studio-error)" : "var(--studio-text-primary)",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",

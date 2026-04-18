@@ -4,10 +4,7 @@ import type {
   ChatMessageRepository,
   ConversationRepository,
 } from "../repositories/index.js";
-import type {
-  ConversationRecord,
-  ConversationSummary,
-} from "../types.js";
+import type { ConversationRecord, ConversationSummary } from "../types.js";
 
 /**
  * High-level operations on agent conversations.

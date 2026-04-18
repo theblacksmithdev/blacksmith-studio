@@ -52,11 +52,7 @@ export function useAiChat() {
   });
 
   const sendPrompt = useCallback(
-    (
-      prompt: string,
-      sessionId: string,
-      attachments?: AttachmentRecord[],
-    ) => {
+    (prompt: string, sessionId: string, attachments?: AttachmentRecord[]) => {
       const store = chatStore.getState();
       currentSessionRef.current = sessionId;
       store.addPendingUserMessage(prompt, attachments);

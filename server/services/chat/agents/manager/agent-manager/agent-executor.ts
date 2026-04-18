@@ -1,9 +1,5 @@
 import type { BaseAgent, AgentExecuteOptions } from "../../base/index.js";
-import type {
-  AgentRole,
-  AgentExecution,
-  AgentEvent,
-} from "../../types.js";
+import type { AgentRole, AgentExecution, AgentEvent } from "../../types.js";
 import { processHandoffs } from "../handoff.js";
 import type { AgentEventEmitter } from "./agent-event-emitter.js";
 import type { ExecutionHistory } from "./execution-history.js";

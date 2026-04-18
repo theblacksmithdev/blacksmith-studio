@@ -53,9 +53,7 @@ export const MessageBubble = memo(function MessageBubble({
 
   if (variant === "error") {
     return (
-      <Box
-        css={{ width: "100%", minWidth: 0, ...hoverRevealCss }}
-      >
+      <Box css={{ width: "100%", minWidth: 0, ...hoverRevealCss }}>
         <BubbleShell
           tone="error"
           align="left"
@@ -86,9 +84,7 @@ export const MessageBubble = memo(function MessageBubble({
                     {time}
                   </Text>
                 )}
-                <BubbleActions
-                  content={message.error ?? message.content}
-                />
+                <BubbleActions content={message.error ?? message.content} />
               </Flex>
               <BubbleBody
                 content={message.error ?? message.content}
@@ -124,11 +120,7 @@ export const MessageBubble = memo(function MessageBubble({
             <BubbleAttachments items={message.attachments} onAccent />
           )}
         </BubbleShell>
-        <Flex
-          align="center"
-          gap={spacing.xs}
-          css={{ marginTop: spacing.xs }}
-        >
+        <Flex align="center" gap={spacing.xs} css={{ marginTop: spacing.xs }}>
           {time && (
             <Text variant="tiny" color="muted">
               {time}
@@ -140,7 +132,8 @@ export const MessageBubble = memo(function MessageBubble({
     );
   }
 
-  const tone: "agent" | "assistant" = variant === "agent" ? "agent" : "assistant";
+  const tone: "agent" | "assistant" =
+    variant === "agent" ? "agent" : "assistant";
 
   return (
     <Box
@@ -162,9 +155,7 @@ export const MessageBubble = memo(function MessageBubble({
           tone={tone}
           align="left"
           accent={message.senderAccent}
-          maxWidth={
-            tone === "agent" ? bubbleTokens.maxWidthAgent : undefined
-          }
+          maxWidth={tone === "agent" ? bubbleTokens.maxWidthAgent : undefined}
         >
           <BubbleBody content={message.content} renderContent={renderContent} />
           {message.attachments && message.attachments.length > 0 && (

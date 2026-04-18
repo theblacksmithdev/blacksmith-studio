@@ -24,7 +24,10 @@ export class PMEventEmitter {
     this.send("message", { content, isPartial });
   }
 
-  private send(type: AgentEvent["data"]["type"], data: Record<string, any>): void {
+  private send(
+    type: AgentEvent["data"]["type"],
+    data: Record<string, any>,
+  ): void {
     if (!this.emit) return;
     this.emit({
       type: type as AgentEvent["type"],

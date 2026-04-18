@@ -103,11 +103,7 @@ export function ToolHeader({
             flexShrink: 0,
           }}
         >
-          {expanded ? (
-            <ChevronDown size={12} />
-          ) : (
-            <ChevronRight size={12} />
-          )}
+          {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
         </Box>
       )}
     </HeaderButton>

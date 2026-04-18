@@ -49,10 +49,7 @@ export interface ICancellationToken {
  * so the AgentManager can pass `this` without adapters.
  */
 export interface TaskPlanDeps
-  extends IAgentExecutor,
-    IEventEmitter,
-    IQualityGate,
-    ICancellationToken {
+  extends IAgentExecutor, IEventEmitter, IQualityGate, ICancellationToken {
   /** Alias — IQualityGate.run wired through here for convenience */
   run: IQualityGate["run"];
 }

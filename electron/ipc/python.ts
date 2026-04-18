@@ -49,15 +49,12 @@ export function setupPythonIPC(
     pythonManager.resetVenv();
   });
 
-  ipcMain.handle(
-    PYTHON_INSTALL_PACKAGE,
-    async (_e, data: { pkg: string }) => {
-      const win = getWindow();
-      return pythonManager.packages.install(data.pkg, (line) => {
-        win?.webContents.send(PYTHON_ON_PROGRESS, { line });
-      });
-    },
-  );
+  ipcMain.handle(PYTHON_INSTALL_PACKAGE, async (_e, data: { pkg: string }) => {
+    const win = getWindow();
+    return pythonManager.packages.install(data.pkg, (line) => {
+      win?.webContents.send(PYTHON_ON_PROGRESS, { line });
+    });
+  });
 
   ipcMain.handle(
     PYTHON_IS_PACKAGE_INSTALLED,

@@ -49,7 +49,8 @@ export const multiAgents = {
     raw.invoke<AgentExecution[]>("multiAgents:history", { limit }),
 
   // ── Pipelines & Workflows ──
-  listPipelines: () => raw.invoke<PipelineTemplate[]>("multiAgents:listPipelines"),
+  listPipelines: () =>
+    raw.invoke<PipelineTemplate[]>("multiAgents:listPipelines"),
   runPipeline: (
     projectId: string,
     data: { pipelineId: string; prompt: string; maxBudgetUsd?: number },

@@ -21,7 +21,8 @@ const REGISTRY: Record<string, ToolDescriptor> = {
   Read: {
     label: "Read",
     icon: Eye,
-    summarize: (input) => shortFilename(str(input.file_path) || str(input.path)),
+    summarize: (input) =>
+      shortFilename(str(input.file_path) || str(input.path)),
     hint: (input) => str(input.file_path) || str(input.path) || undefined,
   },
   Edit: {
@@ -71,7 +72,8 @@ const REGISTRY: Record<string, ToolDescriptor> = {
   Task: {
     label: "Task",
     icon: ListTodo,
-    summarize: (input) => str(input.description) || str(input.prompt).slice(0, 80),
+    summarize: (input) =>
+      str(input.description) || str(input.prompt).slice(0, 80),
   },
   TodoWrite: {
     label: "Todos",

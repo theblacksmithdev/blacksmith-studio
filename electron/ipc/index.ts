@@ -51,7 +51,6 @@ export function setupAllIPC(
   graphifyManager: GraphifyManager,
   pythonManager: PythonManager,
 ) {
-
   setupFolderDialogIPC();
   setupWindowIPC(getWindow);
   setupProjectsIPC(getWindow, projectManager, settingsManager);
@@ -82,7 +81,19 @@ export function setupAllIPC(
   setupGitIPC(getWindow, gitManager, projectManager, ai);
   setupTerminalIPC(getWindow, terminalManager, projectManager, settingsManager);
   setupPythonIPC(getWindow, pythonManager, settingsManager);
-  setupGraphifyIPC(getWindow, graphifyManager, projectManager, settingsManager, gitManager);
-  setupMultiAgentsIPC(getWindow, projectManager, settingsManager, mcpManager, ai);
+  setupGraphifyIPC(
+    getWindow,
+    graphifyManager,
+    projectManager,
+    settingsManager,
+    gitManager,
+  );
+  setupMultiAgentsIPC(
+    getWindow,
+    projectManager,
+    settingsManager,
+    mcpManager,
+    ai,
+  );
   setupAttachmentsIPC(new AttachmentService(projectManager));
 }

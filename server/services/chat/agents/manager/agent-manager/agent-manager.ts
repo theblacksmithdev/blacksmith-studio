@@ -71,9 +71,8 @@ export class AgentManager {
       (prompt) => this.dispatcher.route(prompt).role,
     );
 
-    this.workflowRunner = new WorkflowRunner(
-      this.bus,
-      (opts) => this.agentExecutor.execute(opts),
+    this.workflowRunner = new WorkflowRunner(this.bus, (opts) =>
+      this.agentExecutor.execute(opts),
     );
   }
 

@@ -26,14 +26,14 @@ export function useGraphifySettings() {
   );
 
   const build = () => {
-      buildMutation.reset();
-      buildMutation.mutate();
-    }
+    buildMutation.reset();
+    buildMutation.mutate();
+  };
 
-    const clean = () => {
-      buildMutation.reset();
-      cleanMutation.mutate();
-    }
+  const clean = () => {
+    buildMutation.reset();
+    cleanMutation.mutate();
+  };
 
   return {
     // Install state

@@ -115,7 +115,10 @@ export class PackageManager {
   ): Promise<PackageResult> {
     this.ensureReady();
     onProgress?.(`Installing ${pkg}...`);
-    return this.exec(["pip", "install", pkg, "--python", this.python], onProgress);
+    return this.exec(
+      ["pip", "install", pkg, "--python", this.python],
+      onProgress,
+    );
   }
 
   /** Upgrade a package in the venv. */
@@ -149,23 +152,30 @@ export class PackageManager {
   /** Check if a package is installed. */
   async isInstalled(pkg: string): Promise<boolean> {
     if (!this.ready) return false;
-    const result = await this.exec(
-      ["pip", "show", pkg, "--python", this.python],
-    );
+    const result = await this.exec([
+      "pip",
+      "show",
+      pkg,
+      "--python",
+      this.python,
+    ]);
     return result.success;
   }
 
   /** Get info about an installed package. Returns null if not installed. */
   async getInfo(pkg: string): Promise<PackageInfo | null> {
     if (!this.ready) return null;
-    const output = await this.execForOutput(
-      ["pip", "show", pkg, "--python", this.python],
-    );
+    const output = await this.execForOutput([
+      "pip",
+      "show",
+      pkg,
+      "--python",
+      this.python,
+    ]);
     if (!output) return null;
 
     const name = output.match(/^Name:\s*(.+)/m)?.[1]?.trim() ?? pkg;
-    const version =
-      output.match(/^Version:\s*(.+)/m)?.[1]?.trim() ?? "unknown";
+    const version = output.match(/^Version:\s*(.+)/m)?.[1]?.trim() ?? "unknown";
     return { name, version };
   }
 
@@ -178,9 +188,14 @@ export class PackageManager {
   /** List all installed packages. */
   async list(): Promise<PackageInfo[]> {
     if (!this.ready) return [];
-    const output = await this.execForOutput(
-      ["pip", "list", "--format", "json", "--python", this.python],
-    );
+    const output = await this.execForOutput([
+      "pip",
+      "list",
+      "--format",
+      "json",
+      "--python",
+      this.python,
+    ]);
     if (!output) return [];
     try {
       return JSON.parse(output) as PackageInfo[];

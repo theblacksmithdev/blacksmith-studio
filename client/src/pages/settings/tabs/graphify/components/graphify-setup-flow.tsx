@@ -1,11 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Flex, Box } from "@chakra-ui/react";
 import styled from "@emotion/styled";
-import {
-  Loader2,
-  CheckCircle2,
-  XCircle,
-} from "lucide-react";
+import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { Text } from "@/components/shared/ui";
 import { PrimaryBtn, ResultBar } from "./styles";
 
@@ -73,7 +69,10 @@ export function GraphifySetupFlow({
           {installing && (
             <Loader2
               size={14}
-              style={{ animation: "spin 1s linear infinite", color: "var(--studio-green)" }}
+              style={{
+                animation: "spin 1s linear infinite",
+                color: "var(--studio-green)",
+              }}
             />
           )}
           {result?.success && (
@@ -129,7 +128,8 @@ export function GraphifySetupFlow({
         <Footer>
           <Flex direction="column" gap="10px">
             <ResultBar $success={false}>
-              {result.error ?? "Installation failed. Make sure Python 3.10+ and pip are available."}
+              {result.error ??
+                "Installation failed. Make sure Python 3.10+ and pip are available."}
             </ResultBar>
             <Flex>
               <PrimaryBtn onClick={onRetry}>Try Again</PrimaryBtn>

@@ -75,8 +75,7 @@ export async function finalizeStream(
     execution.error = error ?? null;
     execution.responseText = state.fullResponse;
     execution.completedAt = new Date().toISOString();
-    execution.durationMs =
-      Date.now() - new Date(execution.startedAt).getTime();
+    execution.durationMs = Date.now() - new Date(execution.startedAt).getTime();
   };
 
   try {
@@ -164,7 +163,10 @@ function handleChunk(
           execution,
         );
         emit(
-          { type: "activity", description: describeToolUse(block.name, block.input) },
+          {
+            type: "activity",
+            description: describeToolUse(block.name, block.input),
+          },
           execution,
         );
       }

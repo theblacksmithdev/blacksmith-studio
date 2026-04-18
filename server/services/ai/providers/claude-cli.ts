@@ -200,9 +200,7 @@ export class ClaudeCliProvider extends AiProvider {
           return;
         }
         reject(
-          new Error(
-            stderrBuffer.trim() || `Process exited with code ${code}`,
-          ),
+          new Error(stderrBuffer.trim() || `Process exited with code ${code}`),
         );
       });
       proc.on("error", (err) =>
