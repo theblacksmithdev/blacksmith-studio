@@ -7,3 +7,4 @@ export {
 } from "./use-command-runs-query";
 export { useRunCommand, useCancelCommand } from "./use-run-command";
 export { useCommandStream, type CommandStreamState } from "./use-command-stream";
+export { useCreateProjectEnv } from "./use-create-project-env";

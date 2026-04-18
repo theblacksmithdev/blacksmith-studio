@@ -16,6 +16,7 @@ import {
   COMMANDS_LIST_TOOLCHAINS,
   COMMANDS_LIST_RUNS,
   COMMANDS_GET_RUN,
+  COMMANDS_CREATE_PROJECT_ENV,
   COMMANDS_ON_OUTPUT,
   COMMANDS_ON_STATUS,
 } from "./channels.js";
@@ -106,6 +107,24 @@ export function setupCommandsIPC(
 
   ipcMain.handle(COMMANDS_GET_RUN, (_e, data: { runId: string }) =>
     commandService.getRun(data.runId),
+  );
+
+  ipcMain.handle(
+    COMMANDS_CREATE_PROJECT_ENV,
+    async (
+      _e,
+      data: {
+        projectId: string;
+        toolchainId: string;
+        options?: Record<string, unknown>;
+      },
+    ) => {
+      try {
+        return await commandService.createProjectEnv(data);
+      } catch (err) {
+        return asError(err);
+      }
+    },
   );
 
   commandService.onChunk((chunk: CommandOutputChunk) => {

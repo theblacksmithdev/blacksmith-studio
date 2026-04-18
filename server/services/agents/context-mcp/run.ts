@@ -29,6 +29,7 @@ import {
   RawToolchain,
   ToolchainRegistry,
 } from "../../commands/index.js";
+import { UvBinaryResolver } from "../../python/uv-binary.js";
 import { ContextMcpServer } from "./context-mcp-server.js";
 import { ContextQueryService } from "./context-query-service.js";
 import { ContextWriteService } from "./context-write-service.js";
@@ -61,12 +62,14 @@ function main() {
   // ── Command subsystem (same composition as main process) ──
   const platformInfo = new PlatformInfo();
   const binaryDetector = new BinaryDetector(platformInfo);
+  const uvResolver = new UvBinaryResolver(platformInfo);
   const toolchainRegistry = new ToolchainRegistry();
   toolchainRegistry.register(
     new PythonToolchain(
       new PythonVenvDetector(platformInfo),
       binaryDetector,
       platformInfo,
+      uvResolver,
     ),
   );
   toolchainRegistry.register(

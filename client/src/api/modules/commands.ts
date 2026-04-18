@@ -45,6 +45,16 @@ export const commands = {
   listToolchains: () =>
     raw.invoke<ToolchainInfo[]>("commands:listToolchains"),
 
+  createProjectEnv: (input: {
+    projectId: string;
+    toolchainId: string;
+    options?: Record<string, unknown>;
+  }) =>
+    raw.invoke<ToolchainEnv | CommandErrorShape>(
+      "commands:createProjectEnv",
+      input,
+    ),
+
   listRuns: (input: {
     projectId: string;
     conversationId?: string;

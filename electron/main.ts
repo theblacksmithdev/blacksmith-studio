@@ -15,6 +15,7 @@ import {
   ArtifactRepository,
   ArtifactService,
 } from "../server/services/artifacts/index.js";
+import { UvBinaryResolver } from "../server/services/python/uv-binary.js";
 import {
   BinaryDetector,
   CommandEnvBuilder,
@@ -165,12 +166,14 @@ app.whenReady().then(async () => {
   // ── Command subsystem (toolchain-pluggable subprocess execution) ──
   const platformInfo = new PlatformInfo();
   const binaryDetector = new BinaryDetector(platformInfo);
+  const uvResolver = new UvBinaryResolver(platformInfo);
   const toolchainRegistry = new ToolchainRegistry();
   toolchainRegistry.register(
     new PythonToolchain(
       new PythonVenvDetector(platformInfo),
       binaryDetector,
       platformInfo,
+      uvResolver,
     ),
   );
   toolchainRegistry.register(

@@ -706,6 +706,9 @@ export interface ToolchainInfo {
   displayName: string;
   presetOwnership: readonly string[];
   binaries: readonly string[];
+  /** True when the backend toolchain implements `EnvCreatingToolchain` —
+   *  the inspector UI renders a "Set up" button for these. */
+  supportsProjectEnvCreation: boolean;
 }
 
 export interface ToolchainEnv {

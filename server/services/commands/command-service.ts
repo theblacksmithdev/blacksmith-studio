@@ -6,6 +6,7 @@ import type { CommandRunner, RunnerHandle } from "./command-runner.js";
 import { TooManyConcurrentCommandsError } from "./errors.js";
 import type { CommandRunRepository } from "./repositories/command-run-repository.js";
 import type { ToolchainRegistry } from "./toolchains/registry.js";
+import { isEnvCreatingToolchain } from "./toolchains/types.js";
 import type { Toolchain, ToolchainEnv } from "./toolchains/types.js";
 import type {
   CommandResult,
@@ -29,6 +30,9 @@ export interface ToolchainInfo {
   displayName: string;
   presetOwnership: readonly string[];
   binaries: readonly string[];
+  /** True when the toolchain implements `EnvCreatingToolchain` — the
+   *  UI renders a "Set up environment" affordance for these. */
+  supportsProjectEnvCreation: boolean;
 }
 
 /**
@@ -109,7 +113,32 @@ export class CommandService {
       displayName: tc.displayName,
       presetOwnership: tc.presetOwnership,
       binaries: tc.binaries,
+      supportsProjectEnvCreation: isEnvCreatingToolchain(tc),
     }));
+  }
+
+  /**
+   * Bootstrap a project-scoped environment for a toolchain that
+   * implements `EnvCreatingToolchain` (currently: Python → `.venv`).
+   * Throws when the toolchain doesn't support creation so callers can
+   * hide the affordance or render a clear error.
+   */
+  async createProjectEnv(opts: {
+    projectId: string;
+    toolchainId: string;
+    options?: Record<string, unknown>;
+  }): Promise<ToolchainEnv> {
+    const toolchain = this.registry.getById(opts.toolchainId);
+    if (!isEnvCreatingToolchain(toolchain)) {
+      throw new Error(
+        `Toolchain "${toolchain.id}" does not support environment creation.`,
+      );
+    }
+    const projectRoot = this.resolver["projects"].getPath(opts.projectId);
+    return toolchain.createProjectEnv(
+      { projectId: opts.projectId, projectRoot },
+      opts.options ?? {},
+    );
   }
 
   listRuns(

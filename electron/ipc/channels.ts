@@ -181,6 +181,7 @@ export const COMMANDS_CANCEL = "commands:cancel";
 export const COMMANDS_CHECK_AVAILABLE = "commands:checkAvailable";
 export const COMMANDS_RESOLVE_ENV = "commands:resolveEnv";
 export const COMMANDS_LIST_TOOLCHAINS = "commands:listToolchains";
+export const COMMANDS_CREATE_PROJECT_ENV = "commands:createProjectEnv";
 export const COMMANDS_LIST_RUNS = "commands:listRuns";
 export const COMMANDS_GET_RUN = "commands:getRun";
 
@@ -382,6 +383,7 @@ export const INVOKE_CHANNELS = [
   COMMANDS_CHECK_AVAILABLE,
   COMMANDS_RESOLVE_ENV,
   COMMANDS_LIST_TOOLCHAINS,
+  COMMANDS_CREATE_PROJECT_ENV,
   COMMANDS_LIST_RUNS,
   COMMANDS_GET_RUN,
 ] as const;

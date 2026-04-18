@@ -1,4 +1,4 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import path from "node:path";
 import { BinaryDetector } from "../detectors/binary-detector.js";
 import {
@@ -7,7 +7,9 @@ import {
 } from "../detectors/python-venv-detector.js";
 import { NoProjectEnvError, NoStudioEnvError } from "../errors.js";
 import { PlatformInfo } from "../../platform/index.js";
+import { UvBinaryResolver } from "../../python/uv-binary.js";
 import type {
+  EnvCreatingToolchain,
   ProjectContext,
   ResolvedBinary,
   StudioContext,
@@ -30,7 +32,7 @@ import type {
  *   - ISP: implements the base `Toolchain` interface only; env-creation
  *     lives elsewhere (Phase 1 does not yet expose `create_project_env`).
  */
-export class PythonToolchain implements Toolchain {
+export class PythonToolchain implements EnvCreatingToolchain {
   readonly id = "python";
   readonly displayName = "Python";
   readonly binaries = ["python", "python3", "pip", "pip3", "uv", "pytest"] as const;
@@ -47,6 +49,7 @@ export class PythonToolchain implements Toolchain {
     private readonly venvDetector: PythonVenvDetector,
     private readonly binaries_: BinaryDetector,
     private readonly platform: PlatformInfo,
+    private readonly uv: UvBinaryResolver,
   ) {}
 
   detectStudioEnv(ctx: StudioContext): ToolchainEnv | null {
@@ -136,6 +139,32 @@ export class PythonToolchain implements Toolchain {
     return env;
   }
 
+  /**
+   * Bootstrap a `.venv` for the given project via the bundled uv
+   * binary. Safe to call when a venv already exists — uv treats the
+   * operation as idempotent. Throws a descriptive `Error` when uv
+   * fails so the IPC / UI layer can surface the stderr tail.
+   */
+  async createProjectEnv(
+    ctx: ProjectContext,
+    options: { pythonVersion?: string } = {},
+  ): Promise<ToolchainEnv> {
+    const venvPath = path.join(ctx.projectRoot, ".venv");
+    const uvBin = this.uv.resolve();
+    const args = ["venv", venvPath];
+    if (options.pythonVersion) {
+      args.push("--python", options.pythonVersion);
+    }
+    await runOnce(uvBin, args, ctx.projectRoot);
+    const env = this.detectProjectEnv(ctx);
+    if (!env) {
+      throw new Error(
+        `uv venv succeeded but .venv isn't detectable at ${venvPath}.`,
+      );
+    }
+    return env;
+  }
+
   private toEnv(d: PythonEnvDetection): ToolchainEnv {
     const envVars: Record<string, string> = {};
     if (d.kind === "venv") {
@@ -161,4 +190,38 @@ function canonicalName(binary: string): string {
   if (binary === "python3") return "python";
   if (binary === "pip3") return "pip";
   return binary;
+}
+
+/**
+ * Minimal promise-based spawn used by `createProjectEnv`. We avoid
+ * going through `CommandRunner` here to keep the toolchain testable in
+ * isolation and to sidestep audit/event emission for bootstrap runs.
+ */
+function runOnce(
+  command: string,
+  args: string[],
+  cwd: string,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      cwd,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    let stderr = "";
+    child.stderr?.setEncoding("utf8").on("data", (d: string) => {
+      stderr += d;
+    });
+    child.on("error", (err) =>
+      reject(new Error(`Failed to spawn ${command}: ${err.message}`)),
+    );
+    child.on("close", (code) => {
+      if (code === 0) return resolve();
+      const tail = stderr.trim().split("\n").slice(-5).join("\n");
+      reject(
+        new Error(
+          `${command} ${args.join(" ")} exited ${code}${tail ? `\n${tail}` : ""}`,
+        ),
+      );
+    });
+  });
 }
