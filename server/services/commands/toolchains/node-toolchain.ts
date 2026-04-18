@@ -8,7 +8,9 @@ import {
 } from "../detectors/node-version-detector.js";
 import { NoProjectEnvError, NoStudioEnvError } from "../errors.js";
 import { PlatformInfo } from "../../platform/index.js";
+import { detectNodeInstallations } from "../../runner/detect-node.js";
 import type {
+  InstalledVersion,
   ProjectContext,
   ResolvedBinary,
   StudioContext,
@@ -118,6 +120,24 @@ export class NodeToolchain implements Toolchain {
     }
   }
 
+  /**
+   * Enumerate Node runtimes installed on this machine so the UI can
+   * offer a "Change interpreter" picker. Covers:
+   *   · whichever `node` is on PATH
+   *   · every version under `~/.nvm/versions/node/*`
+   *   · every version under `~/.fnm/node-versions/*`
+   *   · common system install locations (Homebrew, /usr/local, /usr)
+   * Dedupes by resolved real path so symlinked installs surface once.
+   */
+  async listInstalledVersions(): Promise<InstalledVersion[]> {
+    return detectNodeInstallations().map((install) => ({
+      displayName: install.label,
+      path: install.path,
+      version: install.version,
+      source: classifySource(install.label),
+    }));
+  }
+
   requireProjectEnv(ctx: ProjectContext): ToolchainEnv {
     const env = this.detectProjectEnv(ctx);
     if (!env) throw new NoProjectEnvError(this.id, ctx.projectRoot);
@@ -191,5 +211,14 @@ export class NodeToolchain implements Toolchain {
     const loose = installed.find((v) => v.replace(/^v/, "").startsWith(normalized));
     return loose ?? null;
   }
+}
+
+function classifySource(label: string): InstalledVersion["source"] {
+  const lower = label.toLowerCase();
+  if (lower.startsWith("default")) return "default";
+  if (lower.startsWith("nvm")) return "nvm";
+  if (lower.startsWith("fnm")) return "fnm";
+  if (lower.startsWith("system") || lower.includes("homebrew")) return "system";
+  return "other";
 }
 

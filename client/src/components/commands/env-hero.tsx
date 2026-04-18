@@ -38,6 +38,10 @@ import {
 interface EnvHeroProps {
   toolchainId: string;
   displayName: string;
+  /** The primary interpreter binary for this toolchain (e.g. "python",
+   *  "node"). Used to build the `currentPath` passed to the picker so
+   *  it can highlight the active version. */
+  primaryBinary: string;
   canCreate: boolean;
   canDelete: boolean;
   canList: boolean;
@@ -58,6 +62,7 @@ interface EnvHeroProps {
 export function EnvHero({
   toolchainId,
   displayName,
+  primaryBinary,
   canCreate,
   canDelete,
   canList,
@@ -88,7 +93,7 @@ export function EnvHero({
   const isManaged = !!projectEnv && isOwnedVenv(projectEnv.displayName);
   const hasOverride = !!projectEnv?.displayName?.startsWith("explicit:");
   const interpreterPath = projectEnv?.bin
-    ? `${projectEnv.bin}/python`
+    ? `${projectEnv.bin}/${primaryBinary}`
     : undefined;
 
   const handleSetup = async () => {
@@ -254,16 +259,22 @@ export function EnvHero({
           </PillButton>
         )}
 
-        {/* Universal: change interpreter (pin a system/pyenv python).
-            Not shown when managed venv is active — the venv IS the
-            interpreter; use "Change version" instead. */}
-        {hasRuntime && canList && !isManaged && (
+        {/* Universal: pin a different interpreter for this toolchain —
+            surfaced as "Change version" so users find it by intent
+            regardless of language. Shown whenever the toolchain can
+            enumerate versions, even when nothing is detected yet — it's
+            the escape hatch for pinning a binary the app didn't find.
+            Suppressed only when a managed venv is active (the picker
+            above recreates the venv instead). */}
+        {canList && !isManaged && (
           <InterpreterPicker
             toolchainId={toolchainId}
             currentPath={interpreterPath}
             hasOverride={hasOverride}
             label={
-              changeInterpreter.isPending ? "Saving…" : "Change interpreter"
+              changeInterpreter.isPending
+                ? "Saving…"
+                : `Change ${displayName} version`
             }
             onSelect={handlePickInterpreter}
             onClearOverride={handleClearOverride}

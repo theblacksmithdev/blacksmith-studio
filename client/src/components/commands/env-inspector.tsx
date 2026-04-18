@@ -60,6 +60,7 @@ export function EnvInspector() {
         key={activeId}
         toolchainId={activeId}
         displayName={activeToolchain.displayName}
+        primaryBinary={activeToolchain.binaries[0] ?? activeId}
         canCreate={!!activeToolchain.supportsProjectEnvCreation}
         canDelete={!!activeToolchain.supportsProjectEnvDeletion}
         canList={!!activeToolchain.supportsListInstalledVersions}
