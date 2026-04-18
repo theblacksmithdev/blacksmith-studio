@@ -6,7 +6,12 @@ import styled from "@emotion/styled";
 
 export interface MenuOption {
   icon?: ReactNode;
-  label: string;
+  /** Primary label — string for normal items, `ReactNode` for rich
+   *  multi-line content (e.g. label + secondary path line). The
+   *  accessible item value defaults to the rendered label when a
+   *  string is passed; pass `value` explicitly for non-string labels. */
+  label: ReactNode;
+  value?: string;
   onClick: () => void;
   danger?: boolean;
   disabled?: boolean;
@@ -110,7 +115,10 @@ export function Menu({
               <span key={i}>
                 {opt.separator && <StyledSeparator />}
                 <StyledItem
-                  value={opt.label}
+                  value={
+                    opt.value ??
+                    (typeof opt.label === "string" ? opt.label : String(i))
+                  }
                   data-danger={opt.danger || undefined}
                   disabled={opt.disabled}
                   onClick={opt.onClick}
