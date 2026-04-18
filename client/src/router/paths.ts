@@ -68,7 +68,9 @@ export function settingsEnvironmentsPath(
   projectId: string,
   scope: "project" | "global" = "project",
 ) {
-  return `/${projectId}/settings/environments#scope=${scope}`;
+  // Query param (not hash) — the app uses `createHashRouter`, so the
+  // URL fragment is already owned by the router.
+  return `/${projectId}/settings/environments?scope=${scope}`;
 }
 
 export function skillsBrowserPath(projectId: string) {

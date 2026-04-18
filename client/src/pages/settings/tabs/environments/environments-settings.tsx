@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
 import { Flex } from "@chakra-ui/react";
 import styled from "@emotion/styled";
 import { Boxes, FolderOpen, Globe } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { Text } from "@/components/shared/ui";
 import { EnvInspector } from "@/components/commands/env-inspector";
 import { GlobalDefaultsForm } from "./global-defaults-form";
@@ -59,19 +59,18 @@ const Hint = styled.p`
  *     across all projects).
  */
 export function EnvironmentsSettings() {
-  const [scope, setScope] = useState<EnvScope>(() => scopeFromHash());
-
-  // Sync the URL hash so the global-settings drawer can deep-link to
-  // "#scope=global" and land on the right view.
-  useEffect(() => {
-    const onHash = () => setScope(scopeFromHash());
-    window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
-  }, []);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const scope: EnvScope =
+    searchParams.get("scope") === "global" ? "global" : "project";
 
   const handleToggle = (next: EnvScope) => {
-    setScope(next);
-    window.location.hash = `scope=${next}`;
+    const params = new URLSearchParams(searchParams);
+    if (next === "project") {
+      params.delete("scope");
+    } else {
+      params.set("scope", next);
+    }
+    setSearchParams(params, { replace: true });
   };
 
   return (
@@ -121,9 +120,4 @@ export function EnvironmentsSettings() {
       {scope === "project" ? <EnvInspector /> : <GlobalDefaultsForm />}
     </Flex>
   );
-}
-
-function scopeFromHash(): EnvScope {
-  const match = window.location.hash.match(/scope=(project|global)/);
-  return (match?.[1] as EnvScope | undefined) ?? "project";
 }
