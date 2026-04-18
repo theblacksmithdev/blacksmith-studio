@@ -1,5 +1,17 @@
 export { ConversationView } from "./conversation-view";
-export { ChatComposer, type ChatComposerVariant } from "./chat-composer";
+export {
+  ChatComposer,
+  ComposerShell,
+  ComposerTextarea,
+  ComposerToolbar,
+  SendButton,
+  useComposerState,
+  useTextareaAutoResize,
+  VARIANT_DEFAULTS,
+  type ChatComposerProps,
+  type ChatComposerVariant,
+  type SendShortcut,
+} from "./chat-composer";
 export { MessageList } from "./message-list";
 export {
   MessageBubble,
