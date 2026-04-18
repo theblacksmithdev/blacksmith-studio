@@ -4,7 +4,12 @@ import { useUiStore } from "@/stores/ui-store";
 import { useActiveProjectId } from "@/api/hooks/_shared";
 import { SidebarTooltip } from "./sidebar-tooltip";
 import { NavButton, NavLabel } from "./nav-item";
-import { primaryNav, projectNav, bottomNav, type NavEntry } from "./nav-config";
+import {
+  primaryNav,
+  workNav,
+  activityNav,
+  type NavEntry,
+} from "./nav-config";
 import { RunnerBadge } from "./runner-badge";
 import { NewChatButton } from "./new-chat-button";
 import { UserMenu } from "./user-menu";
@@ -84,13 +89,18 @@ export function Sidebar() {
 
           <Divider />
 
-          {/* Workspace — Files, Source Control, Skills, MCP */}
-          {renderSection(projectNav)}
+          {/* Project work — Files, Source Control, Dev Services */}
+          {renderSection(workNav)}
 
+          {/* Spacer pushes Activity + UserMenu to the bottom. Activity
+              is read-only audit; keeping it out of the muscle-memory
+              area at the top frees that space for active workflow. */}
           <Spacer />
 
-          {/* Bottom nav — Dev Services */}
-          {renderSection(bottomNav)}
+          <Divider />
+
+          {/* Activity — Artifacts, Commands (bottom group) */}
+          {renderSection(activityNav)}
         </>
       ) : (
         <Spacer />

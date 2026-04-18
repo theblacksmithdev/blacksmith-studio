@@ -1,15 +1,12 @@
 import { useMemo, useState } from "react";
-import { Cpu, Search, Terminal } from "lucide-react";
+import { Search, Terminal } from "lucide-react";
 import {
   useCommandRunsQuery,
   useToolchainsQuery,
 } from "@/api/hooks/commands";
 import type { CommandRunRecord, CommandStatus } from "@/api/types";
-import { Drawer } from "@/components/shared/drawer";
 import { PanelEmptyState } from "@/components/shared/panel-empty-state";
-import { Tooltip } from "@/components/shared/tooltip";
 import { CommandRunRow } from "./command-run-row";
-import { EnvInspector } from "./env-inspector";
 import {
   CountLabel,
   Divider,
@@ -19,7 +16,6 @@ import {
   FilterRow,
   Header,
   HeaderTop,
-  IconButton,
   ListScroll,
   Root,
   SearchInput,
@@ -50,9 +46,9 @@ interface CommandRunListProps {
  * Selection is controlled; the caller (layout page) drives it from the
  * URL so rows deep-link.
  *
- * The env inspector ("which python? / which node?" debugging) is
- * tucked behind a Cpu icon in the header so the primary surface stays
- * clean — click the icon, a drawer slides in.
+ * Environment inspection (which python / node is resolved) now lives
+ * in Settings → Environments; the drawer entry that used to live here
+ * was redundant with that page.
  */
 export function CommandRunList({
   title = "Commands",
@@ -66,7 +62,6 @@ export function CommandRunList({
   const [toolchainFilter, setToolchainFilter] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] =
     useState<(typeof STATUS_FILTERS)[number]["value"]>("all");
-  const [envOpen, setEnvOpen] = useState(false);
 
   const filtered = useMemo<CommandRunRecord[]>(() => {
     const needle = search.trim().toLowerCase();
@@ -94,14 +89,6 @@ export function CommandRunList({
         <HeaderTop>
           <TitleText>{title}</TitleText>
           <CountLabel>{filtered.length}</CountLabel>
-          <Tooltip content="Environment inspector">
-            <IconButton
-              onClick={() => setEnvOpen(true)}
-              aria-label="Open environment inspector"
-            >
-              <Cpu size={13} />
-            </IconButton>
-          </Tooltip>
         </HeaderTop>
         <SearchShell>
           <Search size={13} />
@@ -178,17 +165,6 @@ export function CommandRunList({
         )}
       </ListScroll>
 
-      {envOpen && (
-        <Drawer
-          title="Environment inspector"
-          onClose={() => setEnvOpen(false)}
-          size="440px"
-        >
-          <div style={{ padding: "16px" }}>
-            <EnvInspector />
-          </div>
-        </Drawer>
-      )}
     </Root>
   );
 }

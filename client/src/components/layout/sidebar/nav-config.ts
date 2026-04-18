@@ -2,12 +2,9 @@ import {
   Files,
   Play,
   GitBranch,
-  Settings,
   MessageSquare,
   Users,
   Network,
-  Sparkles,
-  Plug,
   FileCode,
   Terminal,
 } from "lucide-react";
@@ -15,11 +12,8 @@ import {
   codePath,
   runPath,
   sourceControlPath,
-  settingsPath,
   newChatPath,
   agentsNewPath,
-  skillsBrowserPath,
-  mcpBrowserPath,
   artifactsPath,
   commandsPath,
 } from "@/router/paths";
@@ -33,10 +27,9 @@ export interface NavEntry {
 }
 
 /**
- * Primary actions — what the user most often reaches for on entering a
- * project. Chat and Agents are the two AI surfaces; they were previously
- * only accessible via URL or the history toggle, which hid them from new
- * users.
+ * Primary AI surfaces — what you reach for when you sit down at a
+ * project. Chat is the solo interaction; Agents Team is the
+ * multi-agent workflow.
  */
 export const primaryNav: NavEntry[] = [
   {
@@ -55,8 +48,12 @@ export const primaryNav: NavEntry[] = [
   },
 ];
 
-/** Project workspace — browsing / editing destinations. */
-export const projectNav: NavEntry[] = [
+/**
+ * Project work — the surfaces you edit in, commit from, and run
+ * against. Grouped separately from AI because the mental mode is
+ * different (authoring code vs. collaborating with Claude).
+ */
+export const workNav: NavEntry[] = [
   { id: "code", icon: Files, label: "Files", path: codePath, match: "/code" },
   {
     id: "git",
@@ -66,19 +63,20 @@ export const projectNav: NavEntry[] = [
     match: "/source-control",
   },
   {
-    id: "skills",
-    icon: Sparkles,
-    label: "Skills",
-    path: skillsBrowserPath,
-    match: "/skills",
+    id: "run",
+    icon: Play,
+    label: "Dev Services",
+    path: runPath,
+    match: "/run",
   },
-  {
-    id: "mcp",
-    icon: Plug,
-    label: "MCP",
-    path: mcpBrowserPath,
-    match: "/mcp",
-  },
+];
+
+/**
+ * Activity — read-only audit trails. Surfaces what Claude and agents
+ * have been doing (artifacts produced, commands executed) without
+ * driving new work.
+ */
+export const activityNav: NavEntry[] = [
   {
     id: "artifacts",
     icon: FileCode,
@@ -94,21 +92,3 @@ export const projectNav: NavEntry[] = [
     match: "/commands",
   },
 ];
-
-export const bottomNav: NavEntry[] = [
-  {
-    id: "run",
-    icon: Play,
-    label: "Dev Services",
-    path: runPath,
-    match: "/run",
-  },
-];
-
-export const settingsNav: NavEntry = {
-  id: "settings",
-  icon: Settings,
-  label: "Settings",
-  path: settingsPath,
-  match: "/settings",
-};

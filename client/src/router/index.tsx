@@ -143,7 +143,7 @@ export const router = createHashRouter([
           {
             path: "ai",
             element: <AiSettings />,
-            handle: { title: "AI & Prompting" } satisfies RouteHandle,
+            handle: { title: "Prompting" } satisfies RouteHandle,
           },
           {
             path: "mcp",

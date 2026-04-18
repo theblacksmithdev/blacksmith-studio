@@ -25,15 +25,15 @@ export interface SettingsNavGroup {
   items: SettingsNavItem[];
 }
 
+/**
+ * Settings groups grouped by intent rather than by the system doing
+ * the work:
+ *   · Preferences — app-wide UI choices
+ *   · AI          — what Claude is + how it thinks
+ *   · Knowledge   — what Claude reads from this project
+ *   · Project     — per-project fundamentals
+ */
 export const settingsGroups: SettingsNavGroup[] = [
-  {
-    label: "Claude",
-    items: [
-      { id: "ai", icon: Sparkles, label: "AI & Prompting" },
-      { id: "mcp", icon: Blocks, label: "MCP Servers" },
-      { id: "skills", icon: Wand2, label: "Skills" },
-    ],
-  },
   {
     label: "Preferences",
     items: [
@@ -42,12 +42,25 @@ export const settingsGroups: SettingsNavGroup[] = [
     ],
   },
   {
+    label: "AI",
+    items: [
+      { id: "ai", icon: Sparkles, label: "Prompting" },
+      { id: "mcp", icon: Blocks, label: "MCP Servers" },
+      { id: "skills", icon: Wand2, label: "Skills" },
+    ],
+  },
+  {
+    label: "Knowledge",
+    items: [
+      { id: "knowledge", icon: BookOpen, label: "Knowledge Base" },
+      { id: "graphify", icon: Network, label: "Knowledge Graph" },
+    ],
+  },
+  {
     label: "Project",
     items: [
       { id: "workspace", icon: FolderCog, label: "Workspace" },
       { id: "environments", icon: Boxes, label: "Environments" },
-      { id: "knowledge", icon: BookOpen, label: "Knowledge Base" },
-      { id: "graphify", icon: Network, label: "Knowledge Graph" },
     ],
   },
 ];
