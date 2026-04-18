@@ -6,6 +6,7 @@ import {
   Package,
   Pin,
   Plus,
+  Terminal,
   Trash2,
 } from "lucide-react";
 import {
@@ -27,8 +28,14 @@ import {
   HeroBadge,
   HeroHeader,
   HeroRoot,
+  HeroStatusBlock,
   HeroStatusDot,
-  HeroSubline,
+  HeroStatusIcon,
+  HeroStatusLabel,
+  HeroStatusMain,
+  HeroStatusPath,
+  HeroStatusRow,
+  HeroStatusTag,
   HeroTitle,
   HeroTitleRow,
   InfoNote,
@@ -161,12 +168,23 @@ export function EnvHero({
     displayName: projectEnv?.displayName,
   });
 
-  const subline = hasEnv
+  /**
+   * Environment-row content: prefer the venv root (absolute path) so
+   * the user can cd into it; fall back to bin, then displayName. When
+   * no env is detected yet, show the prospective Blacksmith-managed
+   * location so users know where `Set up .venv` would create it.
+   */
+  const envPath = hasEnv
     ? projectEnv!.root || projectEnv!.bin || projectEnv!.displayName
-    : hasRuntime
-      ? `Running from system — no project environment yet.`
-      : (availability?.error ??
-        `Install ${displayName} or pin an interpreter below to continue.`);
+    : hasRuntime && toolchainId === "python"
+      ? ".blacksmith/.venv · not set up"
+      : hasRuntime
+        ? "No virtual environment for this toolchain"
+        : (availability?.error ?? "Not configured");
+  const envLabel =
+    isManaged || (hasEnv && toolchainId === "python")
+      ? "Virtual environment"
+      : "Environment";
 
   return (
     <HeroRoot>
@@ -183,15 +201,45 @@ export function EnvHero({
               <AlertTriangle size={10} /> unavailable
             </HeroBadge>
           )}
+        </HeroTitleRow>
+      </HeroHeader>
+
+      <HeroStatusBlock>
+        <HeroStatusRow>
+          <HeroStatusIcon>
+            <Terminal size={14} />
+          </HeroStatusIcon>
+          <HeroStatusMain>
+            <HeroStatusLabel>Interpreter</HeroStatusLabel>
+            <HeroStatusPath>{interpreterPath ?? "Not resolved"}</HeroStatusPath>
+          </HeroStatusMain>
+          {hasRuntime ? (
+            <HeroStatusTag $tone="ok">
+              <HeroStatusDot $tone="ok" />
+              {versionText || "detected"}
+            </HeroStatusTag>
+          ) : (
+            <HeroStatusTag $tone="error">
+              <AlertTriangle size={10} /> unavailable
+            </HeroStatusTag>
+          )}
+        </HeroStatusRow>
+        <HeroStatusRow>
+          <HeroStatusIcon>
+            <Package size={14} />
+          </HeroStatusIcon>
+          <HeroStatusMain>
+            <HeroStatusLabel>{envLabel}</HeroStatusLabel>
+            <HeroStatusPath>{envPath}</HeroStatusPath>
+          </HeroStatusMain>
           {envBadge && (
-            <HeroBadge $tone="muted">
+            <HeroStatusTag $tone="muted">
               {envBadge.icon}
               {envBadge.label}
-            </HeroBadge>
+            </HeroStatusTag>
           )}
-        </HeroTitleRow>
-        <HeroSubline>{subline}</HeroSubline>
-      </HeroHeader>
+        </HeroStatusRow>
+      </HeroStatusBlock>
 
       <HeroActionRow>
         {/* State: no venv, runtime OK → set up */}

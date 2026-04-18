@@ -711,12 +711,108 @@ export const HeroStatusDot = styled.span<{ $tone?: "ok" | "error" }>`
   `}
 `;
 
-export const HeroSubline = styled.div`
+/* ── Inset status block ──────────────────────────────────
+ * Two-row status panel inside the card. Each row surfaces one
+ * concern (the interpreter binary + the environment) with an icon,
+ * a monospace path, and a right-aligned health/context tag. Recessed
+ * background gives it the feel of a lower plane than the card itself,
+ * so the card reads as a container with internal structure.
+ */
+
+export const HeroStatusBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--studio-border);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.03);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+`;
+
+export const HeroStatusRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--studio-border);
+  }
+`;
+
+export const HeroStatusIcon = styled.div`
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--studio-bg-main);
+  border: 1px solid var(--studio-border);
+  color: var(--studio-text-secondary);
+  flex-shrink: 0;
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.04);
+`;
+
+export const HeroStatusMain = styled.div`
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+`;
+
+export const HeroStatusLabel = styled.div`
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--studio-text-muted);
+`;
+
+export const HeroStatusPath = styled.div`
   font-family: var(--studio-font-mono, "SF Mono", monospace);
   font-size: 12px;
-  color: var(--studio-text-muted);
+  color: var(--studio-text-primary);
   word-break: break-all;
-  line-height: 1.6;
+  line-height: 1.4;
+`;
+
+/** Inline health/context tag shown on the right side of a status row.
+ *  The `ok` tone gets a pulsing dot; `error` shows a muted warning; the
+ *  `muted` variant is for inert descriptors (managed / pinned / poetry). */
+export const HeroStatusTag = styled.span<{ $tone?: "ok" | "error" | "muted" }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  font-family: var(--studio-font-mono, "SF Mono", monospace);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: ${(p) =>
+    p.$tone === "error"
+      ? "var(--studio-error, #c24242)"
+      : p.$tone === "ok"
+        ? "var(--studio-text-primary)"
+        : "var(--studio-text-muted)"};
+  background: ${(p) =>
+    p.$tone === "error"
+      ? "var(--studio-error-subtle, rgba(194, 66, 66, 0.08))"
+      : "var(--studio-bg-main)"};
+  border: 1px solid
+    ${(p) =>
+      p.$tone === "error"
+        ? "var(--studio-error, #c24242)"
+        : "var(--studio-border)"};
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.03),
+    0 1px 0 0 rgba(0, 0, 0, 0.04);
 `;
 
 export const HeroActionRow = styled.div`

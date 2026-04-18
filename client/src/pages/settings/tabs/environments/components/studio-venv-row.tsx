@@ -5,6 +5,7 @@ import { SettingRow } from "@/pages/settings/components/setting-row";
 import { ConfirmDialog } from "@/components/shared/ui";
 import { useStudioVenv } from "../hooks/use-studio-venv";
 import { ActionButton } from "./action-button";
+import { StatusPanel, StatusRow } from "./status-panel";
 
 /**
  * Studio venv — shared across every project (used by Graphify + pip
@@ -20,10 +21,22 @@ export function StudioVenvRow() {
         title="Studio environment"
         description={
           vm.hasVenv
-            ? `Shared venv at ${vm.path ?? "~/.blacksmith-studio/venv"}.`
-            : "Shared venv lives under ~/.blacksmith-studio/venv. Created on first use by Graphify and Blacksmith's internal tooling."
+            ? "Shared venv used by Graphify and Blacksmith's internal tooling."
+            : "Shared venv is created on first use by Graphify and Blacksmith's internal tooling."
         }
       >
+        <StatusPanel>
+          <StatusRow
+            icon={<Package size={14} />}
+            label="Virtual environment"
+            path={vm.path ?? "~/.blacksmith-studio/venv · not created"}
+            tag={
+              vm.hasVenv
+                ? { tone: "ok", label: "ready" }
+                : { tone: "muted", label: "not created" }
+            }
+          />
+        </StatusPanel>
         <SettingRow
           label={vm.hasVenv ? "Reset environment" : "Create environment"}
           description={

@@ -1,46 +1,61 @@
 import { Flex } from "@chakra-ui/react";
 import styled from "@emotion/styled";
-import { Loader2, Plus, RotateCcw, Trash2 } from "lucide-react";
+import {
+  Loader2,
+  Package,
+  Plus,
+  Terminal,
+  Trash2,
+} from "lucide-react";
 import { SettingsSection } from "@/pages/settings/components/settings-section";
 import { SettingRow } from "@/pages/settings/components/setting-row";
 import { InterpreterPicker } from "@/components/commands/interpreter-picker";
 import { ConfirmDialog } from "@/components/shared/ui";
 import {
-  useInterpreterRow,
-  type InterpreterRowVM,
-} from "../hooks/use-interpreter-row";
-import type { EnvScope } from "../hooks/use-env-scope";
+  useProjectInterpreterRow,
+  type ProjectInterpreterRowVM,
+} from "../hooks/use-project-interpreter-row";
 import { ActionButton } from "./action-button";
+import { StatusPanel, StatusRow } from "./status-panel";
 
-interface InterpreterRowProps {
+interface ProjectInterpreterRowProps {
   toolchainId: string;
-  scope: EnvScope;
 }
 
 /**
- * Toolchain section rendered in the Environments settings tab.
+ * Project-scope environment section.
  *
- * Uses the shared settings chrome — `SettingsSection` wraps the card;
- * each action goes inside a `SettingRow` so the layout matches every
- * other settings tab (label + description left, control right).
- *
- * The hook (`useInterpreterRow`) owns every data read and callback;
- * this component is pure presentation + state-driven row gating.
+ * Layout: section header → status panel (interpreter + venv paths
+ * with health tags) → action rows (setup / change-version / reset /
+ * pin depending on state) → confirm dialogs for destructive flows.
  */
-export function InterpreterRow({ toolchainId, scope }: InterpreterRowProps) {
-  const vm = useInterpreterRow(toolchainId, scope);
+export function ProjectInterpreterRow({
+  toolchainId,
+}: ProjectInterpreterRowProps) {
+  const vm = useProjectInterpreterRow(toolchainId);
 
   return (
     <>
-      <SettingsSection
-        title={vm.displayName}
-        description={buildDescription(vm)}
-      >
-        {scope === "global" ? (
-          <GlobalRows vm={vm} />
-        ) : (
-          <ProjectRows vm={vm} />
-        )}
+      <SettingsSection title={vm.displayName} description={vm.description}>
+        <StatusPanel>
+          <StatusRow
+            icon={<Terminal size={14} />}
+            label="Interpreter"
+            path={vm.interpreterPath ?? "Not resolved"}
+            tag={vm.interpreterTag}
+          />
+          {vm.showEnvRow && (
+            <StatusRow
+              icon={<Package size={14} />}
+              label={vm.envLabel}
+              path={vm.envPath}
+              tag={vm.envTag ?? undefined}
+            />
+          )}
+        </StatusPanel>
+
+        <ActionRows vm={vm} />
+
         {vm.localError && (
           <SettingRow label="Error" fullWidth>
             <ErrorText>{vm.localError}</ErrorText>
@@ -76,41 +91,9 @@ export function InterpreterRow({ toolchainId, scope }: InterpreterRowProps) {
   );
 }
 
-/* ── Row groups (scope-specific) ─────────────────────────── */
-
-function GlobalRows({ vm }: { vm: InterpreterRowVM }) {
-  return (
-    <SettingRow
-      label="Default interpreter"
-      description="Used by any project that doesn't set its own override."
-    >
-      <Flex gap="8px" align="center">
-        {vm.canList && (
-          <InterpreterPicker
-            toolchainId={vm.toolchainId}
-            currentPath={vm.interpreterPath}
-            hasOverride={vm.hasOverride}
-            label={vm.isPinning ? "Saving…" : "Change default"}
-            onSelect={vm.handlePickInterpreter}
-            onClearOverride={vm.handleClearOverride}
-          />
-        )}
-        {vm.hasOverride && (
-          <ActionButton
-            type="button"
-            onClick={vm.handleClearOverride}
-            disabled={vm.isPinning}
-          >
-            <RotateCcw size={12} /> Clear
-          </ActionButton>
-        )}
-      </Flex>
-    </SettingRow>
-  );
-}
-
-function ProjectRows({ vm }: { vm: InterpreterRowVM }) {
-  // Managed venv — two rows: recreate (version swap) + reset.
+/** State-driven row gating — only one of the three variants renders
+ *  at a time so the action list stays focused on the current state. */
+function ActionRows({ vm }: { vm: ProjectInterpreterRowVM }) {
   if (vm.isManaged) {
     return (
       <>
@@ -156,7 +139,6 @@ function ProjectRows({ vm }: { vm: InterpreterRowVM }) {
     );
   }
 
-  // No env detected, but runtime is available — offer setup.
   if (vm.canCreate && !vm.hasEnv && vm.hasRuntime) {
     return (
       <SettingRow
@@ -203,7 +185,6 @@ function ProjectRows({ vm }: { vm: InterpreterRowVM }) {
     );
   }
 
-  // Wrapper / system / not-detected — single pin row.
   return (
     <SettingRow
       label={`Change ${vm.displayName} version`}
@@ -221,17 +202,6 @@ function ProjectRows({ vm }: { vm: InterpreterRowVM }) {
       )}
     </SettingRow>
   );
-}
-
-/* ── Helpers ─────────────────────────────────────────────── */
-
-function buildDescription(vm: InterpreterRowVM): string {
-  if (vm.scope === "global") {
-    return vm.hasOverride
-      ? `Pinned: ${vm.interpreterPath ?? "—"}`
-      : "No default set — projects use the system interpreter.";
-  }
-  return `${vm.title} · ${vm.contextBadge?.label ?? (vm.hasRuntime ? "ready" : "unavailable")}`;
 }
 
 function labelFromPath(p: string): string {

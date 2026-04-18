@@ -7,100 +7,83 @@ import {
   useResolvedEnvQuery,
   useToolchainsQuery,
 } from "@/api/hooks/commands";
-import { useGlobalSettings } from "@/hooks/use-global-settings";
-import { useUpdateGlobalSettings } from "@/api/hooks/settings";
-import { settingsKeyForToolchain } from "@/api/hooks/commands/_settings-keys";
-import type { EnvScope } from "./use-env-scope";
+import type { BadgeDescriptor } from "./_types";
 
-export interface BadgeDescriptor {
-  tone: "ok" | "error" | "muted";
-  label: string;
-}
-
-export interface InterpreterRowVM {
-  // Identity / display
+export interface ProjectInterpreterRowVM {
+  // Identity
   toolchainId: string;
   displayName: string;
-  scope: EnvScope;
+  primaryBinary: string;
 
-  // Header content
-  title: string;
-  contextBadge: BadgeDescriptor | null;
-
-  // Capabilities
+  // Capabilities (from toolchain registry)
   canCreate: boolean;
   canDelete: boolean;
   canList: boolean;
 
-  // State flags (callers use these to gate action buttons)
+  // Resolution state
   hasEnv: boolean;
   hasRuntime: boolean;
   isManaged: boolean;
   hasOverride: boolean;
-  interpreterPath?: string;
 
-  // Errors (surface-level; availability errors go through statusBadge)
+  // Status-panel content
+  title: string;
+  description: string;
+  interpreterPath?: string;
+  envLabel: string;
+  envPath: string;
+  /** False for toolchains without a venv concept (Node). */
+  showEnvRow: boolean;
+  interpreterTag: BadgeDescriptor;
+  envTag: BadgeDescriptor | null;
+
+  // Transient UI state
   localError: string | null;
 
-  // ── Project-scope setup flow (no-venv state) ─────────────
+  // Setup flow — for the "no venv yet" state
   setupChoice: { path: string; label: string } | null;
   setSetupChoice: (c: { path: string; label: string } | null) => void;
   handleSetup: () => Promise<void>;
   isSettingUp: boolean;
 
-  // ── Project-scope managed venv recreate (with confirm dialog) ─
+  // Managed-venv recreate (destructive, confirm-gated)
   pendingVersionChange: { path: string; label: string } | null;
   handlePickVersion: (path: string) => void;
   cancelVersionChange: () => void;
   confirmVersionChange: () => Promise<void>;
   isChangingVersion: boolean;
 
-  // ── Project-scope reset (with confirm dialog) ────────────
+  // Managed-venv reset (destructive, confirm-gated)
   confirmingReset: boolean;
   requestReset: () => void;
   cancelReset: () => void;
   confirmReset: () => Promise<void>;
   isResetting: boolean;
 
-  // ── Universal pin (project-scope "Change version" pins the
-  //    interpreter; global-scope "Change default" pins the global) ─
+  // Non-managed pin/clear (wrapper / system / override)
   handlePickInterpreter: (path: string) => void;
   handleClearOverride: () => void;
   isPinning: boolean;
 }
 
 /**
- * View-model for a single (toolchain × scope) row on the Environments
- * settings page. Encapsulates every data read and every callback the
- * presentational row needs, so the component stays pure.
+ * View-model for the project-scope environment section.
  *
- * Unified across scopes so "Python project" and "Python global" look
- * and behave identically to readers of this shape — the scope-specific
- * bits (query source, write target) are handled internally.
+ * Single responsibility: project env resolution + per-project
+ * lifecycle (setup → recreate → reset → pin). Does not know about
+ * global settings. The global-scope row uses a separate hook.
  */
-export function useInterpreterRow(
+export function useProjectInterpreterRow(
   toolchainId: string,
-  scope: EnvScope,
-): InterpreterRowVM {
+): ProjectInterpreterRowVM {
   const { data: toolchains = [] } = useToolchainsQuery();
   const toolchain = toolchains.find((tc) => tc.id === toolchainId);
 
-  // Per-project resolution (used for status display in both scopes —
-  // even at global scope we still want to show the user "here's what
-  // projects currently resolve to" as context).
   const { data: projectEnv } = useResolvedEnvQuery(toolchainId, "project");
   const { data: availability } = useCommandAvailabilityQuery(
     toolchainId,
     "project",
   );
-
-  // Global pin value (for scope="global" the title/subline reflect it;
-  // for scope="project" we still read it to distinguish a project
-  // override from a global default).
-  const globalSettings = useGlobalSettings();
-  const updateGlobal = useUpdateGlobalSettings();
-  const settingKey = settingsKeyForToolchain(toolchainId);
-  const globalPin = (globalSettings.get(settingKey) as string | null) ?? "";
 
   const changeInterpreter = useChangeInterpreter();
   const createEnv = useCreateProjectEnv();
@@ -126,27 +109,44 @@ export function useInterpreterRow(
   const interpreterPath = projectEnv?.bin
     ? `${projectEnv.bin}/${primaryBinary}`
     : undefined;
-
-  // ── Display content (scope-aware) ─────────────────────────
-  const versionText = availability?.version ?? "";
   const displayName = toolchain?.displayName ?? toolchainId;
+  const version = availability?.version;
 
-  const title =
-    scope === "global"
-      ? `${displayName} default`
+  // ── Display content ───────────────────────────────────────
+  const title = hasRuntime
+    ? `${displayName}${version ? ` ${version}` : ""}`
+    : `${displayName} not detected`;
+
+  const envTag: BadgeDescriptor | null = hasEnv
+    ? hasOverride
+      ? { tone: "muted", label: "pinned" }
+      : isManaged
+        ? { tone: "muted", label: "managed venv" }
+        : { tone: "muted", label: wrapperLabel(projectEnv!.displayName) }
+    : null;
+
+  const interpreterTag: BadgeDescriptor = !hasRuntime
+    ? { tone: "error", label: "unavailable" }
+    : version
+      ? { tone: "ok", label: version }
+      : interpreterPath
+        ? { tone: "ok", label: "resolved" }
+        : { tone: "muted", label: "not resolved" };
+
+  const envPath = hasEnv
+    ? projectEnv!.root || projectEnv!.bin || projectEnv!.displayName
+    : hasRuntime && toolchainId === "python"
+      ? ".blacksmith/.venv · not set up"
       : hasRuntime
-        ? `${displayName}${versionText ? ` ${versionText}` : ""}`
-        : `${displayName} not detected`;
+        ? "No environment for this toolchain"
+        : (availability?.error ?? "Not configured");
+  const envLabel =
+    isManaged || (hasEnv && toolchainId === "python")
+      ? "Virtual environment"
+      : "Environment";
+  const showEnvRow = toolchainId === "python";
 
-  const contextBadge: BadgeDescriptor | null =
-    scope === "global"
-      ? null
-      : computeProjectBadge({
-          hasEnv,
-          hasOverride,
-          isManaged,
-          displayName: projectEnv?.displayName,
-        });
+  const description = `${title} · ${envTag?.label ?? (hasRuntime ? "ready" : "unavailable")}`;
 
   // ── Callbacks ─────────────────────────────────────────────
   const handleSetup = async () => {
@@ -195,45 +195,35 @@ export function useInterpreterRow(
   };
 
   const handlePickInterpreter = (path: string) => {
-    if (scope === "global") {
-      updateGlobal.mutate({ [settingKey]: path });
-    } else {
-      changeInterpreter.mutate({ toolchainId, path });
-    }
+    changeInterpreter.mutate({ toolchainId, path });
   };
 
   const handleClearOverride = () => {
-    if (scope === "global") {
-      updateGlobal.mutate({ [settingKey]: "" });
-    } else {
-      changeInterpreter.mutate({ toolchainId, path: "" });
-    }
+    changeInterpreter.mutate({ toolchainId, path: "" });
   };
-
-  const effectiveCurrentPath =
-    scope === "global" ? globalPin || undefined : interpreterPath;
-  const effectiveHasOverride =
-    scope === "global" ? !!globalPin : hasOverride;
 
   return {
     toolchainId,
     displayName,
-    scope,
+    primaryBinary,
 
-    title,
-    contextBadge,
-
-    canCreate:
-      scope === "project" && !!toolchain?.supportsProjectEnvCreation,
-    canDelete:
-      scope === "project" && !!toolchain?.supportsProjectEnvDeletion,
+    canCreate: !!toolchain?.supportsProjectEnvCreation,
+    canDelete: !!toolchain?.supportsProjectEnvDeletion,
     canList: !!toolchain?.supportsListInstalledVersions,
 
     hasEnv,
     hasRuntime,
     isManaged,
-    hasOverride: effectiveHasOverride,
-    interpreterPath: effectiveCurrentPath,
+    hasOverride,
+
+    title,
+    description,
+    interpreterPath,
+    envLabel,
+    envPath,
+    showEnvRow,
+    interpreterTag,
+    envTag,
 
     localError,
 
@@ -256,31 +246,12 @@ export function useInterpreterRow(
 
     handlePickInterpreter,
     handleClearOverride,
-    isPinning:
-      scope === "global" ? updateGlobal.isPending : changeInterpreter.isPending,
+    isPinning: changeInterpreter.isPending,
   };
 }
 
-function computeProjectBadge(opts: {
-  hasEnv: boolean;
-  hasOverride: boolean;
-  isManaged: boolean;
-  displayName: string | undefined;
-}): BadgeDescriptor | null {
-  if (!opts.hasEnv) return null;
-  if (opts.hasOverride) return { tone: "muted", label: "pinned" };
-  if (opts.isManaged) return { tone: "muted", label: "managed venv" };
-  const lower = (opts.displayName ?? "").toLowerCase();
-  const token = lower.split(/[:\s/]/)[0];
-  return { tone: "muted", label: token || "detected" };
-}
-
-/**
- * Is the resolved env a project-local venv the app owns? Matches the
- * Blacksmith-managed `.blacksmith/.venv` and legacy root-level
- * `.venv` / `venv`. Wrapper envs (Poetry, Pipenv, conda) and explicit
- * overrides are left alone — those have their own upgrade paths.
- */
+/** Matches Blacksmith-managed `.blacksmith/.venv` and legacy root-level
+ *  `.venv` / `venv`. Wrapper envs (Poetry, Pipenv, conda) are left alone. */
 function isOwnedVenv(displayName: string): boolean {
   const lower = displayName.toLowerCase();
   return (
@@ -288,6 +259,12 @@ function isOwnedVenv(displayName: string): boolean {
     lower.startsWith(".venv") ||
     lower.startsWith("venv")
   );
+}
+
+function wrapperLabel(displayName: string): string {
+  const lower = displayName.toLowerCase();
+  const token = lower.split(/[:\s/]/)[0];
+  return token || "detected";
 }
 
 function labelFromPath(p: string): string {

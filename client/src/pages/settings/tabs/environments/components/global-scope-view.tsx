@@ -1,5 +1,5 @@
 import { Flex } from "@chakra-ui/react";
-import { InterpreterRow } from "./interpreter-row";
+import { GlobalInterpreterRow } from "./global-interpreter-row";
 import { StudioVenvRow } from "./studio-venv-row";
 
 /**
@@ -9,8 +9,8 @@ import { StudioVenvRow } from "./studio-venv-row";
 export function GlobalScopeView() {
   return (
     <Flex direction="column" gap="28px">
-      <InterpreterRow toolchainId="python" scope="global" />
-      <InterpreterRow toolchainId="node" scope="global" />
+      <GlobalInterpreterRow toolchainId="python" />
+      <GlobalInterpreterRow toolchainId="node" />
       <StudioVenvRow />
     </Flex>
   );

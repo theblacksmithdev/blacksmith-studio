@@ -1,5 +1,5 @@
 import { Flex } from "@chakra-ui/react";
-import { InterpreterRow } from "./interpreter-row";
+import { ProjectInterpreterRow } from "./project-interpreter-row";
 
 /**
  * Project scope — per-project interpreter pins + managed venv
@@ -9,8 +9,8 @@ import { InterpreterRow } from "./interpreter-row";
 export function ProjectScopeView() {
   return (
     <Flex direction="column" gap="28px">
-      <InterpreterRow toolchainId="python" scope="project" />
-      <InterpreterRow toolchainId="node" scope="project" />
+      <ProjectInterpreterRow toolchainId="python" />
+      <ProjectInterpreterRow toolchainId="node" />
     </Flex>
   );
 }
