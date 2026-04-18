@@ -93,7 +93,7 @@ export function setupAllIPC(
   setupSetupIPC(settingsManager, projectManager);
   setupGitIPC(getWindow, gitManager, projectManager, ai);
   setupTerminalIPC(getWindow, terminalManager, projectManager, settingsManager);
-  setupPythonIPC(getWindow, pythonManager, settingsManager);
+  setupPythonIPC(getWindow, pythonManager);
   setupGraphifyIPC(
     getWindow,
     graphifyManager,

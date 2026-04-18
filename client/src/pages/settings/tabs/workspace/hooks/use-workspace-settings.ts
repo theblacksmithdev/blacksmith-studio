@@ -11,8 +11,6 @@ dist,
 .env,
 .blacksmith-studio
 `,
-  "runner.nodePath": "",
-  "python.pythonPath": "",
 };
 
 export function useWorkspaceSettings() {
@@ -31,13 +29,9 @@ export function useWorkspaceSettings() {
   return {
     displayName: (settings["project.displayName"] ?? "") as string,
     ignoredPatterns: (settings["project.ignoredPatterns"] ?? "") as string,
-    nodePath: (settings["runner.nodePath"] ?? "") as string,
-    pythonPath: (settings["python.pythonPath"] ?? "") as string,
 
     setDisplayName: (v: string | number) => set("project.displayName", v),
     setIgnoredPatterns: (v: string) => set("project.ignoredPatterns", v),
-    setNodePath: (v: string) => set("runner.nodePath", v),
-    setPythonPath: (v: string) => set("python.pythonPath", v),
     resetAll,
   };
 }

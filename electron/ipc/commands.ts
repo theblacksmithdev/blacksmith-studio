@@ -17,8 +17,8 @@ import {
   COMMANDS_LIST_INSTALLED_VERSIONS,
   COMMANDS_LIST_RUNS,
   COMMANDS_GET_RUN,
-  COMMANDS_CREATE_PROJECT_ENV,
-  COMMANDS_DELETE_PROJECT_ENV,
+  COMMANDS_CREATE_ENV,
+  COMMANDS_DELETE_ENV,
   COMMANDS_ON_OUTPUT,
   COMMANDS_ON_STATUS,
 } from "./channels.js";
@@ -118,17 +118,18 @@ export function setupCommandsIPC(
   );
 
   ipcMain.handle(
-    COMMANDS_CREATE_PROJECT_ENV,
+    COMMANDS_CREATE_ENV,
     async (
       _e,
       data: {
-        projectId: string;
+        projectId?: string;
         toolchainId: string;
+        scope: "project" | "studio";
         options?: Record<string, unknown>;
       },
     ) => {
       try {
-        return await commandService.createProjectEnv(data);
+        return await commandService.createEnv(data);
       } catch (err) {
         return asError(err);
       }
@@ -136,13 +137,17 @@ export function setupCommandsIPC(
   );
 
   ipcMain.handle(
-    COMMANDS_DELETE_PROJECT_ENV,
+    COMMANDS_DELETE_ENV,
     async (
       _e,
-      data: { projectId: string; toolchainId: string },
+      data: {
+        projectId?: string;
+        toolchainId: string;
+        scope: "project" | "studio";
+      },
     ): Promise<{ ok: true } | IpcErrorShape> => {
       try {
-        await commandService.deleteProjectEnv(data);
+        await commandService.deleteEnv(data);
         return { ok: true };
       } catch (err) {
         return asError(err);

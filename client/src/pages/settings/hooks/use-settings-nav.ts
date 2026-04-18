@@ -8,6 +8,7 @@ import {
   Blocks,
   Wand2,
   BookOpen,
+  Boxes,
   Network,
   AlertTriangle,
   type LucideIcon,
@@ -44,6 +45,7 @@ export const settingsGroups: SettingsNavGroup[] = [
     label: "Project",
     items: [
       { id: "workspace", icon: FolderCog, label: "Workspace" },
+      { id: "environments", icon: Boxes, label: "Environments" },
       { id: "knowledge", icon: BookOpen, label: "Knowledge Base" },
       { id: "graphify", icon: Network, label: "Knowledge Graph" },
     ],

@@ -11,9 +11,11 @@ export type {
   ToolchainEnv,
   EnvCreatingToolchain,
   EnvDeletingToolchain,
+  EnvLifecycleContext,
 } from "./types.js";
 export {
   isEnvCreatingToolchain,
   isEnvDeletingToolchain,
   supportsListInstalledVersions,
 } from "./types.js";
+export { settingsKeyForToolchain } from "./settings-keys.js";

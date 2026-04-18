@@ -14,6 +14,7 @@ import { projectDataDir } from "../../project-paths.js";
 import type {
   EnvCreatingToolchain,
   EnvDeletingToolchain,
+  EnvLifecycleContext,
   InstalledVersion,
   ProjectContext,
   ResolvedBinary,
@@ -146,37 +147,32 @@ export class PythonToolchain
   }
 
   /**
-   * Bootstrap the project venv under `.blacksmith/.venv/` via the
-   * bundled uv binary. Living inside `.blacksmith/` keeps the project
-   * root clean and matches the convention used by artifacts, graphify,
-   * etc. (all of `.blacksmith/` is gitignored by the ArtifactManager).
+   * Bootstrap a venv via the bundled uv binary.
    *
-   * `python` accepts either a version (e.g. `"3.12"`) or an absolute
-   * interpreter path — uv handles both via its `--python` flag.
+   *   · scope "project" → `<projectRoot>/.blacksmith/.venv/`
+   *   · scope "studio"  → `<studioRoot>/venv/` (shared across projects)
+   *
+   * `.blacksmith/` is gitignored by the ArtifactManager so the project
+   * root stays clean. `python` accepts a version ("3.12") or an
+   * absolute interpreter path — uv handles both via `--python`.
    */
-  async createProjectEnv(
-    ctx: ProjectContext,
+  async createEnv(
+    ctx: EnvLifecycleContext,
     options: { python?: string; overwrite?: boolean } = {},
   ): Promise<ToolchainEnv> {
-    const venvPath = projectDataDir(ctx.projectRoot, ".venv");
-    // Destructive upgrade: wipe the existing venv before recreating
-    // so `uv venv` can bind to a new Python version cleanly.
-    if (options.overwrite && fs.existsSync(venvPath)) {
-      fs.rmSync(venvPath, { recursive: true, force: true });
+    const target = this.venvTargetFor(ctx);
+    if (options.overwrite && fs.existsSync(target.venvPath)) {
+      fs.rmSync(target.venvPath, { recursive: true, force: true });
     }
-    // Ensure the parent `.blacksmith/` directory exists — uv requires it.
-    fs.mkdirSync(path.dirname(venvPath), { recursive: true });
+    fs.mkdirSync(path.dirname(target.venvPath), { recursive: true });
     const uvBin = this.uv.resolve();
-    const args = ["venv", venvPath];
-    // uv `--python` accepts either a version ("3.12") or an absolute
-    // interpreter path, so the UI can hand us whatever it collected
-    // without discriminating.
+    const args = ["venv", target.venvPath];
     if (options.python) args.push("--python", options.python);
-    await runOnce(uvBin, args, ctx.projectRoot);
-    const env = this.detectProjectEnv(ctx);
+    await runOnce(uvBin, args, target.cwd);
+    const env = this.detectFor(ctx);
     if (!env) {
       throw new Error(
-        `uv venv succeeded but .venv isn't detectable at ${venvPath}.`,
+        `uv venv succeeded but the venv isn't detectable at ${target.venvPath}.`,
       );
     }
     return env;
@@ -192,16 +188,43 @@ export class PythonToolchain
   }
 
   /**
-   * Tear down the Blacksmith-managed venv for this project. Only
-   * removes the `.blacksmith/.venv` directory — legacy root-level
-   * `.venv` / `venv` and wrapper envs (Poetry / Pipenv / conda) are
-   * untouched because the app didn't create them.
+   * Tear down the Blacksmith-managed venv for the given scope. Only
+   * removes the app-owned directory — legacy root-level `.venv` /
+   * `venv` and wrapper envs (Poetry / Pipenv / conda) are untouched
+   * because the app didn't create them.
    */
-  async deleteProjectEnv(ctx: ProjectContext): Promise<void> {
-    const venvPath = projectDataDir(ctx.projectRoot, ".venv");
+  async deleteEnv(ctx: EnvLifecycleContext): Promise<void> {
+    const { venvPath } = this.venvTargetFor(ctx);
     if (fs.existsSync(venvPath)) {
       fs.rmSync(venvPath, { recursive: true, force: true });
     }
+  }
+
+  /** Absolute path of the studio venv directory. Public so legacy
+   *  callers (PackageManager) can point at the same folder. */
+  studioVenvPath(studioRoot: string): string {
+    return path.join(studioRoot, "venv");
+  }
+
+  private venvTargetFor(
+    ctx: EnvLifecycleContext,
+  ): { venvPath: string; cwd: string } {
+    if (ctx.scope === "studio") {
+      return {
+        venvPath: this.studioVenvPath(ctx.studioRoot),
+        cwd: ctx.studioRoot,
+      };
+    }
+    return {
+      venvPath: projectDataDir(ctx.projectRoot, ".venv"),
+      cwd: ctx.projectRoot,
+    };
+  }
+
+  private detectFor(ctx: EnvLifecycleContext): ToolchainEnv | null {
+    return ctx.scope === "studio"
+      ? this.detectStudioEnv(ctx)
+      : this.detectProjectEnv(ctx);
   }
 
   private toEnv(d: PythonEnvDetection): ToolchainEnv {
@@ -248,8 +271,8 @@ function canonicalName(binary: string): string {
 }
 
 /**
- * Minimal promise-based spawn used by `createProjectEnv`. We avoid
- * going through `CommandRunner` here to keep the toolchain testable in
+ * Minimal promise-based spawn used by `createEnv`. We avoid going
+ * through `CommandRunner` here to keep the toolchain testable in
  * isolation and to sidestep audit/event emission for bootstrap runs.
  */
 function runOnce(

@@ -64,6 +64,13 @@ export function settingsPath(projectId: string) {
   return `/${projectId}/settings`;
 }
 
+export function settingsEnvironmentsPath(
+  projectId: string,
+  scope: "project" | "global" = "project",
+) {
+  return `/${projectId}/settings/environments#scope=${scope}`;
+}
+
 export function skillsBrowserPath(projectId: string) {
   return `/${projectId}/skills`;
 }

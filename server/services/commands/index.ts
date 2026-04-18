@@ -18,8 +18,10 @@ export type {
   ResolvedBinary,
   EnvCreatingToolchain,
   EnvDeletingToolchain,
+  EnvLifecycleContext,
   InstalledVersion,
 } from "./toolchains/index.js";
+export { settingsKeyForToolchain } from "./toolchains/settings-keys.js";
 export { BinaryDetector } from "./detectors/binary-detector.js";
 export {
   PythonVenvDetector,

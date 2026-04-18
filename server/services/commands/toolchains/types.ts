@@ -98,10 +98,20 @@ export function supportsListInstalledVersions(
   return typeof t.listInstalledVersions === "function";
 }
 
-/** Optional capability — toolchains that can bootstrap a project env. */
+/**
+ * Discriminated union — the scope-aware lifecycle methods take either
+ * a project context (with the project root) or a studio context (with
+ * `~/.blacksmith-studio`). The toolchain dispatches on `ctx.scope` and
+ * resolves the appropriate target directory.
+ */
+export type EnvLifecycleContext =
+  | ({ scope: "project" } & ProjectContext)
+  | ({ scope: "studio" } & StudioContext);
+
+/** Optional capability — toolchains that can bootstrap an env. */
 export interface EnvCreatingToolchain extends Toolchain {
-  createProjectEnv(
-    ctx: ProjectContext,
+  createEnv(
+    ctx: EnvLifecycleContext,
     options: Record<string, unknown>,
   ): Promise<ToolchainEnv>;
 }
@@ -109,16 +119,16 @@ export interface EnvCreatingToolchain extends Toolchain {
 export function isEnvCreatingToolchain(
   t: Toolchain,
 ): t is EnvCreatingToolchain {
-  return typeof (t as EnvCreatingToolchain).createProjectEnv === "function";
+  return typeof (t as EnvCreatingToolchain).createEnv === "function";
 }
 
-/** Optional capability — toolchains that can tear down a project env. */
+/** Optional capability — toolchains that can tear down an env. */
 export interface EnvDeletingToolchain extends Toolchain {
-  deleteProjectEnv(ctx: ProjectContext): Promise<void>;
+  deleteEnv(ctx: EnvLifecycleContext): Promise<void>;
 }
 
 export function isEnvDeletingToolchain(
   t: Toolchain,
 ): t is EnvDeletingToolchain {
-  return typeof (t as EnvDeletingToolchain).deleteProjectEnv === "function";
+  return typeof (t as EnvDeletingToolchain).deleteEnv === "function";
 }

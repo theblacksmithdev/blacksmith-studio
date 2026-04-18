@@ -7,7 +7,7 @@ import {
   DEFAULT_STALE_AFTER_MS,
   QUERY_TIMEOUT_MS,
 } from "./constants.js";
-import { Installer } from "./installer.js";
+import { Installer, type StudioEnvCreator } from "./installer.js";
 import { GraphifyPaths } from "./paths.js";
 import type {
   GraphifyBuildResult,
@@ -28,8 +28,11 @@ export class GraphifyManager {
   private readonly installer: Installer;
   private readonly builder: BuildRunner;
 
-  constructor(private readonly python: PythonManager) {
-    this.installer = new Installer(python);
+  constructor(
+    private readonly python: PythonManager,
+    createStudioEnv: StudioEnvCreator,
+  ) {
+    this.installer = new Installer(python, createStudioEnv);
     this.builder = new BuildRunner(python, this.installer);
   }
 

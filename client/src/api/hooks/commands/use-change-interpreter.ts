@@ -1,21 +1,25 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api";
 import { useActiveProjectId, useProjectKeys } from "../_shared";
+import { settingsKeyForToolchain } from "./_settings-keys";
 
 interface ChangeInterpreterInput {
   toolchainId: string;
   /** Absolute path to the new interpreter. Empty string clears the
    *  override so the toolchain falls back to auto-detection. */
   path: string;
+  /** When "global", write to user-level defaults instead of the
+   *  active project. Falls back to "project" for the common case. */
+  scope?: "project" | "global";
 }
 
 /**
- * Override the toolchain's project-scope interpreter via project
- * settings. Writes `commands.<toolchainId>.resolution = <path>` which
- * the `CommandResolver` reads on every invocation.
+ * Override the toolchain's interpreter via settings.
  *
- * Invalidates env + availability queries so the inspector refreshes
- * to reflect the newly-pinned path.
+ * Writes to the canonical per-toolchain key (`python.pythonPath`,
+ * `runner.nodePath`, or `commands.<id>.resolution`) so every consumer
+ * — Runner, MCP, Claude CLI, terminal, CommandResolver — reads the
+ * same storage.
  */
 export function useChangeInterpreter() {
   const queryClient = useQueryClient();
@@ -23,8 +27,15 @@ export function useChangeInterpreter() {
   const projectId = useActiveProjectId();
 
   return useMutation({
-    mutationFn: async ({ toolchainId, path }: ChangeInterpreterInput) => {
-      const key = `commands.${toolchainId}.resolution`;
+    mutationFn: async ({
+      toolchainId,
+      path,
+      scope = "project",
+    }: ChangeInterpreterInput) => {
+      const key = settingsKeyForToolchain(toolchainId);
+      if (scope === "global") {
+        return api.settings.updateGlobal({ [key]: path });
+      }
       return api.settings.update(projectId!, { [key]: path });
     },
     onSuccess: (_data, { toolchainId }) => {

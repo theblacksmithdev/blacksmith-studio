@@ -5,7 +5,6 @@ import { spawn, type ChildProcess } from "node:child_process";
 import { createRequire } from "node:module";
 import { platform } from "../platform/index.js";
 
-const VENV_DIR = path.join(os.homedir(), ".blacksmith-studio", "venv");
 const IS_WIN = platform.isWindows;
 const BIN_DIR = platform.venvBinDir;
 
@@ -27,10 +26,19 @@ export type ProgressCallback = (line: string) => void;
  * uv is an extremely fast Python package manager written in Rust.
  * It's distributed as an npm package (@manzt/uv) so no Python is needed to bootstrap.
  *
- * All pip operations target ~/.blacksmith-studio/venv/ via --python flag.
+ * All pip operations target the injected `venvDir` via `--python`.
+ * The path is supplied by PythonManager / PythonToolchain so there is
+ * a single source of truth for "where is the Blacksmith studio venv."
  */
 export class PackageManager {
   private _uvBin: string | null = null;
+  private readonly venvDir: string;
+
+  constructor(
+    venvDir: string = path.join(os.homedir(), ".blacksmith-studio", "venv"),
+  ) {
+    this.venvDir = venvDir;
+  }
 
   // ── uv Binary Resolution ──
 
@@ -60,17 +68,17 @@ export class PackageManager {
 
   /** Path to python in the venv. */
   get python(): string {
-    return path.join(VENV_DIR, BIN_DIR, IS_WIN ? "python.exe" : "python3");
+    return path.join(this.venvDir, BIN_DIR, IS_WIN ? "python.exe" : "python3");
   }
 
   /** Path to pip in the venv. */
   get pip(): string {
-    return path.join(VENV_DIR, BIN_DIR, IS_WIN ? "pip.exe" : "pip3");
+    return path.join(this.venvDir, BIN_DIR, IS_WIN ? "pip.exe" : "pip3");
   }
 
   /** Path to any CLI binary installed in the venv. */
   bin(cmd: string): string {
-    return path.join(VENV_DIR, BIN_DIR, IS_WIN ? `${cmd}.exe` : cmd);
+    return path.join(this.venvDir, BIN_DIR, IS_WIN ? `${cmd}.exe` : cmd);
   }
 
   /** Whether the venv exists and has a working python. */
@@ -78,34 +86,10 @@ export class PackageManager {
     return fs.existsSync(this.python);
   }
 
-  /** The venv directory path. */
-  get venvDir(): string {
-    return VENV_DIR;
-  }
-
-  // ── Venv Lifecycle ──
-
-  /** Create the Studio venv. Uses uv which can bootstrap Python if needed. */
-  async createVenv(
-    pythonVersion?: string,
-    onProgress?: ProgressCallback,
-  ): Promise<PackageResult> {
-    fs.mkdirSync(path.dirname(VENV_DIR), { recursive: true });
-    onProgress?.(`Creating venv at ${VENV_DIR}...`);
-
-    const args = ["venv", VENV_DIR];
-    if (pythonVersion) args.push("--python", pythonVersion);
-
-    return this.exec(args, onProgress);
-  }
-
-  /** Remove the Studio venv entirely. */
-  resetVenv(): void {
-    if (fs.existsSync(VENV_DIR)) {
-      fs.rmSync(VENV_DIR, { recursive: true, force: true });
-    }
-    this._uvBin = null;
-  }
+  // Venv lifecycle (create / reset) lives in `PythonToolchain` — it
+  // owns the single source of truth for where the venv is, how it's
+  // bootstrapped, and how it's torn down. `PackageManager` only does
+  // runtime package ops against the directory.
 
   // ── Install / Uninstall ──
 

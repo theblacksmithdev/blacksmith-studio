@@ -123,11 +123,9 @@ export const GIT_RESOLVE_CONFLICT = "git:resolveConflict";
 export const GIT_COMMIT_DETAIL = "git:commitDetail";
 export const GIT_INIT = "git:init";
 
-// Python
-export const PYTHON_DETECT = "python:detect";
-export const PYTHON_CHECK = "python:check";
-export const PYTHON_SETUP_VENV = "python:setupVenv";
-export const PYTHON_RESET_VENV = "python:resetVenv";
+// Python package operations (Studio venv). Venv lifecycle (create /
+// reset / detect) is handled by the commands subsystem with
+// `scope: "studio"` — see COMMANDS_CREATE_ENV / COMMANDS_DELETE_ENV.
 export const PYTHON_INSTALL_PACKAGE = "python:installPackage";
 export const PYTHON_IS_PACKAGE_INSTALLED = "python:isPackageInstalled";
 
@@ -183,8 +181,8 @@ export const COMMANDS_RESOLVE_ENV = "commands:resolveEnv";
 export const COMMANDS_LIST_TOOLCHAINS = "commands:listToolchains";
 export const COMMANDS_LIST_INSTALLED_VERSIONS =
   "commands:listInstalledVersions";
-export const COMMANDS_CREATE_PROJECT_ENV = "commands:createProjectEnv";
-export const COMMANDS_DELETE_PROJECT_ENV = "commands:deleteProjectEnv";
+export const COMMANDS_CREATE_ENV = "commands:createEnv";
+export const COMMANDS_DELETE_ENV = "commands:deleteEnv";
 export const COMMANDS_LIST_RUNS = "commands:listRuns";
 export const COMMANDS_GET_RUN = "commands:getRun";
 
@@ -326,10 +324,6 @@ export const INVOKE_CHANNELS = [
   GIT_RESOLVE_CONFLICT,
   GIT_COMMIT_DETAIL,
   GIT_INIT,
-  PYTHON_DETECT,
-  PYTHON_CHECK,
-  PYTHON_SETUP_VENV,
-  PYTHON_RESET_VENV,
   PYTHON_INSTALL_PACKAGE,
   PYTHON_IS_PACKAGE_INSTALLED,
   GRAPHIFY_CHECK,
@@ -387,8 +381,8 @@ export const INVOKE_CHANNELS = [
   COMMANDS_RESOLVE_ENV,
   COMMANDS_LIST_TOOLCHAINS,
   COMMANDS_LIST_INSTALLED_VERSIONS,
-  COMMANDS_CREATE_PROJECT_ENV,
-  COMMANDS_DELETE_PROJECT_ENV,
+  COMMANDS_CREATE_ENV,
+  COMMANDS_DELETE_ENV,
   COMMANDS_LIST_RUNS,
   COMMANDS_GET_RUN,
 ] as const;

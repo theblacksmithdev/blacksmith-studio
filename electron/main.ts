@@ -1,4 +1,5 @@
 import { app, BrowserWindow, shell, Menu } from "electron";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import fixPath from "fix-path";
@@ -33,6 +34,7 @@ import {
   PythonVenvDetector,
   RawToolchain,
   ToolchainRegistry,
+  settingsKeyForToolchain,
 } from "../server/services/commands/index.js";
 import { getDatabase } from "../server/db/index.js";
 import { Ai } from "../server/services/ai/index.js";
@@ -168,14 +170,13 @@ app.whenReady().then(async () => {
   const binaryDetector = new BinaryDetector(platformInfo);
   const uvResolver = new UvBinaryResolver(platformInfo);
   const toolchainRegistry = new ToolchainRegistry();
-  toolchainRegistry.register(
-    new PythonToolchain(
-      new PythonVenvDetector(platformInfo),
-      binaryDetector,
-      platformInfo,
-      uvResolver,
-    ),
+  const pythonToolchain = new PythonToolchain(
+    new PythonVenvDetector(platformInfo),
+    binaryDetector,
+    platformInfo,
+    uvResolver,
   );
+  toolchainRegistry.register(pythonToolchain);
   toolchainRegistry.register(
     new NodeToolchain(new NodeVersionDetector(), binaryDetector, platformInfo),
   );
@@ -193,8 +194,10 @@ app.whenReady().then(async () => {
     },
     {
       getExplicitPath: (projectId: string, toolchainId: string) => {
-        const key = `commands.${toolchainId}.resolution`;
-        const value = settingsManager.resolve(projectId, key);
+        const value = settingsManager.resolve(
+          projectId,
+          settingsKeyForToolchain(toolchainId),
+        );
         return typeof value === "string" && value.length > 0 ? value : null;
       },
     },
@@ -223,10 +226,19 @@ app.whenReady().then(async () => {
   const gitManager = new GitManager();
   const terminalManager = new TerminalManager();
   const { PythonManager } = await import("../server/services/python/index.js");
-  const pythonManager = new PythonManager();
+  const studioRoot = path.join(os.homedir(), ".blacksmith-studio");
+  const pythonManager = new PythonManager(
+    pythonToolchain.studioVenvPath(studioRoot),
+  );
   const { GraphifyManager } =
     await import("../server/services/graphify/index.js");
-  const graphifyManager = new GraphifyManager(pythonManager);
+  const graphifyManager = new GraphifyManager(pythonManager, async (opts) => {
+    await commandService.createEnv({
+      scope: "studio",
+      toolchainId: "python",
+      options: opts,
+    });
+  });
 
   // Check AI provider availability
   const providerStatus = await ai.checkStatus();

@@ -134,13 +134,15 @@ export class CommandService {
   }
 
   /**
-   * Tear down a project-scoped environment for toolchains that
-   * implement `EnvDeletingToolchain`. Throws when unsupported so
-   * callers can hide the button or render a clear error.
+   * Tear down a scoped environment for toolchains that implement
+   * `EnvDeletingToolchain`. For `scope: "studio"`, `projectId` is
+   * ignored. Throws when unsupported so callers can hide the button
+   * or render a clear error.
    */
-  async deleteProjectEnv(opts: {
-    projectId: string;
+  async deleteEnv(opts: {
+    projectId?: string;
     toolchainId: string;
+    scope: "project" | "studio";
   }): Promise<void> {
     const toolchain = this.registry.getById(opts.toolchainId);
     if (!isEnvDeletingToolchain(toolchain)) {
@@ -148,11 +150,7 @@ export class CommandService {
         `Toolchain "${toolchain.id}" does not support environment deletion.`,
       );
     }
-    const projectRoot = this.resolver["projects"].getPath(opts.projectId);
-    await toolchain.deleteProjectEnv({
-      projectId: opts.projectId,
-      projectRoot,
-    });
+    await toolchain.deleteEnv(this.envLifecycleContext(opts));
   }
 
   async listInstalledVersions(
@@ -164,18 +162,19 @@ export class CommandService {
   }
 
   /**
-   * Bootstrap a project-scoped environment for a toolchain that
-   * implements `EnvCreatingToolchain` (currently: Python → `.venv`).
-   * Throws when the toolchain doesn't support creation so callers can
-   * hide the affordance or render a clear error.
+   * Bootstrap a scoped environment for a toolchain that implements
+   * `EnvCreatingToolchain`. Project scope creates under
+   * `.blacksmith/.venv/`; studio scope creates the shared
+   * `~/.blacksmith-studio/venv/` that Graphify + pip ops use.
    *
    * `options` is passed through to the toolchain — Python accepts
    * `{ python: '<version-or-path>' }` so the UI can target a specific
    * interpreter.
    */
-  async createProjectEnv(opts: {
-    projectId: string;
+  async createEnv(opts: {
+    projectId?: string;
     toolchainId: string;
+    scope: "project" | "studio";
     options?: Record<string, unknown>;
   }): Promise<ToolchainEnv> {
     const toolchain = this.registry.getById(opts.toolchainId);
@@ -184,11 +183,27 @@ export class CommandService {
         `Toolchain "${toolchain.id}" does not support environment creation.`,
       );
     }
-    const projectRoot = this.resolver["projects"].getPath(opts.projectId);
-    return toolchain.createProjectEnv(
-      { projectId: opts.projectId, projectRoot },
+    return toolchain.createEnv(
+      this.envLifecycleContext(opts),
       opts.options ?? {},
     );
+  }
+
+  private envLifecycleContext(opts: {
+    projectId?: string;
+    scope: "project" | "studio";
+  }) {
+    if (opts.scope === "studio") {
+      return { scope: "studio" as const, studioRoot: this.studioRoot() };
+    }
+    if (!opts.projectId) {
+      throw new Error("projectId is required for project-scoped env lifecycle");
+    }
+    return {
+      scope: "project" as const,
+      projectId: opts.projectId,
+      projectRoot: this.resolver["projects"].getPath(opts.projectId),
+    };
   }
 
   listRuns(

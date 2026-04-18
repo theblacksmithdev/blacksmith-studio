@@ -28,6 +28,7 @@ import {
   PythonVenvDetector,
   RawToolchain,
   ToolchainRegistry,
+  settingsKeyForToolchain,
 } from "../../commands/index.js";
 import { UvBinaryResolver } from "../../python/uv-binary.js";
 import { ContextMcpServer } from "./context-mcp-server.js";
@@ -91,7 +92,7 @@ function main() {
       getExplicitPath: (projectId: string, toolchainId: string) => {
         const value = settingsManager.resolve(
           projectId,
-          `commands.${toolchainId}.resolution`,
+          settingsKeyForToolchain(toolchainId),
         );
         return typeof value === "string" && value.length > 0 ? value : null;
       },

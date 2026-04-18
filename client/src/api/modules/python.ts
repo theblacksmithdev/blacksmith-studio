@@ -1,36 +1,16 @@
 import { api as raw } from "../client";
 
-export interface PythonInstallation {
-  label: string;
-  path: string;
-  version: string;
-}
-
-export interface PythonCheckResult {
-  installed: boolean;
-  version?: string;
-  meetsMinimum: boolean;
-  venvReady: boolean;
-}
-
 export interface PythonSetupResult {
   success: boolean;
   error?: string;
 }
 
+/**
+ * Low-level Studio-venv pip ops. Venv lifecycle (create / reset /
+ * detect) lives in `api.commands` — use `createEnv` / `deleteEnv`
+ * with `scope: "studio"`.
+ */
 export const python = {
-  detect: () => raw.invoke<PythonInstallation[]>("python:detect"),
-  check: (projectId?: string) =>
-    raw.invoke<PythonCheckResult>(
-      "python:check",
-      projectId ? { projectId } : undefined,
-    ),
-  setupVenv: (projectId?: string) =>
-    raw.invoke<PythonSetupResult>(
-      "python:setupVenv",
-      projectId ? { projectId } : undefined,
-    ),
-  resetVenv: () => raw.invoke<void>("python:resetVenv"),
   installPackage: (pkg: string) =>
     raw.invoke<PythonSetupResult>("python:installPackage", { pkg }),
   isPackageInstalled: (pkg: string) =>

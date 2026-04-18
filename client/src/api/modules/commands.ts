@@ -51,21 +51,20 @@ export const commands = {
       toolchainId,
     }),
 
-  createProjectEnv: (input: {
-    projectId: string;
+  createEnv: (input: {
+    projectId?: string;
     toolchainId: string;
+    scope: CommandScope;
     options?: Record<string, unknown>;
   }) =>
-    raw.invoke<ToolchainEnv | CommandErrorShape>(
-      "commands:createProjectEnv",
-      input,
-    ),
+    raw.invoke<ToolchainEnv | CommandErrorShape>("commands:createEnv", input),
 
-  deleteProjectEnv: (input: { projectId: string; toolchainId: string }) =>
-    raw.invoke<{ ok: true } | CommandErrorShape>(
-      "commands:deleteProjectEnv",
-      input,
-    ),
+  deleteEnv: (input: {
+    projectId?: string;
+    toolchainId: string;
+    scope: CommandScope;
+  }) =>
+    raw.invoke<{ ok: true } | CommandErrorShape>("commands:deleteEnv", input),
 
   listRuns: (input: {
     projectId: string;

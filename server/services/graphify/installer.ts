@@ -7,6 +7,12 @@ import type {
   ProgressCallback,
 } from "./types.js";
 
+/** Injected env-lifecycle hook. Kept narrow so Installer depends only
+ *  on the verb it needs, not the full CommandService surface. */
+export type StudioEnvCreator = (options: {
+  python?: string;
+}) => Promise<void>;
+
 /**
  * Install and detect the `graphify` CLI inside the Studio Python venv.
  *
@@ -14,7 +20,10 @@ import type {
  * build output — just whether the tool is present and how to put it there.
  */
 export class Installer {
-  constructor(private readonly python: PythonManager) {}
+  constructor(
+    private readonly python: PythonManager,
+    private readonly createStudioEnv: StudioEnvCreator,
+  ) {}
 
   private get pkg() {
     return this.python.packages;
@@ -44,8 +53,14 @@ export class Installer {
   ): Promise<GraphifySetupResult> {
     if (!this.pkg.ready) {
       onProgress?.("Creating Studio Python environment...");
-      const venv = await this.pkg.createVenv(pythonVersion, onProgress);
-      if (!venv.success) return venv;
+      try {
+        await this.createStudioEnv({ python: pythonVersion });
+      } catch (err) {
+        return {
+          success: false,
+          error: err instanceof Error ? err.message : String(err),
+        };
+      }
     }
 
     onProgress?.("Installing graphifyy...");

@@ -16,6 +16,7 @@ import SettingsPage, {
   AppearanceSettings,
   EditorSettings,
   WorkspaceSettings,
+  EnvironmentsSettings,
   KnowledgeSettings,
   GraphifySettings,
   DangerZone,
@@ -168,6 +169,11 @@ export const router = createHashRouter([
             path: "workspace",
             element: <WorkspaceSettings />,
             handle: { title: "Workspace" } satisfies RouteHandle,
+          },
+          {
+            path: "environments",
+            element: <EnvironmentsSettings />,
+            handle: { title: "Environments" } satisfies RouteHandle,
           },
           {
             path: "knowledge",
