@@ -1,13 +1,15 @@
 import { Flex } from "@chakra-ui/react";
 import styled from "@emotion/styled";
-import { Boxes } from "lucide-react";
+import { Boxes, FolderOpen, Globe } from "lucide-react";
 import { Text } from "@/components/shared/ui";
-import {
-  InterpreterRow,
-  ScopeToggle,
-  StudioVenvRow,
-} from "./components";
-import { useEnvScope } from "./hooks";
+import { SegmentedControl } from "@/pages/settings/components/segmented-control";
+import { GlobalScopeView, ProjectScopeView } from "./components";
+import { useEnvScope, type EnvScope } from "./hooks";
+
+const SCOPE_OPTIONS = [
+  { value: "project" as EnvScope, label: "This project", icon: <FolderOpen /> },
+  { value: "global" as EnvScope, label: "Global defaults", icon: <Globe /> },
+];
 
 const Hint = styled.p`
   margin: 0;
@@ -55,13 +57,13 @@ export function EnvironmentsSettings() {
         Project overrides fall back to your global defaults.
       </Hint>
 
-      <ScopeToggle value={scope} onChange={setScope} />
+      <SegmentedControl
+        value={scope}
+        options={SCOPE_OPTIONS}
+        onChange={(v) => setScope(v as EnvScope)}
+      />
 
-      <Flex direction="column" gap="18px">
-        <InterpreterRow toolchainId="python" scope={scope} />
-        <InterpreterRow toolchainId="node" scope={scope} />
-        {scope === "global" && <StudioVenvRow />}
-      </Flex>
+      {scope === "project" ? <ProjectScopeView /> : <GlobalScopeView />}
     </Flex>
   );
 }

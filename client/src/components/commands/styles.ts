@@ -725,7 +725,7 @@ export const PillButton = styled.button`
   padding: 0 12px;
   border-radius: 9px;
   border: 1px solid var(--studio-border);
-  background: var(--studio-bg-surface);
+  background: var(--studio-bg-main);
   color: var(--studio-text-secondary);
   font-family: inherit;
   font-size: 12px;
@@ -763,7 +763,7 @@ export const HeroRoot = styled.div`
   padding: 20px 22px;
   border: 1px solid var(--studio-border);
   border-radius: 14px;
-  background: var(--studio-bg-main);
+  background: var(--studio-bg-surface);
 `;
 
 export const HeroHeader = styled.div`
@@ -812,9 +812,7 @@ export const HeroBadge = styled.span<{ $tone?: "ok" | "error" | "muted" }>`
   background: ${(p) =>
     p.$tone === "error"
       ? "var(--studio-error-subtle, rgba(194, 66, 66, 0.08))"
-      : p.$tone === "ok"
-        ? "var(--studio-bg-main)"
-        : "var(--studio-bg-surface)"};
+      : "var(--studio-bg-main)"};
 `;
 
 export const HeroStatusDot = styled.span<{ $tone?: "ok" | "error" }>`

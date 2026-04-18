@@ -21,7 +21,7 @@ const PickerToggle = styled.button`
   padding: 0 8px;
   border-radius: 7px;
   border: 1px solid var(--studio-border);
-  background: var(--studio-bg-surface);
+  background: var(--studio-bg-main);
   color: var(--studio-text-secondary);
   font-family: inherit;
   font-size: 11px;
