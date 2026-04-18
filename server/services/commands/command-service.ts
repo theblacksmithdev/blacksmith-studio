@@ -114,10 +114,20 @@ export class CommandService {
         studioRoot: this.studioRoot(),
       });
     }
+    // Mirror `CommandResolver.resolve` — the project env detection
+    // must see any user-pinned override from settings, otherwise the
+    // UI displays the auto-detected env even after "Change version"
+    // writes a new pin, and the user thinks nothing happened.
     const projectRoot = this.resolver["projects"].getPath(opts.projectId);
+    const explicit =
+      this.resolver["settings"].getExplicitPath(
+        opts.projectId,
+        opts.toolchainId,
+      ) ?? undefined;
     return toolchain.detectProjectEnv({
       projectId: opts.projectId,
       projectRoot,
+      explicitPath: explicit,
     });
   }
 

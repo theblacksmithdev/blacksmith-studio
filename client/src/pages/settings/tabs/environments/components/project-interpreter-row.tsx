@@ -1,16 +1,8 @@
-import { Flex } from "@chakra-ui/react";
 import styled from "@emotion/styled";
-import {
-  Loader2,
-  Package,
-  Plus,
-  Terminal,
-  Trash2,
-} from "lucide-react";
+import { Loader2, Package, Terminal, Trash2 } from "lucide-react";
 import { SettingsSection } from "@/pages/settings/components/settings-section";
 import { SettingRow } from "@/pages/settings/components/setting-row";
 import { InterpreterPicker } from "@/components/commands/interpreter-picker";
-import { ConfirmDialog } from "@/components/shared/ui";
 import {
   useProjectInterpreterRow,
   type ProjectInterpreterRowVM,
@@ -25,9 +17,10 @@ interface ProjectInterpreterRowProps {
 /**
  * Project-scope environment section.
  *
- * Layout: section header → status panel (interpreter + venv paths
- * with health tags) → action rows (setup / change-version / reset /
- * pin depending on state) → confirm dialogs for destructive flows.
+ * Pure presentation — no component-local state. Mutations fire
+ * directly from picker / button clicks; `isPending` from the hook
+ * drives every loading label. Users see destructive consequences in
+ * each `SettingRow` description before clicking.
  */
 export function ProjectInterpreterRow({
   toolchainId,
@@ -35,88 +28,63 @@ export function ProjectInterpreterRow({
   const vm = useProjectInterpreterRow(toolchainId);
 
   return (
-    <>
-      <SettingsSection title={vm.displayName} description={vm.description}>
-        <StatusPanel>
+    <SettingsSection title={vm.displayName} description={vm.description}>
+      <StatusPanel>
+        <StatusRow
+          icon={<Terminal size={14} />}
+          label="Interpreter"
+          path={vm.interpreterPath ?? "Not resolved"}
+          tag={vm.interpreterTag}
+        />
+        {vm.showEnvRow && (
           <StatusRow
-            icon={<Terminal size={14} />}
-            label="Interpreter"
-            path={vm.interpreterPath ?? "Not resolved"}
-            tag={vm.interpreterTag}
+            icon={<Package size={14} />}
+            label={vm.envLabel}
+            path={vm.envPath}
+            tag={vm.envTag ?? undefined}
           />
-          {vm.showEnvRow && (
-            <StatusRow
-              icon={<Package size={14} />}
-              label={vm.envLabel}
-              path={vm.envPath}
-              tag={vm.envTag ?? undefined}
-            />
-          )}
-        </StatusPanel>
-
-        <ActionRows vm={vm} />
-
-        {vm.localError && (
-          <SettingRow label="Error" fullWidth>
-            <ErrorText>{vm.localError}</ErrorText>
-          </SettingRow>
         )}
-      </SettingsSection>
+      </StatusPanel>
 
-      {vm.pendingVersionChange && (
-        <ConfirmDialog
-          message={`Recreate .venv with ${vm.displayName} ${vm.pendingVersionChange.label}?`}
-          description="The existing .venv will be deleted and recreated with the selected version. Installed packages will be lost — reinstall via `pip install -r requirements.txt` afterwards."
-          confirmLabel="Recreate"
-          cancelLabel="Cancel"
-          variant="danger"
-          onConfirm={vm.confirmVersionChange}
-          onCancel={vm.cancelVersionChange}
-          loading={vm.isChangingVersion}
-        />
+      <ActionRows vm={vm} />
+
+      {vm.error && (
+        <SettingRow label="Error" fullWidth>
+          <ErrorText>{vm.error}</ErrorText>
+        </SettingRow>
       )}
-      {vm.confirmingReset && (
-        <ConfirmDialog
-          message="Reset the virtual environment?"
-          description="The Blacksmith-managed .venv under .blacksmith/.venv will be deleted. Installed packages will be lost — you can set up a fresh venv afterwards."
-          confirmLabel="Reset"
-          cancelLabel="Cancel"
-          variant="danger"
-          onConfirm={vm.confirmReset}
-          onCancel={vm.cancelReset}
-          loading={vm.isResetting}
-        />
-      )}
-    </>
+    </SettingsSection>
   );
 }
 
-/** State-driven row gating — only one of the three variants renders
- *  at a time so the action list stays focused on the current state. */
+/* ── Action rows — state-driven gating, fire-on-click ─── */
+
 function ActionRows({ vm }: { vm: ProjectInterpreterRowVM }) {
+  // Managed venv → picker recreates with chosen version; button resets.
+  // Both are destructive; warnings live in the row descriptions.
   if (vm.isManaged) {
     return (
       <>
         <SettingRow
           label={`Change ${vm.displayName} version`}
-          description="Recreates the managed .venv with a different base interpreter. Installed packages will be lost."
+          description="Recreates the managed .venv with the selected base interpreter. Installed packages will be lost."
         >
           {vm.canCreate && vm.canList && (
             <InterpreterPicker
               toolchainId={vm.toolchainId}
-              label={vm.isChangingVersion ? "Recreating…" : "Change version"}
-              onSelect={vm.handlePickVersion}
+              label={vm.isRecreating ? "Recreating…" : "Change version"}
+              onSelect={(p) => vm.recreate(p)}
             />
           )}
         </SettingRow>
         {vm.canDelete && (
           <SettingRow
             label="Reset environment"
-            description="Delete the Blacksmith-managed .venv entirely."
+            description="Deletes the Blacksmith-managed .venv entirely. Fires immediately."
           >
             <ActionButton
               type="button"
-              onClick={vm.requestReset}
+              onClick={() => vm.reset()}
               disabled={vm.isResetting}
             >
               {vm.isResetting ? (
@@ -139,52 +107,26 @@ function ActionRows({ vm }: { vm: ProjectInterpreterRowVM }) {
     );
   }
 
+  // Runtime is available but no venv yet → merged picker+button:
+  // picking a version creates the venv with it.
   if (vm.canCreate && !vm.hasEnv && vm.hasRuntime) {
     return (
       <SettingRow
         label="Virtual environment"
-        description="Create an isolated .venv for this project under .blacksmith/.venv."
+        description="Create an isolated .venv for this project under .blacksmith/.venv. Selecting a version fires setup immediately."
       >
-        <Flex gap="8px" align="center">
-          {vm.canList && (
-            <InterpreterPicker
-              toolchainId={vm.toolchainId}
-              currentPath={vm.setupChoice?.path}
-              label={
-                vm.setupChoice
-                  ? `${vm.displayName} ${vm.setupChoice.label}`
-                  : "Choose version"
-              }
-              onSelect={(p) =>
-                vm.setSetupChoice({ path: p, label: labelFromPath(p) })
-              }
-            />
-          )}
-          <ActionButton
-            type="button"
-            data-variant="primary"
-            onClick={vm.handleSetup}
-            disabled={vm.isSettingUp}
-          >
-            {vm.isSettingUp ? (
-              <>
-                <Loader2
-                  size={12}
-                  style={{ animation: "spin 1s linear infinite" }}
-                />
-                Creating…
-              </>
-            ) : (
-              <>
-                <Plus size={12} /> Set up .venv
-              </>
-            )}
-          </ActionButton>
-        </Flex>
+        {vm.canList && (
+          <InterpreterPicker
+            toolchainId={vm.toolchainId}
+            label={vm.isSettingUp ? "Creating…" : "Set up .venv"}
+            onSelect={(p) => vm.setUp(p)}
+          />
+        )}
       </SettingRow>
     );
   }
 
+  // Wrapper / system / not-detected → single pin row.
   return (
     <SettingRow
       label={`Change ${vm.displayName} version`}
@@ -196,17 +138,12 @@ function ActionRows({ vm }: { vm: ProjectInterpreterRowVM }) {
           currentPath={vm.interpreterPath}
           hasOverride={vm.hasOverride}
           label={vm.isPinning ? "Saving…" : "Change version"}
-          onSelect={vm.handlePickInterpreter}
-          onClearOverride={vm.handleClearOverride}
+          onSelect={(p) => vm.pin(p)}
+          onClearOverride={() => vm.clearPin()}
         />
       )}
     </SettingRow>
   );
-}
-
-function labelFromPath(p: string): string {
-  const match = p.match(/(\d+\.\d+(?:\.\d+)?)/);
-  return match?.[1] ?? "selected";
 }
 
 const ErrorText = styled.span`

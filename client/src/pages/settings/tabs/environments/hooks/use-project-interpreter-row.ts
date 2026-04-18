@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   useChangeInterpreter,
   useCommandAvailabilityQuery,
@@ -8,14 +7,14 @@ import {
   useToolchainsQuery,
 } from "@/api/hooks/commands";
 import type { BadgeDescriptor } from "./_types";
+import { errorFrom } from "./_mutation-error";
 
 export interface ProjectInterpreterRowVM {
   // Identity
   toolchainId: string;
   displayName: string;
-  primaryBinary: string;
 
-  // Capabilities (from toolchain registry)
+  // Capabilities
   canCreate: boolean;
   canDelete: boolean;
   canList: boolean;
@@ -32,46 +31,36 @@ export interface ProjectInterpreterRowVM {
   interpreterPath?: string;
   envLabel: string;
   envPath: string;
-  /** False for toolchains without a venv concept (Node). */
   showEnvRow: boolean;
   interpreterTag: BadgeDescriptor;
   envTag: BadgeDescriptor | null;
 
-  // Transient UI state
-  localError: string | null;
+  // Unified error — drawn from whichever mutation last failed (either
+  // a thrown error or an error-shape returned by the IPC layer).
+  error: string | null;
 
-  // Setup flow — for the "no venv yet" state
-  setupChoice: { path: string; label: string } | null;
-  setSetupChoice: (c: { path: string; label: string } | null) => void;
-  handleSetup: () => Promise<void>;
+  // ── Actions (thin mutation wrappers) ──
+  setUp: (pythonPath?: string) => void;
   isSettingUp: boolean;
 
-  // Managed-venv recreate (destructive, confirm-gated)
-  pendingVersionChange: { path: string; label: string } | null;
-  handlePickVersion: (path: string) => void;
-  cancelVersionChange: () => void;
-  confirmVersionChange: () => Promise<void>;
-  isChangingVersion: boolean;
+  recreate: (pythonPath: string) => void;
+  isRecreating: boolean;
 
-  // Managed-venv reset (destructive, confirm-gated)
-  confirmingReset: boolean;
-  requestReset: () => void;
-  cancelReset: () => void;
-  confirmReset: () => Promise<void>;
+  reset: () => void;
   isResetting: boolean;
 
-  // Non-managed pin/clear (wrapper / system / override)
-  handlePickInterpreter: (path: string) => void;
-  handleClearOverride: () => void;
+  pin: (path: string) => void;
+  clearPin: () => void;
   isPinning: boolean;
 }
 
 /**
  * View-model for the project-scope environment section.
  *
- * Single responsibility: project env resolution + per-project
- * lifecycle (setup → recreate → reset → pin). Does not know about
- * global settings. The global-scope row uses a separate hook.
+ * Pure data + thin mutation wrappers — no pre-mutation UI state like
+ * "is the confirm dialog open" lives here. Dialog gating belongs to
+ * the component since it's UI concern, not data. All loading flags +
+ * errors derive from the underlying mutations.
  */
 export function useProjectInterpreterRow(
   toolchainId: string,
@@ -85,20 +74,9 @@ export function useProjectInterpreterRow(
     "project",
   );
 
-  const changeInterpreter = useChangeInterpreter();
   const createEnv = useCreateProjectEnv();
   const deleteEnv = useDeleteProjectEnv();
-
-  const [setupChoice, setSetupChoice] = useState<{
-    path: string;
-    label: string;
-  } | null>(null);
-  const [pendingVersionChange, setPendingVersionChange] = useState<{
-    path: string;
-    label: string;
-  } | null>(null);
-  const [confirmingReset, setConfirmingReset] = useState(false);
-  const [localError, setLocalError] = useState<string | null>(null);
+  const changeInterpreter = useChangeInterpreter();
 
   // ── Derived flags ─────────────────────────────────────────
   const hasRuntime = availability?.ok === true;
@@ -148,64 +126,46 @@ export function useProjectInterpreterRow(
 
   const description = `${title} · ${envTag?.label ?? (hasRuntime ? "ready" : "unavailable")}`;
 
-  // ── Callbacks ─────────────────────────────────────────────
-  const handleSetup = async () => {
-    setLocalError(null);
-    try {
-      const result = await createEnv.mutateAsync({
-        toolchainId,
-        options: setupChoice ? { python: setupChoice.path } : {},
-      });
-      if (result && "error" in result) setLocalError(result.error.message);
-    } catch (err) {
-      setLocalError(err instanceof Error ? err.message : String(err));
-    }
-  };
+  // ── Mutation loading flags ────────────────────────────────
+  // `createEnv` serves two semantic actions (first-time setup vs.
+  // recreate with overwrite). We distinguish by the submitted
+  // variables so each button gets its own isPending signal.
+  const createOverwrite = !!(
+    createEnv.variables as { options?: { overwrite?: boolean } } | undefined
+  )?.options?.overwrite;
+  const isSettingUp = createEnv.isPending && !createOverwrite;
+  const isRecreating = createEnv.isPending && createOverwrite;
 
-  const handlePickVersion = (path: string) => {
-    setPendingVersionChange({ path, label: labelFromPath(path) });
-  };
+  // ── Unified error ─────────────────────────────────────────
+  const error =
+    errorFrom(createEnv) ?? errorFrom(deleteEnv) ?? errorFrom(changeInterpreter);
 
-  const confirmVersionChange = async () => {
-    if (!pendingVersionChange) return;
-    setLocalError(null);
-    try {
-      const result = await createEnv.mutateAsync({
-        toolchainId,
-        options: { python: pendingVersionChange.path, overwrite: true },
-      });
-      setPendingVersionChange(null);
-      if (result && "error" in result) setLocalError(result.error.message);
-    } catch (err) {
-      setPendingVersionChange(null);
-      setLocalError(err instanceof Error ? err.message : String(err));
-    }
-  };
+  // ── Action wrappers — fire-and-forget; loading state and errors
+  //    flow back through the mutation hooks themselves. ──
+  const setUp: ProjectInterpreterRowVM["setUp"] = (pythonPath) =>
+    createEnv.mutate({
+      toolchainId,
+      options: pythonPath ? { python: pythonPath } : {},
+    });
 
-  const confirmReset = async () => {
-    setLocalError(null);
-    try {
-      const result = await deleteEnv.mutateAsync(toolchainId);
-      setConfirmingReset(false);
-      if (result && "error" in result) setLocalError(result.error.message);
-    } catch (err) {
-      setConfirmingReset(false);
-      setLocalError(err instanceof Error ? err.message : String(err));
-    }
-  };
+  const recreate: ProjectInterpreterRowVM["recreate"] = (pythonPath) =>
+    createEnv.mutate({
+      toolchainId,
+      options: { python: pythonPath, overwrite: true },
+    });
 
-  const handlePickInterpreter = (path: string) => {
+  const reset: ProjectInterpreterRowVM["reset"] = () =>
+    deleteEnv.mutate(toolchainId);
+
+  const pin: ProjectInterpreterRowVM["pin"] = (path) =>
     changeInterpreter.mutate({ toolchainId, path });
-  };
 
-  const handleClearOverride = () => {
+  const clearPin: ProjectInterpreterRowVM["clearPin"] = () =>
     changeInterpreter.mutate({ toolchainId, path: "" });
-  };
 
   return {
     toolchainId,
     displayName,
-    primaryBinary,
 
     canCreate: !!toolchain?.supportsProjectEnvCreation,
     canDelete: !!toolchain?.supportsProjectEnvDeletion,
@@ -225,30 +185,21 @@ export function useProjectInterpreterRow(
     interpreterTag,
     envTag,
 
-    localError,
+    error,
 
-    setupChoice,
-    setSetupChoice,
-    handleSetup,
-    isSettingUp: createEnv.isPending && !pendingVersionChange,
-
-    pendingVersionChange,
-    handlePickVersion,
-    cancelVersionChange: () => setPendingVersionChange(null),
-    confirmVersionChange,
-    isChangingVersion: createEnv.isPending && !!pendingVersionChange,
-
-    confirmingReset,
-    requestReset: () => setConfirmingReset(true),
-    cancelReset: () => setConfirmingReset(false),
-    confirmReset,
+    setUp,
+    isSettingUp,
+    recreate,
+    isRecreating,
+    reset,
     isResetting: deleteEnv.isPending,
-
-    handlePickInterpreter,
-    handleClearOverride,
+    pin,
+    clearPin,
     isPinning: changeInterpreter.isPending,
   };
 }
+
+/* ── Helpers ────────────────────────────────────────────── */
 
 /** Matches Blacksmith-managed `.blacksmith/.venv` and legacy root-level
  *  `.venv` / `venv`. Wrapper envs (Poetry, Pipenv, conda) are left alone. */
@@ -265,9 +216,4 @@ function wrapperLabel(displayName: string): string {
   const lower = displayName.toLowerCase();
   const token = lower.split(/[:\s/]/)[0];
   return token || "detected";
-}
-
-function labelFromPath(p: string): string {
-  const match = p.match(/(\d+\.\d+(?:\.\d+)?)/);
-  return match?.[1] ?? "selected";
 }

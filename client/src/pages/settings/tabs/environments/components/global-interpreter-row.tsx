@@ -1,4 +1,5 @@
 import { Flex } from "@chakra-ui/react";
+import styled from "@emotion/styled";
 import { RotateCcw, Terminal } from "lucide-react";
 import { SettingsSection } from "@/pages/settings/components/settings-section";
 import { SettingRow } from "@/pages/settings/components/setting-row";
@@ -15,10 +16,9 @@ interface GlobalInterpreterRowProps {
  * Global-scope environment section — edits the user-level default
  * pin that every project falls back to.
  *
- * Intentionally simpler than the project variant: no venv lifecycle,
- * no availability check, no setup flow. Just "change default" +
- * "clear". Lives in its own component with its own hook so the two
- * concerns don't leak into each other.
+ * Pure presentation — no component-local state. Loading labels come
+ * from `vm.isPinning`; errors from `vm.error`. Mirrors the
+ * project-row pattern so the two feel identical to readers.
  */
 export function GlobalInterpreterRow({
   toolchainId,
@@ -47,14 +47,14 @@ export function GlobalInterpreterRow({
               currentPath={vm.pinnedPath || undefined}
               hasOverride={vm.hasOverride}
               label={vm.isPinning ? "Saving…" : "Change default"}
-              onSelect={vm.handlePick}
-              onClearOverride={vm.handleClear}
+              onSelect={(p) => vm.pin(p)}
+              onClearOverride={() => vm.clearPin()}
             />
           )}
           {vm.hasOverride && (
             <ActionButton
               type="button"
-              onClick={vm.handleClear}
+              onClick={() => vm.clearPin()}
               disabled={vm.isPinning}
               title="Remove the global default"
             >
@@ -63,6 +63,17 @@ export function GlobalInterpreterRow({
           )}
         </Flex>
       </SettingRow>
+
+      {vm.error && (
+        <SettingRow label="Error" fullWidth>
+          <ErrorText>{vm.error}</ErrorText>
+        </SettingRow>
+      )}
     </SettingsSection>
   );
 }
+
+const ErrorText = styled.span`
+  font-size: 13px;
+  color: var(--studio-error, #c24242);
+`;

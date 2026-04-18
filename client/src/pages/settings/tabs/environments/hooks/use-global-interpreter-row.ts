@@ -3,13 +3,12 @@ import { useGlobalSettings } from "@/hooks/use-global-settings";
 import { useUpdateGlobalSettings } from "@/api/hooks/settings";
 import { settingsKeyForToolchain } from "@/api/hooks/commands/_settings-keys";
 import type { BadgeDescriptor } from "./_types";
+import { errorFrom } from "./_mutation-error";
 
 export interface GlobalInterpreterRowVM {
   // Identity
   toolchainId: string;
   displayName: string;
-  primaryBinary: string;
-  settingKey: string;
 
   // Capabilities
   canList: boolean;
@@ -21,9 +20,13 @@ export interface GlobalInterpreterRowVM {
   hasOverride: boolean;
   interpreterTag: BadgeDescriptor;
 
-  // Actions
-  handlePick: (path: string) => void;
-  handleClear: () => void;
+  // Unified error — drawn from the update mutation (thrown or
+  // returned error-shape).
+  error: string | null;
+
+  // Actions (thin mutation wrappers, fire-and-forget)
+  pin: (path: string) => void;
+  clearPin: () => void;
   isPinning: boolean;
 }
 
@@ -34,6 +37,9 @@ export interface GlobalInterpreterRowVM {
  * projects inherit when they don't override. No knowledge of project
  * env detection, venvs, or availability checks — those are
  * project-only concerns and live in `useProjectInterpreterRow`.
+ *
+ * No local state: loading is `update.isPending`, errors come from
+ * `errorFrom(update)`. Mirrors the project hook's stateless shape.
  */
 export function useGlobalInterpreterRow(
   toolchainId: string,
@@ -48,7 +54,6 @@ export function useGlobalInterpreterRow(
   const pinnedPath = (globalSettings.get(settingKey) as string | null) ?? "";
   const hasOverride = pinnedPath.length > 0;
   const displayName = toolchain?.displayName ?? toolchainId;
-  const primaryBinary = toolchain?.binaries[0] ?? toolchainId;
 
   const title = `${displayName} default`;
   const description = hasOverride
@@ -62,8 +67,6 @@ export function useGlobalInterpreterRow(
   return {
     toolchainId,
     displayName,
-    primaryBinary,
-    settingKey,
 
     canList: !!toolchain?.supportsListInstalledVersions,
 
@@ -73,8 +76,10 @@ export function useGlobalInterpreterRow(
     hasOverride,
     interpreterTag,
 
-    handlePick: (path: string) => update.mutate({ [settingKey]: path }),
-    handleClear: () => update.mutate({ [settingKey]: "" }),
+    error: errorFrom(update),
+
+    pin: (path) => update.mutate({ [settingKey]: path }),
+    clearPin: () => update.mutate({ [settingKey]: "" }),
     isPinning: update.isPending,
   };
 }
