@@ -23,6 +23,7 @@ export const SESSIONS_DELETE = "sessions:delete";
 
 // Files
 export const FILES_TREE = "files:tree";
+export const FILES_CHILDREN = "files:children";
 export const FILES_CONTENT = "files:content";
 export const FILES_SEARCH = "files:search";
 export const FILES_REVEAL = "files:reveal";
@@ -210,6 +211,7 @@ export const INVOKE_CHANNELS = [
   SESSIONS_RENAME,
   SESSIONS_DELETE,
   FILES_TREE,
+  FILES_CHILDREN,
   FILES_CONTENT,
   FILES_SEARCH,
   FILES_REVEAL,

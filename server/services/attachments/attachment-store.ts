@@ -6,7 +6,7 @@ import { extOf } from "./mime.js";
 
 export class AttachmentStore {
   /**
-   * Write bytes under `<projectRoot>/.studio/attachments/<bucket>/<uuid>.<ext>`
+   * Write bytes under `<projectRoot>/.blacksmith/attachments/<bucket>/<uuid>.<ext>`
    * and return the absolute path that was written.
    */
   async write(

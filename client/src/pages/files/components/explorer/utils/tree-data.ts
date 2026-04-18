@@ -31,21 +31,3 @@ export function toTreeData(node: FileNode): TreeItem[] {
     }));
 }
 
-/** Search filter — returns true if node or any descendant matches */
-export function matchesSearch(item: TreeItem, query: string): boolean {
-  if (!query) return true;
-  const q = query.toLowerCase();
-  if (item.name.toLowerCase().includes(q)) return true;
-  if (item.children) return item.children.some((c) => matchesSearch(c, q));
-  return false;
-}
-
-export function filterTree(items: TreeItem[], query: string): TreeItem[] {
-  if (!query) return items;
-  return items
-    .filter((item) => matchesSearch(item, query))
-    .map((item) => ({
-      ...item,
-      children: item.children ? filterTree(item.children, query) : undefined,
-    }));
-}

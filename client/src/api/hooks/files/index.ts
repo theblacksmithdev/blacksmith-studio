@@ -1,4 +1,5 @@
 export { useFileTreeQuery } from "./use-file-tree-query";
+export { useFileChildren } from "./use-file-children";
 export { useFileContentQuery } from "./use-file-content-query";
 export { useFileSearch } from "./use-file-search";
 export { useRevealFile } from "./use-reveal-file";

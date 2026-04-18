@@ -16,6 +16,8 @@ export interface DetectedEditor {
 export const files = {
   tree: (projectId: string) =>
     raw.invoke<FileNode>("files:tree", { projectId }),
+  children: (projectId: string, path: string) =>
+    raw.invoke<FileNode[]>("files:children", { projectId, path }),
   content: (projectId: string, path: string) =>
     raw.invoke<FileContentResult>("files:content", { projectId, path }),
   search: (projectId: string, query: string, maxResults?: number) =>

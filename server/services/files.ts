@@ -29,63 +29,72 @@ const DEFAULT_IGNORE = new Set([
 
 const IGNORE_EXTENSIONS = new Set([".pyc", ".pyo", ".egg-info"]);
 
-/** Max total nodes to prevent memory bloat on huge repos */
-const MAX_NODES = 5000;
+function isIgnored(name: string, ext: string): boolean {
+  if (DEFAULT_IGNORE.has(name)) return true;
+  if (IGNORE_EXTENSIONS.has(ext)) return true;
+  return false;
+}
 
-export function buildFileTree(
+/**
+ * List the direct children of a directory — no recursion. Folders come
+ * back with `children: []` so the client can tell "unloaded folder" from
+ * "file". Callers fetch deeper levels on demand via `listChildren`.
+ */
+export function listChildren(
   projectRoot: string,
-  dir?: string,
-  depth = 0,
-  maxDepth = 6,
-  counter = { count: 0 },
-): FileNode {
-  const currentDir = dir || projectRoot;
-  const name = dir ? path.basename(currentDir) : path.basename(projectRoot);
-  const relativePath = path.relative(projectRoot, currentDir);
+  relativeDir: string,
+): FileNode[] {
+  const currentDir = relativeDir
+    ? path.resolve(projectRoot, relativeDir)
+    : projectRoot;
 
-  if (depth >= maxDepth || counter.count >= MAX_NODES) {
-    return { name, path: relativePath || ".", type: "directory", children: [] };
+  if (!currentDir.startsWith(projectRoot)) {
+    throw new Error("Path is outside the project directory");
   }
 
   let entries: fs.Dirent[];
   try {
     entries = fs.readdirSync(currentDir, { withFileTypes: true });
   } catch {
-    return { name, path: relativePath || ".", type: "directory", children: [] };
+    return [];
   }
 
-  const children: FileNode[] = [];
-
-  for (const entry of entries.sort((a, b) => {
-    // Directories first, then alphabetical
+  const sorted = entries.sort((a, b) => {
     if (a.isDirectory() && !b.isDirectory()) return -1;
     if (!a.isDirectory() && b.isDirectory()) return 1;
     return a.name.localeCompare(b.name);
-  })) {
-    if (counter.count >= MAX_NODES) break;
-    if (entry.name.startsWith(".") && DEFAULT_IGNORE.has(entry.name)) continue;
-    if (DEFAULT_IGNORE.has(entry.name)) continue;
-    if (IGNORE_EXTENSIONS.has(path.extname(entry.name))) continue;
+  });
 
+  const out: FileNode[] = [];
+  for (const entry of sorted) {
+    if (isIgnored(entry.name, path.extname(entry.name))) continue;
     const fullPath = path.join(currentDir, entry.name);
     const relPath = path.relative(projectRoot, fullPath);
-
-    counter.count++;
-
     if (entry.isDirectory()) {
-      children.push(
-        buildFileTree(projectRoot, fullPath, depth + 1, maxDepth, counter),
-      );
+      out.push({
+        name: entry.name,
+        path: relPath,
+        type: "directory",
+        children: [],
+      });
     } else {
-      children.push({ name: entry.name, path: relPath, type: "file" });
+      out.push({ name: entry.name, path: relPath, type: "file" });
     }
   }
+  return out;
+}
 
+/**
+ * Build the shallow file tree: the project root plus its direct children.
+ * Folders arrive with empty `children: []` — the client expands them
+ * lazily via `listChildren`.
+ */
+export function buildFileTree(projectRoot: string): FileNode {
   return {
-    name,
-    path: relativePath || ".",
+    name: path.basename(projectRoot),
+    path: ".",
     type: "directory",
-    children,
+    children: listChildren(projectRoot, ""),
   };
 }
 

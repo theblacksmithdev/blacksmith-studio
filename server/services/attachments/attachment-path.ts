@@ -1,10 +1,10 @@
 import path from "node:path";
+import { projectDataDir } from "../project-paths.js";
 
-const ROOT_SEGMENT = ".studio";
 const ATTACHMENTS_SEGMENT = "attachments";
 
 export function attachmentsRootFor(projectRoot: string): string {
-  return path.join(projectRoot, ROOT_SEGMENT, ATTACHMENTS_SEGMENT);
+  return projectDataDir(projectRoot, ATTACHMENTS_SEGMENT);
 }
 
 export function attachmentsDirFor(

@@ -1,44 +1,45 @@
-import { useState, memo } from "react";
+import { useState, type CSSProperties } from "react";
 import { Box, Flex } from "@chakra-ui/react";
 import { ChevronRight, ChevronDown } from "lucide-react";
-import { FileLabel } from "./utils/file-label";
+import type { NodeApi } from "react-arborist";
+import { FileLabel } from "../utils/file-label";
 import {
   FileContextMenu,
   type ContextMenuPosition,
-} from "../file-context-menu";
-import type { TreeItem } from "./utils/tree-data";
+} from "../../file-context-menu";
+import type { TreeItem } from "../utils/tree-data";
 
-interface TreeNodeProps {
-  item: TreeItem;
-  depth: number;
-  selectedFile: string | null;
+interface NodeRowProps {
+  node: NodeApi<TreeItem>;
+  style: CSSProperties;
   changedFiles: Set<string>;
   onSelectFile: (path: string) => void;
-  defaultOpen?: boolean;
 }
 
-interface ContextState {
-  position: ContextMenuPosition;
-}
-
-export const TreeNode = memo(function TreeNode({
-  item,
-  depth,
-  selectedFile,
+export function NodeRow({
+  node,
+  style,
   changedFiles,
   onSelectFile,
-  defaultOpen = false,
-}: TreeNodeProps) {
-  const [open, setOpen] = useState(defaultOpen);
-  const [ctx, setCtx] = useState<ContextState | null>(null);
-  const isDir = item.isDir;
-  const isSelected = item.path === selectedFile;
-  const isChanged = changedFiles.has(item.path);
+}: NodeRowProps) {
+  const [ctx, setCtx] = useState<ContextMenuPosition | null>(null);
+  const isDir = node.data.isDir;
+  const isSelected = node.isSelected;
+  const isOpen = node.isOpen;
+  const isChanged = changedFiles.has(node.data.path);
 
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setCtx({ position: { x: e.clientX, y: e.clientY } });
+    setCtx({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleClick = () => {
+    if (isDir) node.toggle();
+    else {
+      node.select();
+      onSelectFile(node.data.path);
+    }
   };
 
   return (
@@ -46,16 +47,12 @@ export const TreeNode = memo(function TreeNode({
       <Flex
         as="button"
         align="center"
-        onClick={() => {
-          if (isDir) setOpen(!open);
-          else onSelectFile(item.path);
-        }}
+        onClick={handleClick}
         onContextMenu={handleContextMenu}
+        style={style}
         css={{
           width: "100%",
-          height: "28px",
           gap: "2px",
-          paddingLeft: `${depth * 14 + 8}px`,
           paddingRight: "8px",
           border: "none",
           borderLeft: isSelected
@@ -73,7 +70,6 @@ export const TreeNode = memo(function TreeNode({
           },
         }}
       >
-        {/* Chevron */}
         <Box
           css={{
             width: "14px",
@@ -84,20 +80,18 @@ export const TreeNode = memo(function TreeNode({
           }}
         >
           {isDir &&
-            (open ? <ChevronDown size={11} /> : <ChevronRight size={11} />)}
+            (isOpen ? <ChevronDown size={11} /> : <ChevronRight size={11} />)}
         </Box>
 
-        {/* File label */}
         <Box css={{ flex: 1, minWidth: 0 }}>
           <FileLabel
-            name={item.name}
+            name={node.data.name}
             isDir={isDir}
-            isOpen={open}
+            isOpen={isOpen}
             isSelected={isSelected}
           />
         </Box>
 
-        {/* Modified dot */}
         {isChanged && (
           <Box
             css={{
@@ -111,30 +105,14 @@ export const TreeNode = memo(function TreeNode({
         )}
       </Flex>
 
-      {/* Context menu */}
       {ctx && (
         <FileContextMenu
-          path={item.path}
-          position={ctx.position}
+          path={node.data.path}
+          position={ctx}
           isDirectory={isDir}
           onClose={() => setCtx(null)}
         />
       )}
-
-      {/* Children */}
-      {isDir &&
-        open &&
-        item.children?.map((child) => (
-          <TreeNode
-            key={child.id}
-            item={child}
-            depth={depth + 1}
-            selectedFile={selectedFile}
-            changedFiles={changedFiles}
-            onSelectFile={onSelectFile}
-            defaultOpen={depth < 0}
-          />
-        ))}
     </>
   );
-});
+}

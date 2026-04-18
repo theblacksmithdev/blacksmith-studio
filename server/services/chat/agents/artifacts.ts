@@ -1,8 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
+import {
+  PROJECT_DATA_DIR,
+  projectDataRelPath,
+} from "../../project-paths.js";
 import type { AgentRole } from "./types.js";
 
-const ARTIFACTS_DIR = ".blacksmith/artifacts";
+const ARTIFACTS_DIR = projectDataRelPath("artifacts");
 
 /**
  * ArtifactManager — manages persisted agent output artifacts.
@@ -161,7 +165,7 @@ export class ArtifactManager {
    */
   ensureGitignore(): void {
     const gitignorePath = path.join(this.projectRoot, ".gitignore");
-    const entry = ".blacksmith/";
+    const entry = `${PROJECT_DATA_DIR}/`;
 
     if (fs.existsSync(gitignorePath)) {
       const content = fs.readFileSync(gitignorePath, "utf-8");

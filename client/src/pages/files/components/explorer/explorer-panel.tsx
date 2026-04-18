@@ -12,10 +12,9 @@ import {
 } from "@/components/shared/ui";
 import { api } from "@/api";
 import type { SearchResult } from "@/api/modules/files";
-import { TreeNode } from "./tree-node";
+import { FileTree } from "./file-tree";
 import { FileLabel } from "./utils/file-label";
 import { OpenInEditorButton } from "./open-in-editor-button";
-import { toTreeData, filterTree } from "./utils/tree-data";
 import type { FileNode } from "@/types";
 
 interface ExplorerPanelProps {
@@ -62,12 +61,6 @@ export function ExplorerPanel({
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [searchQuery]);
-
-  const data = useMemo(() => {
-    if (!tree) return [];
-    const items = toTreeData(tree);
-    return searchQuery ? filterTree(items, searchQuery) : items;
-  }, [tree, searchQuery]);
 
   const itemCount = tree?.children?.length ?? 0;
   const modifiedCount = changedFiles.size;
@@ -244,28 +237,22 @@ export function ExplorerPanel({
         </Box>
       )}
 
-      {/* File tree */}
-      <Box css={{ flex: 1, overflowY: "auto", paddingTop: "2px" }}>
-        {data.length > 0 ? (
-          data.map((item) => (
-            <TreeNode
-              key={item.id}
-              item={item}
-              depth={0}
-              selectedFile={activeTab}
-              changedFiles={changedFiles}
-              onSelectFile={onSelectFile}
-              defaultOpen={!searchQuery && item.isDir}
-            />
-          ))
-        ) : (
-          <Flex align="center" justify="center" css={{ height: "100px" }}>
-            <Text variant="caption" color="muted">
-              {searchQuery ? "No files match" : "No files"}
-            </Text>
-          </Flex>
-        )}
-      </Box>
+      {/* File tree (virtualised, lazy-loaded) */}
+      {tree ? (
+        <FileTree
+          root={tree}
+          activeFile={activeTab}
+          changedFiles={changedFiles}
+          searchQuery={searchQuery}
+          onSelectFile={onSelectFile}
+        />
+      ) : (
+        <Flex align="center" justify="center" css={{ height: "100px" }}>
+          <Text variant="caption" color="muted">
+            {searchQuery ? "No files match" : "No files"}
+          </Text>
+        </Flex>
+      )}
 
       {/* Footer */}
       {tree && (

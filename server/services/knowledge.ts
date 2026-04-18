@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { projectDataDir } from "./project-paths.js";
 
 /* ── Types ── */
 
@@ -60,7 +61,7 @@ How users are authenticated and what permissions exist.
 
 export class KnowledgeManager {
   private docsDir(projectRoot: string): string {
-    return path.join(projectRoot, ".blacksmith", "docs");
+    return projectDataDir(projectRoot, "docs");
   }
 
   private ensureDir(projectRoot: string): void {

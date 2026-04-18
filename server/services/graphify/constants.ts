@@ -1,3 +1,5 @@
+import { projectDataRelPath } from "../project-paths.js";
+
 /* ── Package ── */
 
 export const PKG_NAME = "graphifyy";
@@ -5,7 +7,7 @@ export const BIN_NAME = "graphify";
 
 /* ── Output layout ── */
 
-export const OUTPUT_DIR = ".blacksmith/graphify";
+export const OUTPUT_DIR = projectDataRelPath("graphify");
 /** Default directory the graphify CLI writes to — we move its content into OUTPUT_DIR. */
 export const GRAPHIFY_DEFAULT_DIR = "graphify-out";
 

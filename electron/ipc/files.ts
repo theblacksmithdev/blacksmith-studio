@@ -4,6 +4,7 @@ import { ipcMain, shell } from "electron";
 import type { ProjectManager } from "../../server/services/projects.js";
 import {
   buildFileTree,
+  listChildren,
   readFileContent,
   writeFileContent,
   searchFileContents,
@@ -11,6 +12,7 @@ import {
 import { detectEditors, openInEditor } from "../../server/services/editors.js";
 import {
   FILES_TREE,
+  FILES_CHILDREN,
   FILES_CONTENT,
   FILES_SEARCH,
   FILES_REVEAL,
@@ -35,6 +37,14 @@ export function setupFilesIPC(projectManager: ProjectManager) {
     const projectPath = resolveProjectPath(projectManager, data.projectId);
     return buildFileTree(projectPath);
   });
+
+  ipcMain.handle(
+    FILES_CHILDREN,
+    (_e, data: { projectId: string; path: string }) => {
+      const projectPath = resolveProjectPath(projectManager, data.projectId);
+      return listChildren(projectPath, data.path);
+    },
+  );
 
   ipcMain.handle(
     FILES_CONTENT,
