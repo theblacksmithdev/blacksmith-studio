@@ -8,8 +8,11 @@ import styled from "@emotion/styled";
 
 export const Root = styled.div`
   display: flex;
+  flex: 1;
   flex-direction: column;
+  width: 100%;
   height: 100%;
+  min-width: 0;
   min-height: 0;
   background: var(--studio-bg-main);
 `;
@@ -157,17 +160,6 @@ export const TagChip = styled.span`
   background: var(--studio-bg-surface);
   color: var(--studio-text-secondary);
   font-size: 10px;
-`;
-
-export const Empty = styled.div`
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-  color: var(--studio-text-muted);
-  font-size: 12px;
-  text-align: center;
 `;
 
 export const PreviewBody = styled.div`

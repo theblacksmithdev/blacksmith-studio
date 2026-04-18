@@ -1,18 +1,18 @@
 import { useMemo, useState } from "react";
 import { Flex } from "@chakra-ui/react";
-import { FileText, RefreshCw, Search } from "lucide-react";
+import { FileCode, FileText, RefreshCw, Search } from "lucide-react";
 import {
   useArtifactsQuery,
   useArtifactsSubscription,
   useBackfillArtifacts,
 } from "@/api/hooks/artifacts";
 import type { Artifact } from "@/api/types";
+import { PanelEmptyState } from "@/components/shared/panel-empty-state";
 import { ArtifactFilters } from "./artifact-filters";
 import { ArtifactPreviewDrawer } from "./artifact-preview-drawer";
 import { ArtifactRow } from "./artifact-row";
 import {
   CountPill,
-  Empty,
   HeaderBar,
   ListScroll,
   Root,
@@ -111,12 +111,21 @@ export function ArtifactList({
 
       <ListScroll>
         {isLoading ? (
-          <Empty>Loading artifacts…</Empty>
+          <PanelEmptyState
+            icon={<FileCode size={22} />}
+            title="Loading artifacts"
+            description="Reading markdown files from .blacksmith/artifacts/."
+          />
         ) : rows.length === 0 ? (
-          <Empty>
-            No artifacts match. Artifacts are saved to{" "}
-            <code>.blacksmith/artifacts/</code> when agents complete tasks.
-          </Empty>
+          <PanelEmptyState
+            icon={<FileCode size={22} />}
+            title="No artifacts yet"
+            description={
+              hasActiveFilters(search, role, tag)
+                ? "No artifacts match the current filters. Clear them to see everything."
+                : "Artifacts are saved automatically when agents complete tasks. Their specs, designs, and summaries land here for you to read, edit, and tag."
+            }
+          />
         ) : (
           rows.map((a) => (
             <ArtifactRow key={a.id} artifact={a} onOpen={setSelectedId} />
@@ -133,4 +142,12 @@ export function ArtifactList({
       )}
     </Root>
   );
+}
+
+function hasActiveFilters(
+  search: string,
+  role: string | null,
+  tag: string | null,
+): boolean {
+  return search.trim().length > 0 || role !== null || tag !== null;
 }

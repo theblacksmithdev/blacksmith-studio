@@ -1,8 +1,9 @@
 import { Flex, Box } from "@chakra-ui/react";
 import styled from "@emotion/styled";
-import { FileCode, FileText, FilePlus, Pencil, Folder } from "lucide-react";
+import { GitCommit, FileText, FilePlus, Pencil, Folder } from "lucide-react";
 import { useAgentArtifactsQuery } from "@/api/hooks/agents";
 import { Text, Badge, Skeleton } from "@/components/shared/ui";
+import { PanelEmptyState } from "@/components/shared/panel-empty-state";
 import { ROLE_ICONS } from "../shared/role-icons";
 import type { AgentRole } from "@/api/types";
 
@@ -57,7 +58,13 @@ export function AgentArtifacts({ conversationId }: AgentArtifactsProps) {
     useAgentArtifactsQuery(conversationId);
 
   if (!conversationId) {
-    return <ArtifactsEmpty message="Start a conversation to see artifacts" />;
+    return (
+      <PanelEmptyState
+        icon={<GitCommit size={22} />}
+        title="No changes yet"
+        description="Start a conversation to see the source files agents create or edit."
+      />
+    );
   }
 
   if (isLoading) {
@@ -72,7 +79,11 @@ export function AgentArtifacts({ conversationId }: AgentArtifactsProps) {
 
   if (artifacts.length === 0) {
     return (
-      <ArtifactsEmpty message="Files created and modified by agents will appear here as they work" />
+      <PanelEmptyState
+        icon={<GitCommit size={22} />}
+        title="No changes yet"
+        description="Source files agents create or edit during this conversation will appear here as they work."
+      />
     );
   }
 
@@ -170,50 +181,3 @@ export function AgentArtifacts({ conversationId }: AgentArtifactsProps) {
   );
 }
 
-function ArtifactsEmpty({ message }: { message: string }) {
-  return (
-    <Flex
-      direction="column"
-      align="center"
-      justify="center"
-      gap="14px"
-      css={{ flex: 1, padding: "40px 24px", textAlign: "center" }}
-    >
-      <Flex
-        css={{
-          width: "48px",
-          height: "48px",
-          borderRadius: "12px",
-          background: "var(--studio-bg-surface)",
-          border: "1px solid var(--studio-border)",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "var(--studio-text-muted)",
-        }}
-      >
-        <FileCode size={22} />
-      </Flex>
-      <Flex direction="column" gap="4px" align="center">
-        <Text
-          css={{
-            fontSize: "15px",
-            fontWeight: 600,
-            color: "var(--studio-text-primary)",
-          }}
-        >
-          Artifacts
-        </Text>
-        <Text
-          css={{
-            fontSize: "13px",
-            color: "var(--studio-text-tertiary)",
-            maxWidth: "300px",
-            lineHeight: 1.6,
-          }}
-        >
-          {message}
-        </Text>
-      </Flex>
-    </Flex>
-  );
-}
