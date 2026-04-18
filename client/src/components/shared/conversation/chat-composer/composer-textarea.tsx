@@ -5,6 +5,7 @@ interface ComposerTextareaProps {
   value: string;
   onChange: (value: string) => void;
   onKeyDown: (e: React.KeyboardEvent) => void;
+  onPaste?: (e: React.ClipboardEvent) => void;
   placeholder?: string;
   disabled?: boolean;
   minHeight: string;
@@ -14,7 +15,15 @@ export const ComposerTextarea = forwardRef<
   HTMLTextAreaElement,
   ComposerTextareaProps
 >(function ComposerTextarea(
-  { value, onChange, onKeyDown, placeholder, disabled, minHeight },
+  {
+    value,
+    onChange,
+    onKeyDown,
+    onPaste,
+    placeholder,
+    disabled,
+    minHeight,
+  },
   ref,
 ) {
   return (
@@ -23,6 +32,7 @@ export const ComposerTextarea = forwardRef<
       value={value}
       onChange={(e) => onChange(e.target.value)}
       onKeyDown={onKeyDown}
+      onPaste={onPaste}
       placeholder={placeholder}
       disabled={disabled}
       rows={1}

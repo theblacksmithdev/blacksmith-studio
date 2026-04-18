@@ -21,6 +21,12 @@ export interface SaveAttachmentArgs {
   bytes: ArrayBuffer;
 }
 
+export interface SaveAttachmentFromPathArgs {
+  projectId: string;
+  conversationId?: string;
+  sourcePath: string;
+}
+
 export interface ReadAttachmentResult {
   name: string;
   mime: string;
@@ -30,6 +36,9 @@ export interface ReadAttachmentResult {
 export const attachments = {
   save: (args: SaveAttachmentArgs) =>
     raw.invoke<AttachmentRecord>("attachments:save", args),
+
+  saveFromPath: (args: SaveAttachmentFromPathArgs) =>
+    raw.invoke<AttachmentRecord>("attachments:saveFromPath", args),
 
   read: (projectId: string, absPath: string) =>
     raw.invoke<ReadAttachmentResult>("attachments:read", {

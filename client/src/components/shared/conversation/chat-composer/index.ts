@@ -8,3 +8,4 @@ export { ComposerToolbar } from "./composer-toolbar";
 export { SendButton } from "./send-button";
 export { useComposerState } from "./hooks/use-composer-state";
 export { useTextareaAutoResize } from "./hooks/use-textarea-autoresize";
+export { usePasteFiles } from "./hooks/use-paste-files";

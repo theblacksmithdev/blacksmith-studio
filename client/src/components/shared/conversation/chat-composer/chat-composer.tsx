@@ -9,6 +9,7 @@ import { ComposerTextarea } from "./composer-textarea";
 import { ComposerToolbar } from "./composer-toolbar";
 import { useComposerState } from "./hooks/use-composer-state";
 import { useTextareaAutoResize } from "./hooks/use-textarea-autoresize";
+import { usePasteFiles } from "./hooks/use-paste-files";
 import { VARIANT_DEFAULTS, type ChatComposerVariant } from "./variants";
 
 export interface ChatComposerProps {
@@ -73,6 +74,17 @@ export function ChatComposer({
     [attachments],
   );
 
+  const onFilePaths = useCallback(
+    (paths: string[]) => attachments.addPaths(paths),
+    [attachments],
+  );
+
+  const handlePaste = usePasteFiles({
+    onFiles,
+    onFilePaths,
+    disabled: !attachmentsEnabled || disabled,
+  });
+
   return (
     <ComposerShell
       over={over}
@@ -88,6 +100,7 @@ export function ChatComposer({
         value={value}
         onChange={setValue}
         onKeyDown={handleKeyDown}
+        onPaste={attachmentsEnabled ? handlePaste : undefined}
         placeholder={placeholder}
         disabled={disabled}
         minHeight={minHeight}

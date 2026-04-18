@@ -34,6 +34,7 @@ export const FILES_DELETE = "files:delete";
 
 // Attachments
 export const ATTACHMENTS_SAVE = "attachments:save";
+export const ATTACHMENTS_SAVE_FROM_PATH = "attachments:saveFromPath";
 export const ATTACHMENTS_READ = "attachments:read";
 export const ATTACHMENTS_DELETE = "attachments:delete";
 export const ATTACHMENTS_OPEN = "attachments:open";
@@ -218,6 +219,7 @@ export const INVOKE_CHANNELS = [
   FILES_RENAME,
   FILES_DELETE,
   ATTACHMENTS_SAVE,
+  ATTACHMENTS_SAVE_FROM_PATH,
   ATTACHMENTS_READ,
   ATTACHMENTS_DELETE,
   ATTACHMENTS_OPEN,

@@ -1,5 +1,8 @@
 import { useCallback, useRef, useState } from "react";
-import { useSaveAttachment } from "@/api/hooks/attachments";
+import {
+  useSaveAttachment,
+  useSaveAttachmentFromPath,
+} from "@/api/hooks/attachments";
 import type { AttachmentRecord } from "@/api/modules/attachments";
 import { kindFromName } from "./kind-from-name";
 import type { PendingAttachment } from "./types";
@@ -34,6 +37,7 @@ export function useComposerAttachments({
   const [items, setItems] = useState<PendingAttachment[]>([]);
   const counter = useRef(0);
   const saveMutation = useSaveAttachment();
+  const saveFromPathMutation = useSaveAttachmentFromPath();
 
   const update = useCallback(
     (localId: string, patch: Partial<PendingAttachment>) => {
@@ -98,6 +102,47 @@ export function useComposerAttachments({
     [projectId, conversationId, maxBytes, update, saveMutation],
   );
 
+  const addPaths = useCallback(
+    (paths: string[]) => {
+      if (!projectId || paths.length === 0) return;
+
+      const inits: PendingAttachment[] = paths.map((p) => {
+        counter.current += 1;
+        const name = p.split(/[/\\]/).pop() || p;
+        return {
+          localId: `${counter.current}-${uid()}`,
+          name,
+          size: 0,
+          kind: kindFromName(name),
+          status: "uploading",
+        };
+      });
+
+      setItems((prev) => [...prev, ...inits]);
+
+      paths.forEach((sourcePath, i) => {
+        const init = inits[i];
+        saveFromPathMutation.mutate(
+          { projectId, conversationId, sourcePath },
+          {
+            onSuccess: (record) =>
+              update(init.localId, {
+                status: "ready",
+                record,
+                size: record.size,
+              }),
+            onError: (err) =>
+              update(init.localId, {
+                status: "error",
+                error: err?.message ?? "Upload failed",
+              }),
+          },
+        );
+      });
+    },
+    [projectId, conversationId, update, saveFromPathMutation],
+  );
+
   const clear = useCallback(() => {
     setItems([]);
   }, []);
@@ -110,6 +155,7 @@ export function useComposerAttachments({
   return {
     items,
     addFiles,
+    addPaths,
     remove,
     clear,
     readyRecords,

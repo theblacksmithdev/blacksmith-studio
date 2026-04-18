@@ -2,6 +2,7 @@ import { ipcMain, shell } from "electron";
 import type { AttachmentService } from "../../server/services/attachments/index.js";
 import {
   ATTACHMENTS_SAVE,
+  ATTACHMENTS_SAVE_FROM_PATH,
   ATTACHMENTS_READ,
   ATTACHMENTS_DELETE,
   ATTACHMENTS_OPEN,
@@ -24,6 +25,24 @@ export function setupAttachmentsIPC(attachments: AttachmentService) {
         conversationId: data.conversationId,
         name: data.name,
         bytes: data.bytes,
+      });
+    },
+  );
+
+  ipcMain.handle(
+    ATTACHMENTS_SAVE_FROM_PATH,
+    async (
+      _e,
+      data: {
+        projectId: string;
+        conversationId?: string;
+        sourcePath: string;
+      },
+    ) => {
+      return attachments.saveFromPath({
+        projectId: data.projectId,
+        conversationId: data.conversationId,
+        sourcePath: data.sourcePath,
       });
     },
   );

@@ -87,6 +87,45 @@ export class AttachmentService {
     await this.store.removeBucket(project.path, conversationId);
   }
 
+  /**
+   * Copy a file from an arbitrary path on the user's filesystem into the
+   * project's attachments bucket. Used by paste-from-Finder / paste-from-
+   * Explorer, where the clipboard only carries the source path, not the
+   * file bytes.
+   */
+  async saveFromPath(input: {
+    projectId: string;
+    conversationId?: string;
+    sourcePath: string;
+  }): Promise<AttachmentRecord> {
+    const project = this.projects.get(input.projectId);
+    if (!project) throw new Error("Project not found");
+
+    let stat;
+    try {
+      stat = await fs.stat(input.sourcePath);
+    } catch {
+      throw new Error("File not found");
+    }
+    if (!stat.isFile()) throw new Error("Only files can be attached");
+    if (stat.size === 0) throw new Error("File is empty");
+    if (stat.size > MAX_BYTES) {
+      throw new Error(
+        `File exceeds limit (${Math.round(MAX_BYTES / 1024 / 1024)}MB)`,
+      );
+    }
+
+    const bytes = await fs.readFile(input.sourcePath);
+    const name = input.sourcePath.split(/[/\\]/).pop() ?? "file";
+
+    return this.save({
+      projectId: input.projectId,
+      conversationId: input.conversationId,
+      name,
+      bytes,
+    });
+  }
+
   async exists(absPath: string): Promise<boolean> {
     try {
       await fs.access(absPath);
