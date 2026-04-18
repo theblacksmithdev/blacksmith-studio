@@ -505,197 +505,10 @@ export const InspectorHint = styled.p`
   color: var(--studio-text-muted);
 `;
 
-export const ScopeCard = styled.div<{ $tone: "project" | "studio" }>`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 14px;
-  border: 1px solid var(--studio-border);
-  border-radius: 12px;
-  background: ${(p) =>
-    p.$tone === "project"
-      ? "var(--studio-bg-main)"
-      : "var(--studio-bg-sidebar)"};
-`;
-
-export const ScopeCardHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
-
-export const ScopeIconTile = styled.div`
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--studio-bg-surface);
-  border: 1px solid var(--studio-border);
-  color: var(--studio-text-secondary);
-  flex-shrink: 0;
-`;
-
-export const ScopeLabel = styled.div`
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--studio-text-muted);
-`;
-
-export const ScopeDisplayName = styled.div`
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--studio-text-primary);
-  line-height: 1.3;
-  letter-spacing: -0.005em;
-`;
-
-export const ScopeVersion = styled.span`
-  font-family: var(--studio-font-mono, "SF Mono", monospace);
-  font-size: 11px;
-  color: var(--studio-text-muted);
-  font-weight: 500;
-`;
-
-export const ScopeFields = styled.div`
-  display: grid;
-  grid-template-columns: 60px 1fr;
-  gap: 6px 10px;
-  padding-top: 10px;
-  border-top: 1px solid var(--studio-border);
-`;
-
-export const ScopeFieldLabel = styled.div`
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--studio-text-muted);
-  padding-top: 2px;
-`;
-
-export const ScopeFieldValue = styled.div`
-  font-family: var(--studio-font-mono, "SF Mono", monospace);
-  font-size: 11px;
-  color: var(--studio-text-primary);
-  word-break: break-all;
-  line-height: 1.5;
-`;
-
-export const ScopeNotDetected = styled.div`
-  font-size: 12px;
-  color: var(--studio-text-muted);
-  font-style: italic;
-  padding: 4px 0;
-`;
-
 export const ToolchainChipRow = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-`;
-
-export const ScopeTabs = styled.div`
-  display: inline-flex;
-  padding: 3px;
-  border-radius: 10px;
-  background: var(--studio-bg-main);
-  border: 1px solid var(--studio-border);
-  gap: 2px;
-  align-self: flex-start;
-`;
-
-export const ScopeTab = styled.button<{ $active?: boolean }>`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 26px;
-  padding: 0 12px;
-  border: none;
-  border-radius: 7px;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.12s ease;
-  background: ${(p) =>
-    p.$active ? "var(--studio-bg-surface)" : "transparent"};
-  color: ${(p) =>
-    p.$active
-      ? "var(--studio-text-primary)"
-      : "var(--studio-text-muted)"};
-  box-shadow: ${(p) =>
-    p.$active ? "0 1px 2px rgba(0, 0, 0, 0.12)" : "none"};
-
-  &:hover {
-    color: var(--studio-text-primary);
-  }
-`;
-
-export const SectionLabel = styled.div`
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--studio-text-muted);
-  margin-top: 4px;
-  margin-bottom: 6px;
-`;
-
-export const SectionCard = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 14px;
-  border: 1px solid var(--studio-border);
-  border-radius: 12px;
-  background: var(--studio-bg-main);
-`;
-
-export const SectionCardMuted = styled(SectionCard)`
-  background: var(--studio-bg-sidebar);
-  border-style: dashed;
-`;
-
-export const SectionHeaderRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
-
-export const SectionTitleBlock = styled.div`
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-`;
-
-export const SectionName = styled.div`
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--studio-text-primary);
-  letter-spacing: -0.005em;
-`;
-
-export const SectionSub = styled.div`
-  font-size: 11px;
-  color: var(--studio-text-muted);
-`;
-
-export const PathText = styled.div`
-  font-family: var(--studio-font-mono, "SF Mono", monospace);
-  font-size: 11px;
-  color: var(--studio-text-secondary);
-  word-break: break-all;
-  line-height: 1.5;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: var(--studio-bg-surface);
-  border: 1px solid var(--studio-border);
 `;
 
 export const InfoNote = styled.div`
@@ -704,72 +517,112 @@ export const InfoNote = styled.div`
   line-height: 1.55;
 `;
 
-export const CardActionRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding-top: 8px;
-  border-top: 1px solid var(--studio-border);
-`;
-
-export const CardActionSpacer = styled.div`
-  flex: 1;
-`;
-
 export const PillButton = styled.button`
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 30px;
-  padding: 0 12px;
-  border-radius: 9px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 10px;
   border: 1px solid var(--studio-border);
   background: var(--studio-bg-main);
   color: var(--studio-text-secondary);
   font-family: inherit;
   font-size: 12px;
   font-weight: 500;
+  letter-spacing: -0.005em;
   cursor: pointer;
-  transition: all 0.12s ease;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
   align-self: flex-start;
+  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.02);
 
   &:hover {
     border-color: var(--studio-border-hover);
     color: var(--studio-text-primary);
+    box-shadow:
+      0 1px 0 0 rgba(0, 0, 0, 0.03),
+      0 2px 6px -2px rgba(0, 0, 0, 0.08);
+  }
+
+  &:active {
+    transform: translateY(0.5px);
   }
 
   &[data-variant="primary"] {
     background: var(--studio-text-primary);
     border-color: var(--studio-text-primary);
     color: var(--studio-bg-main);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
+      0 1px 2px rgba(0, 0, 0, 0.18),
+      0 8px 20px -10px rgba(0, 0, 0, 0.3);
+
     &:hover {
-      opacity: 0.88;
+      opacity: 0.92;
+      box-shadow:
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.1),
+        0 2px 4px rgba(0, 0, 0, 0.22),
+        0 10px 24px -10px rgba(0, 0, 0, 0.38);
     }
   }
 
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    box-shadow: none;
   }
 `;
 
-/* ── Env hero ────────────────────────────────────────────── */
+/* ── Env hero ──────────────────────────────────────────────
+ *
+ * Premium card chrome — a subtle top-to-bottom highlight gradient sits
+ * on top of the base surface to give the card dimensionality, layered
+ * over a soft elevation shadow. The whole thing responds on hover so
+ * the card feels tactile without being noisy. Intentionally monochrome
+ * (design-system rule): all tinting is done with alpha-white/alpha-
+ * black so it renders correctly in both themes.
+ */
 
 export const HeroRoot = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 20px 22px;
+  gap: 18px;
+  padding: 22px 24px;
   border: 1px solid var(--studio-border);
-  border-radius: 14px;
-  background: var(--studio-bg-surface);
+  border-radius: 16px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.025) 0%,
+      rgba(255, 255, 255, 0) 40%
+    ),
+    var(--studio-bg-surface);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 8px 24px -14px rgba(0, 0, 0, 0.18);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: var(--studio-border-hover);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.05),
+      0 1px 2px rgba(0, 0, 0, 0.05),
+      0 12px 32px -16px rgba(0, 0, 0, 0.28);
+  }
 `;
 
 export const HeroHeader = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 `;
 
 export const HeroTitleRow = styled.div`
@@ -780,29 +633,31 @@ export const HeroTitleRow = styled.div`
 `;
 
 export const HeroTitle = styled.div`
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.018em;
   color: var(--studio-text-primary);
-  line-height: 1.25;
+  line-height: 1.2;
 `;
 
 export const HeroBadge = styled.span<{ $tone?: "ok" | "error" | "muted" }>`
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   height: 22px;
-  padding: 0 9px;
+  padding: 0 10px;
   border-radius: 999px;
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   border: 1px solid
     ${(p) =>
       p.$tone === "error"
         ? "var(--studio-error, #c24242)"
-        : "var(--studio-border)"};
+        : p.$tone === "ok"
+          ? "transparent"
+          : "var(--studio-border)"};
   color: ${(p) =>
     p.$tone === "error"
       ? "var(--studio-error, #c24242)"
@@ -812,10 +667,17 @@ export const HeroBadge = styled.span<{ $tone?: "ok" | "error" | "muted" }>`
   background: ${(p) =>
     p.$tone === "error"
       ? "var(--studio-error-subtle, rgba(194, 66, 66, 0.08))"
-      : "var(--studio-bg-main)"};
+      : p.$tone === "ok"
+        ? "var(--studio-bg-main)"
+        : "transparent"};
+  box-shadow: ${(p) =>
+    p.$tone === "ok"
+      ? "inset 0 0 0 1px rgba(255, 255, 255, 0.04), 0 1px 0 0 rgba(0, 0, 0, 0.04)"
+      : "none"};
 `;
 
 export const HeroStatusDot = styled.span<{ $tone?: "ok" | "error" }>`
+  position: relative;
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -823,6 +685,30 @@ export const HeroStatusDot = styled.span<{ $tone?: "ok" | "error" }>`
     p.$tone === "error"
       ? "var(--studio-error, #c24242)"
       : "var(--studio-accent, var(--studio-text-primary))"};
+  box-shadow: ${(p) =>
+    p.$tone === "error"
+      ? "0 0 0 3px rgba(194, 66, 66, 0.12)"
+      : "0 0 0 3px rgba(255, 255, 255, 0.06)"};
+
+  ${(p) =>
+    p.$tone === "error"
+      ? ""
+      : `
+    &::after {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0;
+      animation: hero-dot-pulse 2.4s ease-out infinite;
+    }
+    @keyframes hero-dot-pulse {
+      0%   { transform: scale(0.8); opacity: 0.35; }
+      70%  { transform: scale(2);   opacity: 0;    }
+      100% { transform: scale(2);   opacity: 0;    }
+    }
+  `}
 `;
 
 export const HeroSubline = styled.div`
@@ -830,19 +716,35 @@ export const HeroSubline = styled.div`
   font-size: 12px;
   color: var(--studio-text-muted);
   word-break: break-all;
-  line-height: 1.55;
+  line-height: 1.6;
 `;
 
 export const HeroActionRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
 `;
 
 export const DetailsSection = styled.details`
-  border-top: 1px solid var(--studio-border);
-  padding-top: 12px;
+  position: relative;
+  padding-top: 14px;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -24px;
+    right: -24px;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--studio-border) 12%,
+      var(--studio-border) 88%,
+      transparent 100%
+    );
+  }
 `;
 
 export const DetailsSummary = styled.summary`
@@ -851,20 +753,20 @@ export const DetailsSummary = styled.summary`
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--studio-text-muted);
   user-select: none;
-  transition: color 0.12s ease;
+  transition: color 0.15s ease;
 
   &::-webkit-details-marker {
     display: none;
   }
 
   svg {
-    transition: transform 0.15s ease;
+    transition: transform 0.2s ease;
   }
 
   details[open] > &  svg {
@@ -879,15 +781,15 @@ export const DetailsSummary = styled.summary`
 export const DetailsGrid = styled.div`
   display: grid;
   grid-template-columns: 120px 1fr;
-  gap: 10px 14px;
-  padding-top: 14px;
+  gap: 12px 16px;
+  padding-top: 16px;
 `;
 
 export const DetailsLabel = styled.div`
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
   color: var(--studio-text-muted);
   padding-top: 3px;
 `;
@@ -900,26 +802,3 @@ export const DetailsValue = styled.div`
   line-height: 1.55;
 `;
 
-/* Backwards-compat aliases — legacy consumers imported these. */
-export const InspectorCard = ScopeCard;
-export const FieldRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-`;
-export const Select = styled.select`
-  height: 28px;
-  padding: 0 8px;
-  border-radius: 8px;
-  border: 1px solid var(--studio-border);
-  background: var(--studio-bg-main);
-  color: var(--studio-text-primary);
-  font-family: inherit;
-  font-size: 12px;
-  outline: none;
-
-  &:focus {
-    border-color: var(--studio-border-hover);
-  }
-`;

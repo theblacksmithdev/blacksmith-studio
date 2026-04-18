@@ -1,56 +1,39 @@
-import { AlertTriangle, Loader2, Package, Trash2 } from "lucide-react";
+import styled from "@emotion/styled";
+import { Loader2, Package, Trash2 } from "lucide-react";
+import { SettingsSection } from "@/pages/settings/components/settings-section";
+import { SettingRow } from "@/pages/settings/components/setting-row";
 import { ConfirmDialog } from "@/components/shared/ui";
-import {
-  HeroActionRow,
-  HeroBadge,
-  HeroHeader,
-  HeroRoot,
-  HeroStatusDot,
-  HeroSubline,
-  HeroTitle,
-  HeroTitleRow,
-  InfoNote,
-  PillButton,
-  SectionLabel,
-} from "@/components/commands/styles";
 import { useStudioVenv } from "../hooks/use-studio-venv";
+import { ActionButton } from "./action-button";
 
 /**
- * Studio venv — shared, user-wide (not per-project). Shown only on
- * the Global defaults scope since it's not meaningful project-side.
+ * Studio venv — shared across every project (used by Graphify + pip
+ * ops). Renders as a standard settings section so it matches the
+ * interpreter sections above it on the Global defaults tab.
  */
 export function StudioVenvRow() {
   const vm = useStudioVenv();
 
   return (
-    <div>
-      <SectionLabel>Studio environment</SectionLabel>
-      <HeroRoot>
-        <HeroHeader>
-          <HeroTitleRow>
-            <HeroTitle>Blacksmith studio venv</HeroTitle>
-            {vm.hasVenv ? (
-              <HeroBadge $tone="ok">
-                <HeroStatusDot $tone="ok" /> ready
-              </HeroBadge>
-            ) : (
-              <HeroBadge $tone="muted">
-                <AlertTriangle size={10} /> not created
-              </HeroBadge>
-            )}
-            <HeroBadge $tone="muted">
-              <Package size={10} /> managed
-            </HeroBadge>
-          </HeroTitleRow>
-          <HeroSubline>
-            {vm.path ??
-              "Shared venv under ~/.blacksmith-studio/venv. Used by Graphify and Blacksmith's internal tooling."}
-          </HeroSubline>
-        </HeroHeader>
-
-        <HeroActionRow>
+    <>
+      <SettingsSection
+        title="Studio environment"
+        description={
+          vm.hasVenv
+            ? `Shared venv at ${vm.path ?? "~/.blacksmith-studio/venv"}.`
+            : "Shared venv lives under ~/.blacksmith-studio/venv. Created on first use by Graphify and Blacksmith's internal tooling."
+        }
+      >
+        <SettingRow
+          label={vm.hasVenv ? "Reset environment" : "Create environment"}
+          description={
+            vm.hasVenv
+              ? "Deleting the shared venv will remove Graphify and any other studio-installed tools. They re-bootstrap on next use."
+              : "Create the shared venv now instead of waiting for first use."
+          }
+        >
           {vm.hasVenv ? (
-            <PillButton
+            <ActionButton
               type="button"
               onClick={vm.requestReset}
               disabled={vm.isResetting}
@@ -65,12 +48,12 @@ export function StudioVenvRow() {
                 </>
               ) : (
                 <>
-                  <Trash2 size={12} /> Reset studio venv
+                  <Trash2 size={12} /> Reset
                 </>
               )}
-            </PillButton>
+            </ActionButton>
           ) : (
-            <PillButton
+            <ActionButton
               type="button"
               data-variant="primary"
               onClick={vm.handleCreate}
@@ -86,19 +69,19 @@ export function StudioVenvRow() {
                 </>
               ) : (
                 <>
-                  <Package size={12} /> Create studio venv
+                  <Package size={12} /> Create
                 </>
               )}
-            </PillButton>
+            </ActionButton>
           )}
-        </HeroActionRow>
+        </SettingRow>
 
         {vm.localError && (
-          <InfoNote style={{ color: "var(--studio-error, #c24242)" }}>
-            {vm.localError}
-          </InfoNote>
+          <SettingRow label="Error" fullWidth>
+            <ErrorText>{vm.localError}</ErrorText>
+          </SettingRow>
         )}
-      </HeroRoot>
+      </SettingsSection>
 
       {vm.confirmingReset && (
         <ConfirmDialog
@@ -112,6 +95,11 @@ export function StudioVenvRow() {
           loading={vm.isResetting}
         />
       )}
-    </div>
+    </>
   );
 }
+
+const ErrorText = styled.span`
+  font-size: 13px;
+  color: var(--studio-error, #c24242);
+`;

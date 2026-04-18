@@ -8,7 +8,7 @@ import { StudioVenvRow } from "./studio-venv-row";
  */
 export function GlobalScopeView() {
   return (
-    <Flex direction="column" gap="18px">
+    <Flex direction="column" gap="28px">
       <InterpreterRow toolchainId="python" scope="global" />
       <InterpreterRow toolchainId="node" scope="global" />
       <StudioVenvRow />

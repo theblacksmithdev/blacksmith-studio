@@ -21,13 +21,10 @@ export interface InterpreterRowVM {
   // Identity / display
   toolchainId: string;
   displayName: string;
-  primaryBinary: string;
   scope: EnvScope;
 
   // Header content
   title: string;
-  subline: string;
-  statusBadge: BadgeDescriptor;
   contextBadge: BadgeDescriptor | null;
 
   // Capabilities
@@ -141,26 +138,6 @@ export function useInterpreterRow(
         ? `${displayName}${versionText ? ` ${versionText}` : ""}`
         : `${displayName} not detected`;
 
-  const subline =
-    scope === "global"
-      ? globalPin ||
-        `Projects without an override will use the system ${displayName}.`
-      : hasEnv
-        ? projectEnv!.root || projectEnv!.bin || projectEnv!.displayName
-        : hasRuntime
-          ? "Running from system — no project environment yet."
-          : (availability?.error ??
-            `Install ${displayName} or pin an interpreter to continue.`);
-
-  const statusBadge: BadgeDescriptor =
-    scope === "global"
-      ? globalPin
-        ? { tone: "ok", label: "pinned" }
-        : { tone: "muted", label: "auto-detected" }
-      : hasRuntime
-        ? { tone: "ok", label: "ready" }
-        : { tone: "error", label: "unavailable" };
-
   const contextBadge: BadgeDescriptor | null =
     scope === "global"
       ? null
@@ -241,12 +218,9 @@ export function useInterpreterRow(
   return {
     toolchainId,
     displayName,
-    primaryBinary,
     scope,
 
     title,
-    subline,
-    statusBadge,
     contextBadge,
 
     canCreate:

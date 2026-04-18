@@ -8,7 +8,7 @@ import { InterpreterRow } from "./interpreter-row";
  */
 export function ProjectScopeView() {
   return (
-    <Flex direction="column" gap="18px">
+    <Flex direction="column" gap="28px">
       <InterpreterRow toolchainId="python" scope="project" />
       <InterpreterRow toolchainId="node" scope="project" />
     </Flex>
