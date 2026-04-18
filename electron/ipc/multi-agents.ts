@@ -147,6 +147,16 @@ export function setupMultiAgentsIPC(
     executionId: string;
     data: Record<string, unknown> & { type: string };
   }): void {
+    // Filter out streaming deltas — only the terminal payload for each
+    // logical event is worth persisting. `message` with isPartial=true
+    // fires many times per token/chunk; the final one has isPartial=false.
+    if (
+      event.data.type === "message" &&
+      (event.data as { isPartial?: boolean }).isPartial === true
+    ) {
+      return;
+    }
+
     const taskId =
       (event.data as { taskId?: string }).taskId ??
       executionToTask.get(event.executionId);

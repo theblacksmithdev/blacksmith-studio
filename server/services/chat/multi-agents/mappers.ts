@@ -38,9 +38,12 @@ export function mapTask(row: TaskRow): AgentTaskRecord {
     id: row.id,
     dispatchId: row.dispatchId,
     title: row.title,
+    description: row.description ?? null,
     role: row.role,
     prompt: row.prompt,
     status: row.status,
+    taskType: row.taskType ?? null,
+    parentTaskId: row.parentTaskId ?? null,
     orderIndex: row.orderIndex,
     executionId: row.executionId ?? null,
     sessionId: row.sessionId ?? null,
@@ -48,6 +51,8 @@ export function mapTask(row: TaskRow): AgentTaskRecord {
     error: row.error ?? null,
     costUsd: parseFloat(row.costUsd ?? "0") || 0,
     durationMs: row.durationMs ?? 0,
+    startedAt: row.startedAt ?? null,
+    finishedAt: row.finishedAt ?? null,
   };
 }
 

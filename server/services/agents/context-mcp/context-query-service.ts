@@ -1,4 +1,4 @@
-import { and, desc, eq, like, or } from "drizzle-orm";
+import { and, desc, eq, like } from "drizzle-orm";
 import type { Database } from "../../../db/index.js";
 import type { AgentSessionManager } from "../../chat/multi-agents/index.js";
 import type { SessionManager } from "../../chat/single-agent/index.js";
@@ -223,7 +223,3 @@ export class ContextQueryService {
   }
 }
 
-// Silence unused-import warnings from tree-shaken operators if the
-// bundler preserves them. `or` kept for future full-text cross-table
-// search expansion — export it so it doesn't get dropped prematurely.
-export const __drizzleOps = { or };

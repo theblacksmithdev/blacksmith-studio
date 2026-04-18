@@ -18,9 +18,12 @@ export interface AgentTaskRecord {
   id: string;
   dispatchId: string;
   title: string;
+  description: string | null;
   role: string;
   prompt: string;
   status: string;
+  taskType: string | null;
+  parentTaskId: string | null;
   orderIndex: number;
   executionId: string | null;
   sessionId: string | null;
@@ -28,6 +31,8 @@ export interface AgentTaskRecord {
   error: string | null;
   costUsd: number;
   durationMs: number;
+  startedAt: string | null;
+  finishedAt: string | null;
 }
 
 export interface ChatAttachmentInput {
