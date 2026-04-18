@@ -5,6 +5,7 @@ import { useSessionsQuery, useCreateSession } from "@/api/hooks/sessions";
 import { useActiveProjectId } from "@/api/hooks/_shared";
 import { useChatStore } from "@/stores/chat-store";
 import { chatPath } from "@/router/paths";
+import type { AttachmentRecord } from "@/components/shared/conversation";
 import type { RecentEntry } from "../components/recent-section";
 
 export function useSingleAgentChat() {
@@ -17,11 +18,11 @@ export function useSingleAgentChat() {
 
   const sessions = sessionsData?.items ?? [];
 
-  const handleSend = (text: string) => {
+  const handleSend = (text: string, attachments?: AttachmentRecord[]) => {
     if (!projectId) return;
     createSession.mutate(undefined, {
       onSuccess: (session) => {
-        sendPrompt(text, session.id);
+        sendPrompt(text, session.id, attachments);
         navigate(chatPath(projectId, session.id));
       },
     });

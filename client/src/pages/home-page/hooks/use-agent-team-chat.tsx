@@ -8,6 +8,7 @@ import {
 import { useActiveProjectId } from "@/api/hooks/_shared";
 import { useChatStore } from "@/stores/chat-store";
 import { agentsNewPath, agentsConversationPath } from "@/router/paths";
+import type { AttachmentRecord } from "@/components/shared/conversation";
 import type { RecentEntry } from "../components/recent-section";
 import type { HomePageViewProps } from "../components/home-page-view";
 
@@ -21,9 +22,11 @@ export function useAgentTeamChat() {
 
   const conversations = allConversations.slice(0, 4);
 
-  const handleSend = (text: string) => {
+  const handleSend = (text: string, attachments?: AttachmentRecord[]) => {
     if (!projectId) return;
-    navigate(agentsNewPath(projectId), { state: { initialPrompt: text } });
+    navigate(agentsNewPath(projectId), {
+      state: { initialPrompt: text, initialAttachments: attachments },
+    });
   };
 
   const recentItems: RecentEntry[] = conversations.map((c: any) => ({

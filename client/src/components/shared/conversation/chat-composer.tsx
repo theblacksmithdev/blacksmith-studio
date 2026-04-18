@@ -25,9 +25,24 @@ import {
   type AttachmentRecord,
 } from "./attachments";
 
-type SendShortcut = "enter" | "cmd+enter";
+export type ChatComposerVariant = "spacious" | "compact";
 
-interface ConversationInputProps {
+const VARIANT_DEFAULTS: Record<
+  ChatComposerVariant,
+  { minHeight: string; sendShortcut: "enter" | "cmd+enter" }
+> = {
+  spacious: { minHeight: "70px", sendShortcut: "cmd+enter" },
+  compact: { minHeight: "44px", sendShortcut: "enter" },
+};
+
+interface ChatComposerProps {
+  /**
+   * `spacious` — new-conversation landing: taller textarea, Cmd/Ctrl+Enter
+   * to send, Enter inserts newlines. Room to draft.
+   * `compact` — inline conversation: tight textarea, Enter sends. Fast
+   * back-and-forth.
+   */
+  variant?: ChatComposerVariant;
   onSend: (text: string, attachments?: AttachmentRecord[]) => void;
   onCancel?: () => void;
   isStreaming?: boolean;
@@ -35,27 +50,26 @@ interface ConversationInputProps {
   placeholder?: string;
   initialValue?: string;
   leading?: ReactNode | null;
-  sendShortcut?: SendShortcut;
-  minHeight?: string;
   projectId?: string;
   conversationId?: string;
   enableAttachments?: boolean;
 }
 
-export function ConversationInput({
+export function ChatComposer({
+  variant = "compact",
   onSend,
   onCancel,
   isStreaming,
   disabled,
-  placeholder,
+  placeholder = "Ask Claude to build something...",
   initialValue,
   leading,
-  sendShortcut = "enter",
-  minHeight = "44px",
   projectId,
   conversationId,
   enableAttachments = true,
-}: ConversationInputProps) {
+}: ChatComposerProps) {
+  const { minHeight, sendShortcut } = VARIANT_DEFAULTS[variant];
+
   const [value, setValue] = useState(initialValue ?? "");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -170,7 +184,7 @@ export function ConversationInput({
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={placeholder ?? "Type a message..."}
+        placeholder={placeholder}
         disabled={disabled}
         rows={1}
         style={{

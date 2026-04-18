@@ -1,4 +1,6 @@
-import { ConversationInput } from "@/components/shared/conversation";
+import { ChatComposer } from "@/components/shared/conversation";
+import type { AttachmentRecord } from "@/components/shared/conversation";
+import { useActiveProjectId } from "@/api/hooks/_shared";
 import { HomeHero } from "./home-hero";
 import { QuickActions } from "./quick-actions";
 import { HomeShell, SectionDivider } from "./home-shell";
@@ -11,7 +13,7 @@ export interface HomePageViewProps {
   isStreaming: boolean;
   recentItems: RecentEntry[];
   recentLabel?: string;
-  onSend: (text: string) => void;
+  onSend: (text: string, attachments?: AttachmentRecord[]) => void;
   onSelectRecent: (id: string) => void;
   onDeleteRecent?: (id: string) => void;
   deleteConfirm?: {
@@ -33,17 +35,18 @@ export function HomePageView({
   onDeleteRecent,
   deleteConfirm,
 }: HomePageViewProps) {
+  const projectId = useActiveProjectId();
+
   return (
     <HomeShell>
       <HomeHero />
-      <ConversationInput
+      <ChatComposer
+        variant="spacious"
         onSend={onSend}
         isStreaming={isStreaming}
-        placeholder="Ask Claude to build something..."
-        sendShortcut="cmd+enter"
-        minHeight="70px"
+        projectId={projectId ?? undefined}
       />
-      <QuickActions mode={mode} onSend={onSend} />
+      <QuickActions mode={mode} onSend={(text) => onSend(text)} />
 
       {recentItems.length > 0 ? (
         <>

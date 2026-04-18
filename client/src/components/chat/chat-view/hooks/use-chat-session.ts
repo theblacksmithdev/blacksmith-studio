@@ -61,7 +61,10 @@ export function useChatSession() {
   // Auto-send initial prompt from route state (e.g. from template or quick action)
   const initialPromptSent = useRef(false);
   useEffect(() => {
-    const state = location.state as { initialPrompt?: string } | null;
+    const state = location.state as {
+      initialPrompt?: string;
+      initialAttachments?: AttachmentRecord[];
+    } | null;
     if (
       state?.initialPrompt &&
       sessionId &&
@@ -69,7 +72,7 @@ export function useChatSession() {
       !isStreaming
     ) {
       initialPromptSent.current = true;
-      sendPrompt(state.initialPrompt, sessionId);
+      sendPrompt(state.initialPrompt, sessionId, state.initialAttachments);
     }
   }, [sessionId, location.state]);
 

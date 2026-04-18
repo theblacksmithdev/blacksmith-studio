@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { Flex, Box } from "@chakra-ui/react";
 import { MessageList } from "./message-list";
-import { ConversationInput } from "./conversation-input";
+import { ChatComposer } from "./chat-composer";
 import { spacing } from "@/components/shared/ui";
 import type { ConversationMessage } from "./message-bubble";
 import type { AttachmentRecord } from "./attachments";
@@ -69,7 +69,8 @@ export function ConversationView({
           margin: "0 auto",
         }}
       >
-        <ConversationInput
+        <ChatComposer
+          variant="compact"
           onSend={onSend}
           onCancel={onCancel}
           isStreaming={isStreaming}

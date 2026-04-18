@@ -1,5 +1,5 @@
 export { ConversationView } from "./conversation-view";
-export { ConversationInput } from "./conversation-input";
+export { ChatComposer, type ChatComposerVariant } from "./chat-composer";
 export { MessageList } from "./message-list";
 export {
   MessageBubble,
