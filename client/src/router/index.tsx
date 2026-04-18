@@ -1,6 +1,10 @@
 import { createHashRouter, Navigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/app-layout";
 import { ProjectLayout } from "@/components/layout/project-layout";
+import {
+  RouteErrorBoundary,
+  NotFoundRoute,
+} from "@/components/error-boundary";
 import { Path } from "./paths";
 
 import DashboardPage from "@/pages/dashboard";
@@ -33,6 +37,7 @@ export interface RouteHandle {
 export const router = createHashRouter([
   {
     element: <AppLayout />,
+    errorElement: <RouteErrorBoundary />,
     children: [
       { path: Path.Home, element: <DashboardPage /> },
       {
@@ -46,13 +51,20 @@ export const router = createHashRouter([
   {
     path: "/:projectId",
     element: <ProjectLayout />,
+    errorElement: <RouteErrorBoundary />,
     children: [
       { index: true, element: <Navigate to="chat/new" replace /> },
       { path: "chat/new", element: <SingleAgentChat /> },
+      { path: "agents/new", element: <AgentTeamChat /> },
       {
         path: "chat/:sessionId",
         element: <ChatPage />,
         handle: { title: "Chat" } satisfies RouteHandle,
+      },
+      {
+        path: "agents/:conversationId",
+        element: <AgentsConversationPage />,
+        handle: { title: "Agents" } satisfies RouteHandle,
       },
       {
         path: "code",
@@ -86,17 +98,6 @@ export const router = createHashRouter([
         path: "source-control",
         element: <SourceControlPage />,
         handle: { title: "Source Control" } satisfies RouteHandle,
-      },
-      { path: "agents", element: <AgentTeamChat /> },
-      {
-        path: "agents/new",
-        element: <AgentsNewPage />,
-        handle: { title: "Agents" } satisfies RouteHandle,
-      },
-      {
-        path: "agents/:conversationId",
-        element: <AgentsConversationPage />,
-        handle: { title: "Agents" } satisfies RouteHandle,
       },
 
       // Settings with nested routes
@@ -156,6 +157,8 @@ export const router = createHashRouter([
 
       { path: "templates", element: <Navigate to="../chat/new" replace /> },
       { path: "activity", element: <Navigate to="../chat/new" replace /> },
+      { path: "*", element: <NotFoundRoute /> },
     ],
   },
+  { path: "*", element: <NotFoundRoute /> },
 ]);

@@ -5,6 +5,7 @@ import {
   Settings,
   MessageSquare,
   Users,
+  Network,
   Sparkles,
   Plug,
 } from "lucide-react";
@@ -43,7 +44,7 @@ export const primaryNav: NavEntry[] = [
   },
   {
     id: "agents",
-    icon: Users,
+    icon: Network,
     label: "Agents Team",
     path: agentsNewPath,
     match: "/agents",

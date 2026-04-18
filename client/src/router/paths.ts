@@ -76,7 +76,7 @@ export function sourceControlPath(projectId: string) {
 export const checkpointsPath = sourceControlPath;
 
 export function agentsPath(projectId: string) {
-  return `/${projectId}/agents`;
+  return `/${projectId}/agents/new`;
 }
 
 export function agentsNewPath(projectId: string) {
