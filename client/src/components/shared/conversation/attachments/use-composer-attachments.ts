@@ -17,7 +17,7 @@ function uid() {
     : String(Math.random());
 }
 
-async function readAsArrayBuffer(file: File): Promise<ArrayBuffer> {
+function readAsArrayBuffer(file: File): Promise<ArrayBuffer> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result as ArrayBuffer);
@@ -49,7 +49,7 @@ export function useComposerAttachments({
   }, []);
 
   const addFiles = useCallback(
-    async (files: File[]) => {
+    (files: File[]) => {
       if (!projectId || files.length === 0) return;
 
       const inits: PendingAttachment[] = files.map((f) => {
@@ -69,27 +69,31 @@ export function useComposerAttachments({
 
       setItems((prev) => [...prev, ...inits]);
 
-      await Promise.all(
-        files.map(async (file, i) => {
-          const init = inits[i];
-          if (init.status === "error") return;
-          try {
-            const bytes = await readAsArrayBuffer(file);
-            const record = await saveMutation.mutateAsync({
-              projectId,
-              conversationId,
-              name: file.name,
-              bytes,
-            });
-            update(init.localId, { status: "ready", record });
-          } catch (err: any) {
+      files.forEach((file, i) => {
+        const init = inits[i];
+        if (init.status === "error") return;
+        readAsArrayBuffer(file)
+          .then((bytes) => {
+            saveMutation.mutate(
+              { projectId, conversationId, name: file.name, bytes },
+              {
+                onSuccess: (record) =>
+                  update(init.localId, { status: "ready", record }),
+                onError: (err) =>
+                  update(init.localId, {
+                    status: "error",
+                    error: err?.message ?? "Upload failed",
+                  }),
+              },
+            );
+          })
+          .catch((err) => {
             update(init.localId, {
               status: "error",
-              error: err?.message ?? "Upload failed",
+              error: err?.message ?? "Read failed",
             });
-          }
-        }),
-      );
+          });
+      });
     },
     [projectId, conversationId, maxBytes, update, saveMutation],
   );

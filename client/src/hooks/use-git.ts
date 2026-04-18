@@ -1,30 +1,29 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { api } from "@/api";
 import { useGitStore } from "@/stores/git-store";
-import { useActiveProjectId } from "@/api/hooks/_shared";
+import {
+  useActiveProjectId,
+  useChannelEffect,
+} from "@/api/hooks/_shared";
+import { useGitStatusQuery } from "@/api/hooks/git";
 import { queryKeys } from "@/api/query-keys";
 
 /**
  * Subscribes to real-time git status changes scoped to the active project.
- * On project switch: clears stale state, hydrates fresh status, then listens
- * for push events — rejecting any that don't belong to the current project.
- * Re-fetches on window focus to cover any missed events.
+ * - Hydrates via useGitStatusQuery (React Query).
+ * - Listens for push events via useChannelEffect, rejecting any that
+ *   don't belong to the current project.
  * Mount once at the ProjectLayout level.
  */
 export function useGitListener() {
   const projectId = useActiveProjectId();
   const qc = useQueryClient();
+  const statusQuery = useGitStatusQuery();
 
+  // Clear stale store state on project switch
   useEffect(() => {
     if (!projectId) return;
-
-    let cancelled = false;
-    const keys = queryKeys.forProject(projectId);
-    const store = useGitStore.getState();
-
-    // Clear stale state from the previous project immediately
-    store.setStatus({
+    useGitStore.getState().setStatus({
       initialized: false,
       branch: "",
       changedCount: 0,
@@ -32,44 +31,32 @@ export function useGitListener() {
       ahead: 0,
       behind: 0,
     });
+  }, [projectId]);
 
-    // Hydrate initial status for this project
-    api.git
-      .status(projectId)
-      .then((status) => {
-        if (cancelled) return;
-        qc.setQueryData(keys.gitStatus, status);
-        useGitStore.getState().setStatus(status);
-      })
-      .catch(() => {});
+  // Mirror query data into the store
+  useEffect(() => {
+    if (statusQuery.data) {
+      useGitStore.getState().setStatus(statusQuery.data);
+    }
+  }, [statusQuery.data]);
 
-    // Live subscription — only accept events for this project
-    const unsub = api.git.onStatusChange((data) => {
-      if (cancelled || data.projectId !== projectId) return;
-      const { projectId: _id, ...status } = data;
-      qc.setQueryData(keys.gitStatus, status);
-      useGitStore.getState().setStatus(status);
-    });
+  // Listen for live events
+  useChannelEffect("git:statusChange", (data) => {
+    if (!projectId || data.projectId !== projectId) return;
+    const { projectId: _id, ...status } = data;
+    const keys = queryKeys.forProject(projectId);
+    qc.setQueryData(keys.gitStatus, status);
+    useGitStore.getState().setStatus(status);
+  });
 
-    // Re-fetch on window focus to cover any missed events
-    const handleVisibility = () => {
-      if (document.visibilityState === "visible" && !cancelled) {
-        api.git
-          .status(projectId)
-          .then((status) => {
-            if (cancelled) return;
-            qc.setQueryData(keys.gitStatus, status);
-            useGitStore.getState().setStatus(status);
-          })
-          .catch(() => {});
+  // Refetch on visibility change to cover any missed events
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        statusQuery.refetch();
       }
     };
-    document.addEventListener("visibilitychange", handleVisibility);
-
-    return () => {
-      cancelled = true;
-      unsub();
-      document.removeEventListener("visibilitychange", handleVisibility);
-    };
-  }, [projectId]); // qc is stable — intentionally excluded
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [statusQuery]);
 }

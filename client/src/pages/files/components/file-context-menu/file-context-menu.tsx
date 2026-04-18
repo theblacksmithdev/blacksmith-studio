@@ -56,14 +56,14 @@ export function FileContextMenu({
   const actions = useFileActions({ filePath, isDirectory, onClose });
   const { editors, preferred, setPreferred } = useEditors();
 
-  const handleRename = async () => {
-    const ok = await actions.rename(renameValue);
-    if (!ok) setRenaming(false);
+  const handleRename = () => {
+    actions.rename(renameValue, (ok) => {
+      if (!ok) setRenaming(false);
+    });
   };
 
-  const handleDelete = async () => {
-    await actions.deleteFile();
-    setConfirmDelete(false);
+  const handleDelete = () => {
+    actions.deleteFile(() => setConfirmDelete(false));
   };
 
   return (

@@ -3,12 +3,14 @@ import { useParams } from "react-router-dom";
 import { api } from "@/api";
 import { useFileStore } from "@/stores/file-store";
 import { useProjectKeys } from "@/api/hooks/_shared";
+import { useSaveFile } from "@/api/hooks/files";
 
 export function useFiles() {
   const queryClient = useQueryClient();
   const keys = useProjectKeys();
   const { openFile, setTabContent, setTabError, markSaved } = useFileStore();
   const { projectId } = useParams<{ projectId: string }>();
+  const saveMutation = useSaveFile();
 
   const treeQuery = useQuery({
     queryKey: keys.files,
@@ -33,14 +35,20 @@ export function useFiles() {
     }
   };
 
-  const saveFileContent = async (filePath: string) => {
+  const saveFileContent = (filePath: string) => {
     const tab = useFileStore
       .getState()
       .openTabs.find((t) => t.path === filePath);
     if (!tab?.content || tab.content === tab.originalContent) return;
-    await api.files.save(projectId!, filePath, tab.content);
-    markSaved(filePath);
-    queryClient.removeQueries({ queryKey: keys.fileContent(filePath) });
+    saveMutation.mutate(
+      { path: filePath, content: tab.content },
+      {
+        onSuccess: () => {
+          markSaved(filePath);
+          queryClient.removeQueries({ queryKey: keys.fileContent(filePath) });
+        },
+      },
+    );
   };
 
   return {

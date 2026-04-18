@@ -1,10 +1,11 @@
 import { useMutation } from "@tanstack/react-query";
 import { api } from "@/api";
+import type { AttachmentRecord } from "@/api/modules/attachments";
 import { useActiveProjectId } from "../_shared";
 
 /**
- * Sends a prompt to AI for a given session.
- * Results are streamed back via subscription channels (onMessage, onDone, etc).
+ * Sends a prompt to AI for a given session. Results stream back via
+ * subscription channels (onMessage, onDone, etc).
  */
 export function useSendPrompt() {
   const projectId = useActiveProjectId();
@@ -13,9 +14,17 @@ export function useSendPrompt() {
     mutationFn: ({
       sessionId,
       prompt,
+      attachments,
     }: {
       sessionId: string;
       prompt: string;
-    }) => api.singleAgent.sendPrompt({ projectId: projectId!, sessionId, prompt }),
+      attachments?: AttachmentRecord[];
+    }) =>
+      api.singleAgent.sendPrompt({
+        projectId: projectId!,
+        sessionId,
+        prompt,
+        attachments,
+      }),
   });
 }

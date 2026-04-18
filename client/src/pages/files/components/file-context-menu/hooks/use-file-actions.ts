@@ -1,9 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import { useFileStore } from "@/stores/file-store";
 import { useProjectQuery } from "@/api/hooks/projects";
+import {
+  useRenameFile,
+  useDeleteFile,
+  useRevealFile,
+  useOpenInEditor,
+} from "@/api/hooks/files";
 import { useActiveProjectId } from "@/api/hooks/_shared";
 import { useFiles } from "@/hooks/use-files";
-import { api } from "@/api";
 import { newChatPath, agentsNewPath } from "@/router/paths";
 
 interface UseFileActionsOptions {
@@ -26,52 +31,60 @@ export function useFileActions({
   const { data: project } = useProjectQuery(projectId);
   const { closeTab, closeOtherTabs, closeAllTabs, renameTab } = useFileStore();
   const { fetchFileTree } = useFiles();
+  const renameMutation = useRenameFile();
+  const deleteMutation = useDeleteFile();
+  const revealMutation = useRevealFile();
+  const openInEditorMutation = useOpenInEditor();
   const fullPath = project ? `${project.path}/${filePath}` : filePath;
   const label = isDirectory ? "folder" : "file";
   const fileRef = `\`${filePath}\``;
 
-  /** Run an action and dismiss the menu */
   const run = (fn: () => void) => {
     onClose();
     fn();
   };
 
-  // ── Tab actions ──
   const close = () => run(() => closeTab(filePath));
   const closeOthers = () => run(() => closeOtherTabs(filePath));
   const closeAll = () => run(() => closeAllTabs());
 
-  // ── File operations ──
-  const rename = async (newName: string) => {
+  const rename = (
+    newName: string,
+    onFinish?: (ok: boolean) => void,
+  ): void => {
     const trimmed = newName.trim();
-    if (!trimmed || trimmed === getName(filePath)) return false;
-    try {
-      const { newPath } = await api.files.rename(projectId!, filePath, trimmed);
-      if (!isDirectory) renameTab(filePath, newPath);
-      fetchFileTree();
-      onClose();
-      return true;
-    } catch {
-      return false;
+    if (!trimmed || trimmed === getName(filePath)) {
+      onFinish?.(false);
+      return;
     }
+    renameMutation.mutate(
+      { path: filePath, newName: trimmed },
+      {
+        onSuccess: ({ newPath }) => {
+          if (!isDirectory) renameTab(filePath, newPath);
+          fetchFileTree();
+          onClose();
+          onFinish?.(true);
+        },
+        onError: () => onFinish?.(false),
+      },
+    );
   };
 
-  const deleteFile = async () => {
-    try {
-      await api.files.delete(projectId!, filePath);
-      if (!isDirectory) closeTab(filePath);
-      fetchFileTree();
-    } catch {
-      /* ignore */
-    }
-    onClose();
+  const deleteFile = (onFinish?: () => void): void => {
+    deleteMutation.mutate(filePath, {
+      onSettled: () => {
+        if (!isDirectory) closeTab(filePath);
+        fetchFileTree();
+        onClose();
+        onFinish?.();
+      },
+    });
   };
 
-  // ── Clipboard ──
   const copyPath = () => run(() => navigator.clipboard.writeText(filePath));
   const copyFullPath = () => run(() => navigator.clipboard.writeText(fullPath));
 
-  // ── AI ──
   const addToChat = () => {
     if (!project) return;
     run(() =>
@@ -90,35 +103,23 @@ export function useFileActions({
     );
   };
 
-  // ── External ──
-  const revealInFinder = () =>
-    run(() => api.files.reveal(projectId!, filePath));
+  const revealInFinder = () => run(() => revealMutation.mutate(filePath));
   const openInEditor = (command?: string) =>
-    run(() => api.files.openInEditor(projectId!, filePath, command));
+    run(() => openInEditorMutation.mutate({ path: filePath, command }));
 
   return {
     project,
     label,
     fileName: getName(filePath),
-
-    // Tab
     close,
     closeOthers,
     closeAll,
-
-    // File ops
     rename,
     deleteFile,
-
-    // Clipboard
     copyPath,
     copyFullPath,
-
-    // AI
     addToChat,
     addToAgentTeam,
-
-    // External
     revealInFinder,
     openInEditor,
   };

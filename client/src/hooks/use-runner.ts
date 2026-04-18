@@ -1,96 +1,83 @@
 import { useEffect, useCallback, useRef } from "react";
-import { api } from "@/api";
 import {
   useRunnerStore,
   RunnerStatus,
   type RunnerService,
   type LogEntry,
 } from "@/stores/runner-store";
-import { useActiveProjectId } from "@/api/hooks/_shared";
+import {
+  useActiveProjectId,
+  useChannelEffect,
+} from "@/api/hooks/_shared";
 import {
   useDetectRunners,
   useStartRunner,
   useStopRunner,
+  useRunnerStatusQuery,
+  useRunnerLogsQuery,
 } from "@/api/hooks/runner";
 
 /**
  * Initializes IPC listeners for runner service status and log output.
- * Hydrates initial state from server buffer, then subscribes to live events.
+ * Hydrates initial state via React Query, then subscribes to live events.
  * Mount once at the ProjectLayout level.
  */
 export function useRunnerListener() {
   const projectId = useActiveProjectId();
   const { data: _configs } = useDetectRunners();
+  const statusQuery = useRunnerStatusQuery();
+  const logsQuery = useRunnerLogsQuery();
 
+  // Clear stale state on project switch
   useEffect(() => {
     if (!projectId) return;
-
-    let cancelled = false;
     const store = useRunnerStore.getState();
-
-    // Clear stale data from previous project immediately
     store.setServices([]);
     store.clearLogs();
+  }, [projectId]);
 
-    // Hydrate initial status
-    api.runner
-      .getStatus(projectId)
-      .then((status) => {
-        if (!cancelled) {
-          useRunnerStore.getState().setServices(status as RunnerService[]);
-        }
-      })
-      .catch(() => {});
+  // Mirror query data into the store
+  useEffect(() => {
+    if (statusQuery.data) {
+      useRunnerStore
+        .getState()
+        .setServices(statusQuery.data as RunnerService[]);
+    }
+  }, [statusQuery.data]);
 
-    // Hydrate initial logs from server buffer
-    api.runner
-      .getLogs(projectId)
-      .then((logs) => {
-        if (!cancelled) {
-          useRunnerStore.getState().setLogs(logs as LogEntry[]);
-        }
-      })
-      .catch(() => {});
+  useEffect(() => {
+    if (logsQuery.data) {
+      useRunnerStore.getState().setLogs(logsQuery.data as LogEntry[]);
+    }
+  }, [logsQuery.data]);
 
-    // Live status subscription — only accept events for this project
-    const unsubStatus = api.runner.onStatus((data) => {
-      if (cancelled || data.projectId !== projectId) return;
-      useRunnerStore.getState().setServices(data.services as RunnerService[]);
+  // Live status events
+  useChannelEffect("runner:status", (data) => {
+    if (!projectId || data.projectId !== projectId) return;
+    useRunnerStore.getState().setServices(data.services as RunnerService[]);
+  });
+
+  // Live log output
+  useChannelEffect("runner:output", (data) => {
+    if (!projectId || data.projectId !== projectId) return;
+    useRunnerStore.getState().addLog({
+      configId: data.configId,
+      name: data.name,
+      line: data.line,
+      timestamp: data.timestamp,
     });
+  });
 
-    // Live output subscription — only accept events for this project
-    const unsubOutput = api.runner.onOutput((data) => {
-      if (cancelled || data.projectId !== projectId) return;
-      useRunnerStore.getState().addLog({
-        configId: data.configId,
-        name: data.name,
-        line: data.line,
-        timestamp: data.timestamp,
-      });
-    });
-
-    // Re-fetch status when window regains focus (covers event gaps)
-    const handleVisibility = () => {
-      if (document.visibilityState === "visible" && projectId && !cancelled) {
-        api.runner
-          .getStatus(projectId)
-          .then((status) => {
-            if (!cancelled) {
-              useRunnerStore.getState().setServices(status as RunnerService[]);
-            }
-          })
-          .catch(() => {});
+  // Refetch status on visibility change
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        statusQuery.refetch();
       }
     };
-    document.addEventListener("visibilitychange", handleVisibility);
-
-    return () => {
-      cancelled = true;
-      unsubStatus();
-      unsubOutput();
-      document.removeEventListener("visibilitychange", handleVisibility);
-    };
-  }, [projectId]);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [statusQuery]);
 }
 
 /**
@@ -117,21 +104,21 @@ export function useRunner() {
 
   const restart = useCallback(
     (configId: string) => {
-      // Clean up any previous restart listener
       restartCleanupRef.current?.();
       restartCleanupRef.current = null;
 
       stopMutation.mutate(configId);
 
-      const unsub = api.runner.onStatus((data) => {
-        const svc = data.services.find((s) => s.id === configId);
+      // Watch the runner store for the Stopped transition, then start again.
+      // Using the store avoids another raw IPC subscription here.
+      const unsub = useRunnerStore.subscribe((state) => {
+        const svc = state.services.find((s) => s.id === configId);
         if (svc?.status === RunnerStatus.Stopped) {
           cleanup();
           startMutation.mutate(configId);
         }
       });
 
-      // Force-start after timeout if stop never confirms
       const timer = setTimeout(() => {
         cleanup();
         startMutation.mutate(configId);

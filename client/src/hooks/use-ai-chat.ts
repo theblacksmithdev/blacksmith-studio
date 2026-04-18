@@ -1,10 +1,11 @@
-import { useEffect, useCallback, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { api } from "@/api";
 import { queryKeys } from "@/api/query-keys";
 import { useChatStore } from "@/stores/chat-store";
 import { useFileStore } from "@/stores/file-store";
+import { useChannelEffect } from "@/api/hooks/_shared";
+import { useSendPrompt, useCancelPrompt } from "@/api/hooks/claude";
 import type { AttachmentRecord } from "@/components/shared/conversation";
 
 export function useAiChat() {
@@ -13,52 +14,42 @@ export function useAiChat() {
   const chatStore = useChatStore;
   const markChanged = useFileStore((s) => s.markChanged);
   const { projectId } = useParams<{ projectId: string }>();
-  const projectIdRef = useRef(projectId);
   const qc = useQueryClient();
+  const sendMutation = useSendPrompt();
+  const cancelMutation = useCancelPrompt();
 
-  useEffect(() => {
-    projectIdRef.current = projectId;
-  }, [projectId]);
+  useChannelEffect("singleAgent:message", (data) => {
+    lastContentRef.current = data.content;
+    chatStore.getState().updateStreamingMessage(data.content);
+  });
 
-  useEffect(() => {
-    const unsubs = [
-      api.singleAgent.onMessage((data) => {
-        lastContentRef.current = data.content;
-        chatStore.getState().updateStreamingMessage(data.content);
-      }),
-      api.singleAgent.onToolUse((data) => {
-        chatStore.getState().addToolCall({
-          toolId: data.toolId,
-          toolName: data.toolName,
-          input: data.input,
-        });
-      }),
-      api.singleAgent.onDone(() => {
-        chatStore
-          .getState()
-          .appendPendingAssistantMessage(lastContentRef.current);
-        lastContentRef.current = "";
-        const sid = currentSessionRef.current;
-        const pid = projectIdRef.current;
-        if (sid && pid) {
-          qc.invalidateQueries({
-            queryKey: queryKeys.forProject(pid).session(sid),
-          });
-        }
-      }),
-      api.singleAgent.onError((data) => {
-        chatStore
-          .getState()
-          .appendPendingAssistantMessage(`Error: ${data.error}`);
-        lastContentRef.current = "";
-      }),
-      api.files.onChanged((data) => {
-        markChanged(data.paths);
-      }),
-    ];
+  useChannelEffect("singleAgent:toolUse", (data) => {
+    chatStore.getState().addToolCall({
+      toolId: data.toolId,
+      toolName: data.toolName,
+      input: data.input,
+    });
+  });
 
-    return () => unsubs.forEach((unsub) => unsub());
-  }, [markChanged, qc]);
+  useChannelEffect("singleAgent:done", () => {
+    chatStore.getState().appendPendingAssistantMessage(lastContentRef.current);
+    lastContentRef.current = "";
+    const sid = currentSessionRef.current;
+    if (sid && projectId) {
+      qc.invalidateQueries({
+        queryKey: queryKeys.forProject(projectId).session(sid),
+      });
+    }
+  });
+
+  useChannelEffect("singleAgent:error", (data) => {
+    chatStore.getState().appendPendingAssistantMessage(`Error: ${data.error}`);
+    lastContentRef.current = "";
+  });
+
+  useChannelEffect("files:changed", (data) => {
+    markChanged(data.paths);
+  });
 
   const sendPrompt = useCallback(
     (
@@ -72,20 +63,18 @@ export function useAiChat() {
       store.setStreaming(true);
       store.updateStreamingMessage("");
       lastContentRef.current = "";
-      api.singleAgent.sendPrompt({
-        projectId: projectId!,
-        sessionId,
-        prompt,
-        attachments,
-      });
+      sendMutation.mutate({ sessionId, prompt, attachments });
     },
-    [projectId],
+    [chatStore, sendMutation],
   );
 
-  const cancelPrompt = useCallback((sessionId: string) => {
-    api.singleAgent.cancel({ sessionId });
-    chatStore.getState().setStreaming(false);
-  }, []);
+  const cancelPrompt = useCallback(
+    (sessionId: string) => {
+      cancelMutation.mutate(sessionId);
+      chatStore.getState().setStreaming(false);
+    },
+    [chatStore, cancelMutation],
+  );
 
   return { sendPrompt, cancelPrompt };
 }
