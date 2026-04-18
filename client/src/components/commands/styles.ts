@@ -598,6 +598,112 @@ export const ToolchainChipRow = styled.div`
   gap: 4px;
 `;
 
+export const ScopeTabs = styled.div`
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--studio-bg-main);
+  border: 1px solid var(--studio-border);
+  gap: 2px;
+  align-self: flex-start;
+`;
+
+export const ScopeTab = styled.button<{ $active?: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  background: ${(p) =>
+    p.$active ? "var(--studio-bg-surface)" : "transparent"};
+  color: ${(p) =>
+    p.$active
+      ? "var(--studio-text-primary)"
+      : "var(--studio-text-muted)"};
+  box-shadow: ${(p) =>
+    p.$active ? "0 1px 2px rgba(0, 0, 0, 0.12)" : "none"};
+
+  &:hover {
+    color: var(--studio-text-primary);
+  }
+`;
+
+export const SectionLabel = styled.div`
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--studio-text-muted);
+  margin-top: 4px;
+  margin-bottom: 6px;
+`;
+
+export const SectionCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--studio-border);
+  border-radius: 12px;
+  background: var(--studio-bg-main);
+`;
+
+export const SectionCardMuted = styled(SectionCard)`
+  background: var(--studio-bg-sidebar);
+  border-style: dashed;
+`;
+
+export const SectionHeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+export const SectionTitleBlock = styled.div`
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+export const SectionName = styled.div`
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--studio-text-primary);
+  letter-spacing: -0.005em;
+`;
+
+export const SectionSub = styled.div`
+  font-size: 11px;
+  color: var(--studio-text-muted);
+`;
+
+export const PathText = styled.div`
+  font-family: var(--studio-font-mono, "SF Mono", monospace);
+  font-size: 11px;
+  color: var(--studio-text-secondary);
+  word-break: break-all;
+  line-height: 1.5;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--studio-bg-surface);
+  border: 1px solid var(--studio-border);
+`;
+
+export const InfoNote = styled.div`
+  font-size: 12px;
+  color: var(--studio-text-muted);
+  line-height: 1.55;
+`;
+
 export const CardActionRow = styled.div`
   display: flex;
   align-items: center;
@@ -646,6 +752,154 @@ export const PillButton = styled.button`
     opacity: 0.5;
     cursor: not-allowed;
   }
+`;
+
+/* ── Env hero ────────────────────────────────────────────── */
+
+export const HeroRoot = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 22px;
+  border: 1px solid var(--studio-border);
+  border-radius: 14px;
+  background: var(--studio-bg-main);
+`;
+
+export const HeroHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+export const HeroTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+`;
+
+export const HeroTitle = styled.div`
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--studio-text-primary);
+  line-height: 1.25;
+`;
+
+export const HeroBadge = styled.span<{ $tone?: "ok" | "error" | "muted" }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border: 1px solid
+    ${(p) =>
+      p.$tone === "error"
+        ? "var(--studio-error, #c24242)"
+        : "var(--studio-border)"};
+  color: ${(p) =>
+    p.$tone === "error"
+      ? "var(--studio-error, #c24242)"
+      : p.$tone === "ok"
+        ? "var(--studio-text-primary)"
+        : "var(--studio-text-muted)"};
+  background: ${(p) =>
+    p.$tone === "error"
+      ? "var(--studio-error-subtle, rgba(194, 66, 66, 0.08))"
+      : p.$tone === "ok"
+        ? "var(--studio-bg-main)"
+        : "var(--studio-bg-surface)"};
+`;
+
+export const HeroStatusDot = styled.span<{ $tone?: "ok" | "error" }>`
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: ${(p) =>
+    p.$tone === "error"
+      ? "var(--studio-error, #c24242)"
+      : "var(--studio-accent, var(--studio-text-primary))"};
+`;
+
+export const HeroSubline = styled.div`
+  font-family: var(--studio-font-mono, "SF Mono", monospace);
+  font-size: 12px;
+  color: var(--studio-text-muted);
+  word-break: break-all;
+  line-height: 1.55;
+`;
+
+export const HeroActionRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+`;
+
+export const DetailsSection = styled.details`
+  border-top: 1px solid var(--studio-border);
+  padding-top: 12px;
+`;
+
+export const DetailsSummary = styled.summary`
+  cursor: pointer;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--studio-text-muted);
+  user-select: none;
+  transition: color 0.12s ease;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  svg {
+    transition: transform 0.15s ease;
+  }
+
+  details[open] > &  svg {
+    transform: rotate(180deg);
+  }
+
+  &:hover {
+    color: var(--studio-text-primary);
+  }
+`;
+
+export const DetailsGrid = styled.div`
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 10px 14px;
+  padding-top: 14px;
+`;
+
+export const DetailsLabel = styled.div`
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--studio-text-muted);
+  padding-top: 3px;
+`;
+
+export const DetailsValue = styled.div`
+  font-family: var(--studio-font-mono, "SF Mono", monospace);
+  font-size: 11px;
+  color: var(--studio-text-primary);
+  word-break: break-all;
+  line-height: 1.55;
 `;
 
 /* Backwards-compat aliases — legacy consumers imported these. */

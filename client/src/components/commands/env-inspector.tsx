@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useToolchainsQuery } from "@/api/hooks/commands";
-import { EnvScopeCard } from "./env-scope-card";
+import { EnvHero } from "./env-hero";
 import {
   FilterChip,
   FilterRow,
@@ -10,11 +10,12 @@ import {
 } from "./styles";
 
 /**
- * "Which python? which node?" inspector.
+ * Environment inspector — single hero per toolchain.
  *
- * Pick a toolchain via the chip row; both scopes — Project and Studio
- * — render side-by-side as `EnvScopeCard`s so the user can compare
- * where a given runtime would resolve to in each.
+ * The toolchain switcher only appears when more than one toolchain is
+ * registered (most projects have one). Everything else — interpreter,
+ * venv state, actions, studio scope — lives in `EnvHero`, which shows
+ * the full picture in a single card.
  */
 export function EnvInspector() {
   const { data: toolchains = [] } = useToolchainsQuery();
@@ -35,41 +36,33 @@ export function EnvInspector() {
   }
 
   const activeId = toolchainId || toolchains[0]!.id;
-  const activeToolchain = toolchains.find((tc) => tc.id === activeId);
-  const canCreate = !!activeToolchain?.supportsProjectEnvCreation;
-  const canList = !!activeToolchain?.supportsListInstalledVersions;
+  const activeToolchain = toolchains.find((tc) => tc.id === activeId)!;
 
   return (
     <InspectorRoot>
-      <InspectorHint>
-        See how this toolchain resolves in each scope. Change the pinned
-        interpreter or set up a project environment right from here.
-      </InspectorHint>
+      {toolchains.length > 1 && (
+        <ToolchainChipRow>
+          <FilterRow>
+            {toolchains.map((tc) => (
+              <FilterChip
+                key={tc.id}
+                $active={activeId === tc.id}
+                onClick={() => setToolchainId(tc.id)}
+              >
+                {tc.displayName}
+              </FilterChip>
+            ))}
+          </FilterRow>
+        </ToolchainChipRow>
+      )}
 
-      <ToolchainChipRow>
-        <FilterRow>
-          {toolchains.map((tc) => (
-            <FilterChip
-              key={tc.id}
-              $active={activeId === tc.id}
-              onClick={() => setToolchainId(tc.id)}
-            >
-              {tc.displayName}
-            </FilterChip>
-          ))}
-        </FilterRow>
-      </ToolchainChipRow>
-
-      <EnvScopeCard
+      <EnvHero
+        key={activeId}
         toolchainId={activeId}
-        scope="project"
-        canCreate={canCreate}
-        canList={canList}
-      />
-      <EnvScopeCard
-        toolchainId={activeId}
-        scope="studio"
-        canList={canList}
+        displayName={activeToolchain.displayName}
+        canCreate={!!activeToolchain.supportsProjectEnvCreation}
+        canDelete={!!activeToolchain.supportsProjectEnvDeletion}
+        canList={!!activeToolchain.supportsListInstalledVersions}
       />
     </InspectorRoot>
   );
