@@ -1,8 +1,11 @@
+import type { ReactNode } from "react";
+import { isValidElement } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import { Box, Text, Heading, Link } from "@chakra-ui/react";
 import { CodeBlock, InlineCode } from "@/components/shared/code-block";
+import { HtmlPreviewBlock } from "@/components/shared/html-preview-block";
 
 interface MarkdownRendererProps {
   content: string;
@@ -99,8 +102,16 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
           code: ({ className, children }) => {
             const isInline = !className;
             if (isInline) return <InlineCode>{children}</InlineCode>;
-            const language = className?.replace("language-", "") || undefined;
-            const code = String(children).replace(/\n$/, "");
+            // rehype-highlight appends `hljs` so className is like
+            // "language-html hljs" — grab just the language token.
+            const language = className?.match(/language-([\w-]+)/)?.[1];
+            // With rehype-highlight, children is a syntax-highlighted
+            // tree rather than a string; walk it to reassemble the
+            // source text before forwarding to our code blocks.
+            const code = extractText(children).replace(/\n$/, "");
+            if (language === "html" || language === "htm") {
+              return <HtmlPreviewBlock code={code} />;
+            }
             return (
               <Box css={{ marginBottom: "12px" }}>
                 <CodeBlock code={code} language={language} />
@@ -159,4 +170,23 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
       </ReactMarkdown>
     </Box>
   );
+}
+
+/**
+ * Recursively reassemble raw text from react-markdown children. When
+ * rehype-highlight is active, children become a tree of <span> nodes
+ * carrying the highlighted tokens; calling `String(children)` on that
+ * tree produces "[object Object]..." and breaks downstream consumers
+ * (CodeBlock, HtmlPreviewBlock) that need the original source.
+ */
+function extractText(node: ReactNode): string {
+  if (node == null || typeof node === "boolean") return "";
+  if (typeof node === "string") return node;
+  if (typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(extractText).join("");
+  if (isValidElement(node)) {
+    const props = node.props as { children?: ReactNode };
+    return extractText(props.children);
+  }
+  return "";
 }

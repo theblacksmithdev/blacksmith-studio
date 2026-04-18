@@ -1,6 +1,11 @@
 import { useMemo } from "react";
 import type { Artifact } from "@/api/types";
-import { FilterChip, FilterRail } from "./styles";
+import {
+  FilterChip,
+  FilterGroup,
+  FilterLabel,
+  FilterRow,
+} from "./styles";
 
 interface ArtifactFiltersProps {
   artifacts: Artifact[];
@@ -10,7 +15,10 @@ interface ArtifactFiltersProps {
   onTagChange: (tag: string | null) => void;
 }
 
-/** Derive role + tag chip lists from the current artifact set. */
+/**
+ * Stacked filter groups — labeled "Roles" and "Tags" — so the rail
+ * doesn't read as one soup of chips. Groups collapse when empty.
+ */
 export function ArtifactFilters({
   artifacts,
   role,
@@ -30,26 +38,40 @@ export function ArtifactFilters({
   if (roles.length === 0 && tags.length === 0) return null;
 
   return (
-    <FilterRail>
-      {roles.map((r) => (
-        <FilterChip
-          key={`role:${r}`}
-          $active={role === r}
-          onClick={() => onRoleChange(role === r ? null : r)}
-        >
-          {r.replace(/-/g, " ")}
-        </FilterChip>
-      ))}
-      {tags.map((t) => (
-        <FilterChip
-          key={`tag:${t}`}
-          $active={tag === t}
-          onClick={() => onTagChange(tag === t ? null : t)}
-        >
-          #{t}
-        </FilterChip>
-      ))}
-    </FilterRail>
+    <>
+      {roles.length > 0 && (
+        <FilterGroup>
+          <FilterLabel>Roles</FilterLabel>
+          <FilterRow>
+            {roles.map((r) => (
+              <FilterChip
+                key={`role:${r}`}
+                $active={role === r}
+                onClick={() => onRoleChange(role === r ? null : r)}
+              >
+                {r.replace(/-/g, " ")}
+              </FilterChip>
+            ))}
+          </FilterRow>
+        </FilterGroup>
+      )}
+      {tags.length > 0 && (
+        <FilterGroup>
+          <FilterLabel>Tags</FilterLabel>
+          <FilterRow>
+            {tags.map((t) => (
+              <FilterChip
+                key={`tag:${t}`}
+                $active={tag === t}
+                onClick={() => onTagChange(tag === t ? null : t)}
+              >
+                #{t}
+              </FilterChip>
+            ))}
+          </FilterRow>
+        </FilterGroup>
+      )}
+    </>
   );
 }
 

@@ -29,7 +29,9 @@ import McpBrowserPage from "@/pages/mcp";
 import SourceControlPage from "@/pages/source-control";
 import AgentsNewPage from "@/pages/agents/new";
 import AgentsConversationPage from "@/pages/agents/conversation";
-import ArtifactsPage from "@/pages/artifacts";
+import ArtifactsLayout from "@/pages/artifacts";
+import ArtifactsEmptyRoute from "@/pages/artifacts/empty-route";
+import ArtifactDetailRoute from "@/pages/artifacts/detail-route";
 import CommandsRoute from "@/pages/commands";
 
 export interface RouteHandle {
@@ -103,8 +105,16 @@ export const router = createHashRouter([
       },
       {
         path: "artifacts",
-        element: <ArtifactsPage />,
+        element: <ArtifactsLayout />,
         handle: { title: "Artifacts" } satisfies RouteHandle,
+        children: [
+          { index: true, element: <ArtifactsEmptyRoute /> },
+          {
+            path: ":artifactId",
+            element: <ArtifactDetailRoute />,
+            handle: { title: "Artifact" } satisfies RouteHandle,
+          },
+        ],
       },
       {
         path: "commands",

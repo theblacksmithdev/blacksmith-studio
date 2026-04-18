@@ -1,33 +1,55 @@
+import { FileCode } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import type { Artifact } from "@/api/types";
-import { RowShell, RowTitle, RowMeta, TagChip } from "./styles";
+import type { Artifact, AgentRole } from "@/api/types";
+import { ROLE_ICONS } from "@/components/agents/shared/role-icons";
+import {
+  MetaDot,
+  RoleLabel,
+  RoleTile,
+  RowBody,
+  RowMeta,
+  RowShell,
+  RowTitle,
+  TagChip,
+} from "./styles";
 
 interface ArtifactRowProps {
   artifact: Artifact;
+  selected?: boolean;
   onOpen: (id: string) => void;
 }
 
-/** Single artifact row — title, role, age, tag chips. */
-export function ArtifactRow({ artifact, onOpen }: ArtifactRowProps) {
+/**
+ * Single artifact row — role tile + title + subdued meta.
+ * Selected state: surface tint + accent strip on the left edge.
+ */
+export function ArtifactRow({ artifact, selected, onOpen }: ArtifactRowProps) {
   const age = safeDistance(artifact.updatedAt);
+  const RoleIcon = ROLE_ICONS[artifact.role as AgentRole] ?? FileCode;
+  const visibleTags = artifact.tags.slice(0, 2);
+  const hiddenTagCount = artifact.tags.length - visibleTags.length;
+
   return (
-    <RowShell onClick={() => onOpen(artifact.id)}>
-      <div style={{ minWidth: 0 }}>
+    <RowShell
+      onClick={() => onOpen(artifact.id)}
+      $selected={!!selected}
+      aria-pressed={!!selected}
+    >
+      <RoleTile>
+        <RoleIcon size={15} />
+      </RoleTile>
+      <RowBody>
         <RowTitle>{artifact.title}</RowTitle>
         <RowMeta>
-          <span>{artifact.role.replace(/-/g, " ")}</span>
-          <span>·</span>
+          <RoleLabel>{artifact.role.replace(/-/g, " ")}</RoleLabel>
+          <MetaDot />
           <span>{age}</span>
-          {artifact.tags.length > 0 && (
-            <>
-              <span>·</span>
-              {artifact.tags.map((t) => (
-                <TagChip key={t}>{t}</TagChip>
-              ))}
-            </>
-          )}
+          {visibleTags.map((t) => (
+            <TagChip key={t}>{t}</TagChip>
+          ))}
+          {hiddenTagCount > 0 && <TagChip>+{hiddenTagCount}</TagChip>}
         </RowMeta>
-      </div>
+      </RowBody>
     </RowShell>
   );
 }

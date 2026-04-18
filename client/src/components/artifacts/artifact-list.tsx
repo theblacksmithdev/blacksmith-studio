@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
-import { Flex } from "@chakra-ui/react";
-import { FileCode, FileText, RefreshCw, Search } from "lucide-react";
+import { FileCode, RefreshCw, Search } from "lucide-react";
 import {
   useArtifactsQuery,
   useArtifactsSubscription,
@@ -8,44 +7,57 @@ import {
 } from "@/api/hooks/artifacts";
 import type { Artifact } from "@/api/types";
 import { PanelEmptyState } from "@/components/shared/panel-empty-state";
+import { Tooltip } from "@/components/shared/tooltip";
 import { ArtifactFilters } from "./artifact-filters";
 import { ArtifactPreviewDrawer } from "./artifact-preview-drawer";
 import { ArtifactRow } from "./artifact-row";
 import {
-  CountPill,
-  HeaderBar,
+  CountLabel,
+  Divider,
+  Header,
+  HeaderTop,
+  IconButton,
   ListScroll,
   Root,
   SearchInput,
-  Title,
-  ToolbarButton,
+  SearchShell,
+  TitleText,
 } from "./styles";
 
 interface ArtifactListProps {
   conversationId?: string;
   title?: string;
   showBackfill?: boolean;
+  /** Currently selected artifact id — drives row highlight. */
+  selectedId?: string | null;
+  /**
+   * Called when a row is clicked. When provided, the list becomes
+   * "controlled" and no internal drawer opens — the caller is expected
+   * to render the detail view elsewhere (e.g. a split panel / route).
+   * When absent, the legacy drawer-on-click behaviour is preserved for
+   * surfaces that can't afford an inline detail pane.
+   */
+  onSelect?: (id: string) => void;
 }
 
 /**
  * Reusable artifact list. Powers both the project-wide library page
- * and the conversation-scoped panel via the `conversationId` prop.
- *
- * Owns: search input, role/tag filters, preview drawer. Data comes
- * from `useArtifactsQuery`; live mutations are merged through
- * `useArtifactsSubscription`.
+ * (split panel, route-driven selection) and the conversation-scoped
+ * panel (internal drawer).
  */
 export function ArtifactList({
   conversationId,
   title = "Artifacts",
   showBackfill = true,
+  selectedId = null,
+  onSelect,
 }: ArtifactListProps) {
   useArtifactsSubscription();
 
   const [search, setSearch] = useState("");
   const [role, setRole] = useState<string | null>(null);
   const [tag, setTag] = useState<string | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [drawerId, setDrawerId] = useState<string | null>(null);
 
   const { data: artifacts = [], isLoading } = useArtifactsQuery({
     conversationId,
@@ -56,50 +68,47 @@ export function ArtifactList({
 
   const backfill = useBackfillArtifacts();
 
-  // Use an unfiltered list to populate the chip rail so filters don't
-  // disappear as the user narrows the view.
+  // Unfiltered list drives the chip rail so filters don't disappear as
+  // the user narrows the view.
   const { data: allArtifacts = [] } = useArtifactsQuery({ conversationId });
 
   const rows: Artifact[] = useMemo(() => artifacts, [artifacts]);
 
+  const handleOpen = (id: string) => {
+    if (onSelect) onSelect(id);
+    else setDrawerId(id);
+  };
+
+  const filtersActive = hasActiveFilters(search, role, tag);
+  const hasAny = allArtifacts.length > 0;
+
   return (
     <Root>
-      <HeaderBar>
-        <Flex align="center" gap="10px" css={{ flex: 1, minWidth: 0 }}>
-          <FileText
-            size={14}
-            style={{ color: "var(--studio-text-muted)" }}
+      <Header>
+        <HeaderTop>
+          <TitleText>{title}</TitleText>
+          <CountLabel>{rows.length}</CountLabel>
+          {showBackfill && (
+            <Tooltip content="Re-scan .blacksmith/artifacts/">
+              <IconButton
+                onClick={() => backfill.mutate()}
+                disabled={backfill.isPending}
+                aria-label="Re-index artifacts"
+              >
+                <RefreshCw size={13} />
+              </IconButton>
+            </Tooltip>
+          )}
+        </HeaderTop>
+        <SearchShell>
+          <Search size={13} />
+          <SearchInput
+            placeholder="Search artifacts…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
-          <Title>{title}</Title>
-          <CountPill>{rows.length}</CountPill>
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-            }}
-          >
-            <Search
-              size={12}
-              style={{ color: "var(--studio-text-muted)" }}
-            />
-            <SearchInput
-              placeholder="Search artifacts…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-        </Flex>
-        {showBackfill && (
-          <ToolbarButton
-            onClick={() => backfill.mutate()}
-            disabled={backfill.isPending}
-          >
-            <RefreshCw size={12} /> Re-index
-          </ToolbarButton>
-        )}
-      </HeaderBar>
+        </SearchShell>
+      </Header>
 
       <ArtifactFilters
         artifacts={allArtifacts}
@@ -108,6 +117,8 @@ export function ArtifactList({
         onRoleChange={setRole}
         onTagChange={setTag}
       />
+
+      {hasAny && <Divider />}
 
       <ListScroll>
         {isLoading ? (
@@ -119,25 +130,30 @@ export function ArtifactList({
         ) : rows.length === 0 ? (
           <PanelEmptyState
             icon={<FileCode size={22} />}
-            title="No artifacts yet"
+            title={filtersActive ? "No matches" : "No artifacts yet"}
             description={
-              hasActiveFilters(search, role, tag)
+              filtersActive
                 ? "No artifacts match the current filters. Clear them to see everything."
                 : "Artifacts are saved automatically when agents complete tasks. Their specs, designs, and summaries land here for you to read, edit, and tag."
             }
           />
         ) : (
           rows.map((a) => (
-            <ArtifactRow key={a.id} artifact={a} onOpen={setSelectedId} />
+            <ArtifactRow
+              key={a.id}
+              artifact={a}
+              selected={a.id === selectedId}
+              onOpen={handleOpen}
+            />
           ))
         )}
       </ListScroll>
 
-      {selectedId && (
+      {drawerId && !onSelect && (
         <ArtifactPreviewDrawer
-          artifactId={selectedId}
-          onClose={() => setSelectedId(null)}
-          onDeleted={() => setSelectedId(null)}
+          artifactId={drawerId}
+          onClose={() => setDrawerId(null)}
+          onDeleted={() => setDrawerId(null)}
         />
       )}
     </Root>

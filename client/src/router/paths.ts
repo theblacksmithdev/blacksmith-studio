@@ -21,6 +21,7 @@ export const Path = {
   AgentsNew: "/:projectId/agents/new",
   AgentsConversation: "/:projectId/agents/:conversationId",
   Artifacts: "/:projectId/artifacts",
+  ArtifactDetail: "/:projectId/artifacts/:artifactId",
   Commands: "/:projectId/commands",
 } as const;
 
@@ -98,6 +99,10 @@ export function settingsGraphifyPath(projectId: string) {
 
 export function artifactsPath(projectId: string) {
   return `/${projectId}/artifacts`;
+}
+
+export function artifactDetailPath(projectId: string, artifactId: string) {
+  return `/${projectId}/artifacts/${artifactId}`;
 }
 
 export function commandsPath(projectId: string) {
