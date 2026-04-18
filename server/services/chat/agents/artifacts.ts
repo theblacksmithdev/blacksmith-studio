@@ -49,6 +49,11 @@ export class ArtifactManager {
     }
   }
 
+  /** Public wrapper so ArtifactService can derive slugs consistently. */
+  slugifyPublic(title: string): string {
+    return this.slugify(title);
+  }
+
   /**
    * Generate a slug from a task title for human-readable filenames.
    * e.g. "Design Card Component Layout" → "design-card-component-layout"

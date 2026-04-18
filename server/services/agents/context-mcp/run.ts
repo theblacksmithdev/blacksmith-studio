@@ -1,6 +1,11 @@
 import { getDatabase } from "../../../db/index.js";
 import { SessionManager } from "../../chat/single-agent/index.js";
 import { AgentSessionManager } from "../../chat/multi-agents/index.js";
+import {
+  ArtifactRepository,
+  ArtifactService,
+} from "../../artifacts/index.js";
+import { ProjectManager } from "../../projects.js";
 import { ContextMcpServer } from "./context-mcp-server.js";
 import { ContextQueryService } from "./context-query-service.js";
 import { ContextWriteService } from "./context-write-service.js";
@@ -19,6 +24,14 @@ function main() {
   const db = getDatabase();
   const sessionManager = new SessionManager(db);
   const agentSessionManager = new AgentSessionManager(db);
+  const projectManager = new ProjectManager();
+  const artifactService = new ArtifactService(new ArtifactRepository(db), {
+    getPath: (projectId: string) => {
+      const project = projectManager.get(projectId);
+      if (!project) throw new Error(`Project not found: ${projectId}`);
+      return project.path;
+    },
+  });
 
   const queryService = new ContextQueryService(
     db,
@@ -27,7 +40,11 @@ function main() {
   );
   const writeService = new ContextWriteService(agentSessionManager);
 
-  const server = new ContextMcpServer(queryService, writeService);
+  const server = new ContextMcpServer(
+    queryService,
+    writeService,
+    artifactService,
+  );
   attachStdioTransport(server);
 
   process.stderr.write(

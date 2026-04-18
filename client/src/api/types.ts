@@ -601,6 +601,53 @@ export interface TaskNote {
   createdAt: string;
 }
 
+/* ── Artifacts (markdown outputs under .blacksmith/artifacts/) ── */
+
+export interface Artifact {
+  id: string;
+  projectId: string;
+  conversationId: string | null;
+  dispatchId: string | null;
+  taskId: string | null;
+  role: string;
+  slug: string;
+  title: string;
+  relPath: string;
+  sizeBytes: number;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ArtifactContent {
+  artifact: Artifact;
+  content: string;
+}
+
+export interface ArtifactsListInput {
+  projectId: string;
+  conversationId?: string;
+  role?: string;
+  tag?: string;
+  search?: string;
+  limit?: number;
+}
+
+export interface ArtifactCreateInput {
+  projectId: string;
+  role: string;
+  title: string;
+  content: string;
+  conversationId?: string;
+  dispatchId?: string;
+  taskId?: string;
+  tags?: string[];
+}
+
+export type ArtifactChange =
+  | { kind: "upsert"; artifact: Artifact }
+  | { kind: "delete"; id: string; projectId: string };
+
 /* ── Re-exports for convenience ── */
 
 export type { Session, SessionSummary, FileNode, PromptTemplate, HealthStatus };

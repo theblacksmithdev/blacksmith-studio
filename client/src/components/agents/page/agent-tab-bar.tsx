@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import styled from "@emotion/styled";
 
-export type AgentTab = "agents" | "preview" | "artifacts";
+export type AgentTab = "agents" | "preview" | "artifacts" | "changes";
 
 interface TabDef {
   id: AgentTab;

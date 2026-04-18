@@ -174,6 +174,17 @@ export const CONVERSATION_EVENTS_LIST_BY_DISPATCH =
   "conversationEvents:listByDispatch";
 export const CONVERSATION_EVENTS_LIST_BY_TASK = "conversationEvents:listByTask";
 
+// Artifacts (markdown outputs under .blacksmith/artifacts/)
+export const ARTIFACTS_LIST = "artifacts:list";
+export const ARTIFACTS_GET = "artifacts:get";
+export const ARTIFACTS_READ_CONTENT = "artifacts:readContent";
+export const ARTIFACTS_WRITE_CONTENT = "artifacts:writeContent";
+export const ARTIFACTS_RENAME = "artifacts:rename";
+export const ARTIFACTS_DELETE = "artifacts:delete";
+export const ARTIFACTS_SET_TAGS = "artifacts:setTags";
+export const ARTIFACTS_CREATE = "artifacts:create";
+export const ARTIFACTS_BACKFILL = "artifacts:backfill";
+
 // Agent Tasks (DB model for multi-agent team tasks)
 export const AGENT_TASKS_LIST = "agentTasks:list";
 export const AGENT_TASKS_GET = "agentTasks:get";
@@ -206,6 +217,7 @@ export const MULTI_AGENTS_ON_WORKFLOW_EVENT = "multiAgents:onWorkflowEvent";
 export const MULTI_AGENTS_ON_BUILD_EVENT = "multiAgents:onBuildEvent";
 export const MULTI_AGENTS_ON_INPUT_REQUEST = "multiAgents:onInputRequest";
 export const CONVERSATION_EVENTS_ON_APPEND = "conversationEvents:onAppend";
+export const ARTIFACTS_ON_CHANGED = "artifacts:onChanged";
 
 // Channel allowlists for preload security
 export const INVOKE_CHANNELS = [
@@ -343,6 +355,15 @@ export const INVOKE_CHANNELS = [
   AGENT_TASK_NOTES_LIST,
   AGENT_TASK_NOTES_ADD,
   AGENT_TASK_DEPENDENCIES_LIST,
+  ARTIFACTS_LIST,
+  ARTIFACTS_GET,
+  ARTIFACTS_READ_CONTENT,
+  ARTIFACTS_WRITE_CONTENT,
+  ARTIFACTS_RENAME,
+  ARTIFACTS_DELETE,
+  ARTIFACTS_SET_TAGS,
+  ARTIFACTS_CREATE,
+  ARTIFACTS_BACKFILL,
 ] as const;
 
 export const SUBSCRIBE_CHANNELS = [
@@ -367,4 +388,5 @@ export const SUBSCRIBE_CHANNELS = [
   MULTI_AGENTS_ON_BUILD_EVENT,
   MULTI_AGENTS_ON_INPUT_REQUEST,
   CONVERSATION_EVENTS_ON_APPEND,
+  ARTIFACTS_ON_CHANGED,
 ] as const;

@@ -1,5 +1,6 @@
 import type { ContextQueryService } from "./context-query-service.js";
 import type { ContextWriteService } from "./context-write-service.js";
+import type { ArtifactService } from "../../artifacts/index.js";
 import type { ContextToolDefinition } from "./types.js";
 
 export interface ToolHandler {
@@ -16,6 +17,7 @@ export interface ToolHandler {
 export function buildToolRegistry(
   query: ContextQueryService,
   write: ContextWriteService,
+  artifacts: ArtifactService,
 ): Record<string, ToolHandler> {
   return {
     query_conversation_history: {
@@ -143,6 +145,150 @@ export function buildToolRegistry(
         },
       },
       execute: (args) => write.saveNote(args as never),
+    },
+
+    /* ── Artifact tools ── */
+
+    list_artifacts: {
+      definition: {
+        name: "list_artifacts",
+        description:
+          "List markdown artifacts saved by agents under .blacksmith/artifacts/. Filter by conversation, role, tag, or title search.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            projectId: { type: "string" },
+            conversationId: { type: "string" },
+            role: { type: "string" },
+            tag: { type: "string" },
+            search: { type: "string" },
+            limit: { type: "number", default: 50 },
+          },
+          required: ["projectId"],
+        },
+      },
+      execute: (args) => ({
+        artifacts: artifacts.list(args as never),
+      }),
+    },
+
+    read_artifact: {
+      definition: {
+        name: "read_artifact",
+        description:
+          "Read an artifact's full markdown body (without frontmatter) by its id.",
+        inputSchema: {
+          type: "object",
+          properties: { id: { type: "string" } },
+          required: ["id"],
+        },
+      },
+      execute: (args) => {
+        const { id } = args as { id: string };
+        const result = artifacts.readContent(id);
+        if (!result) return { found: false };
+        return { found: true, ...result };
+      },
+    },
+
+    write_artifact: {
+      definition: {
+        name: "write_artifact",
+        description:
+          "Create a new artifact — writes markdown to .blacksmith/artifacts/{role}/ and indexes it. Use this to pin a discovery or reference document outside the normal task auto-save.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            projectId: { type: "string" },
+            role: { type: "string" },
+            title: { type: "string" },
+            content: { type: "string" },
+            conversationId: { type: "string" },
+            dispatchId: { type: "string" },
+            taskId: { type: "string" },
+            tags: { type: "array", items: { type: "string" } },
+          },
+          required: ["projectId", "role", "title", "content"],
+        },
+      },
+      execute: (args) => artifacts.create(args as never),
+    },
+
+    update_artifact: {
+      definition: {
+        name: "update_artifact",
+        description:
+          "Overwrite an existing artifact's markdown body in place. Use this to refine a previous agent's output rather than creating a new artifact.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            content: { type: "string" },
+          },
+          required: ["id", "content"],
+        },
+      },
+      execute: (args) => {
+        const { id, content } = args as { id: string; content: string };
+        return artifacts.writeContent(id, content);
+      },
+    },
+
+    tag_artifact: {
+      definition: {
+        name: "tag_artifact",
+        description:
+          "Set (replace) the tags on an artifact. Tags are free-form strings per project.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            tags: { type: "array", items: { type: "string" } },
+          },
+          required: ["id", "tags"],
+        },
+      },
+      execute: (args) => {
+        const { id, tags } = args as { id: string; tags: string[] };
+        return artifacts.setTags(id, tags);
+      },
+    },
+
+    rename_artifact: {
+      definition: {
+        name: "rename_artifact",
+        description: "Rename an artifact (updates title + file on disk).",
+        inputSchema: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            title: { type: "string" },
+          },
+          required: ["id", "title"],
+        },
+      },
+      execute: (args) => {
+        const { id, title } = args as { id: string; title: string };
+        return artifacts.rename(id, title);
+      },
+    },
+
+    delete_artifact: {
+      definition: {
+        name: "delete_artifact",
+        description:
+          "Hard delete an artifact — removes the DB row AND the file on disk. Cannot be undone.",
+        inputSchema: {
+          type: "object",
+          properties: { id: { type: "string" } },
+          required: ["id"],
+        },
+      },
+      execute: (args) => {
+        const { id } = args as { id: string };
+        artifacts.delete(id);
+        return { ok: true, id };
+      },
     },
   };
 }

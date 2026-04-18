@@ -11,6 +11,10 @@ import {
   ConversationEventService,
   EventRepository,
 } from "../server/services/events/index.js";
+import {
+  ArtifactRepository,
+  ArtifactService,
+} from "../server/services/artifacts/index.js";
 import { getDatabase } from "../server/db/index.js";
 import { Ai } from "../server/services/ai/index.js";
 import { SettingsManager } from "../server/services/settings.js";
@@ -131,6 +135,13 @@ app.whenReady().then(async () => {
   const sessionManager = new SessionManager(db);
   const agentSessionManager = new AgentSessionManager(db);
   const eventService = new ConversationEventService(new EventRepository(db));
+  const artifactService = new ArtifactService(new ArtifactRepository(db), {
+    getPath: (projectId: string) => {
+      const project = projectManager.get(projectId);
+      if (!project) throw new Error(`Project not found: ${projectId}`);
+      return project.path;
+    },
+  });
   const settingsManager = new SettingsManager();
   const { RunnerConfigService } =
     await import("../server/services/runner/runner-config.js");
@@ -176,6 +187,7 @@ app.whenReady().then(async () => {
     sessionManager,
     agentSessionManager,
     eventService,
+    artifactService,
     ai,
     settingsManager,
     runnerManager,

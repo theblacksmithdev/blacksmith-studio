@@ -1,6 +1,7 @@
 import { buildToolRegistry, type ToolHandler } from "./tool-registry.js";
 import type { ContextQueryService } from "./context-query-service.js";
 import type { ContextWriteService } from "./context-write-service.js";
+import type { ArtifactService } from "../../artifacts/index.js";
 
 interface JsonRpcRequest {
   jsonrpc: "2.0";
@@ -33,8 +34,12 @@ const SERVER_VERSION = "0.1.0";
 export class ContextMcpServer {
   private readonly tools: Record<string, ToolHandler>;
 
-  constructor(query: ContextQueryService, write: ContextWriteService) {
-    this.tools = buildToolRegistry(query, write);
+  constructor(
+    query: ContextQueryService,
+    write: ContextWriteService,
+    artifacts: ArtifactService,
+  ) {
+    this.tools = buildToolRegistry(query, write, artifacts);
   }
 
   /** Dispatches a single JSON-RPC message and returns the response (or null for notifications). */

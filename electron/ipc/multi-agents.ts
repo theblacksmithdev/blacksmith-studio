@@ -16,6 +16,7 @@ import {
 import type { AgentSessionManager } from "../../server/services/chat/multi-agents/index.js";
 import type { AgentRole } from "../../server/services/chat/agents/types.js";
 import type { ConversationEventService } from "../../server/services/events/index.js";
+import type { ArtifactService } from "../../server/services/artifacts/index.js";
 import type { AgentExecuteOptions } from "../../server/services/chat/agents/base/index.js";
 import {
   MULTI_AGENTS_LIST,
@@ -129,6 +130,7 @@ export function setupMultiAgentsIPC(
   ai: Ai,
   sessionManager: AgentSessionManager,
   eventService: ConversationEventService,
+  artifactService: ArtifactService,
 ) {
   const agentManager = new AgentManager();
   const projectBuilder = new ProjectBuilder(agentManager);
@@ -255,13 +257,34 @@ export function setupMultiAgentsIPC(
       const project = projectManager.get(data.projectId);
       if (!project) throw new Error("Project not found");
 
-      const baseOptions = resolveBaseOptions(
+      const baseOptions: ReturnType<typeof resolveBaseOptions> & {
+        onArtifactWritten?: (info: {
+          role: string;
+          taskId: string;
+          title: string;
+          relPath: string;
+        }) => void;
+      } = resolveBaseOptions(
         projectManager,
         settingsManager,
         mcpManager,
         ai,
         data.projectId,
       );
+      baseOptions.onArtifactWritten = (info) => {
+        try {
+          artifactService.indexFromTaskWrite({
+            projectId: project.id,
+            conversationId: data.conversationId ?? null,
+            role: info.role,
+            taskId: info.taskId,
+            title: info.title,
+            relPath: info.relPath,
+          });
+        } catch (err) {
+          console.warn("[artifacts] index-on-write failed:", err);
+        }
+      };
 
       // Persist user message
       const userChatRecord = sessionManager.addChatMessage(

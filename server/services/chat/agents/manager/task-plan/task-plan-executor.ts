@@ -317,6 +317,12 @@ export class TaskPlanExecutor {
         );
         state.artifactPaths.set(task.id, artifactPath);
         this.emitter.emitPM(`Artifact saved: ${artifactPath}`);
+        baseOptions.onArtifactWritten?.({
+          role: task.role,
+          taskId: task.id,
+          title: task.title,
+          relPath: artifactPath,
+        });
       } catch (err: any) {
         console.warn(
           `[task-plan-executor] Failed to write artifact for ${task.id}:`,

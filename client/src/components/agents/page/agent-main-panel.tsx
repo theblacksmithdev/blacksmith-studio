@@ -1,14 +1,16 @@
 import { useState, type ReactNode } from "react";
 import { Flex, Box } from "@chakra-ui/react";
-import { Network, Eye, FileCode } from "lucide-react";
+import { Network, Eye, FileCode, GitCommit } from "lucide-react";
 import { AgentTabBar, type AgentTab } from "./agent-tab-bar";
 import { AgentArtifacts } from "./agent-artifacts";
+import { ArtifactList } from "@/components/artifacts";
 import { RunnerPreview } from "@/components/runner/preview";
 
 const TABS = [
   { id: "agents" as const, icon: <Network />, label: "Agents" },
   { id: "preview" as const, icon: <Eye />, label: "Preview" },
   { id: "artifacts" as const, icon: <FileCode />, label: "Artifacts" },
+  { id: "changes" as const, icon: <GitCommit />, label: "Changes" },
 ];
 
 interface AgentMainPanelProps {
@@ -53,8 +55,19 @@ export function AgentMainPanel({
           </Flex>
         )}
 
-        {/* Artifacts */}
+        {/* Artifacts (markdown outputs under .blacksmith/artifacts/) */}
         {activeTab === "artifacts" && (
+          <Flex css={{ height: "100%", width: "100%" }}>
+            <ArtifactList
+              conversationId={conversationId}
+              title="Conversation Artifacts"
+              showBackfill={false}
+            />
+          </Flex>
+        )}
+
+        {/* Changes — files agents touched during this conversation */}
+        {activeTab === "changes" && (
           <Flex css={{ height: "100%", width: "100%" }}>
             <AgentArtifacts conversationId={conversationId} />
           </Flex>

@@ -47,6 +47,12 @@ function projectKeys(projectId: string) {
       [...p, "agents", "task", taskId, "notes"] as const,
     taskDependencies: (dispatchId: string) =>
       [...p, "agents", "tasks", dispatchId, "dependencies"] as const,
+    artifacts: [...p, "artifacts"] as const,
+    artifactsFiltered: (filters: Record<string, unknown>) =>
+      [...p, "artifacts", "list", filters] as const,
+    artifact: (id: string) => [...p, "artifacts", "item", id] as const,
+    artifactContent: (id: string) =>
+      [...p, "artifacts", "item", id, "content"] as const,
     runnerConfigs: [...p, "runner", "configs"] as const,
     pythonInstallations: ["python", "detect"] as const,
     pythonCheck: ["python", "check"] as const,

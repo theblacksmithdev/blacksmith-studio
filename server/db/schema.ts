@@ -180,6 +180,35 @@ export const taskNotes = sqliteTable("task_notes", {
 });
 
 /**
+ * Artifacts — markdown outputs produced by agents (auto-saved from task
+ * responses) plus any user-created notes pinned under
+ * `.blacksmith/artifacts/{role}/`.
+ *
+ * The `rel_path` column is the source of truth for locating the file on
+ * disk; every row pairs with a file and every file pairs with a row
+ * (enforced by the `ArtifactService` upsert on write + the backfill
+ * sweep). `(project_id, rel_path)` is unique so a disk path cannot map
+ * to two different rows.
+ */
+export const artifacts = sqliteTable("artifacts", {
+  id: text("id").primaryKey(),
+  projectId: text("project_id")
+    .notNull()
+    .references(() => projects.id, { onDelete: "cascade" }),
+  conversationId: text("conversation_id"),
+  dispatchId: text("dispatch_id"),
+  taskId: text("task_id"),
+  role: text("role").notNull(),
+  slug: text("slug").notNull(),
+  title: text("title").notNull(),
+  relPath: text("rel_path").notNull(),
+  sizeBytes: integer("size_bytes").notNull(),
+  tags: text("tags").notNull().default("[]"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+/**
  * Conversation events — unified append-only log that backs BOTH
  * reload-fidelity (UI replays events to reconstruct a conversation
  * exactly as it streamed live) AND the forever-kept diagnostic trail.

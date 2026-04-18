@@ -3,6 +3,7 @@ import type { ProjectManager } from "../../server/services/projects.js";
 import type { SessionManager } from "../../server/services/chat/single-agent/index.js";
 import type { AgentSessionManager } from "../../server/services/chat/multi-agents/index.js";
 import type { ConversationEventService } from "../../server/services/events/index.js";
+import type { ArtifactService } from "../../server/services/artifacts/index.js";
 import type { SettingsManager } from "../../server/services/settings.js";
 import type { RunnerManager } from "../../server/services/runner/index.js";
 import type { RunnerConfigService } from "../../server/services/runner/runner-config.js";
@@ -34,6 +35,7 @@ import { setupTerminalIPC } from "./terminal.js";
 import { setupMultiAgentsIPC } from "./multi-agents.js";
 import { setupConversationEventsIPC } from "./conversation-events.js";
 import { setupAgentTasksIPC } from "./agent-tasks.js";
+import { setupArtifactsIPC } from "./artifacts.js";
 import { setupGraphifyIPC } from "./graphify.js";
 import { setupPythonIPC } from "./python.js";
 import { setupWindowIPC } from "./window.js";
@@ -45,6 +47,7 @@ export function setupAllIPC(
   sessionManager: SessionManager,
   agentSessionManager: AgentSessionManager,
   eventService: ConversationEventService,
+  artifactService: ArtifactService,
   ai: Ai,
   settingsManager: SettingsManager,
   runnerManager: RunnerManager,
@@ -103,8 +106,10 @@ export function setupAllIPC(
     ai,
     agentSessionManager,
     eventService,
+    artifactService,
   );
   setupConversationEventsIPC(getWindow, eventService);
   setupAgentTasksIPC(agentSessionManager);
+  setupArtifactsIPC(getWindow, artifactService);
   setupAttachmentsIPC(new AttachmentService(projectManager));
 }

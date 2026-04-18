@@ -164,6 +164,23 @@ export function getDatabase() {
       created_at TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS artifacts (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+      conversation_id TEXT,
+      dispatch_id TEXT,
+      task_id TEXT,
+      role TEXT NOT NULL,
+      slug TEXT NOT NULL,
+      title TEXT NOT NULL,
+      rel_path TEXT NOT NULL,
+      size_bytes INTEGER NOT NULL,
+      tags TEXT NOT NULL DEFAULT '[]',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      UNIQUE (project_id, rel_path)
+    );
+
     CREATE TABLE IF NOT EXISTS conversation_events (
       id TEXT PRIMARY KEY,
       project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
@@ -190,6 +207,10 @@ export function getDatabase() {
     CREATE INDEX IF NOT EXISTS idx_conversation_events_scope_conv_seq ON conversation_events(scope, conversation_id, sequence);
     CREATE INDEX IF NOT EXISTS idx_conversation_events_dispatch_id ON conversation_events(dispatch_id);
     CREATE INDEX IF NOT EXISTS idx_conversation_events_task_id ON conversation_events(task_id);
+    CREATE INDEX IF NOT EXISTS idx_artifacts_project_id ON artifacts(project_id);
+    CREATE INDEX IF NOT EXISTS idx_artifacts_conversation_id ON artifacts(conversation_id);
+    CREATE INDEX IF NOT EXISTS idx_artifacts_role ON artifacts(role);
+    CREATE INDEX IF NOT EXISTS idx_artifacts_updated_at ON artifacts(updated_at);
   `);
 
   // ── Migrations for existing databases ──

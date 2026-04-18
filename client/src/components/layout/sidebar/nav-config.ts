@@ -8,6 +8,7 @@ import {
   Network,
   Sparkles,
   Plug,
+  FileCode,
 } from "lucide-react";
 import {
   codePath,
@@ -18,6 +19,7 @@ import {
   agentsNewPath,
   skillsBrowserPath,
   mcpBrowserPath,
+  artifactsPath,
 } from "@/router/paths";
 
 export interface NavEntry {
@@ -74,6 +76,13 @@ export const projectNav: NavEntry[] = [
     label: "MCP",
     path: mcpBrowserPath,
     match: "/mcp",
+  },
+  {
+    id: "artifacts",
+    icon: FileCode,
+    label: "Artifacts",
+    path: artifactsPath,
+    match: "/artifacts",
   },
 ];
 

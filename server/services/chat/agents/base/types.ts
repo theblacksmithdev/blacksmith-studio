@@ -35,6 +35,18 @@ export interface AgentExecuteOptions {
    * standalone workflows) continue to work.
    */
   conversationContext?: ConversationContext;
+  /**
+   * Optional sink called after each task's response is auto-saved to
+   * `.blacksmith/artifacts/{role}/`. The IPC layer wires this to the
+   * `ArtifactService` so the DB index + UI stay in sync with disk.
+   * Absent in tests and standalone workflows.
+   */
+  onArtifactWritten?: (info: {
+    role: string;
+    taskId: string;
+    title: string;
+    relPath: string;
+  }) => void;
 }
 
 export interface ToolCallRecord {

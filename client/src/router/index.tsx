@@ -29,6 +29,7 @@ import McpBrowserPage from "@/pages/mcp";
 import SourceControlPage from "@/pages/source-control";
 import AgentsNewPage from "@/pages/agents/new";
 import AgentsConversationPage from "@/pages/agents/conversation";
+import ArtifactsPage from "@/pages/artifacts";
 
 export interface RouteHandle {
   title?: string;
@@ -98,6 +99,11 @@ export const router = createHashRouter([
         path: "source-control",
         element: <SourceControlPage />,
         handle: { title: "Source Control" } satisfies RouteHandle,
+      },
+      {
+        path: "artifacts",
+        element: <ArtifactsPage />,
+        handle: { title: "Artifacts" } satisfies RouteHandle,
       },
 
       // Settings with nested routes

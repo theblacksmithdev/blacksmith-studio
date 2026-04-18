@@ -6,6 +6,7 @@ import { git } from "./modules/git";
 import { terminal } from "./modules/terminal";
 import { multiAgents } from "./modules/multi-agents";
 import { conversationEvents } from "./modules/conversation-events";
+import { artifacts } from "./modules/artifacts";
 import { python } from "./modules/python";
 import { graphify } from "./modules/graphify";
 import { windowApi } from "./modules/window";
@@ -63,6 +64,9 @@ export const channels = {
 
   // Conversation events (unified append stream for reload-fidelity UIs)
   "conversationEvents:append": conversationEvents.onAppend,
+
+  // Artifact mutations (file + DB) for library + conversation panel
+  "artifacts:changed": artifacts.onChanged,
 
   // Python
   "python:progress": python.onProgress,

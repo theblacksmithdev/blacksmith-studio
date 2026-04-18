@@ -20,6 +20,7 @@ export const Path = {
   Agents: "/:projectId/agents",
   AgentsNew: "/:projectId/agents/new",
   AgentsConversation: "/:projectId/agents/:conversationId",
+  Artifacts: "/:projectId/artifacts",
 } as const;
 
 // ─── Path builders ───
@@ -92,4 +93,8 @@ export function agentsConversationPath(
 
 export function settingsGraphifyPath(projectId: string) {
   return `/${projectId}/settings/graphify`;
+}
+
+export function artifactsPath(projectId: string) {
+  return `/${projectId}/artifacts`;
 }
