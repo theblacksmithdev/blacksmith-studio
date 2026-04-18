@@ -24,6 +24,8 @@ export interface TaskUpdate {
   error?: string;
   costUsd?: string;
   durationMs?: number;
+  startedAt?: string;
+  finishedAt?: string;
 }
 
 /**
@@ -68,6 +70,13 @@ export class TaskRepository {
       .where(eq(agentTasks.dispatchId, dispatchId))
       .orderBy(agentTasks.orderIndex)
       .all();
+  }
+
+  findById(id: string): TaskRow | null {
+    return (
+      this.db.select().from(agentTasks).where(eq(agentTasks.id, id)).get() ??
+      null
+    );
   }
 
   /**

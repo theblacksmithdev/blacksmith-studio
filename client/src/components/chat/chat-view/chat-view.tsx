@@ -1,7 +1,7 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import styled from "@emotion/styled";
 import { Flex, Box } from "@chakra-ui/react";
-import { PanelRight, History } from "lucide-react";
+import { Activity, PanelRight, History } from "lucide-react";
 import {
   ConversationView,
   AttachmentPreviewModal,
@@ -12,6 +12,7 @@ import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 import { PreviewPanel } from "@/components/shared/preview-panel";
 import { SplitPanel } from "@/components/shared/layout";
 import { IconButton, Tooltip, spacing } from "@/components/shared/ui";
+import { TimelineDrawer } from "@/components/shared/event-timeline";
 import { useActiveProjectId } from "@/api/hooks/_shared";
 import { useChatSession } from "./hooks/use-chat-session";
 import { useChatPanels } from "./hooks/use-chat-panels";
@@ -23,6 +24,7 @@ const Root = styled(Flex)`
 
 export function ChatView() {
   const projectId = useActiveProjectId();
+  const [timelineOpen, setTimelineOpen] = useState(false);
   const {
     sessionId,
     conversationMessages,
@@ -61,6 +63,16 @@ export function ChatView() {
           </IconButton>
         </Tooltip>
         <Box css={{ flex: 1 }} />
+        <Tooltip content="Conversation timeline">
+          <IconButton
+            variant={timelineOpen ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setTimelineOpen((v) => !v)}
+            aria-label="Toggle timeline"
+          >
+            <Activity />
+          </IconButton>
+        </Tooltip>
         <Tooltip content={previewOpen ? "Close preview" : "Open preview"}>
           <IconButton
             variant={previewOpen ? "default" : "ghost"}
@@ -122,6 +134,14 @@ export function ChatView() {
           projectId={projectId}
           record={previewAttachment}
           onClose={closeAttachment}
+        />
+      )}
+      {timelineOpen && (
+        <TimelineDrawer
+          scope="single_chat"
+          conversationId={sessionId ?? undefined}
+          onClose={() => setTimelineOpen(false)}
+          hideMessages
         />
       )}
     </Root>

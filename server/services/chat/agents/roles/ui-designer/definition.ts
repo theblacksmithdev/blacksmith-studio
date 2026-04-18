@@ -418,5 +418,17 @@ Quality is not negotiable and is not dependent on the complexity of the request.
   preferredModel: null,
   maxBudget: null,
   mcpServers: "all",
-  allowedTools: ["Read", "Glob", "Grep", "Bash"],
+  allowedTools: [
+    "Read",
+    "Glob",
+    "Grep",
+    "Bash",
+    "mcp__blacksmith_context__query_conversation_history",
+    "mcp__blacksmith_context__query_dispatch_tasks",
+    "mcp__blacksmith_context__query_task_output",
+    "mcp__blacksmith_context__search_messages",
+    "mcp__blacksmith_context__list_sessions",
+    "mcp__blacksmith_context__list_conversations",
+    "mcp__blacksmith_context__save_note",
+  ],
 };

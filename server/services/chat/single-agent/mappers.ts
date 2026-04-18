@@ -48,6 +48,9 @@ export function mapMessage(
     toolCalls:
       toolCallRows.length > 0 ? toolCallRows.map(mapToolCall) : undefined,
     attachments: parseAttachments(row.attachments ?? null),
+    costUsd: row.costUsd ?? undefined,
+    durationMs: row.durationMs ?? undefined,
+    error: row.error ?? undefined,
     timestamp: row.timestamp,
   };
 }

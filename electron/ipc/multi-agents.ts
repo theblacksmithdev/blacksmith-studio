@@ -13,8 +13,9 @@ import {
   ConversationContext,
   type ConversationMessage,
 } from "../../server/services/chat/agents/manager/conversation-context.js";
-import { AgentSessionManager } from "../../server/services/chat/multi-agents/index.js";
+import type { AgentSessionManager } from "../../server/services/chat/multi-agents/index.js";
 import type { AgentRole } from "../../server/services/chat/agents/types.js";
+import type { ConversationEventService } from "../../server/services/events/index.js";
 import type { AgentExecuteOptions } from "../../server/services/chat/agents/base/index.js";
 import {
   MULTI_AGENTS_LIST,
@@ -126,10 +127,59 @@ export function setupMultiAgentsIPC(
   settingsManager: SettingsManager,
   mcpManager: McpManager,
   ai: Ai,
+  sessionManager: AgentSessionManager,
+  eventService: ConversationEventService,
 ) {
   const agentManager = new AgentManager();
   const projectBuilder = new ProjectBuilder(agentManager);
-  const sessionManager = new AgentSessionManager();
+
+  /**
+   * Runtime index so streaming agent events (which carry `executionId`
+   * and sometimes `taskId`) can be resolved back to their dispatch and
+   * conversation. Populated on the first `task_status` event for an
+   * executionId; read by the event-log fan-out that follows.
+   */
+  const executionToTask = new Map<string, string>();
+
+  function persistAgentEvent(event: {
+    type: string;
+    agentId: string;
+    executionId: string;
+    data: Record<string, unknown> & { type: string };
+  }): void {
+    const taskId =
+      (event.data as { taskId?: string }).taskId ??
+      executionToTask.get(event.executionId);
+    if (!taskId) return;
+    const ctx = sessionManager.resolveTaskContext(taskId);
+    if (!ctx || !ctx.conversationId) return;
+
+    const eventTypeMap: Record<string, string> = {
+      task_status: "task_status_change",
+      subtask_status: "task_status_change",
+      tool_use: "tool_use",
+      tool_result: "tool_result",
+      thinking: "thinking_block",
+      activity: "agent_activity",
+      error: "error",
+      status: "agent_activity",
+      done: "task_result",
+      message: "assistant_message",
+    };
+    const mapped = eventTypeMap[event.data.type];
+    if (!mapped) return;
+
+    eventService.append({
+      projectId: ctx.projectId,
+      scope: "agent_chat",
+      conversationId: ctx.conversationId,
+      dispatchId: ctx.dispatchId,
+      taskId,
+      agentRole: event.agentId,
+      eventType: mapped as never,
+      payload: event.data,
+    });
+  }
 
   // ── Forward agent events to renderer ──
   agentManager.onAgentEvent((event) => {
@@ -137,9 +187,16 @@ export function setupMultiAgentsIPC(
 
     // Persist task status changes
     if (event.data.type === "task_status") {
-      const { taskId, status } = event.data as any;
+      const { taskId, status } = event.data as {
+        taskId: string;
+        status: string;
+      };
+      executionToTask.set(event.executionId, taskId);
       sessionManager.updateTaskStatus(taskId, status);
     }
+
+    // Stamp the unified event log for reload fidelity + forever trail.
+    persistAgentEvent(event as never);
   });
 
   agentManager.onWorkflowEvent((event) => {
@@ -197,7 +254,7 @@ export function setupMultiAgentsIPC(
       );
 
       // Persist user message
-      sessionManager.addChatMessage(
+      const userChatRecord = sessionManager.addChatMessage(
         project.id,
         "user",
         data.prompt,
@@ -206,6 +263,22 @@ export function setupMultiAgentsIPC(
         data.conversationId,
         data.attachments,
       );
+      if (data.conversationId) {
+        eventService.append({
+          projectId: project.id,
+          scope: "agent_chat",
+          conversationId: data.conversationId,
+          messageId: userChatRecord.id,
+          eventType: "user_message",
+          payload: {
+            content: data.prompt,
+            attachments:
+              data.attachments && data.attachments.length > 0
+                ? data.attachments
+                : undefined,
+          },
+        });
+      }
 
       // Build the conversation context that travels with the dispatch so
       // the PM resumes its Claude session across messages and every
@@ -278,23 +351,89 @@ export function setupMultiAgentsIPC(
           data.conversationId,
         );
 
+        // Persist the plan's declared dependencies into the join table.
+        for (const t of result.plan.tasks) {
+          if (t.dependsOn && t.dependsOn.length > 0) {
+            sessionManager.addTaskDependencies(t.id, t.dependsOn);
+          }
+        }
+
+        if (data.conversationId) {
+          eventService.append({
+            projectId: project.id,
+            scope: "agent_chat",
+            conversationId: data.conversationId,
+            dispatchId,
+            eventType: "dispatch_created",
+            payload: {
+              prompt: data.prompt,
+              planMode: result.plan.mode,
+              planSummary: result.plan.summary,
+            },
+          });
+          eventService.append({
+            projectId: project.id,
+            scope: "agent_chat",
+            conversationId: data.conversationId,
+            dispatchId,
+            eventType: "dispatch_plan",
+            payload: { plan: result.plan },
+          });
+          for (const t of result.plan.tasks) {
+            eventService.append({
+              projectId: project.id,
+              scope: "agent_chat",
+              conversationId: data.conversationId,
+              dispatchId,
+              taskId: t.id,
+              agentRole: t.role,
+              eventType: "task_created",
+              payload: {
+                id: t.id,
+                title: t.title,
+                description: t.description,
+                role: t.role,
+                dependsOn: t.dependsOn,
+              },
+            });
+          }
+        }
+
         for (const exec of result.executions) {
           const matchingTask = exec.taskId
             ? result.plan.tasks.find((t) => t.id === exec.taskId)
             : result.plan.tasks.find((t) => t.role === exec.agentId);
           if (matchingTask) {
-            sessionManager.updateTaskStatus(
-              matchingTask.id,
-              exec.status === "done" ? "done" : "error",
-              {
-                executionId: exec.id,
-                sessionId: exec.sessionId || undefined,
-                responseText: exec.responseText,
-                error: exec.error ?? undefined,
-                costUsd: exec.costUsd,
-                durationMs: exec.durationMs,
-              },
-            );
+            const terminalStatus: "done" | "error" =
+              exec.status === "done" ? "done" : "error";
+            sessionManager.updateTaskStatus(matchingTask.id, terminalStatus, {
+              executionId: exec.id,
+              sessionId: exec.sessionId || undefined,
+              responseText: exec.responseText,
+              error: exec.error ?? undefined,
+              costUsd: exec.costUsd,
+              durationMs: exec.durationMs,
+            });
+
+            if (data.conversationId) {
+              eventService.append({
+                projectId: project.id,
+                scope: "agent_chat",
+                conversationId: data.conversationId,
+                dispatchId,
+                taskId: matchingTask.id,
+                agentRole: matchingTask.role,
+                eventType: "task_result",
+                payload: {
+                  status: terminalStatus,
+                  executionId: exec.id,
+                  responseText: exec.responseText,
+                  error: exec.error,
+                  costUsd: exec.costUsd,
+                  durationMs: exec.durationMs,
+                },
+              });
+            }
           }
         }
 
@@ -314,18 +453,35 @@ export function setupMultiAgentsIPC(
           totalDuration,
         );
 
-        sessionManager.addChatMessage(
+        const systemContent = anyFailed
+          ? "Dispatch completed with errors"
+          : `All tasks finished — $${totalCost.toFixed(4)}`;
+        const systemRecord = sessionManager.addChatMessage(
           project.id,
           "system",
-          anyFailed
-            ? "Dispatch completed with errors"
-            : `All tasks finished — $${totalCost.toFixed(4)}`,
+          systemContent,
           undefined,
           dispatchId,
           data.conversationId,
         );
+        if (data.conversationId) {
+          eventService.append({
+            projectId: project.id,
+            scope: "agent_chat",
+            conversationId: data.conversationId,
+            dispatchId,
+            messageId: systemRecord.id,
+            eventType: "dispatch_status",
+            payload: {
+              status: anyFailed ? "failed" : "completed",
+              totalCostUsd: totalCost,
+              totalDurationMs: totalDuration,
+              summary: systemContent,
+            },
+          });
+        }
       } else if (result.plan.mode === "clarification") {
-        sessionManager.addChatMessage(
+        const clarificationRecord = sessionManager.addChatMessage(
           project.id,
           "agent",
           result.plan.summary,
@@ -333,6 +489,21 @@ export function setupMultiAgentsIPC(
           undefined,
           data.conversationId,
         );
+        if (data.conversationId) {
+          eventService.append({
+            projectId: project.id,
+            scope: "agent_chat",
+            conversationId: data.conversationId,
+            messageId: clarificationRecord.id,
+            agentRole: "product-manager",
+            eventType: "assistant_message",
+            payload: {
+              content: result.plan.summary,
+              agentRole: "product-manager",
+              mode: "clarification",
+            },
+          });
+        }
       }
 
       // Update conversation title from the first prompt if it exists

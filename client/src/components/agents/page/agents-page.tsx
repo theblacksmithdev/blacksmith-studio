@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { ReactFlowProvider } from "@xyflow/react";
-import { ListTodo, MessageSquare, Square } from "lucide-react";
+import { Activity, ListTodo, MessageSquare, Square } from "lucide-react";
 import {
   useAgentsListQuery,
   useAgentRespond,
@@ -17,6 +17,7 @@ import { AgentChat } from "../chat";
 import { AgentDetail } from "../detail";
 import { AgentInnerView } from "../inner-view";
 import { TaskDrawer } from "../drawer";
+import { TimelineDrawer } from "@/components/shared/event-timeline";
 import { AgentMainPanel } from "./agent-main-panel";
 import { useAgentEvents } from "./use-agent-events";
 import {
@@ -40,6 +41,7 @@ interface AgentsPageProps {
 
 export function AgentsPage({ conversationId, onSend }: AgentsPageProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [timelineOpen, setTimelineOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(true);
   const [hasUnread, setHasUnread] = useState(false);
   const [innerViewRole, setInnerViewRole] = useState<AgentRole | null>(null);
@@ -209,6 +211,13 @@ export function AgentsPage({ conversationId, onSend }: AgentsPageProps) {
           </TasksBtn>
         </Tooltip>
 
+        <Tooltip content="View conversation timeline">
+          <ChatBtn onClick={() => setTimelineOpen(true)}>
+            <Activity size={14} />
+            Timeline
+          </ChatBtn>
+        </Tooltip>
+
         {isProcessing && (
           <Tooltip content="Stop all agents">
             <StopBtn onClick={handleStop}>
@@ -248,6 +257,15 @@ export function AgentsPage({ conversationId, onSend }: AgentsPageProps) {
       </SplitPanel>
 
       {drawerOpen && <TaskDrawer onClose={() => setDrawerOpen(false)} />}
+
+      {timelineOpen && (
+        <TimelineDrawer
+          scope="agent_chat"
+          conversationId={conversationId}
+          onClose={() => setTimelineOpen(false)}
+          hideMessages
+        />
+      )}
 
       {showStopConfirm && (
         <ConfirmDialog

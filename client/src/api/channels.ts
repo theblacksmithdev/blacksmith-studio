@@ -5,6 +5,7 @@ import { runner } from "./modules/runner";
 import { git } from "./modules/git";
 import { terminal } from "./modules/terminal";
 import { multiAgents } from "./modules/multi-agents";
+import { conversationEvents } from "./modules/conversation-events";
 import { python } from "./modules/python";
 import { graphify } from "./modules/graphify";
 import { windowApi } from "./modules/window";
@@ -59,6 +60,9 @@ export const channels = {
   "multiAgents:workflowEvent": multiAgents.onWorkflowEvent,
   "multiAgents:buildEvent": multiAgents.onBuildEvent,
   "multiAgents:inputRequest": multiAgents.onInputRequest,
+
+  // Conversation events (unified append stream for reload-fidelity UIs)
+  "conversationEvents:append": conversationEvents.onAppend,
 
   // Python
   "python:progress": python.onProgress,

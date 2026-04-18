@@ -6,6 +6,12 @@ import { setupAllIPC } from "./ipc/index.js";
 import { WINDOW_ON_FULLSCREEN } from "./ipc/channels.js";
 import { ProjectManager } from "../server/services/projects.js";
 import { SessionManager } from "../server/services/chat/single-agent/index.js";
+import { AgentSessionManager } from "../server/services/chat/multi-agents/index.js";
+import {
+  ConversationEventService,
+  EventRepository,
+} from "../server/services/events/index.js";
+import { getDatabase } from "../server/db/index.js";
 import { Ai } from "../server/services/ai/index.js";
 import { SettingsManager } from "../server/services/settings.js";
 import { RunnerManager } from "../server/services/runner/index.js";
@@ -121,7 +127,10 @@ app.whenReady().then(async () => {
   // Instantiate services in main process
   const projectManager = new ProjectManager();
   const ai = new Ai();
-  const sessionManager = new SessionManager();
+  const db = getDatabase();
+  const sessionManager = new SessionManager(db);
+  const agentSessionManager = new AgentSessionManager(db);
+  const eventService = new ConversationEventService(new EventRepository(db));
   const settingsManager = new SettingsManager();
   const { RunnerConfigService } =
     await import("../server/services/runner/runner-config.js");
@@ -165,6 +174,8 @@ app.whenReady().then(async () => {
     () => mainWindow,
     projectManager,
     sessionManager,
+    agentSessionManager,
+    eventService,
     ai,
     settingsManager,
     runnerManager,

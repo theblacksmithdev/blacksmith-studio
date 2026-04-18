@@ -141,6 +141,22 @@ export class McpManager {
     this.write(projectRoot, data);
   }
 
+  /**
+   * Idempotently register a built-in stdio server. Overwrites the
+   * existing entry so path changes (e.g. after a rebuild or upgrade)
+   * propagate without the user having to clear `.mcp.json` manually.
+   */
+  ensureBuiltinServer(
+    projectRoot: string,
+    name: string,
+    config: McpServerStdio,
+  ): void {
+    const data = this.read(projectRoot);
+    data.mcpServers[name] = config;
+    this.errors.delete(name);
+    this.write(projectRoot, data);
+  }
+
   update(projectRoot: string, name: string, config: McpServerConfig): void {
     const data = this.read(projectRoot);
     if (!data.mcpServers[name]) {

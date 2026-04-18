@@ -5,6 +5,7 @@ import type { SessionManager } from "../../server/services/chat/single-agent/ind
 import type { ProjectManager } from "../../server/services/projects.js";
 import type { SettingsManager } from "../../server/services/settings.js";
 import type { McpManager } from "../../server/services/mcp.js";
+import type { ConversationEventService } from "../../server/services/events/index.js";
 import {
   STUDIO_SYSTEM_PROMPT,
   getProjectContext,
@@ -27,6 +28,7 @@ export function setupSingleAgentIPC(
   projectManager: ProjectManager,
   settingsManager: SettingsManager,
   mcpManager: McpManager,
+  eventService: ConversationEventService,
 ) {
   ipcMain.handle(
     SINGLE_AGENT_SEND_PROMPT,
@@ -67,13 +69,26 @@ export function setupSingleAgentIPC(
         existingSession && existingSession.messages.length > 0
       );
 
+      const userMessageId = crypto.randomUUID();
       sessionManager.addMessage(sessionId, {
-        id: crypto.randomUUID(),
+        id: userMessageId,
         role: "user",
         content: prompt,
         attachments:
           attachments && attachments.length > 0 ? attachments : undefined,
         timestamp: new Date().toISOString(),
+      });
+      eventService.append({
+        projectId: project.id,
+        scope: "single_chat",
+        conversationId: sessionId,
+        messageId: userMessageId,
+        eventType: "user_message",
+        payload: {
+          content: prompt,
+          attachments:
+            attachments && attachments.length > 0 ? attachments : undefined,
+        },
       });
 
       const settings = resolveAiInvocationSettings(
@@ -133,21 +148,50 @@ export function setupSingleAgentIPC(
                   toolName: tool.name,
                   input: tool.input,
                 });
+                eventService.append({
+                  projectId: project.id,
+                  scope: "single_chat",
+                  conversationId: sessionId,
+                  eventType: "tool_use",
+                  payload: {
+                    toolId: tool.id,
+                    toolName: tool.name,
+                    input: tool.input,
+                  },
+                });
               }
             } else if (chunk.type === "result") {
+              const costUsd = chunk.cost_usd ?? 0;
+              const durationMs = chunk.duration_ms ?? 0;
               if (lastContent) {
+                const assistantMessageId = crypto.randomUUID();
                 sessionManager.addMessage(sessionId, {
-                  id: crypto.randomUUID(),
+                  id: assistantMessageId,
                   role: "assistant",
                   content: lastContent,
                   toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
+                  costUsd: String(costUsd),
+                  durationMs,
                   timestamp: new Date().toISOString(),
+                });
+                eventService.append({
+                  projectId: project.id,
+                  scope: "single_chat",
+                  conversationId: sessionId,
+                  messageId: assistantMessageId,
+                  eventType: "assistant_message",
+                  payload: {
+                    content: lastContent,
+                    toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
+                    costUsd,
+                    durationMs,
+                  },
                 });
               }
               win?.webContents.send(SINGLE_AGENT_ON_DONE, {
                 sessionId,
-                costUsd: chunk.cost_usd || 0,
-                durationMs: chunk.duration_ms || 0,
+                costUsd,
+                durationMs,
               });
             }
           },
@@ -156,15 +200,26 @@ export function setupSingleAgentIPC(
         await handle.promise;
       } catch (error: any) {
         console.error(`[ipc] Claude error:`, error.message);
+        const errorMessageId = crypto.randomUUID();
+        const errorText = error.message || "Unknown error";
         sessionManager.addMessage(sessionId, {
-          id: crypto.randomUUID(),
+          id: errorMessageId,
           role: "assistant",
-          content: `Error: ${error.message}`,
+          content: `Error: ${errorText}`,
+          error: errorText,
           timestamp: new Date().toISOString(),
+        });
+        eventService.append({
+          projectId: project.id,
+          scope: "single_chat",
+          conversationId: sessionId,
+          messageId: errorMessageId,
+          eventType: "error",
+          payload: { error: errorText, code: "PROCESS_ERROR" },
         });
         win?.webContents.send(SINGLE_AGENT_ON_ERROR, {
           sessionId,
-          error: error.message || "Unknown error",
+          error: errorText,
           code: "PROCESS_ERROR",
         });
       }

@@ -84,6 +84,9 @@ export class SessionManager {
         message.attachments && message.attachments.length > 0
           ? JSON.stringify(message.attachments)
           : null,
+      costUsd: message.costUsd ?? null,
+      durationMs: message.durationMs ?? null,
+      error: message.error ?? null,
       timestamp: message.timestamp,
     });
 

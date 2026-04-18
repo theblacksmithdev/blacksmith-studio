@@ -12,12 +12,17 @@ import {
   ChatMessageRepository,
   ConversationRepository,
   DispatchRepository,
+  TaskDependencyRepository,
+  TaskNoteRepository,
   TaskRepository,
+  type TaskDependency,
 } from "./repositories/index.js";
 import {
   ChatService,
   ConversationService,
   DispatchService,
+  NoteService,
+  type TaskNoteRecord,
 } from "./services/index.js";
 import type {
   AgentChatRecord,
@@ -43,26 +48,47 @@ import type {
  * Public API is preserved byte-for-byte with the pre-refactor
  * AgentSessionManager so IPC handlers don't change.
  */
+export interface TaskContext {
+  taskId: string;
+  dispatchId: string;
+  projectId: string;
+  conversationId: string | null;
+  role: string;
+}
+
 export class AgentSessionManager {
   private readonly conversations: ConversationService;
   private readonly dispatches: DispatchService;
   private readonly chat: ChatService;
   private readonly tracer: ArtifactTracer;
+  private readonly notes: NoteService;
+  // Repositories kept as fields for the narrow read paths (context
+  // resolution + dependency graph) exposed to the IPC/MCP layer.
+  private readonly taskRepo: TaskRepository;
+  private readonly dispatchRepo: DispatchRepository;
+  private readonly dependencyRepo: TaskDependencyRepository;
 
   constructor(db: Database = getDatabase()) {
     const conversationRepo = new ConversationRepository(db);
     const dispatchRepo = new DispatchRepository(db);
     const taskRepo = new TaskRepository(db);
     const chatRepo = new ChatMessageRepository(db);
+    const dependencyRepo = new TaskDependencyRepository(db);
+    const noteRepo = new TaskNoteRepository(db);
     // Repositories from the single-chat domain — the artifact tracer's
     // final edges read the message + tool_call tables to resolve the
     // files each task's agent actually touched.
     const messageRepo = new MessageRepository(db);
     const toolCallRepo = new ToolCallRepository(db);
 
+    this.taskRepo = taskRepo;
+    this.dispatchRepo = dispatchRepo;
+    this.dependencyRepo = dependencyRepo;
+
     this.conversations = new ConversationService(conversationRepo, chatRepo);
     this.dispatches = new DispatchService(dispatchRepo, taskRepo);
     this.chat = new ChatService(chatRepo, this.conversations);
+    this.notes = new NoteService(noteRepo);
     this.tracer = new ArtifactTracer(
       dispatchRepo,
       taskRepo,
@@ -219,5 +245,72 @@ export class AgentSessionManager {
    */
   getConversationArtifacts(conversationId: string): ConversationArtifact[] {
     return this.tracer.getArtifacts(conversationId);
+  }
+
+  /* ── Context resolution (for event-log stamping + MCP tools) ── */
+
+  /**
+   * Resolve the dispatch/conversation context for a task. Returns null
+   * if the task doesn't exist. The event-log pipeline uses this to
+   * stamp `task_status` / streaming events with `dispatchId` +
+   * `conversationId` without threading them through the agent runtime.
+   */
+  resolveTaskContext(taskId: string): TaskContext | null {
+    const task = this.taskRepo.findById(taskId);
+    if (!task) return null;
+    const dispatch = this.dispatchRepo.findById(task.dispatchId);
+    if (!dispatch) return null;
+    return {
+      taskId: task.id,
+      dispatchId: task.dispatchId,
+      projectId: dispatch.projectId,
+      conversationId: dispatch.conversationId ?? null,
+      role: task.role,
+    };
+  }
+
+  resolveDispatchContext(
+    dispatchId: string,
+  ): { projectId: string; conversationId: string | null } | null {
+    const dispatch = this.dispatchRepo.findById(dispatchId);
+    if (!dispatch) return null;
+    return {
+      projectId: dispatch.projectId,
+      conversationId: dispatch.conversationId ?? null,
+    };
+  }
+
+  /* ── Task dependencies ── */
+
+  addTaskDependencies(taskId: string, dependsOnTaskIds: string[]): void {
+    this.dependencyRepo.insertMany(
+      dependsOnTaskIds.map((dependsOnTaskId) => ({
+        taskId,
+        dependsOnTaskId,
+      })),
+    );
+  }
+
+  listTaskDependencies(taskId: string): TaskDependency[] {
+    return this.dependencyRepo.listDependenciesOf(taskId);
+  }
+
+  listDependenciesForDispatch(dispatchId: string): TaskDependency[] {
+    const tasks = this.taskRepo.listByDispatch(dispatchId);
+    return this.dependencyRepo.listForTasks(tasks.map((t) => t.id));
+  }
+
+  /* ── Task notes (agent-authored breadcrumbs) ── */
+
+  addTaskNote(
+    taskId: string,
+    authorRole: string,
+    content: string,
+  ): TaskNoteRecord {
+    return this.notes.add(taskId, authorRole, content);
+  }
+
+  listTaskNotes(taskId: string): TaskNoteRecord[] {
+    return this.notes.listForTask(taskId);
   }
 }

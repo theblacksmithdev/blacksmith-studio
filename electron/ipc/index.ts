@@ -1,6 +1,8 @@
 import type { BrowserWindow } from "electron";
 import type { ProjectManager } from "../../server/services/projects.js";
 import type { SessionManager } from "../../server/services/chat/single-agent/index.js";
+import type { AgentSessionManager } from "../../server/services/chat/multi-agents/index.js";
+import type { ConversationEventService } from "../../server/services/events/index.js";
 import type { SettingsManager } from "../../server/services/settings.js";
 import type { RunnerManager } from "../../server/services/runner/index.js";
 import type { RunnerConfigService } from "../../server/services/runner/runner-config.js";
@@ -30,6 +32,8 @@ import { setupFolderDialogIPC } from "./folder-dialog.js";
 import { setupGitIPC } from "./git.js";
 import { setupTerminalIPC } from "./terminal.js";
 import { setupMultiAgentsIPC } from "./multi-agents.js";
+import { setupConversationEventsIPC } from "./conversation-events.js";
+import { setupAgentTasksIPC } from "./agent-tasks.js";
 import { setupGraphifyIPC } from "./graphify.js";
 import { setupPythonIPC } from "./python.js";
 import { setupWindowIPC } from "./window.js";
@@ -39,6 +43,8 @@ export function setupAllIPC(
   getWindow: () => BrowserWindow | null,
   projectManager: ProjectManager,
   sessionManager: SessionManager,
+  agentSessionManager: AgentSessionManager,
+  eventService: ConversationEventService,
   ai: Ai,
   settingsManager: SettingsManager,
   runnerManager: RunnerManager,
@@ -65,6 +71,7 @@ export function setupAllIPC(
     projectManager,
     settingsManager,
     mcpManager,
+    eventService,
   );
   setupRunnerIPC(
     getWindow,
@@ -94,6 +101,10 @@ export function setupAllIPC(
     settingsManager,
     mcpManager,
     ai,
+    agentSessionManager,
+    eventService,
   );
+  setupConversationEventsIPC(getWindow, eventService);
+  setupAgentTasksIPC(agentSessionManager);
   setupAttachmentsIPC(new AttachmentService(projectManager));
 }

@@ -38,6 +38,15 @@ function projectKeys(projectId: string) {
     agentHistory: [...p, "agents", "history"] as const,
     agentPipelines: [...p, "agents", "pipelines"] as const,
     agentBuildProgress: [...p, "agents", "buildProgress"] as const,
+    conversationEvents: (scope: "single_chat" | "agent_chat", id: string) =>
+      [...p, "conversationEvents", scope, id] as const,
+    agentTasks: (dispatchId: string) =>
+      [...p, "agents", "tasks", dispatchId] as const,
+    agentTask: (taskId: string) => [...p, "agents", "task", taskId] as const,
+    taskNotes: (taskId: string) =>
+      [...p, "agents", "task", taskId, "notes"] as const,
+    taskDependencies: (dispatchId: string) =>
+      [...p, "agents", "tasks", dispatchId, "dependencies"] as const,
     runnerConfigs: [...p, "runner", "configs"] as const,
     pythonInstallations: ["python", "detect"] as const,
     pythonCheck: ["python", "check"] as const,

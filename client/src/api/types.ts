@@ -517,6 +517,90 @@ export interface InputRequest {
   timestamp: string;
 }
 
+/* ── Conversation Events (unified log across single + multi-agent chats) ── */
+
+export type EventScope = "single_chat" | "agent_chat";
+
+export type ConversationEventType =
+  | "user_message"
+  | "assistant_message"
+  | "tool_use"
+  | "tool_result"
+  | "thinking_block"
+  | "dispatch_created"
+  | "dispatch_plan"
+  | "dispatch_status"
+  | "task_created"
+  | "task_status_change"
+  | "task_result"
+  | "agent_activity"
+  | "error";
+
+export interface ConversationEvent {
+  id: string;
+  projectId: string;
+  scope: EventScope;
+  conversationId: string;
+  dispatchId: string | null;
+  taskId: string | null;
+  messageId: string | null;
+  agentRole: string | null;
+  eventType: ConversationEventType;
+  payload: unknown;
+  sequence: number;
+  timestamp: string;
+}
+
+export interface ConversationEventsListInput {
+  scope: EventScope;
+  conversationId: string;
+  afterSequence?: number;
+  limit?: number;
+}
+
+/* ── Agent Tasks (DB-backed) ── */
+
+export type AgentTaskStatus =
+  | "pending"
+  | "running"
+  | "done"
+  | "error"
+  | "skipped";
+
+export interface AgentTask {
+  id: string;
+  dispatchId: string;
+  title: string;
+  description: string | null;
+  role: AgentRole;
+  prompt: string;
+  status: AgentTaskStatus;
+  taskType: "main" | "subtask" | "bugfix" | null;
+  parentTaskId: string | null;
+  orderIndex: number;
+  executionId: string | null;
+  sessionId: string | null;
+  responseText: string | null;
+  error: string | null;
+  costUsd: string | null;
+  durationMs: number | null;
+  startedAt: string | null;
+  finishedAt: string | null;
+}
+
+export interface TaskDependency {
+  taskId: string;
+  dependsOnTaskId: string;
+}
+
+export interface TaskNote {
+  id: string;
+  taskId: string;
+  authorRole: string;
+  content: string;
+  createdAt: string;
+}
+
 /* ── Re-exports for convenience ── */
 
 export type { Session, SessionSummary, FileNode, PromptTemplate, HealthStatus };

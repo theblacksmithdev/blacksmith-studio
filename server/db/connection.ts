@@ -150,12 +150,46 @@ export function getDatabase() {
       created_at TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS task_dependencies (
+      task_id TEXT NOT NULL REFERENCES agent_tasks(id) ON DELETE CASCADE,
+      depends_on_task_id TEXT NOT NULL REFERENCES agent_tasks(id) ON DELETE CASCADE,
+      PRIMARY KEY (task_id, depends_on_task_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS task_notes (
+      id TEXT PRIMARY KEY,
+      task_id TEXT NOT NULL REFERENCES agent_tasks(id) ON DELETE CASCADE,
+      author_role TEXT NOT NULL,
+      content TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS conversation_events (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+      scope TEXT NOT NULL CHECK(scope IN ('single_chat', 'agent_chat')),
+      conversation_id TEXT NOT NULL,
+      dispatch_id TEXT,
+      task_id TEXT,
+      message_id TEXT,
+      agent_role TEXT,
+      event_type TEXT NOT NULL,
+      payload TEXT NOT NULL,
+      sequence INTEGER NOT NULL,
+      timestamp TEXT NOT NULL
+    );
+
     CREATE INDEX IF NOT EXISTS idx_runner_configs_project_id ON runner_configs(project_id);
     CREATE INDEX IF NOT EXISTS idx_agent_conversations_project_id ON agent_conversations(project_id);
     CREATE INDEX IF NOT EXISTS idx_agent_dispatches_project_id ON agent_dispatches(project_id);
     CREATE INDEX IF NOT EXISTS idx_agent_tasks_dispatch_id ON agent_tasks(dispatch_id);
     CREATE INDEX IF NOT EXISTS idx_agent_chat_messages_project_id ON agent_chat_messages(project_id);
     CREATE INDEX IF NOT EXISTS idx_agent_chat_messages_timestamp ON agent_chat_messages(timestamp);
+    CREATE INDEX IF NOT EXISTS idx_task_dependencies_depends_on ON task_dependencies(depends_on_task_id);
+    CREATE INDEX IF NOT EXISTS idx_task_notes_task_id ON task_notes(task_id);
+    CREATE INDEX IF NOT EXISTS idx_conversation_events_scope_conv_seq ON conversation_events(scope, conversation_id, sequence);
+    CREATE INDEX IF NOT EXISTS idx_conversation_events_dispatch_id ON conversation_events(dispatch_id);
+    CREATE INDEX IF NOT EXISTS idx_conversation_events_task_id ON conversation_events(task_id);
   `);
 
   // ── Migrations for existing databases ──
@@ -172,6 +206,11 @@ export function getDatabase() {
     "ALTER TABLE agent_conversations ADD COLUMN last_plan_summary TEXT",
     "ALTER TABLE messages ADD COLUMN attachments TEXT",
     "ALTER TABLE agent_chat_messages ADD COLUMN attachments TEXT",
+    "ALTER TABLE messages ADD COLUMN cost_usd TEXT",
+    "ALTER TABLE messages ADD COLUMN duration_ms INTEGER",
+    "ALTER TABLE messages ADD COLUMN error TEXT",
+    "ALTER TABLE agent_tasks ADD COLUMN started_at TEXT",
+    "ALTER TABLE agent_tasks ADD COLUMN finished_at TEXT",
   ];
 
   for (const sql of migrations) {

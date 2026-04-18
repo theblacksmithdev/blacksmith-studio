@@ -36,6 +36,9 @@ export const messages = sqliteTable("messages", {
   content: text("content").notNull(),
   /** JSON-encoded array of MessageAttachment records (nullable). */
   attachments: text("attachments"),
+  costUsd: text("cost_usd"),
+  durationMs: integer("duration_ms"),
+  error: text("error"),
   timestamp: text("timestamp").notNull(),
 });
 
@@ -143,6 +146,66 @@ export const agentTasks = sqliteTable("agent_tasks", {
   error: text("error"),
   costUsd: text("cost_usd"),
   durationMs: integer("duration_ms"),
+  startedAt: text("started_at"),
+  finishedAt: text("finished_at"),
+});
+
+/**
+ * Task dependencies — DAG edges between agent tasks (join table).
+ * A row `(taskId, dependsOnTaskId)` means `taskId` cannot start until
+ * `dependsOnTaskId` completes.
+ */
+export const taskDependencies = sqliteTable("task_dependencies", {
+  taskId: text("task_id")
+    .notNull()
+    .references(() => agentTasks.id, { onDelete: "cascade" }),
+  dependsOnTaskId: text("depends_on_task_id")
+    .notNull()
+    .references(() => agentTasks.id, { onDelete: "cascade" }),
+});
+
+/**
+ * Task notes — breadcrumbs an agent leaves on a task so other agents
+ * (and humans) can pick up context later. Written via the Context MCP
+ * tool `save_note`.
+ */
+export const taskNotes = sqliteTable("task_notes", {
+  id: text("id").primaryKey(),
+  taskId: text("task_id")
+    .notNull()
+    .references(() => agentTasks.id, { onDelete: "cascade" }),
+  authorRole: text("author_role").notNull(),
+  content: text("content").notNull(),
+  createdAt: text("created_at").notNull(),
+});
+
+/**
+ * Conversation events — unified append-only log that backs BOTH
+ * reload-fidelity (UI replays events to reconstruct a conversation
+ * exactly as it streamed live) AND the forever-kept diagnostic trail.
+ *
+ * `scope` discriminates single-agent vs multi-agent conversations.
+ * `conversationId` references either `sessions.id` (single_chat) or
+ * `agent_conversations.id` (agent_chat). `sequence` is a monotonic
+ * per-conversation ordinal for deterministic replay even when two
+ * events share a millisecond timestamp. `payload` is a JSON-encoded
+ * event-type-discriminated shape.
+ */
+export const conversationEvents = sqliteTable("conversation_events", {
+  id: text("id").primaryKey(),
+  projectId: text("project_id")
+    .notNull()
+    .references(() => projects.id, { onDelete: "cascade" }),
+  scope: text("scope", { enum: ["single_chat", "agent_chat"] }).notNull(),
+  conversationId: text("conversation_id").notNull(),
+  dispatchId: text("dispatch_id"),
+  taskId: text("task_id"),
+  messageId: text("message_id"),
+  agentRole: text("agent_role"),
+  eventType: text("event_type").notNull(),
+  payload: text("payload").notNull(),
+  sequence: integer("sequence").notNull(),
+  timestamp: text("timestamp").notNull(),
 });
 
 /**

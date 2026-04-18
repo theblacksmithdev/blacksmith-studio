@@ -15,6 +15,8 @@ import { knowledge } from "./modules/knowledge";
 import { git } from "./modules/git";
 import { terminal } from "./modules/terminal";
 import { multiAgents } from "./modules/multi-agents";
+import { conversationEvents } from "./modules/conversation-events";
+import { agentTasks } from "./modules/agent-tasks";
 import { python } from "./modules/python";
 import { graphify } from "./modules/graphify";
 import { attachments } from "./modules/attachments";
@@ -37,6 +39,8 @@ export const api = {
   git,
   terminal,
   multiAgents,
+  conversationEvents,
+  agentTasks,
   python,
   graphify,
   attachments,

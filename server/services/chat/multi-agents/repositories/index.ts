@@ -10,3 +10,11 @@ export {
   type TaskUpdate,
 } from "./task-repository.js";
 export { ChatMessageRepository } from "./chat-message-repository.js";
+export {
+  TaskDependencyRepository,
+  type TaskDependency,
+} from "./task-dependency-repository.js";
+export {
+  TaskNoteRepository,
+  type TaskNoteInsert,
+} from "./task-note-repository.js";

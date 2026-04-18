@@ -1,6 +1,7 @@
 import type { McpManager } from "../mcp.js";
 import type { Project } from "../projects.js";
 import type { SettingsManager } from "../settings.js";
+import { ensureContextMcpRegistered } from "../agents/context-mcp/index.js";
 
 /**
  * Shared per-invocation settings shape consumed by both chat types.
@@ -38,11 +39,18 @@ export function resolveAiInvocationSettings(
   const disabledServers = Array.isArray(all["mcp.disabledServers"])
     ? (all["mcp.disabledServers"] as string[])
     : [];
+  const nodePath =
+    settingsManager.resolve(project.id, "runner.nodePath") || undefined;
+
+  // Keep the built-in Context MCP server in sync with the compiled
+  // subprocess path on every invocation. Cheap (one JSON rewrite if
+  // stale, no-op otherwise) and guarantees agents always have the
+  // tool available.
+  ensureContextMcpRegistered(mcpManager, project.path, nodePath);
 
   return {
     projectRoot: project.path,
-    nodePath:
-      settingsManager.resolve(project.id, "runner.nodePath") || undefined,
+    nodePath,
     mcpConfigPath: mcpManager.getEnabledConfigPath(
       project.path,
       disabledServers,

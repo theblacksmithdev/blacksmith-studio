@@ -19,6 +19,9 @@ export class MessageRepository {
     role: "user" | "assistant";
     content: string;
     attachments?: string | null;
+    costUsd?: string | null;
+    durationMs?: number | null;
+    error?: string | null;
     timestamp: string;
   }): void {
     this.db.insert(messages).values(row).run();

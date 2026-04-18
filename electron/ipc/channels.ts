@@ -168,6 +168,19 @@ export const MULTI_AGENTS_DELETE_CONVERSATION =
   "multiAgents:deleteConversation";
 export const MULTI_AGENTS_GET_ARTIFACTS = "multiAgents:getArtifacts";
 
+// Conversation Events (unified event log for single-agent + multi-agent chats)
+export const CONVERSATION_EVENTS_LIST = "conversationEvents:list";
+export const CONVERSATION_EVENTS_LIST_BY_DISPATCH =
+  "conversationEvents:listByDispatch";
+export const CONVERSATION_EVENTS_LIST_BY_TASK = "conversationEvents:listByTask";
+
+// Agent Tasks (DB model for multi-agent team tasks)
+export const AGENT_TASKS_LIST = "agentTasks:list";
+export const AGENT_TASKS_GET = "agentTasks:get";
+export const AGENT_TASK_NOTES_LIST = "agentTasks:listNotes";
+export const AGENT_TASK_NOTES_ADD = "agentTasks:addNote";
+export const AGENT_TASK_DEPENDENCIES_LIST = "agentTasks:listDependencies";
+
 // ─── Push/Stream Channels ───
 
 // Project creation
@@ -192,6 +205,7 @@ export const MULTI_AGENTS_ON_EVENT = "multiAgents:onEvent";
 export const MULTI_AGENTS_ON_WORKFLOW_EVENT = "multiAgents:onWorkflowEvent";
 export const MULTI_AGENTS_ON_BUILD_EVENT = "multiAgents:onBuildEvent";
 export const MULTI_AGENTS_ON_INPUT_REQUEST = "multiAgents:onInputRequest";
+export const CONVERSATION_EVENTS_ON_APPEND = "conversationEvents:onAppend";
 
 // Channel allowlists for preload security
 export const INVOKE_CHANNELS = [
@@ -321,6 +335,14 @@ export const INVOKE_CHANNELS = [
   MULTI_AGENTS_LIST_CONVERSATIONS,
   MULTI_AGENTS_DELETE_CONVERSATION,
   MULTI_AGENTS_GET_ARTIFACTS,
+  CONVERSATION_EVENTS_LIST,
+  CONVERSATION_EVENTS_LIST_BY_DISPATCH,
+  CONVERSATION_EVENTS_LIST_BY_TASK,
+  AGENT_TASKS_LIST,
+  AGENT_TASKS_GET,
+  AGENT_TASK_NOTES_LIST,
+  AGENT_TASK_NOTES_ADD,
+  AGENT_TASK_DEPENDENCIES_LIST,
 ] as const;
 
 export const SUBSCRIBE_CHANNELS = [
@@ -344,4 +366,5 @@ export const SUBSCRIBE_CHANNELS = [
   MULTI_AGENTS_ON_WORKFLOW_EVENT,
   MULTI_AGENTS_ON_BUILD_EVENT,
   MULTI_AGENTS_ON_INPUT_REQUEST,
+  CONVERSATION_EVENTS_ON_APPEND,
 ] as const;

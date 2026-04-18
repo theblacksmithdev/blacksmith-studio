@@ -61,6 +61,9 @@ export interface StoredMessage {
   content: string;
   toolCalls?: ToolCall[];
   attachments?: StoredMessageAttachment[];
+  costUsd?: string;
+  durationMs?: number;
+  error?: string;
   timestamp: string;
 }
 
