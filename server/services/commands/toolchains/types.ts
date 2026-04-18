@@ -52,6 +52,24 @@ export interface ResolvedBinary {
   prependArgs: string[];
 }
 
+export interface InstalledVersion {
+  /** Human-readable label — e.g. "pyenv 3.12.0", "Homebrew (3.12.0)". */
+  displayName: string;
+  /** Absolute path to the interpreter binary. */
+  path: string;
+  /** Version string — "3.12.0". */
+  version: string;
+  /** Which detection source surfaced this entry. */
+  source:
+    | "default"
+    | "pyenv"
+    | "conda"
+    | "system"
+    | "nvm"
+    | "fnm"
+    | "other";
+}
+
 export interface Toolchain {
   readonly id: string;
   readonly displayName: string;
@@ -68,6 +86,16 @@ export interface Toolchain {
   checkAvailable(
     env: ToolchainEnv,
   ): Promise<{ ok: boolean; version?: string; error?: string }>;
+
+  /** Optional: enumerate interpreters installed on this machine so the
+   *  UI can offer "Change interpreter" and "Set up with version X". */
+  listInstalledVersions?(): Promise<InstalledVersion[]>;
+}
+
+export function supportsListInstalledVersions(
+  t: Toolchain,
+): t is Toolchain & { listInstalledVersions: () => Promise<InstalledVersion[]> } {
+  return typeof t.listInstalledVersions === "function";
 }
 
 /** Optional capability — toolchains that can bootstrap a project env. */
@@ -82,4 +110,15 @@ export function isEnvCreatingToolchain(
   t: Toolchain,
 ): t is EnvCreatingToolchain {
   return typeof (t as EnvCreatingToolchain).createProjectEnv === "function";
+}
+
+/** Optional capability — toolchains that can tear down a project env. */
+export interface EnvDeletingToolchain extends Toolchain {
+  deleteProjectEnv(ctx: ProjectContext): Promise<void>;
+}
+
+export function isEnvDeletingToolchain(
+  t: Toolchain,
+): t is EnvDeletingToolchain {
+  return typeof (t as EnvDeletingToolchain).deleteProjectEnv === "function";
 }

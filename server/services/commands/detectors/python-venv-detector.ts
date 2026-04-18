@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { PlatformInfo } from "../../platform/index.js";
+import { projectDataDir } from "../../project-paths.js";
 
 export interface PythonEnvDetection {
   kind: "venv" | "poetry" | "pipenv" | "conda" | "pyenv";
@@ -26,6 +27,10 @@ export class PythonVenvDetector {
 
   detect(projectRoot: string): PythonEnvDetection | null {
     return (
+      // Blacksmith-owned venv lives inside `.blacksmith/` so it stays
+      // out of the project root. Checked first — when present it
+      // wins over a legacy root-level `.venv` / `venv`.
+      this.tryBlacksmithVenv(projectRoot) ??
       this.tryLocalVenv(projectRoot, ".venv") ??
       this.tryLocalVenv(projectRoot, "venv") ??
       this.tryPoetry(projectRoot) ??
@@ -34,6 +39,22 @@ export class PythonVenvDetector {
       this.tryPyenvVersion(projectRoot) ??
       null
     );
+  }
+
+  private tryBlacksmithVenv(
+    projectRoot: string,
+  ): PythonEnvDetection | null {
+    const root = projectDataDir(projectRoot, ".venv");
+    const bin = path.join(root, this.platform.venvBinDir);
+    const pythonPath = path.join(bin, this.platform.binaryName("python"));
+    if (!fs.existsSync(pythonPath)) return null;
+    return {
+      kind: "venv",
+      displayName: ".blacksmith/.venv (Python)",
+      root,
+      bin,
+      pythonPath,
+    };
   }
 
   private tryLocalVenv(

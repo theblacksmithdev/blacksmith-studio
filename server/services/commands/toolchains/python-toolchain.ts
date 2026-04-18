@@ -1,4 +1,5 @@
 import { execFileSync, spawn } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 import { BinaryDetector } from "../detectors/binary-detector.js";
 import {
@@ -8,12 +9,15 @@ import {
 import { NoProjectEnvError, NoStudioEnvError } from "../errors.js";
 import { PlatformInfo } from "../../platform/index.js";
 import { UvBinaryResolver } from "../../python/uv-binary.js";
+import { detectPythonInstallations } from "../../python/detect-python.js";
+import { projectDataDir } from "../../project-paths.js";
 import type {
   EnvCreatingToolchain,
+  EnvDeletingToolchain,
+  InstalledVersion,
   ProjectContext,
   ResolvedBinary,
   StudioContext,
-  Toolchain,
   ToolchainEnv,
 } from "./types.js";
 
@@ -32,7 +36,9 @@ import type {
  *   - ISP: implements the base `Toolchain` interface only; env-creation
  *     lives elsewhere (Phase 1 does not yet expose `create_project_env`).
  */
-export class PythonToolchain implements EnvCreatingToolchain {
+export class PythonToolchain
+  implements EnvCreatingToolchain, EnvDeletingToolchain
+{
   readonly id = "python";
   readonly displayName = "Python";
   readonly binaries = ["python", "python3", "pip", "pip3", "uv", "pytest"] as const;
@@ -140,21 +146,32 @@ export class PythonToolchain implements EnvCreatingToolchain {
   }
 
   /**
-   * Bootstrap a `.venv` for the given project via the bundled uv
-   * binary. Safe to call when a venv already exists — uv treats the
-   * operation as idempotent. Throws a descriptive `Error` when uv
-   * fails so the IPC / UI layer can surface the stderr tail.
+   * Bootstrap the project venv under `.blacksmith/.venv/` via the
+   * bundled uv binary. Living inside `.blacksmith/` keeps the project
+   * root clean and matches the convention used by artifacts, graphify,
+   * etc. (all of `.blacksmith/` is gitignored by the ArtifactManager).
+   *
+   * `python` accepts either a version (e.g. `"3.12"`) or an absolute
+   * interpreter path — uv handles both via its `--python` flag.
    */
   async createProjectEnv(
     ctx: ProjectContext,
-    options: { pythonVersion?: string } = {},
+    options: { python?: string; overwrite?: boolean } = {},
   ): Promise<ToolchainEnv> {
-    const venvPath = path.join(ctx.projectRoot, ".venv");
+    const venvPath = projectDataDir(ctx.projectRoot, ".venv");
+    // Destructive upgrade: wipe the existing venv before recreating
+    // so `uv venv` can bind to a new Python version cleanly.
+    if (options.overwrite && fs.existsSync(venvPath)) {
+      fs.rmSync(venvPath, { recursive: true, force: true });
+    }
+    // Ensure the parent `.blacksmith/` directory exists — uv requires it.
+    fs.mkdirSync(path.dirname(venvPath), { recursive: true });
     const uvBin = this.uv.resolve();
     const args = ["venv", venvPath];
-    if (options.pythonVersion) {
-      args.push("--python", options.pythonVersion);
-    }
+    // uv `--python` accepts either a version ("3.12") or an absolute
+    // interpreter path, so the UI can hand us whatever it collected
+    // without discriminating.
+    if (options.python) args.push("--python", options.python);
     await runOnce(uvBin, args, ctx.projectRoot);
     const env = this.detectProjectEnv(ctx);
     if (!env) {
@@ -163,6 +180,28 @@ export class PythonToolchain implements EnvCreatingToolchain {
       );
     }
     return env;
+  }
+
+  async listInstalledVersions(): Promise<InstalledVersion[]> {
+    return detectPythonInstallations().map((install) => ({
+      displayName: install.label,
+      path: install.path,
+      version: install.version,
+      source: classifySource(install.label),
+    }));
+  }
+
+  /**
+   * Tear down the Blacksmith-managed venv for this project. Only
+   * removes the `.blacksmith/.venv` directory — legacy root-level
+   * `.venv` / `venv` and wrapper envs (Poetry / Pipenv / conda) are
+   * untouched because the app didn't create them.
+   */
+  async deleteProjectEnv(ctx: ProjectContext): Promise<void> {
+    const venvPath = projectDataDir(ctx.projectRoot, ".venv");
+    if (fs.existsSync(venvPath)) {
+      fs.rmSync(venvPath, { recursive: true, force: true });
+    }
   }
 
   private toEnv(d: PythonEnvDetection): ToolchainEnv {
@@ -181,6 +220,22 @@ export class PythonToolchain implements EnvCreatingToolchain {
       invoker: d.invoker,
     };
   }
+}
+
+function classifySource(label: string): InstalledVersion["source"] {
+  const lower = label.toLowerCase();
+  if (lower.startsWith("default")) return "default";
+  if (lower.startsWith("pyenv")) return "pyenv";
+  if (
+    lower.startsWith("conda") ||
+    lower.includes("miniconda") ||
+    lower.includes("miniforge") ||
+    lower.includes("anaconda")
+  ) {
+    return "conda";
+  }
+  if (lower.includes("homebrew") || lower.startsWith("system")) return "system";
+  return "other";
 }
 
 function canonicalName(binary: string): string {

@@ -7,6 +7,8 @@ export {
   NodeToolchain,
   RawToolchain,
   isEnvCreatingToolchain,
+  isEnvDeletingToolchain,
+  supportsListInstalledVersions,
 } from "./toolchains/index.js";
 export type {
   Toolchain,
@@ -15,6 +17,8 @@ export type {
   StudioContext,
   ResolvedBinary,
   EnvCreatingToolchain,
+  EnvDeletingToolchain,
+  InstalledVersion,
 } from "./toolchains/index.js";
 export { BinaryDetector } from "./detectors/binary-detector.js";
 export {

@@ -35,12 +35,15 @@ export function EnvInspector() {
   }
 
   const activeId = toolchainId || toolchains[0]!.id;
+  const activeToolchain = toolchains.find((tc) => tc.id === activeId);
+  const canCreate = !!activeToolchain?.supportsProjectEnvCreation;
+  const canList = !!activeToolchain?.supportsListInstalledVersions;
 
   return (
     <InspectorRoot>
       <InspectorHint>
-        See how this toolchain resolves in each scope before running a
-        command.
+        See how this toolchain resolves in each scope. Change the pinned
+        interpreter or set up a project environment right from here.
       </InspectorHint>
 
       <ToolchainChipRow>
@@ -57,8 +60,17 @@ export function EnvInspector() {
         </FilterRow>
       </ToolchainChipRow>
 
-      <EnvScopeCard toolchainId={activeId} scope="project" />
-      <EnvScopeCard toolchainId={activeId} scope="studio" />
+      <EnvScopeCard
+        toolchainId={activeId}
+        scope="project"
+        canCreate={canCreate}
+        canList={canList}
+      />
+      <EnvScopeCard
+        toolchainId={activeId}
+        scope="studio"
+        canList={canList}
+      />
     </InspectorRoot>
   );
 }

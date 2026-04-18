@@ -54,6 +54,8 @@ function projectKeys(projectId: string) {
     artifactContent: (id: string) =>
       [...p, "artifacts", "item", id, "content"] as const,
     commandToolchains: [...p, "commands", "toolchains"] as const,
+    commandInstalledVersions: (toolchainId: string) =>
+      [...p, "commands", "installedVersions", toolchainId] as const,
     commandRuns: (conversationId?: string) =>
       [...p, "commands", "runs", conversationId ?? "_all"] as const,
     commandRun: (runId: string) => [...p, "commands", "run", runId] as const,

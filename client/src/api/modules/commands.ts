@@ -7,6 +7,7 @@ import type {
   CommandScope,
   CommandSpec,
   CommandStatusChange,
+  InstalledVersion,
   ToolchainEnv,
   ToolchainInfo,
 } from "../types";
@@ -45,6 +46,11 @@ export const commands = {
   listToolchains: () =>
     raw.invoke<ToolchainInfo[]>("commands:listToolchains"),
 
+  listInstalledVersions: (toolchainId: string) =>
+    raw.invoke<InstalledVersion[]>("commands:listInstalledVersions", {
+      toolchainId,
+    }),
+
   createProjectEnv: (input: {
     projectId: string;
     toolchainId: string;
@@ -52,6 +58,12 @@ export const commands = {
   }) =>
     raw.invoke<ToolchainEnv | CommandErrorShape>(
       "commands:createProjectEnv",
+      input,
+    ),
+
+  deleteProjectEnv: (input: { projectId: string; toolchainId: string }) =>
+    raw.invoke<{ ok: true } | CommandErrorShape>(
+      "commands:deleteProjectEnv",
       input,
     ),
 

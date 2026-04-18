@@ -598,6 +598,19 @@ export const ToolchainChipRow = styled.div`
   gap: 4px;
 `;
 
+export const CardActionRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 8px;
+  border-top: 1px solid var(--studio-border);
+`;
+
+export const CardActionSpacer = styled.div`
+  flex: 1;
+`;
+
 export const PillButton = styled.button`
   display: inline-flex;
   align-items: center;

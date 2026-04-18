@@ -6,8 +6,16 @@ import type { CommandRunner, RunnerHandle } from "./command-runner.js";
 import { TooManyConcurrentCommandsError } from "./errors.js";
 import type { CommandRunRepository } from "./repositories/command-run-repository.js";
 import type { ToolchainRegistry } from "./toolchains/registry.js";
-import { isEnvCreatingToolchain } from "./toolchains/types.js";
-import type { Toolchain, ToolchainEnv } from "./toolchains/types.js";
+import {
+  isEnvCreatingToolchain,
+  isEnvDeletingToolchain,
+  supportsListInstalledVersions,
+} from "./toolchains/types.js";
+import type {
+  InstalledVersion,
+  Toolchain,
+  ToolchainEnv,
+} from "./toolchains/types.js";
 import type {
   CommandResult,
   CommandSpec,
@@ -33,6 +41,12 @@ export interface ToolchainInfo {
   /** True when the toolchain implements `EnvCreatingToolchain` — the
    *  UI renders a "Set up environment" affordance for these. */
   supportsProjectEnvCreation: boolean;
+  /** True when the toolchain implements `EnvDeletingToolchain` — the
+   *  UI renders a "Reset environment" affordance for these. */
+  supportsProjectEnvDeletion: boolean;
+  /** True when the toolchain can enumerate installed interpreters —
+   *  the UI renders a "Change interpreter" picker for these. */
+  supportsListInstalledVersions: boolean;
 }
 
 /**
@@ -114,7 +128,39 @@ export class CommandService {
       presetOwnership: tc.presetOwnership,
       binaries: tc.binaries,
       supportsProjectEnvCreation: isEnvCreatingToolchain(tc),
+      supportsProjectEnvDeletion: isEnvDeletingToolchain(tc),
+      supportsListInstalledVersions: supportsListInstalledVersions(tc),
     }));
+  }
+
+  /**
+   * Tear down a project-scoped environment for toolchains that
+   * implement `EnvDeletingToolchain`. Throws when unsupported so
+   * callers can hide the button or render a clear error.
+   */
+  async deleteProjectEnv(opts: {
+    projectId: string;
+    toolchainId: string;
+  }): Promise<void> {
+    const toolchain = this.registry.getById(opts.toolchainId);
+    if (!isEnvDeletingToolchain(toolchain)) {
+      throw new Error(
+        `Toolchain "${toolchain.id}" does not support environment deletion.`,
+      );
+    }
+    const projectRoot = this.resolver["projects"].getPath(opts.projectId);
+    await toolchain.deleteProjectEnv({
+      projectId: opts.projectId,
+      projectRoot,
+    });
+  }
+
+  async listInstalledVersions(
+    toolchainId: string,
+  ): Promise<InstalledVersion[]> {
+    const toolchain = this.registry.getById(toolchainId);
+    if (!supportsListInstalledVersions(toolchain)) return [];
+    return toolchain.listInstalledVersions();
   }
 
   /**
@@ -122,6 +168,10 @@ export class CommandService {
    * implements `EnvCreatingToolchain` (currently: Python → `.venv`).
    * Throws when the toolchain doesn't support creation so callers can
    * hide the affordance or render a clear error.
+   *
+   * `options` is passed through to the toolchain — Python accepts
+   * `{ python: '<version-or-path>' }` so the UI can target a specific
+   * interpreter.
    */
   async createProjectEnv(opts: {
     projectId: string;

@@ -37,7 +37,9 @@ export function ConfirmDialog({
       css={{
         position: "fixed",
         inset: 0,
-        zIndex: 500,
+        // Sits above `Drawer` (zIndex 501) so the confirm always
+        // lands on top of whatever surface triggered it.
+        zIndex: 1000,
         background: "var(--studio-backdrop)",
         backdropFilter: "blur(6px)",
         animation: "fadeIn 0.12s ease",

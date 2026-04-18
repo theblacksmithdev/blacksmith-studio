@@ -709,6 +709,26 @@ export interface ToolchainInfo {
   /** True when the backend toolchain implements `EnvCreatingToolchain` —
    *  the inspector UI renders a "Set up" button for these. */
   supportsProjectEnvCreation: boolean;
+  /** True when the backend toolchain implements `EnvDeletingToolchain` —
+   *  the inspector UI renders a "Reset" button for these. */
+  supportsProjectEnvDeletion: boolean;
+  /** True when the backend toolchain can list installed interpreters —
+   *  the inspector UI renders a "Change" picker for these. */
+  supportsListInstalledVersions: boolean;
+}
+
+export interface InstalledVersion {
+  displayName: string;
+  path: string;
+  version: string;
+  source:
+    | "default"
+    | "pyenv"
+    | "conda"
+    | "system"
+    | "nvm"
+    | "fnm"
+    | "other";
 }
 
 export interface ToolchainEnv {
