@@ -10,6 +10,7 @@ import {
   getProjectContext,
   resolveAiInvocationSettings,
 } from "../../server/services/studio-context/index.js";
+import { appendAttachmentInstruction } from "../../server/services/attachments/index.js";
 import {
   SINGLE_AGENT_SEND_PROMPT,
   SINGLE_AGENT_CANCEL,
@@ -31,9 +32,22 @@ export function setupSingleAgentIPC(
     SINGLE_AGENT_SEND_PROMPT,
     async (
       _e,
-      data: { projectId: string; sessionId: string; prompt: string },
+      data: {
+        projectId: string;
+        sessionId: string;
+        prompt: string;
+        attachments?: Array<{
+          id: string;
+          name: string;
+          kind: "image" | "text" | "code" | "pdf" | "file";
+          mime: string;
+          size: number;
+          absPath: string;
+          relPath: string;
+        }>;
+      },
     ) => {
-      const { sessionId, prompt } = data;
+      const { sessionId, prompt, attachments } = data;
       const project = projectManager.get(data.projectId);
       const win = getWindow();
 
@@ -57,6 +71,8 @@ export function setupSingleAgentIPC(
         id: crypto.randomUUID(),
         role: "user",
         content: prompt,
+        attachments:
+          attachments && attachments.length > 0 ? attachments : undefined,
         timestamp: new Date().toISOString(),
       });
 
@@ -69,9 +85,11 @@ export function setupSingleAgentIPC(
       let lastContent = "";
       const toolCalls: any[] = [];
 
+      const aiPrompt = appendAttachmentInstruction(prompt, attachments);
+
       try {
         const handle = ai.stream({
-          prompt,
+          prompt: aiPrompt,
           systemPrompt: STUDIO_SYSTEM_PROMPT,
           resume: isResume,
           sessionId,

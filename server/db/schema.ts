@@ -34,6 +34,8 @@ export const messages = sqliteTable("messages", {
     .references(() => sessions.id, { onDelete: "cascade" }),
   role: text("role", { enum: ["user", "assistant"] }).notNull(),
   content: text("content").notNull(),
+  /** JSON-encoded array of MessageAttachment records (nullable). */
+  attachments: text("attachments"),
   timestamp: text("timestamp").notNull(),
 });
 
@@ -178,6 +180,8 @@ export const agentChatMessages = sqliteTable("agent_chat_messages", {
   role: text("role").notNull(), // 'user' | 'agent' | 'system'
   agentRole: text("agent_role"), // which agent sent it (null for user/system)
   content: text("content").notNull(),
+  /** JSON-encoded array of attachment records (nullable). */
+  attachments: text("attachments"),
   conversationId: text("conversation_id").references(
     () => agentConversations.id,
     { onDelete: "cascade" },

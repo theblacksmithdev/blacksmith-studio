@@ -47,11 +47,22 @@ interface AgentActivity {
   eventLog: AgentLogEntry[];
 }
 
+interface ChatAttachment {
+  id: string;
+  name: string;
+  kind: "image" | "text" | "code" | "pdf" | "file";
+  mime: string;
+  size: number;
+  absPath: string;
+  relPath: string;
+}
+
 interface ChatMessage {
   id: string;
   role: "user" | "agent" | "system";
   agentRole?: AgentRole;
   content: string;
+  attachments?: ChatAttachment[];
   timestamp: string;
 }
 

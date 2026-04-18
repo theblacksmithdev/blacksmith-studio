@@ -17,22 +17,29 @@ import {
 } from "@/components/shared/ui";
 import { ModelSelector } from "@/components/chat/model-selector";
 import { GraphifyChip } from "@/components/chat/graphify-chip";
+import {
+  AttachmentPickerButton,
+  PendingAttachmentList,
+  useComposerAttachments,
+  useDropZone,
+  type AttachmentRecord,
+} from "./attachments";
 
 type SendShortcut = "enter" | "cmd+enter";
 
 interface ConversationInputProps {
-  onSend: (text: string) => void;
+  onSend: (text: string, attachments?: AttachmentRecord[]) => void;
   onCancel?: () => void;
   isStreaming?: boolean;
   disabled?: boolean;
   placeholder?: string;
   initialValue?: string;
-  /** Override the bottom-left leading content. Defaults to ModelSelector + GraphifyChip. Pass null to hide. */
   leading?: ReactNode | null;
-  /** Send on Enter (default) or Cmd+Enter. Controls keyboard hint too. */
   sendShortcut?: SendShortcut;
-  /** Minimum textarea height. Default: "44px". */
   minHeight?: string;
+  projectId?: string;
+  conversationId?: string;
+  enableAttachments?: boolean;
 }
 
 export function ConversationInput({
@@ -45,9 +52,23 @@ export function ConversationInput({
   leading,
   sendShortcut = "enter",
   minHeight = "44px",
+  projectId,
+  conversationId,
+  enableAttachments = true,
 }: ConversationInputProps) {
   const [value, setValue] = useState(initialValue ?? "");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const attachmentsEnabled = enableAttachments && !!projectId;
+  const composerAttachments = useComposerAttachments({
+    projectId,
+    conversationId,
+  });
+
+  const { over, dragHandlers } = useDropZone({
+    onFiles: composerAttachments.addFiles,
+    disabled: !attachmentsEnabled || disabled,
+  });
 
   const MAX_HEIGHT = 450;
 
@@ -65,9 +86,14 @@ export function ConversationInput({
 
   const handleSend = () => {
     const trimmed = value.trim();
-    if (!trimmed || isStreaming || disabled) return;
-    onSend(trimmed);
+    const ready = composerAttachments.readyRecords();
+    const hasAttachments = ready.length > 0;
+    if ((!trimmed && !hasAttachments) || isStreaming || disabled) return;
+    if (composerAttachments.hasPending) return;
+
+    onSend(trimmed, hasAttachments ? ready : undefined);
     setValue("");
+    composerAttachments.clear();
     requestAnimationFrame(() => {
       if (textareaRef.current) textareaRef.current.style.height = "auto";
     });
@@ -87,7 +113,13 @@ export function ConversationInput({
     }
   };
 
-  const canSend = !!value.trim() && !disabled;
+  const hasReadyAttachments = composerAttachments.items.some(
+    (it) => it.status === "ready",
+  );
+  const canSend =
+    !disabled &&
+    !composerAttachments.hasPending &&
+    (!!value.trim() || hasReadyAttachments);
 
   const hintText =
     sendShortcut === "cmd+enter" ? "\u2318+Enter" : "Shift+Enter for newline";
@@ -96,12 +128,15 @@ export function ConversationInput({
 
   return (
     <Box
+      {...(attachmentsEnabled ? dragHandlers : {})}
       css={{
         width: "100%",
         position: "relative",
         background: "var(--studio-bg-surface)",
         borderRadius: radii["2xl"],
-        border: "1px solid var(--studio-border)",
+        border: `1px solid ${
+          over ? "var(--studio-border-hover)" : "var(--studio-border)"
+        }`,
         transition: "all 0.2s ease",
         boxShadow: shadows.sm,
         "&:focus-within": {
@@ -110,6 +145,26 @@ export function ConversationInput({
         },
       }}
     >
+      {over && (
+        <Box
+          css={{
+            position: "absolute",
+            inset: 0,
+            borderRadius: radii["2xl"],
+            border: "1.5px dashed var(--studio-border-hover)",
+            background: "var(--studio-bg-hover)",
+            opacity: 0.4,
+            pointerEvents: "none",
+            zIndex: 1,
+          }}
+        />
+      )}
+
+      <PendingAttachmentList
+        items={composerAttachments.items}
+        onRemove={composerAttachments.remove}
+      />
+
       <textarea
         ref={textareaRef}
         value={value}
@@ -131,15 +186,27 @@ export function ConversationInput({
           fontSize: "15px",
           lineHeight: "1.6",
           fontFamily: "inherit",
+          position: "relative",
+          zIndex: 2,
         }}
       />
 
       <Flex
         align="center"
         justify="space-between"
-        css={{ padding: `0 ${spacing.sm} ${spacing.sm}` }}
+        css={{
+          padding: `0 ${spacing.sm} ${spacing.sm}`,
+          position: "relative",
+          zIndex: 2,
+        }}
       >
         <Flex align="center" gap="2px">
+          {attachmentsEnabled && (
+            <AttachmentPickerButton
+              onFiles={composerAttachments.addFiles}
+              disabled={disabled}
+            />
+          )}
           {leading === undefined ? (
             <>
               <ModelSelector />

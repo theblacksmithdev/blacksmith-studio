@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api";
+import type { AttachmentRecord } from "@/api/modules/attachments";
 import { useProjectKeys, useActiveProjectId } from "../_shared";
 
 /**
@@ -15,10 +16,18 @@ export function useAgentDispatch() {
     mutationFn: ({
       prompt,
       conversationId,
+      attachments,
     }: {
       prompt: string;
       conversationId?: string;
-    }) => api.multiAgents.dispatch(projectId!, prompt, conversationId),
+      attachments?: AttachmentRecord[];
+    }) =>
+      api.multiAgents.dispatch(
+        projectId!,
+        prompt,
+        conversationId,
+        attachments,
+      ),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: keys.agentConversations });
     },

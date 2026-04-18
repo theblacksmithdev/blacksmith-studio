@@ -16,6 +16,9 @@ export interface BubbleAttachment {
   onClick?: () => void;
   icon?: ReactNode;
   meta?: string;
+  /** When set, thumbnail is lazy-loaded from disk via api.attachments.read. */
+  projectId?: string;
+  absPath?: string;
 }
 
 export interface ConversationMessage {

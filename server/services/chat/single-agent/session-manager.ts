@@ -80,6 +80,10 @@ export class SessionManager {
       sessionId,
       role: message.role,
       content: message.content,
+      attachments:
+        message.attachments && message.attachments.length > 0
+          ? JSON.stringify(message.attachments)
+          : null,
       timestamp: message.timestamp,
     });
 

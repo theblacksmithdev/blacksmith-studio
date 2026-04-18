@@ -1,4 +1,8 @@
-import type { StoredMessage, ToolCall } from "../../../types.js";
+import type {
+  StoredMessage,
+  StoredMessageAttachment,
+  ToolCall,
+} from "../../../types.js";
 import type { messages, toolCalls, sessions } from "../../../db/schema.js";
 
 type SessionRow = typeof sessions.$inferSelect;
@@ -21,6 +25,18 @@ export function mapToolCall(row: ToolCallRow): ToolCall {
   };
 }
 
+function parseAttachments(
+  raw: string | null,
+): StoredMessageAttachment[] | undefined {
+  if (!raw) return undefined;
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export function mapMessage(
   row: MessageRow,
   toolCallRows: ToolCallRow[],
@@ -31,6 +47,7 @@ export function mapMessage(
     content: row.content,
     toolCalls:
       toolCallRows.length > 0 ? toolCallRows.map(mapToolCall) : undefined,
+    attachments: parseAttachments(row.attachments ?? null),
     timestamp: row.timestamp,
   };
 }

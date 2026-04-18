@@ -31,9 +31,11 @@ import {
 } from "./styles";
 import type { AgentRole } from "@/api/types";
 
+import type { AttachmentRecord } from "@/components/shared/conversation";
+
 interface AgentsPageProps {
   conversationId?: string;
-  onSend: (message: string) => void;
+  onSend: (message: string, attachments?: AttachmentRecord[]) => void;
 }
 
 export function AgentsPage({ conversationId, onSend }: AgentsPageProps) {
@@ -70,10 +72,13 @@ export function AgentsPage({ conversationId, onSend }: AgentsPageProps) {
   const location = useLocation();
   const initialPromptSent = useRef(false);
   useEffect(() => {
-    const state = location.state as { initialPrompt?: string } | null;
+    const state = location.state as {
+      initialPrompt?: string;
+      initialAttachments?: AttachmentRecord[];
+    } | null;
     if (state?.initialPrompt && !initialPromptSent.current) {
       initialPromptSent.current = true;
-      onSend(state.initialPrompt);
+      onSend(state.initialPrompt, state.initialAttachments);
     }
   }, [location.state, onSend]);
 

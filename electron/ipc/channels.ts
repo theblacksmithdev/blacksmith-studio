@@ -32,6 +32,12 @@ export const FILES_SAVE = "files:save";
 export const FILES_RENAME = "files:rename";
 export const FILES_DELETE = "files:delete";
 
+// Attachments
+export const ATTACHMENTS_SAVE = "attachments:save";
+export const ATTACHMENTS_READ = "attachments:read";
+export const ATTACHMENTS_DELETE = "attachments:delete";
+export const ATTACHMENTS_OPEN = "attachments:open";
+
 // Templates
 export const TEMPLATES_LIST = "templates:list";
 export const TEMPLATES_INTERPOLATE = "templates:interpolate";
@@ -209,6 +215,10 @@ export const INVOKE_CHANNELS = [
   FILES_SAVE,
   FILES_RENAME,
   FILES_DELETE,
+  ATTACHMENTS_SAVE,
+  ATTACHMENTS_READ,
+  ATTACHMENTS_DELETE,
+  ATTACHMENTS_OPEN,
   TEMPLATES_LIST,
   TEMPLATES_INTERPOLATE,
   SETTINGS_GET_ALL,

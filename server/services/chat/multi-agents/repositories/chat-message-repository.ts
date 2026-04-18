@@ -19,6 +19,7 @@ export class ChatMessageRepository {
     role: string;
     agentRole: string | null;
     content: string;
+    attachments?: string | null;
     conversationId: string | null;
     dispatchId: string | null;
     timestamp: string;

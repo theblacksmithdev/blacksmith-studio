@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAgentDispatch } from "@/api/hooks/agents";
 import { useAgentStore } from "@/stores/agent-store";
 import { useProjectKeys } from "@/api/hooks/_shared";
+import type { AttachmentRecord } from "@/components/shared/conversation";
 
 /**
  * Handles sending messages within an existing conversation.
@@ -26,11 +27,26 @@ export function useConversation(conversationId: string) {
   }, [conversationId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSend = useCallback(
-    (message: string) => {
-      addLiveMessage({ role: "user", content: message });
+    (message: string, attachments?: AttachmentRecord[]) => {
+      addLiveMessage({
+        role: "user",
+        content: message,
+        attachments:
+          attachments && attachments.length > 0
+            ? attachments.map((a) => ({
+                id: a.id,
+                name: a.name,
+                kind: a.kind,
+                mime: a.mime,
+                size: a.size,
+                absPath: a.absPath,
+                relPath: a.relPath,
+              }))
+            : undefined,
+      });
 
       dispatch.mutate(
-        { prompt: message, conversationId },
+        { prompt: message, conversationId, attachments },
         {
           onSuccess: async (result) => {
             const totalCost = result.executions.reduce(

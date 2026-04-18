@@ -17,6 +17,7 @@ import { terminal } from "./modules/terminal";
 import { multiAgents } from "./modules/multi-agents";
 import { python } from "./modules/python";
 import { graphify } from "./modules/graphify";
+import { attachments } from "./modules/attachments";
 
 export const api = {
   projects,
@@ -38,4 +39,5 @@ export const api = {
   multiAgents,
   python,
   graphify,
+  attachments,
 } as const;

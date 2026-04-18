@@ -1,8 +1,19 @@
+export interface MessageAttachment {
+  id: string;
+  name: string;
+  kind: "image" | "text" | "code" | "pdf" | "file";
+  mime: string;
+  size: number;
+  absPath: string;
+  relPath: string;
+}
+
 export interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
   toolCalls?: ToolCall[];
+  attachments?: MessageAttachment[];
   timestamp: string;
 }
 

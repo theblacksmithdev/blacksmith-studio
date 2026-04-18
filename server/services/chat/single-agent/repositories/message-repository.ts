@@ -18,6 +18,7 @@ export class MessageRepository {
     sessionId: string;
     role: "user" | "assistant";
     content: string;
+    attachments?: string | null;
     timestamp: string;
   }): void {
     this.db.insert(messages).values(row).run();

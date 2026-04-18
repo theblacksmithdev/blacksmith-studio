@@ -4,24 +4,24 @@ import { MessageList } from "./message-list";
 import { ConversationInput } from "./conversation-input";
 import { spacing } from "@/components/shared/ui";
 import type { ConversationMessage } from "./message-bubble";
+import type { AttachmentRecord } from "./attachments";
 
 interface ConversationViewProps {
   messages: ConversationMessage[];
-  onSend: (text: string) => void;
+  onSend: (text: string, attachments?: AttachmentRecord[]) => void;
   onCancel?: () => void;
   isStreaming?: boolean;
   disabled?: boolean;
   placeholder?: string;
   initialValue?: string;
   maxWidth?: string;
-  /** Rendered after all messages (e.g. streaming indicator) */
   streamingTrailing?: ReactNode;
-  /** Custom empty state when no messages */
   emptyState?: ReactNode;
-  /** Custom renderer per message — return null to use default bubble */
   renderMessage?: (msg: ConversationMessage) => ReactNode | null;
-  /** Custom content renderer inside the default bubble (e.g. MarkdownRenderer) */
   renderContent?: (content: string) => ReactNode;
+  projectId?: string;
+  conversationId?: string;
+  enableAttachments?: boolean;
 }
 
 export function ConversationView({
@@ -37,9 +37,20 @@ export function ConversationView({
   emptyState,
   renderMessage,
   renderContent,
+  projectId,
+  conversationId,
+  enableAttachments,
 }: ConversationViewProps) {
   return (
-    <Flex direction="column" css={{ height: "100%", width: "100%", minHeight: 0, overflow: "hidden" }}>
+    <Flex
+      direction="column"
+      css={{
+        height: "100%",
+        width: "100%",
+        minHeight: 0,
+        overflow: "hidden",
+      }}
+    >
       <MessageList
         messages={messages}
         maxWidth={maxWidth}
@@ -65,6 +76,9 @@ export function ConversationView({
           disabled={disabled}
           placeholder={placeholder}
           initialValue={initialValue}
+          projectId={projectId}
+          conversationId={conversationId}
+          enableAttachments={enableAttachments}
         />
       </Box>
     </Flex>

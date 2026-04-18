@@ -45,11 +45,22 @@ export interface SessionSummary {
   lastPrompt?: string;
 }
 
+export interface StoredMessageAttachment {
+  id: string;
+  name: string;
+  kind: "image" | "text" | "code" | "pdf" | "file";
+  mime: string;
+  size: number;
+  absPath: string;
+  relPath: string;
+}
+
 export interface StoredMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
   toolCalls?: ToolCall[];
+  attachments?: StoredMessageAttachment[];
   timestamp: string;
 }
 

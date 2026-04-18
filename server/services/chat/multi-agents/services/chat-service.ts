@@ -1,7 +1,10 @@
 import crypto from "node:crypto";
 import { mapChatMessage } from "../mappers.js";
 import type { ChatMessageRepository } from "../repositories/index.js";
-import type { AgentChatRecord } from "../types.js";
+import type {
+  AgentChatRecord,
+  ChatAttachmentInput,
+} from "../types.js";
 import type { ConversationService } from "./conversation-service.js";
 
 /**
@@ -26,9 +29,14 @@ export class ChatService {
     agentRole?: string,
     dispatchId?: string,
     conversationId?: string,
+    attachments?: ChatAttachmentInput[],
   ): AgentChatRecord {
     const id = crypto.randomUUID();
     const timestamp = new Date().toISOString();
+    const attachmentsJson =
+      attachments && attachments.length > 0
+        ? JSON.stringify(attachments)
+        : null;
 
     this.messages.insert({
       id,
@@ -36,6 +44,7 @@ export class ChatService {
       role,
       agentRole: agentRole ?? null,
       content,
+      attachments: attachmentsJson,
       conversationId: conversationId ?? null,
       dispatchId: dispatchId ?? null,
       timestamp,
@@ -49,6 +58,7 @@ export class ChatService {
       role,
       agentRole: agentRole ?? null,
       content,
+      attachments: attachments && attachments.length > 0 ? attachments : null,
       dispatchId: dispatchId ?? null,
       timestamp,
     };

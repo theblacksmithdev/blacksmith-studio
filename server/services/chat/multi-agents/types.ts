@@ -30,12 +30,23 @@ export interface AgentTaskRecord {
   durationMs: number;
 }
 
+export interface ChatAttachmentInput {
+  id: string;
+  name: string;
+  kind: "image" | "text" | "code" | "pdf" | "file";
+  mime: string;
+  size: number;
+  absPath: string;
+  relPath: string;
+}
+
 export interface AgentChatRecord {
   id: string;
   projectId: string;
   role: string;
   agentRole: string | null;
   content: string;
+  attachments: ChatAttachmentInput[] | null;
   dispatchId: string | null;
   timestamp: string;
 }

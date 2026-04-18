@@ -34,3 +34,20 @@ export type {
   ToolStatus,
   ToolDescriptor,
 } from "./tool-call";
+export {
+  AttachmentPickerButton,
+  AttachmentChip,
+  PendingAttachmentList,
+  AttachmentPreviewModal,
+  useComposerAttachments,
+  useDropZone,
+  kindFromName,
+  toBubbleAttachments,
+  formatAttachmentPromptBlock,
+} from "./attachments";
+export type {
+  AttachmentRecord,
+  AttachmentKind,
+  PendingAttachment,
+  PendingStatus,
+} from "./attachments";

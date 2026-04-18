@@ -1,4 +1,4 @@
-import { useMemo, useCallback, type ReactNode } from "react";
+import { useMemo, useCallback, useState, type ReactNode } from "react";
 import { Flex, Box } from "@chakra-ui/react";
 import styled from "@emotion/styled";
 import { keyframes } from "@emotion/react";
@@ -8,9 +8,13 @@ import { useAgentChatQuery } from "@/api/hooks/agents";
 import { ROLE_ICONS } from "../shared/role-icons";
 import {
   ConversationView,
+  AttachmentPreviewModal,
   type ConversationMessage,
+  type AttachmentRecord,
+  type BubbleAttachment,
 } from "@/components/shared/conversation";
 import { Text, EmptyState } from "@/components/shared/ui";
+import { useActiveProjectId } from "@/api/hooks/_shared";
 import type { AgentRole } from "@/api/types";
 
 /* ── Styled for system + human input ── */
@@ -101,10 +105,54 @@ function formatRoleName(role: string): string {
   return role.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+function formatAttachmentSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function bubbleKindFor(
+  kind: AttachmentRecord["kind"],
+): NonNullable<BubbleAttachment["kind"]> {
+  if (kind === "image") return "image";
+  if (kind === "code") return "code";
+  return "file";
+}
+
+function mapBubbleAttachments(
+  items: any[] | undefined,
+  projectId: string | undefined,
+  onOpen: (record: AttachmentRecord) => void,
+): BubbleAttachment[] | undefined {
+  if (!items || items.length === 0) return undefined;
+  return items.map((a: any) => {
+    const record: AttachmentRecord = {
+      id: a.id,
+      name: a.name,
+      kind: a.kind,
+      mime: a.mime,
+      size: a.size,
+      absPath: a.absPath,
+      relPath: a.relPath,
+      conversationId: null,
+      createdAt: "",
+    };
+    return {
+      id: a.id,
+      name: a.name,
+      kind: bubbleKindFor(a.kind),
+      meta: formatAttachmentSize(a.size),
+      projectId,
+      absPath: a.absPath,
+      onClick: () => onOpen(record),
+    };
+  });
+}
+
 /* ── Component ── */
 
 interface AgentChatProps {
-  onSend: (msg: string) => void;
+  onSend: (msg: string, attachments?: AttachmentRecord[]) => void;
   onRespond: (id: string, val: string) => void;
   isProcessing: boolean;
   conversationId?: string;
@@ -116,6 +164,7 @@ export function AgentChat({
   isProcessing,
   conversationId,
 }: AgentChatProps) {
+  const projectId = useActiveProjectId();
   const { data: persistedMsgs = [] } = useAgentChatQuery(conversationId);
   const liveMessages = useAgentStore((s) => s.liveMessages);
   const inputs = useAgentStore((s) => s.pendingInputs);
@@ -125,6 +174,13 @@ export function AgentChat({
     () => [...persistedMsgs, ...liveMessages],
     [persistedMsgs, liveMessages],
   );
+
+  const [previewAttachment, setPreviewAttachment] =
+    useState<AttachmentRecord | null>(null);
+
+  const openAttachment = useCallback((record: AttachmentRecord) => {
+    setPreviewAttachment(record);
+  }, []);
 
   const conversationMessages: ConversationMessage[] = useMemo(
     () =>
@@ -139,8 +195,13 @@ export function AgentChat({
             : undefined,
         senderIcon:
           m.role === "agent" ? <AgentIcon role={m.agentRole} /> : undefined,
+        attachments: mapBubbleAttachments(
+          m.attachments,
+          projectId ?? undefined,
+          openAttachment,
+        ),
       })),
-    [msgs],
+    [msgs, openAttachment],
   );
 
   const renderMessage = useCallback(
@@ -343,7 +404,17 @@ export function AgentChat({
         renderMessage={renderMessage}
         emptyState={emptyState}
         streamingTrailing={inputCards}
+        projectId={projectId ?? undefined}
+        conversationId={conversationId}
       />
+
+      {previewAttachment && projectId && (
+        <AttachmentPreviewModal
+          projectId={projectId}
+          record={previewAttachment}
+          onClose={() => setPreviewAttachment(null)}
+        />
+      )}
     </Flex>
   );
 }

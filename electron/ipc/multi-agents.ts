@@ -8,6 +8,7 @@ import {
   AgentManager,
   ProjectBuilder,
 } from "../../server/services/chat/agents/index.js";
+import { appendAttachmentInstruction } from "../../server/services/attachments/index.js";
 import {
   ConversationContext,
   type ConversationMessage,
@@ -169,7 +170,20 @@ export function setupMultiAgentsIPC(
     MULTI_AGENTS_DISPATCH,
     async (
       _e,
-      data: { projectId: string; prompt: string; conversationId?: string },
+      data: {
+        projectId: string;
+        prompt: string;
+        conversationId?: string;
+        attachments?: Array<{
+          id: string;
+          name: string;
+          kind: "image" | "text" | "code" | "pdf" | "file";
+          mime: string;
+          size: number;
+          absPath: string;
+          relPath: string;
+        }>;
+      },
     ) => {
       const project = projectManager.get(data.projectId);
       if (!project) throw new Error("Project not found");
@@ -190,6 +204,7 @@ export function setupMultiAgentsIPC(
         undefined,
         undefined,
         data.conversationId,
+        data.attachments,
       );
 
       // Build the conversation context that travels with the dispatch so
@@ -215,7 +230,7 @@ export function setupMultiAgentsIPC(
 
       const result = await agentManager.dispatch({
         ...baseOptions,
-        prompt: data.prompt,
+        prompt: appendAttachmentInstruction(data.prompt, data.attachments),
         conversationContext,
       });
 

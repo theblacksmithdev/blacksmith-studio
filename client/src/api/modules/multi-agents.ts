@@ -19,11 +19,25 @@ export const multiAgents = {
     raw.invoke<AgentRouteResult>("multiAgents:route", { prompt }),
 
   // ── PM-First Dispatch (main entry point) ──
-  dispatch: (projectId: string, prompt: string, conversationId?: string) =>
+  dispatch: (
+    projectId: string,
+    prompt: string,
+    conversationId?: string,
+    attachments?: Array<{
+      id: string;
+      name: string;
+      kind: "image" | "text" | "code" | "pdf" | "file";
+      mime: string;
+      size: number;
+      absPath: string;
+      relPath: string;
+    }>,
+  ) =>
     raw.invoke<DispatchResult>("multiAgents:dispatch", {
       projectId,
       prompt,
       conversationId,
+      attachments,
     }),
 
   // ── Direct Single Execution ──

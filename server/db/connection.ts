@@ -170,6 +170,8 @@ export function getDatabase() {
     "ALTER TABLE runner_configs ADD COLUMN setup_command TEXT",
     "ALTER TABLE agent_conversations ADD COLUMN pm_session_id TEXT",
     "ALTER TABLE agent_conversations ADD COLUMN last_plan_summary TEXT",
+    "ALTER TABLE messages ADD COLUMN attachments TEXT",
+    "ALTER TABLE agent_chat_messages ADD COLUMN attachments TEXT",
   ];
 
   for (const sql of migrations) {

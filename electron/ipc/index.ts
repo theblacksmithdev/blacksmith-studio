@@ -11,8 +11,10 @@ import type { GitManager } from "../../server/services/git/index.js";
 import type { TerminalManager } from "../../server/services/terminal.js";
 import type { GraphifyManager } from "../../server/services/graphify/index.js";
 import type { PythonManager } from "../../server/services/python/index.js";
+import { AttachmentService } from "../../server/services/attachments/index.js";
 
 import { setupProjectsIPC } from "./projects.js";
+import { setupAttachmentsIPC } from "./attachments.js";
 import { setupSessionsIPC } from "./sessions.js";
 import { setupFilesIPC } from "./files.js";
 import { setupTemplatesIPC } from "./templates.js";
@@ -82,4 +84,5 @@ export function setupAllIPC(
   setupPythonIPC(getWindow, pythonManager, settingsManager);
   setupGraphifyIPC(getWindow, graphifyManager, projectManager, settingsManager, gitManager);
   setupMultiAgentsIPC(getWindow, projectManager, settingsManager, mcpManager, ai);
+  setupAttachmentsIPC(new AttachmentService(projectManager));
 }

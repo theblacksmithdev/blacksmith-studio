@@ -71,12 +71,22 @@ export function mapDispatch(
 }
 
 export function mapChatMessage(row: ChatMessageRow): AgentChatRecord {
+  let attachments: AgentChatRecord["attachments"] = null;
+  if (row.attachments) {
+    try {
+      const parsed = JSON.parse(row.attachments);
+      if (Array.isArray(parsed) && parsed.length > 0) attachments = parsed;
+    } catch {
+      /* ignore malformed */
+    }
+  }
   return {
     id: row.id,
     projectId: row.projectId,
     role: row.role,
     agentRole: row.agentRole ?? null,
     content: row.content,
+    attachments,
     dispatchId: row.dispatchId ?? null,
     timestamp: row.timestamp,
   };

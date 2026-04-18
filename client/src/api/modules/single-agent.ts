@@ -6,12 +6,14 @@ import type {
   ClaudeDoneEvent,
   ClaudeErrorEvent,
 } from "../types";
+import type { AttachmentRecord } from "./attachments";
 
 export const singleAgent = {
   sendPrompt: (input: {
     projectId: string;
     sessionId: string;
     prompt: string;
+    attachments?: AttachmentRecord[];
   }) => raw.invoke<void>("singleAgent:sendPrompt", input),
   cancel: (input: ClaudeCancelInput) =>
     raw.invoke<void>("singleAgent:cancel", input),

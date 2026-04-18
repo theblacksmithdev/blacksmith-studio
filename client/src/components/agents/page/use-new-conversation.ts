@@ -4,6 +4,7 @@ import { useCreateAgentConversation } from "@/api/hooks/agents";
 import { useAgentStore } from "@/stores/agent-store";
 import { useActiveProjectId } from "@/api/hooks/_shared";
 import { agentsConversationPath } from "@/router/paths";
+import type { AttachmentRecord } from "@/components/shared/conversation";
 
 /**
  * Handles the /agents/new flow: creates a conversation then navigates to it.
@@ -17,12 +18,12 @@ export function useNewConversation() {
   const createConversation = useCreateAgentConversation();
 
   const handleSend = useCallback(
-    (message: string) => {
+    (message: string, attachments?: AttachmentRecord[]) => {
       createConversation.mutate(message.slice(0, 60), {
         onSuccess: (conv) => {
           navigate(agentsConversationPath(projectId!, conv.id as string), {
             replace: true,
-            state: { initialPrompt: message },
+            state: { initialPrompt: message, initialAttachments: attachments },
           });
         },
         onError: (err: any) => {

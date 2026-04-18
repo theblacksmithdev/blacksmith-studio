@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Message, ToolCall } from "@/types";
+import type { Message, MessageAttachment, ToolCall } from "@/types";
 
 interface ChatState {
   isStreaming: boolean;
@@ -12,7 +12,10 @@ interface ChatState {
    */
   pendingMessages: Message[];
 
-  addPendingUserMessage: (text: string) => void;
+  addPendingUserMessage: (
+    text: string,
+    attachments?: MessageAttachment[],
+  ) => void;
   appendPendingAssistantMessage: (text: string, toolCalls?: ToolCall[]) => void;
   clearPendingMessages: () => void;
   updateStreamingMessage: (text: string) => void;
@@ -26,7 +29,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   currentToolCalls: [],
   pendingMessages: [],
 
-  addPendingUserMessage: (text) =>
+  addPendingUserMessage: (text, attachments) =>
     set((s) => ({
       pendingMessages: [
         ...s.pendingMessages,
@@ -34,6 +37,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
           id: crypto.randomUUID(),
           role: "user",
           content: text,
+          attachments:
+            attachments && attachments.length > 0 ? attachments : undefined,
           timestamp: new Date().toISOString(),
         },
       ],

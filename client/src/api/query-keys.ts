@@ -44,6 +44,8 @@ function projectKeys(projectId: string) {
     graphifyStatus: [...p, "graphify", "status"] as const,
     graphifyVisualization: [...p, "graphify", "visualization"] as const,
     graphifyCheck: ["graphify", "check"] as const,
+    attachmentContent: (absPath: string) =>
+      [...p, "attachments", "content", absPath] as const,
   };
 }
 

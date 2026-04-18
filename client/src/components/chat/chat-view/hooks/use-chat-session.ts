@@ -1,10 +1,12 @@
-import { useEffect, useRef, useCallback, useMemo } from "react";
+import { useEffect, useRef, useCallback, useMemo, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { useSessionQuery } from "@/api/hooks/sessions";
 import { useAiChat } from "@/hooks/use-ai-chat";
 import { useChatStore } from "@/stores/chat-store";
 import { useSessionStore } from "@/stores/session-store";
+import { useActiveProjectId } from "@/api/hooks/_shared";
 import { toConversationMessages } from "../message-helpers";
+import type { AttachmentRecord } from "@/components/shared/conversation";
 
 /**
  * Manages loading/resuming a chat session, sending prompts,
@@ -18,6 +20,7 @@ import { toConversationMessages } from "../message-helpers";
 export function useChatSession() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const location = useLocation();
+  const projectId = useActiveProjectId();
   const { sendPrompt, cancelPrompt } = useAiChat();
   const { isStreaming, partialMessage, pendingMessages, clearPendingMessages } =
     useChatStore();
@@ -71,9 +74,9 @@ export function useChatSession() {
   }, [sessionId, location.state]);
 
   const handleSend = useCallback(
-    (text: string) => {
+    (text: string, attachments?: AttachmentRecord[]) => {
       if (!sessionId) return;
-      sendPrompt(text, sessionId);
+      sendPrompt(text, sessionId, attachments);
     },
     [sessionId, sendPrompt],
   );
@@ -82,6 +85,17 @@ export function useChatSession() {
     if (sessionId) cancelPrompt(sessionId);
   }, [sessionId, cancelPrompt]);
 
+  const [previewAttachment, setPreviewAttachment] =
+    useState<AttachmentRecord | null>(null);
+
+  const openAttachment = useCallback((record: AttachmentRecord) => {
+    setPreviewAttachment(record);
+  }, []);
+
+  const closeAttachment = useCallback(() => {
+    setPreviewAttachment(null);
+  }, []);
+
   // Merge persisted history with optimistic pending messages
   const allMessages = useMemo(
     () => [...sessionMessages, ...pendingMessages],
@@ -89,8 +103,13 @@ export function useChatSession() {
   );
 
   const conversationMessages = useMemo(
-    () => toConversationMessages(allMessages),
-    [allMessages],
+    () =>
+      toConversationMessages(
+        allMessages,
+        projectId ?? undefined,
+        openAttachment,
+      ),
+    [allMessages, projectId, openAttachment],
   );
 
   return {
@@ -100,5 +119,7 @@ export function useChatSession() {
     partialMessage,
     handleSend,
     handleCancel,
+    previewAttachment,
+    closeAttachment,
   };
 }

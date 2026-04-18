@@ -5,6 +5,7 @@ import { api } from "@/api";
 import { queryKeys } from "@/api/query-keys";
 import { useChatStore } from "@/stores/chat-store";
 import { useFileStore } from "@/stores/file-store";
+import type { AttachmentRecord } from "@/components/shared/conversation";
 
 export function useAiChat() {
   const lastContentRef = useRef("");
@@ -60,14 +61,23 @@ export function useAiChat() {
   }, [markChanged, qc]);
 
   const sendPrompt = useCallback(
-    (prompt: string, sessionId: string) => {
+    (
+      prompt: string,
+      sessionId: string,
+      attachments?: AttachmentRecord[],
+    ) => {
       const store = chatStore.getState();
       currentSessionRef.current = sessionId;
-      store.addPendingUserMessage(prompt);
+      store.addPendingUserMessage(prompt, attachments);
       store.setStreaming(true);
       store.updateStreamingMessage("");
       lastContentRef.current = "";
-      api.singleAgent.sendPrompt({ projectId: projectId!, sessionId, prompt });
+      api.singleAgent.sendPrompt({
+        projectId: projectId!,
+        sessionId,
+        prompt,
+        attachments,
+      });
     },
     [projectId],
   );

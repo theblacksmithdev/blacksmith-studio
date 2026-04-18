@@ -19,6 +19,7 @@ import {
 import type {
   AgentChatRecord,
   AgentDispatchRecord,
+  ChatAttachmentInput,
   ConversationRecord,
   ConversationSummary,
   SubTaskInput,
@@ -181,6 +182,7 @@ export class AgentSessionManager {
     agentRole?: string,
     dispatchId?: string,
     conversationId?: string,
+    attachments?: ChatAttachmentInput[],
   ): AgentChatRecord {
     return this.chat.add(
       projectId,
@@ -189,6 +191,7 @@ export class AgentSessionManager {
       agentRole,
       dispatchId,
       conversationId,
+      attachments,
     );
   }
 

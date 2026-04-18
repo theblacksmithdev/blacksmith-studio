@@ -2,13 +2,17 @@ import { useCallback } from "react";
 import styled from "@emotion/styled";
 import { Flex, Box } from "@chakra-ui/react";
 import { PanelRight, History } from "lucide-react";
-import { ConversationView } from "@/components/shared/conversation";
+import {
+  ConversationView,
+  AttachmentPreviewModal,
+} from "@/components/shared/conversation";
 import { StreamingIndicator } from "../streaming-indicator";
 import { HistoryPanel } from "../history-panel";
 import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 import { PreviewPanel } from "@/components/shared/preview-panel";
 import { SplitPanel } from "@/components/shared/layout";
 import { IconButton, Tooltip, spacing } from "@/components/shared/ui";
+import { useActiveProjectId } from "@/api/hooks/_shared";
 import { useChatSession } from "./hooks/use-chat-session";
 import { useChatPanels } from "./hooks/use-chat-panels";
 
@@ -18,12 +22,16 @@ const Root = styled(Flex)`
 `;
 
 export function ChatView() {
+  const projectId = useActiveProjectId();
   const {
+    sessionId,
     conversationMessages,
     isStreaming,
     partialMessage,
     handleSend,
     handleCancel,
+    previewAttachment,
+    closeAttachment,
   } = useChatSession();
 
   const {
@@ -72,6 +80,8 @@ export function ChatView() {
         isStreaming={isStreaming}
         placeholder="Ask Claude to build something..."
         renderContent={renderContent}
+        projectId={projectId ?? undefined}
+        conversationId={sessionId ?? undefined}
         streamingTrailing={
           isStreaming ? (
             <StreamingIndicator partialMessage={partialMessage} />
@@ -107,6 +117,13 @@ export function ChatView() {
       >
         {mainContent}
       </SplitPanel>
+      {previewAttachment && projectId && (
+        <AttachmentPreviewModal
+          projectId={projectId}
+          record={previewAttachment}
+          onClose={closeAttachment}
+        />
+      )}
     </Root>
   );
 }
