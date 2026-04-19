@@ -17,7 +17,7 @@
     "package:win": "npm run build && electron-builder --win",
     "package:linux": "npm run build && electron-builder --linux",
     "build:run:dev": "npm run build:electron && npm run dev",
-    "postinstall": "cd node_modules/node-pty && node-gyp rebuild --target=35.7.5 --arch=arm64 --dist-url=https://electronjs.org/headers --runtime=electron && cd ../better-sqlite3 && node-gyp rebuild --target=35.7.5 --arch=arm64 --dist-url=https://electronjs.org/headers --runtime=electron"
+    "postinstall": "cd node_modules/node-pty && node-gyp rebuild --target=35.7.5 --dist-url=https://electronjs.org/headers --runtime=electron && cd ../better-sqlite3 && node-gyp rebuild --target=35.7.5 --dist-url=https://electronjs.org/headers --runtime=electron"
   },
   "dependencies": {
     "@manzt/uv": "^0.8.13",

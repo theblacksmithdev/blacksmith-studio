@@ -11,36 +11,22 @@ permissions:
   contents: write
 
 jobs:
-  release:
-    runs-on: macos-latest
-
+  # ─── 1. Resolve version once, share with every build ───────────
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Setup Python (for node-gyp)
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Determine version
-        id: version
+      - id: version
         run: |
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             VERSION="${GITHUB_REF#refs/tags/v}"
           else
-            # Auto-increment patch version from latest tag
+            # Auto-increment patch from the latest tag on master pushes
             LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
             LATEST_VERSION="${LATEST_TAG#v}"
             IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_VERSION"
@@ -51,35 +37,104 @@ jobs:
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
           echo "Releasing version: $VERSION"
 
-      - name: Update package.json version
-        run: npm version ${{ steps.version.outputs.version }} --no-git-tag-version
+  # ─── 2. Build per-arch on the matching native runner ───────────
+  #
+  # Why matrix: `npm install` resolves optionalDependencies for the
+  # runner's own platform/arch. `@manzt/uv` ships its executable via
+  # platform-specific optional deps (`@manzt/uv-darwin-x64` /
+  # `@manzt/uv-darwin-arm64`), so building x64 on an arm64 runner
+  # would ship the wrong binary. Same story for native modules
+  # (`better-sqlite3`, `node-pty`) rebuilt against Electron's headers.
+  build:
+    needs: version
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macos-x64
+            runner: macos-13 # Intel Mac runner
+            arch: x64
+            package_cmd: package:mac
+            artifact_globs: |
+              release/*.dmg
+              release/*.zip
+          - name: macos-arm64
+            runner: macos-14 # Apple Silicon runner
+            arch: arm64
+            package_cmd: package:mac
+            artifact_globs: |
+              release/*.dmg
+              release/*.zip
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
 
-      - name: Build
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: npm install
+        # `postinstall` rebuilds native modules against Electron's
+        # headers. Architecture is inferred from the runner so each
+        # matrix job produces binaries that match its own CPU.
+
+      - name: Stamp version
+        run: npm version ${{ needs.version.outputs.version }} --no-git-tag-version
+
+      - name: Build client + electron
         run: npm run build
 
-      - name: Package
-        run: npm run package:mac
+      - name: Package (${{ matrix.arch }})
+        run: npm run ${{ matrix.package_cmd }} -- --${{ matrix.arch }}
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: ${{ matrix.artifact_globs }}
+          if-no-files-found: error
+
+  # ─── 3. Tag (if auto-release from master) + publish one release ─
+  release:
+    needs: [version, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Create tag (auto-release)
         if: startsWith(github.ref, 'refs/heads/')
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag ${{ steps.version.outputs.tag }}
-          git push origin ${{ steps.version.outputs.tag }}
+          git tag ${{ needs.version.outputs.tag }}
+          git push origin ${{ needs.version.outputs.tag }}
+
+      - name: Collect all matrix artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release
+          merge-multiple: true
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          name: Blacksmith Studio ${{ steps.version.outputs.tag }}
+          tag_name: ${{ needs.version.outputs.tag }}
+          name: Blacksmith Studio ${{ needs.version.outputs.tag }}
           files: |
             release/*.dmg
             release/*.zip
           generate_release_notes: true
           draft: false
-          prerelease: ${{ contains(steps.version.outputs.version, '-beta') || contains(steps.version.outputs.version, '-alpha') }}
+          prerelease: ${{ contains(needs.version.outputs.version, '-beta') || contains(needs.version.outputs.version, '-alpha') }}
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
