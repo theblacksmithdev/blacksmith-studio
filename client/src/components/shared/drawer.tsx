@@ -14,6 +14,8 @@ interface DrawerProps {
   size?: string;
   footer?: ReactNode;
   headerExtra?: ReactNode;
+  /** Skip the default 20px content padding — useful for full-bleed lists. */
+  noPadding?: boolean;
 }
 
 const panelStyles: Record<
@@ -71,6 +73,7 @@ export function Drawer({
   size,
   footer,
   headerExtra,
+  noPadding,
 }: DrawerProps) {
   const defaultSize = placement === "right" ? "560px" : "70vh";
   const resolvedSize = size || defaultSize;
@@ -150,7 +153,7 @@ export function Drawer({
           flex={1}
           direction="column"
           minH={0}
-          css={{ padding: "20px", overflow: "hidden" }}
+          css={{ padding: noPadding ? 0 : "20px", overflow: "hidden" }}
         >
           {children}
         </Flex>

@@ -21,7 +21,7 @@ export function TimelineDrawer({
   hideMessages,
 }: TimelineDrawerProps) {
   return (
-    <Drawer title="Timeline" onClose={onClose} size="440px">
+    <Drawer title="Timeline" onClose={onClose} size="440px" noPadding>
       <EventTimeline
         scope={scope}
         conversationId={conversationId}

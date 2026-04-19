@@ -4,7 +4,7 @@ import {
 } from "@/api/hooks/conversation-events";
 import type { EventScope } from "@/api/types";
 import { EventRow } from "./event-row";
-import { EmptyState, TimelineRoot } from "./styles";
+import { EmptyState, TimelineRail, TimelineRoot } from "./styles";
 
 interface EventTimelineProps {
   scope: EventScope;
@@ -38,20 +38,27 @@ export function EventTimeline({
   if (isLoading) {
     return <EmptyState>Loading timeline…</EmptyState>;
   }
-  const events = (data ?? []).filter((e) =>
-    hideMessages
-      ? e.eventType !== "user_message" && e.eventType !== "assistant_message"
-      : true,
-  );
+  // Newest first — query returns chronological order, reverse for display
+  // so the freshest event is always at the top of the drawer.
+  const events = (data ?? [])
+    .filter((e) =>
+      hideMessages
+        ? e.eventType !== "user_message" && e.eventType !== "assistant_message"
+        : true,
+    )
+    .slice()
+    .reverse();
   if (events.length === 0) {
     return <EmptyState>No events yet.</EmptyState>;
   }
 
   return (
     <TimelineRoot>
-      {events.map((event) => (
-        <EventRow key={event.id} event={event} />
-      ))}
+      <TimelineRail>
+        {events.map((event) => (
+          <EventRow key={event.id} event={event} />
+        ))}
+      </TimelineRail>
     </TimelineRoot>
   );
 }
