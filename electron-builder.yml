@@ -34,22 +34,25 @@ mac:
   # Universal macOS builds fuse an x64 and an arm64 intermediate app via
   # @electron/universal. That step aborts when it finds a Mach-O file
   # that's byte-identical in both intermediate builds and isn't listed
-  # here. Two categories of file trip the check in this app:
+  # here. Three categories of file trip the check in this app:
   #
-  #   1. The platform-specific uv binaries. We install BOTH
+  #   1. Platform-specific uv binaries. We install BOTH
   #      `@manzt/uv-darwin-x64` and `@manzt/uv-darwin-arm64` in every
   #      build so the universal app carries both; at runtime we pick
   #      the right one by `process.arch`
   #      (see server/services/python/package-manager.ts).
-  #   2. Native-module `.node` files already lipo'd into universal fat
-  #      binaries (better-sqlite3, node-pty) by
-  #      `@electron/rebuild --arch universal`. They're the same universal
-  #      artifact in both intermediate apps.
+  #   2. Native-module `.node` files pre-lipo'd into universal fat
+  #      binaries (e.g. `better-sqlite3/bin/darwin-universal-*/…node`)
+  #      by `@electron/rebuild --arch universal` — identical across
+  #      both intermediate apps.
+  #   3. Arch-specific prebuilt executables shipped by native modules
+  #      (e.g. `node-pty/prebuilds/darwin-arm64/spawn-helper`). The
+  #      arm64 copy is the arm64 binary in both intermediate builds.
   #
   # The pattern only suppresses the error when the two copies are
-  # byte-identical — genuinely arch-specific `.node` files differ and
-  # still get lipo'd automatically.
-  x64ArchFiles: "**/{*.node,@manzt/uv-*/bin/uv*}"
+  # byte-identical — genuinely arch-specific files that differ between
+  # builds still get lipo'd automatically.
+  x64ArchFiles: "**/{*.node,spawn-helper,@manzt/uv-*/bin/uv*}"
 
 win:
   target:
