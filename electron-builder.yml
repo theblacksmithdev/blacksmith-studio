@@ -4,6 +4,10 @@ directories:
   output: release
   buildResources: resources
 
+# Restore +x on bundled Mach-O binaries that the universal-app merge
+# and/or force-install step strips. See build/after-pack.cjs.
+afterPack: build/after-pack.cjs
+
 files:
   - dist/**/*
   - node_modules/**/*
