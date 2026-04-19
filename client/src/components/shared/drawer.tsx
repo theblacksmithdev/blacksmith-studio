@@ -16,18 +16,25 @@ interface DrawerProps {
   headerExtra?: ReactNode;
   /** Skip the default 20px content padding — useful for full-bleed lists. */
   noPadding?: boolean;
+  /**
+   * Base stacking index. The backdrop sits at `zIndex` and the panel at
+   * `zIndex + 1`. Default is 500 — bump this when the drawer is spawned
+   * from a surface that itself sits high (e.g. the full-screen wizard
+   * at z-index 9999).
+   */
+  zIndex?: number;
 }
 
 const panelStyles: Record<
   DrawerPlacement,
-  (size: string) => Record<string, any>
+  (size: string, zIndex: number) => Record<string, any>
 > = {
-  right: (size) => ({
+  right: (size, zIndex) => ({
     position: "fixed",
     top: 0,
     right: 0,
     bottom: 0,
-    zIndex: 501,
+    zIndex: zIndex + 1,
     width: size,
     maxWidth: "90vw",
     background: "var(--studio-glass)",
@@ -42,12 +49,12 @@ const panelStyles: Record<
       to: { transform: "translateX(0)" },
     },
   }),
-  bottom: (size) => ({
+  bottom: (size, zIndex) => ({
     position: "fixed",
     bottom: 0,
     left: 0,
     right: 0,
-    zIndex: 501,
+    zIndex: zIndex + 1,
     height: size,
     maxHeight: "90vh",
     background: "var(--studio-glass)",
@@ -74,6 +81,7 @@ export function Drawer({
   footer,
   headerExtra,
   noPadding,
+  zIndex = 500,
 }: DrawerProps) {
   const defaultSize = placement === "right" ? "560px" : "70vh";
   const resolvedSize = size || defaultSize;
@@ -93,14 +101,17 @@ export function Drawer({
         css={{
           position: "fixed",
           inset: 0,
-          zIndex: 500,
+          zIndex,
           background: "var(--studio-backdrop)",
           backdropFilter: "blur(12px)",
           animation: "fadeIn 0.15s ease",
         }}
       />
 
-      <Flex direction="column" css={panelStyles[placement](resolvedSize)}>
+      <Flex
+        direction="column"
+        css={panelStyles[placement](resolvedSize, zIndex)}
+      >
         {placement === "bottom" && (
           <Box
             css={{

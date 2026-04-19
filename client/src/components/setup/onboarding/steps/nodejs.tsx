@@ -1,14 +1,17 @@
+import { useState } from "react";
 import { Box, Flex, HStack, VStack } from "@chakra-ui/react";
 import {
   ExternalLink,
   RefreshCw,
   CheckCircle2,
   AlertTriangle,
+  HelpCircle,
 } from "lucide-react";
 import { Alert, Button, Text } from "@/components/shared/ui";
 import { BinaryPicker } from "@/components/shared/wizard";
 import { MIN_NODE_MAJOR } from "@/constants";
 import { useNodePicker } from "../hooks";
+import { InstallHelpDrawer } from "./install-help";
 import { emptyHintCss, selectedPillCss } from "./styles";
 
 interface NodeStepProps {
@@ -24,6 +27,7 @@ interface NodeStepProps {
 export function NodeStep({ value, version, onPick }: NodeStepProps) {
   const { candidates, loading, selectedInvalid, detected, rescan } =
     useNodePicker({ value, version, onPick });
+  const [showHelp, setShowHelp] = useState(false);
 
   const nothingFound = detected && candidates.length === 0;
 
@@ -35,15 +39,22 @@ export function NodeStep({ value, version, onPick }: NodeStepProps) {
             We couldn't find Node.js on your system. Install Node {MIN_NODE_MAJOR}
             {" "}or newer and come back to this step.
           </Text>
-          <Box>
+          <HStack gap="8px">
             <Button
               variant="primary"
               size="sm"
+              onClick={() => setShowHelp(true)}
+            >
+              <HelpCircle size={13} /> Show me how
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => window.open("https://nodejs.org")}
             >
-              <ExternalLink size={13} /> Download Node.js
+              <ExternalLink size={13} /> nodejs.org
             </Button>
-          </Box>
+          </HStack>
         </VStack>
       ) : (
         <BinaryPicker
@@ -68,6 +79,10 @@ export function NodeStep({ value, version, onPick }: NodeStepProps) {
           <RefreshCw size={13} />
           Rescan
         </Button>
+        <Button variant="ghost" size="sm" onClick={() => setShowHelp(true)}>
+          <HelpCircle size={13} />
+          How do I install Node?
+        </Button>
         {value && !selectedInvalid && (
           <Flex css={selectedPillCss}>
             <CheckCircle2 size={13} style={{ color: "var(--studio-accent)" }} />
@@ -75,6 +90,10 @@ export function NodeStep({ value, version, onPick }: NodeStepProps) {
           </Flex>
         )}
       </HStack>
+
+      {showHelp && (
+        <InstallHelpDrawer kind="node" onClose={() => setShowHelp(false)} />
+      )}
     </>
   );
 }
