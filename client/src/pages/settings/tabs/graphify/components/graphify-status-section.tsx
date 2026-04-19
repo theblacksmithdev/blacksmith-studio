@@ -34,6 +34,7 @@ interface GraphifyStatusSectionProps {
   graphStatus: GraphifyStatus | undefined;
   isBuilding: boolean;
   buildResult: GraphifyBuildResult | undefined;
+  buildError: string | null;
   enabled: boolean;
   visualizationHtml: string | null;
   onBuild: () => void;
@@ -44,6 +45,7 @@ export function GraphifyStatusSection({
   graphStatus,
   isBuilding,
   buildResult,
+  buildError,
   enabled,
   visualizationHtml,
   onBuild,
@@ -162,13 +164,37 @@ export function GraphifyStatusSection({
           </StatusBody>
 
           {/* Build result */}
-          {buildResult && !buildResult.success && (
+          {buildError && (
             <ResultBar $success={false}>
               <AlertCircle size={13} />
-              Build failed: {buildResult.error ?? "Unknown error"}
+              <Text
+                css={{
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                  fontFamily: "var(--studio-font-mono)",
+                  fontSize: "12px",
+                }}
+              >
+                Build failed: {buildError}
+              </Text>
             </ResultBar>
           )}
-          {buildResult?.success && (
+          {!buildError && buildResult && !buildResult.success && (
+            <ResultBar $success={false}>
+              <AlertCircle size={13} />
+              <Text
+                css={{
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                  fontFamily: "var(--studio-font-mono)",
+                  fontSize: "12px",
+                }}
+              >
+                Build failed: {buildResult.error ?? "Unknown error"}
+              </Text>
+            </ResultBar>
+          )}
+          {buildResult?.success && !buildError && (
             <ResultBar $success>
               <CheckCircle2 size={13} />
               Graph built in {(buildResult.durationMs / 1000).toFixed(1)}s

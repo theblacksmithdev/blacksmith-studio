@@ -47,6 +47,7 @@ interface GraphifySetupFlowProps {
   installing: boolean;
   logs: string[];
   result: { success: boolean; error?: string } | null;
+  error: string | null;
   onRetry: () => void;
 }
 
@@ -54,8 +55,15 @@ export function GraphifySetupFlow({
   installing,
   logs,
   result,
+  error,
   onRetry,
 }: GraphifySetupFlowProps) {
+  // A rejected mutation (unexpected throw from the main process) also
+  // counts as a failed setup — surface it with the same UI treatment as
+  // an explicit `{ success: false, error }` result so long tracebacks
+  // aren't hidden behind "Preparing installation...".
+  const failed = (result && !result.success) || (!installing && !!error);
+  const errorMessage = error ?? result?.error ?? null;
   const logEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -78,7 +86,7 @@ export function GraphifySetupFlow({
           {result?.success && (
             <CheckCircle2 size={14} style={{ color: "var(--studio-green)" }} />
           )}
-          {result && !result.success && (
+          {failed && (
             <XCircle size={14} style={{ color: "var(--studio-error)" }} />
           )}
           <Text
@@ -93,7 +101,7 @@ export function GraphifySetupFlow({
               ? "Installing Graphify..."
               : result?.success
                 ? "Graphify installed"
-                : result
+                : failed
                   ? "Installation failed"
                   : "Setting up Graphify"}
           </Text>
@@ -109,7 +117,7 @@ export function GraphifySetupFlow({
             ? "Installing via pip and configuring for Blacksmith Studio."
             : result?.success
               ? "Graphify is ready. You can now enable the knowledge graph."
-              : result
+              : failed
                 ? "Something went wrong. Check the logs below."
                 : "Preparing installation..."}
         </Text>
@@ -124,12 +132,21 @@ export function GraphifySetupFlow({
         </LogArea>
       )}
 
-      {result && !result.success && (
+      {failed && (
         <Footer>
           <Flex direction="column" gap="10px">
             <ResultBar $success={false}>
-              {result.error ??
-                "Installation failed. Make sure Python 3.10+ and pip are available."}
+              <Text
+                css={{
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                  fontFamily: "var(--studio-font-mono)",
+                  fontSize: "12px",
+                }}
+              >
+                {errorMessage ??
+                  "Installation failed. Make sure Python 3.10+ and pip are available."}
+              </Text>
             </ResultBar>
             <Flex>
               <PrimaryBtn onClick={onRetry}>Try Again</PrimaryBtn>

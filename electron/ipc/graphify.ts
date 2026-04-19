@@ -37,6 +37,8 @@ export function setupGraphifyIPC(
 
   ipcMain.handle(GRAPHIFY_SETUP, async (_e, data?: { projectId?: string }) => {
     const win = getWindow();
+    const emit = (line: string) =>
+      win?.webContents.send(GRAPHIFY_ON_BUILD_PROGRESS, { line });
 
     // Resolve the user's configured Python path from settings
     let pythonPath: string | undefined;
@@ -47,9 +49,13 @@ export function setupGraphifyIPC(
           | undefined) || undefined;
     }
 
-    return graphifyManager.setup(pythonPath, (line) => {
-      win?.webContents.send(GRAPHIFY_ON_BUILD_PROGRESS, { line });
-    });
+    try {
+      return await graphifyManager.setup(pythonPath, emit);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      emit(`[error] ${message}`);
+      return { success: false, error: message };
+    }
   });
 
   ipcMain.handle(GRAPHIFY_STATUS, (_e, data: { projectId: string }) => {
@@ -63,9 +69,17 @@ export function setupGraphifyIPC(
     const root = resolveProjectPath(projectManager, data.projectId);
     const win = getWindow();
 
-    return graphifyManager.build(root, (line) => {
-      win?.webContents.send(GRAPHIFY_ON_BUILD_PROGRESS, { line });
-    });
+    try {
+      return await graphifyManager.build(root, (line) => {
+        win?.webContents.send(GRAPHIFY_ON_BUILD_PROGRESS, { line });
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      win?.webContents.send(GRAPHIFY_ON_BUILD_PROGRESS, {
+        line: `[error] ${message}`,
+      });
+      return { success: false, durationMs: 0, error: message };
+    }
   });
 
   ipcMain.handle(
@@ -116,23 +130,27 @@ export function setupGraphifyIPC(
         projectPath,
         setTimeout(async () => {
           rebuildTimers.delete(projectPath);
+          const win = getWindow();
+          const emit = (line: string) =>
+            win?.webContents.send(GRAPHIFY_ON_BUILD_PROGRESS, { line });
           try {
             console.log(
               `[graphify] Auto-rebuilding graph for ${project.name}...`,
             );
-            const win = getWindow();
-            const result = await graphifyManager.build(projectPath, (line) => {
-              win?.webContents.send(GRAPHIFY_ON_BUILD_PROGRESS, { line });
-            });
+            const result = await graphifyManager.build(projectPath, emit);
             if (result.success) {
               console.log(
                 `[graphify] Auto-rebuild complete (${(result.durationMs / 1000).toFixed(1)}s)`,
               );
             } else {
-              console.warn(`[graphify] Auto-rebuild failed: ${result.error}`);
+              const msg = `Auto-rebuild failed: ${result.error ?? "unknown error"}`;
+              console.warn(`[graphify] ${msg}`);
+              emit(`[error] ${msg}`);
             }
           } catch (err: any) {
-            console.warn(`[graphify] Auto-rebuild error: ${err.message}`);
+            const msg = `Auto-rebuild error: ${err.message}`;
+            console.warn(`[graphify] ${msg}`);
+            emit(`[error] ${msg}`);
           }
         }, REBUILD_DEBOUNCE_MS),
       );

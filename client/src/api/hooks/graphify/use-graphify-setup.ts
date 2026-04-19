@@ -30,6 +30,12 @@ export function useGraphifySetup() {
     isPending: mutation.isPending,
     logs: progress.messages.map((m) => m.line),
     result: mutation.data ?? null,
+    error:
+      mutation.error instanceof Error
+        ? mutation.error.message
+        : mutation.error
+          ? String(mutation.error)
+          : null,
     reset: () => {
       mutation.reset();
       progress.clear();

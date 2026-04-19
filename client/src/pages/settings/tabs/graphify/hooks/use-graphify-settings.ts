@@ -50,6 +50,12 @@ export function useGraphifySettings() {
     graphStatus,
     isBuilding: buildMutation.isPending || !!graphStatus?.building,
     buildResult: buildMutation.data,
+    buildError:
+      buildMutation.error instanceof Error
+        ? buildMutation.error.message
+        : buildMutation.error
+          ? String(buildMutation.error)
+          : null,
 
     // Visualization
     visualizationHtml: visualizationHtml ?? null,

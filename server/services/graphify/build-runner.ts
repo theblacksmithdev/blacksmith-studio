@@ -59,11 +59,33 @@ export class BuildRunner {
 
       const durationMs = Date.now() - start;
 
-      if (result.success) {
-        await this.postProcess(projectRoot, durationMs);
+      if (!result.success) {
+        return { success: false, durationMs, error: result.error };
       }
 
-      return { success: result.success, durationMs, error: result.error };
+      // Post-processing runs IO (viz gen, meta write, CLAUDE.md upsert). Any
+      // throw here must surface as a `GraphifyBuildResult` — letting it
+      // bubble would reject the IPC promise and hide the message from the UI.
+      try {
+        await this.postProcess(projectRoot, durationMs);
+        return { success: true, durationMs };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        onProgress?.(`[post-process error] ${message}`);
+        return {
+          success: false,
+          durationMs,
+          error: `Post-processing failed: ${message}`,
+        };
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      onProgress?.(`[error] ${message}`);
+      return {
+        success: false,
+        durationMs: Date.now() - start,
+        error: message,
+      };
     } finally {
       this.inFlight.delete(projectRoot);
     }

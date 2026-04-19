@@ -23,6 +23,7 @@ export function GraphifySettings() {
           installing={gs.setup.isPending}
           logs={gs.setup.logs}
           result={gs.setup.result}
+          error={gs.setup.error}
           onRetry={() => gs.setup.setup()}
         />
       );
@@ -83,6 +84,7 @@ export function GraphifySettings() {
         graphStatus={gs.graphStatus}
         isBuilding={gs.isBuilding}
         buildResult={gs.buildResult}
+        buildError={gs.buildError}
         enabled={gs.enabled}
         visualizationHtml={gs.visualizationHtml}
         onBuild={gs.build}

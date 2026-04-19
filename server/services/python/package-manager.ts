@@ -305,7 +305,7 @@ export class PackageManager {
         else
           resolve({
             success: false,
-            error: stderr.trim().slice(0, 500) || `Exit code ${code}`,
+            error: stderr.trim().slice(0, 4000) || `Exit code ${code}`,
           });
       });
 
@@ -405,7 +405,7 @@ export class PackageManager {
         else
           resolve({
             success: false,
-            error: stderr.trim().slice(0, 500) || `Exit code ${code}`,
+            error: stderr.trim().slice(0, 4000) || `Exit code ${code}`,
           });
       });
 
