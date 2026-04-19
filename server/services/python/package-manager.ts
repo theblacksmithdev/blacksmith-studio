@@ -21,7 +21,7 @@ function toAsarUnpacked(p: string): string {
   return p.includes(marker) ? p.replace(marker, replacement) : p;
 }
 
-/** Resolve `@manzt/uv-<platform>-<arch>/uv` if that package is present. */
+/** Resolve `@manzt/uv-<platform>-<arch>/bin/uv` if that package is present. */
 function tryResolvePlatformBin(
   req: ReturnType<typeof createRequire>,
   plat: NodeJS.Platform,
@@ -31,7 +31,7 @@ function tryResolvePlatformBin(
   try {
     const pkgName = `@manzt/uv-${plat}-${arch}`;
     const pkgPath = path.dirname(req.resolve(`${pkgName}/package.json`));
-    return path.join(pkgPath, isWin ? "uv.exe" : "uv");
+    return path.join(pkgPath, "bin", isWin ? "uv.exe" : "uv");
   } catch {
     return null;
   }

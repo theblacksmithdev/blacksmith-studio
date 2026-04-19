@@ -15,9 +15,7 @@ files:
 #
 # Only the platform/arch-specific uv packages are unpacked. The main
 # `@manzt/uv/uv` shim is unused at runtime (we resolve the arch-specific
-# package directly) and including it here would confuse
-# @electron/universal, which sees the host-arch binary as byte-identical
-# across the arm64 + x64 intermediate builds and aborts the merge.
+# package directly).
 asarUnpack:
   - "node_modules/@manzt/uv-*/**"
 
@@ -33,6 +31,16 @@ mac:
         - x64
         - arm64
   hardenedRuntime: true
+  # Universal macOS builds fuse an x64 and an arm64 intermediate app via
+  # @electron/universal. Both intermediate builds include BOTH platform-
+  # specific uv packages (`@manzt/uv-darwin-x64` and `@manzt/uv-darwin-arm64`),
+  # so the Mach-O uv binary inside each package is byte-identical across
+  # the two intermediate apps. Without this rule, @electron/universal
+  # aborts with "same in both x64 and arm64 builds and not covered by the
+  # x64ArchFiles rule". The pattern opts these binaries out of lipo and
+  # keeps them as-is, which is what we want — at runtime we pick the right
+  # one by `process.arch` (see server/services/python/package-manager.ts).
+  x64ArchFiles: "**/@manzt/uv-*/bin/uv*"
 
 win:
   target:

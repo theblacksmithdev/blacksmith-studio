@@ -49,22 +49,17 @@ jobs:
 
       # npm only installs the host-arch `@manzt/uv-darwin-*`
       # optional dep. Force-install the other arch so the universal
-      # app carries both uv binaries.
+      # app carries both uv binaries — at runtime we pick the right
+      # one by `process.arch` (see server/services/python/package-manager.ts).
+      # The platform-specific binaries are byte-identical across the
+      # x64 and arm64 intermediate universal builds; `mac.x64ArchFiles`
+      # in electron-builder.yml opts them out of @electron/universal's
+      # lipo step so the merge doesn't abort.
       - name: Force-install both uv platform packages
         run: |
           npm install --no-save --force \
             @manzt/uv-darwin-x64 \
             @manzt/uv-darwin-arm64
-
-      # The @manzt/uv package's install.cjs copies ONE arch's binary
-      # into `node_modules/@manzt/uv/uv`. That shim is only a fallback
-      # our runtime never hits (it resolves from the platform packages
-      # — see server/services/python/package-manager.ts), and leaving
-      # it in place breaks @electron/universal — it flags a Mach-O
-      # executable that's byte-identical across the two arch builds.
-      # Nuke it before packaging.
-      - name: Remove host-arch uv shim (prevents universal merge error)
-        run: rm -f node_modules/@manzt/uv/uv
 
       # ── Rebuild native modules as universal fat binaries ───────
       # `@electron/rebuild --arch universal` builds arm64 + x64 for
