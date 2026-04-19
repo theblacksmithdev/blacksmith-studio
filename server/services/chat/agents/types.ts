@@ -1,5 +1,3 @@
-import type { ChildProcess } from "node:child_process";
-
 /* ── Agent Teams (departments) ── */
 
 export type AgentTeam =
@@ -156,7 +154,8 @@ export interface AgentExecution {
 /** Live state of a running agent process */
 export interface AgentProcess {
   execution: AgentExecution;
-  process: ChildProcess;
+  /** Abort the underlying AI stream (subprocess kill, HTTP abort, etc.). */
+  cancel(): void;
 }
 
 /* ── Agent Events (streamed to UI) ── */

@@ -208,6 +208,11 @@ export class ClaudeCliProvider extends AiProvider {
       );
     });
 
-    return { promise, process: proc };
+    return {
+      promise,
+      cancel: () => {
+        if (!proc.killed) proc.kill("SIGTERM");
+      },
+    };
   }
 }

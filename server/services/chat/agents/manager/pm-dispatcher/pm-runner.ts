@@ -73,6 +73,7 @@ export async function runPM(opts: PMRunOptions): Promise<PMRunResult> {
     tolerantExit: true,
     sessionId: opts.sessionId,
     resume: opts.resume,
+    providerId: opts.baseOptions.providerId,
     onText: (delta, isFinal) => {
       collected += delta;
       opts.onAssistantText?.({ text: delta, isFinal });

@@ -1,5 +1,3 @@
-import type { ChildProcess } from "node:child_process";
-
 /** Model tier — provider-agnostic. Each provider maps these to its own model names. */
 export enum AiModelTier {
   Fast = "fast",
@@ -31,6 +29,12 @@ export interface AiCompletionOptions {
   disableTools?: boolean;
   /** Restrict the provider to a specific tool set (e.g. ["Read","Glob","Grep"]) */
   allowedTools?: string[];
+  /**
+   * Override the active provider for this call. When omitted, the `Ai`
+   * router uses the registry's default. Read per-call so a settings
+   * change takes effect on the next request without restart.
+   */
+  providerId?: string;
 }
 
 /** Options for streaming interactive sessions */
@@ -55,10 +59,11 @@ export interface AiStreamOptions extends AiCompletionOptions {
   tolerantExit?: boolean;
 }
 
-/** Result handle from a streaming session */
+/** Result handle from a streaming session. */
 export interface AiStreamHandle {
   promise: Promise<void>;
-  process: ChildProcess;
+  /** Abort the in-flight stream. Providers must implement this. */
+  cancel(): void;
 }
 
 /** Provider status check result */

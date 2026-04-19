@@ -66,6 +66,7 @@ export async function assessComplexity(
     cwd: options.projectRoot,
     disableTools: true,
     timeout: ASSESS_TIMEOUT_MS,
+    providerId: options.providerId,
   });
 
   return parseAssessment(text ?? "");

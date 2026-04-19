@@ -37,7 +37,12 @@ import {
   settingsKeyForToolchain,
 } from "../server/services/commands/index.js";
 import { getDatabase } from "../server/db/index.js";
-import { Ai } from "../server/services/ai/index.js";
+import {
+  Ai,
+  AiProviderType,
+  ClaudeCliProvider,
+  ProviderRegistry,
+} from "../server/services/ai/index.js";
 import { SettingsManager } from "../server/services/settings.js";
 import { RunnerManager } from "../server/services/runner/index.js";
 import { McpManager } from "../server/services/mcp.js";
@@ -151,7 +156,12 @@ function createMenu() {
 app.whenReady().then(async () => {
   // Instantiate services in main process
   const projectManager = new ProjectManager();
-  const ai = new Ai();
+
+  // AI provider wiring. One registry, one Ai router; adding a new
+  // provider later is `registry.register(id, new XProvider(...))`.
+  const providerRegistry = new ProviderRegistry(AiProviderType.ClaudeCli);
+  providerRegistry.register(AiProviderType.ClaudeCli, new ClaudeCliProvider());
+  const ai = new Ai(providerRegistry);
   const db = getDatabase();
   const sessionManager = new SessionManager(db);
   const agentSessionManager = new AgentSessionManager(db);

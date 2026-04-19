@@ -119,6 +119,7 @@ function resolveBaseOptions(
     mcpConfigPath: settings.mcpConfigPath,
     projectInstructions: settings.customInstructions,
     permissionMode: settings.permissionMode,
+    providerId: settings.providerId,
   };
 }
 

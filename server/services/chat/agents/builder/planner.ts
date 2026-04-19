@@ -122,6 +122,7 @@ export async function generatePlan(
     nodePath: baseOptions.nodePath,
     permissionMode: "default",
     tolerantExit: true,
+    providerId: baseOptions.providerId,
   });
 
   if (!fullText.trim()) {

@@ -6,6 +6,7 @@ const DEFAULTS: Record<string, any> = {
   "appearance.theme": "system",
   "appearance.fontSize": 14,
   "appearance.sidebarCollapsed": false,
+  "ai.provider": "claude-cli",
   "ai.model": "sonnet",
   "ai.maxBudget": null,
   "ai.customInstructions": "",

@@ -7,5 +7,10 @@ export type {
   AiStreamHandle,
   AiProviderStatus,
 } from "./types";
-export { AiProvider, ClaudeCliProvider } from "./providers";
+export {
+  AiProvider,
+  ClaudeCliProvider,
+  ProviderRegistry,
+} from "./providers";
+export type { ModelSelector } from "./providers";
 export { createStreamParser, extractTextFromEvent } from "./parser";

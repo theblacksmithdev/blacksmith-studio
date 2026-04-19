@@ -1,12 +1,10 @@
-import type { ChildProcess } from "node:child_process";
 import type {
   AiCompletionOptions,
   AiStreamOptions,
   AiStreamHandle,
   AiProviderStatus,
 } from "./types.js";
-import type { AiProvider } from "./providers/provider.js";
-import { ClaudeCliProvider } from "./providers/claude-cli.js";
+import type { ProviderRegistry } from "./providers/registry.js";
 import { extractTextFromEvent } from "./parser.js";
 
 /** Options for streamText — same as stream, minus the required onChunk. */
@@ -24,44 +22,32 @@ export interface AiStreamTextResult {
 /**
  * Ai — the unified AI interface.
  *
- * Routes `complete()` and `stream()` calls to the active provider.
- * Manages active streaming sessions for cancellation.
- * Defaults to Claude CLI. Switch providers at runtime via `setProvider()`.
+ * Routes `complete()` and `stream()` calls to the provider selected
+ * either by `options.providerId` (per-call override) or by the
+ * registry's default. Active streaming sessions are tracked by
+ * `sessionId` so we can cancel them.
  */
 export class Ai {
-  private provider: AiProvider;
-  private sessions = new Map<string, ChildProcess>();
+  private sessions = new Map<string, AiStreamHandle>();
 
-  constructor(provider?: AiProvider) {
-    this.provider = provider ?? new ClaudeCliProvider();
-  }
+  constructor(private readonly registry: ProviderRegistry) {}
 
-  /** Switch the active provider at runtime. */
-  setProvider(provider: AiProvider) {
-    this.provider = provider;
-  }
-
-  /** Get the active provider's name. */
-  get providerName(): string {
-    return this.provider.name;
-  }
-
-  /** Check if the active provider is available. */
+  /** Check availability of the default provider. */
   checkStatus(): Promise<AiProviderStatus> {
-    return this.provider.checkStatus();
+    return this.registry.resolve().checkStatus();
   }
 
-  /** One-shot completion — send a prompt, get text back. Returns null on failure. */
+  /** One-shot completion. Returns null on failure. */
   complete(options: AiCompletionOptions): Promise<string | null> {
-    return this.provider.complete(options);
+    return this.registry.resolve(options.providerId).complete(options);
   }
 
-  /** Streaming session — send a prompt, get chunks via callback. Tracks session for cancellation. */
+  /** Streaming session — send a prompt, get chunks via callback. */
   stream(options: AiStreamOptions): AiStreamHandle {
-    const handle = this.provider.stream(options);
+    const handle = this.registry.resolve(options.providerId).stream(options);
 
     if (options.sessionId) {
-      this.sessions.set(options.sessionId, handle.process);
+      this.sessions.set(options.sessionId, handle);
       handle.promise.finally(() => {
         this.sessions.delete(options.sessionId!);
       });
@@ -74,9 +60,6 @@ export class Ai {
    * Stream + collect. Wraps `stream()` and returns the accumulated assistant
    * text after the provider completes. Consumers can still tap every chunk
    * via `onChunk` and every text delta via `onText`.
-   *
-   * Intended for one-shot calls that need the full text to parse (e.g. the
-   * PM planner) but also want to stream partial output to the UI.
    */
   async streamText(options: AiStreamTextOptions): Promise<AiStreamTextResult> {
     let text = "";
@@ -97,9 +80,9 @@ export class Ai {
 
   /** Cancel an active streaming session. */
   cancel(sessionId: string): void {
-    const proc = this.sessions.get(sessionId);
-    if (proc) {
-      proc.kill("SIGTERM");
+    const handle = this.sessions.get(sessionId);
+    if (handle) {
+      handle.cancel();
       this.sessions.delete(sessionId);
     }
   }

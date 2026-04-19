@@ -22,6 +22,12 @@ export interface AiInvocationSettings {
   model: string | undefined;
   /** Max budget in USD for the session (single-agent chat only today). */
   maxBudget: number | null | undefined;
+  /**
+   * Active AI provider id (e.g. "claude-cli"). Undefined → the Ai
+   * router uses the registry's default. Read per-call so a settings
+   * change takes effect on the next message.
+   */
+  providerId: string | undefined;
 }
 
 /**
@@ -61,5 +67,6 @@ export function resolveAiInvocationSettings(
       (all["ai.customInstructions"] as string | undefined) || undefined,
     model: (all["ai.model"] as string | undefined) || undefined,
     maxBudget: (all["ai.maxBudget"] as number | null | undefined) ?? undefined,
+    providerId: (all["ai.provider"] as string | undefined) || undefined,
   };
 }

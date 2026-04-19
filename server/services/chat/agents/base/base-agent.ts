@@ -95,14 +95,14 @@ export abstract class BaseAgent {
 
   cancel(): void {
     if (!this._activeProcess || this._settled) return;
-    const { execution, process } = this._activeProcess;
+    const { execution, cancel } = this._activeProcess;
     this._settled = true;
     // Mark the chunk state as settled too, so when ai.stream's promise
-    // rejects from the kill, finalizeStream won't re-emit an error.
+    // rejects from the cancel, finalizeStream won't re-emit an error.
     if (this._activeState) this._activeState.settled = true;
 
     console.log(`[agent:${this.role}] Cancelling execution ${execution.id}`);
-    process.kill("SIGTERM");
+    cancel();
 
     execution.status = "error";
     execution.error = "Cancelled by user";
@@ -192,6 +192,7 @@ export abstract class BaseAgent {
       prompt: cliPrompt,
       systemPrompt,
       sessionId,
+      providerId: options.providerId,
       resume: isResume,
       model: model ?? undefined,
       maxBudget: budget != null && budget > 0 ? budget : null,
@@ -207,7 +208,7 @@ export abstract class BaseAgent {
       onChunk,
     });
 
-    this._activeProcess = { execution, process: handle.process };
+    this._activeProcess = { execution, cancel: () => handle.cancel() };
     this._activeState = state;
 
     const result = await finalizeStream({

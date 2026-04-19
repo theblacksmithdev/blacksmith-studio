@@ -27,6 +27,13 @@ export interface AgentExecuteOptions {
   /** Project-level permission mode override (overrides role definition default) */
   permissionMode?: string;
   /**
+   * Active AI provider id (e.g. "claude-cli"). Threaded from project
+   * settings so every AI call — single-agent chat and multi-agent
+   * workers alike — honours the user's choice. Undefined → `Ai`
+   * falls back to the registry's default.
+   */
+  providerId?: string;
+  /**
    * Cross-agent conversation state: the original user request, prior
    * chat transcript, and the PM's persisted Claude session id. Threaded
    * from the IPC layer so the PM can resume and every downstream worker

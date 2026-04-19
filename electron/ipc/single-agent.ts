@@ -118,6 +118,7 @@ export function setupSingleAgentIPC(
           customInstructions: settings.customInstructions,
           mcpConfigPath: settings.mcpConfigPath,
           nodePath: settings.nodePath,
+          providerId: settings.providerId,
           onChunk: (chunk) => {
             if (chunk.type === "assistant") {
               const textBlocks = (chunk.message?.content || []).filter(
@@ -199,7 +200,7 @@ export function setupSingleAgentIPC(
 
         await handle.promise;
       } catch (error: any) {
-        console.error(`[ipc] Claude error:`, error.message);
+        console.error(`[ipc] AI provider error:`, error.message);
         const errorMessageId = crypto.randomUUID();
         const errorText = error.message || "Unknown error";
         sessionManager.addMessage(sessionId, {
