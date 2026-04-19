@@ -50,11 +50,6 @@ export const welcomeEyebrowCss = {
   background: "color-mix(in srgb, var(--studio-bg-main) 90%, transparent)",
 };
 
-export const doneEyebrowCss = {
-  ...baseEyebrowCss,
-  background: "var(--studio-bg-main)",
-};
-
 /* ── Welcome step ──────────────────────────────────────────── */
 
 export const welcomeRootCss = {
@@ -109,58 +104,79 @@ export const featureDescCss = { lineHeight: 1.55 };
 
 /* ── Done step ─────────────────────────────────────────────── */
 
-export const doneHeroCss = {
-  position: "relative" as const,
-  overflow: "hidden" as const,
-  padding: "40px 32px 32px",
-  borderRadius: "18px",
-  border: "1px solid var(--studio-border)",
-  background:
-    "radial-gradient(100% 60% at 30% 0%, color-mix(in srgb, var(--studio-accent) 10%, transparent) 0%, transparent 60%)," +
-    "radial-gradient(80% 60% at 100% 100%, color-mix(in srgb, var(--studio-accent) 6%, transparent) 0%, transparent 70%)," +
-    "var(--studio-bg-surface)",
+export const doneRootCss = {
+  padding: "8px 0",
   animation: `${drift} 0.4s cubic-bezier(0.16, 1, 0.3, 1)`,
 };
 
 export const doneEmblemCss = {
-  width: "56px",
-  height: "56px",
-  borderRadius: "16px",
-  background: "var(--studio-accent)",
-  color: "var(--studio-accent-fg)",
+  alignSelf: "flex-start",
+  width: "72px",
+  height: "72px",
+  borderRadius: "20px",
+  background:
+    "linear-gradient(145deg, var(--studio-bg-surface) 0%, color-mix(in srgb, var(--studio-bg-surface) 75%, #000) 100%)",
+  border: "1px solid var(--studio-border)",
+  color: "var(--studio-text-primary)",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
   boxShadow:
-    "0 0 0 4px color-mix(in srgb, var(--studio-bg-main) 100%, transparent), 0 0 32px color-mix(in srgb, var(--studio-accent) 30%, transparent)",
+    "0 0 0 6px color-mix(in srgb, var(--studio-bg-main) 70%, transparent)," +
+    "0 8px 28px color-mix(in srgb, var(--studio-accent) 14%, transparent)," +
+    "inset 0 1px 0 color-mix(in srgb, var(--studio-text-primary) 10%, transparent)",
+};
+
+export const doneEyebrowCss = {
+  display: "inline-flex",
+  alignSelf: "flex-start",
+  alignItems: "center",
+  gap: "6px",
+  padding: "3px 10px",
+  borderRadius: "999px",
+  background: "color-mix(in srgb, var(--studio-bg-main) 75%, transparent)",
+  border: "1px solid var(--studio-border)",
+  backdropFilter: "blur(6px)",
+  WebkitBackdropFilter: "blur(6px)",
+  fontSize: "10.5px",
+  fontWeight: 500,
+  color: "var(--studio-text-tertiary)",
+  fontFamily: "var(--studio-font-mono, \"SF Mono\", monospace)",
+  letterSpacing: "0.1em",
+  textTransform: "uppercase" as const,
 };
 
 export const doneTitleCss = {
-  fontSize: "26px",
+  fontSize: "38px",
   fontWeight: 600,
-  letterSpacing: "-0.022em",
-  lineHeight: 1.2,
+  letterSpacing: "-0.032em",
+  lineHeight: 1.1,
   margin: 0,
+  background:
+    "linear-gradient(180deg, var(--studio-text-primary) 0%, color-mix(in srgb, var(--studio-text-primary) 72%, transparent) 100%)",
+  WebkitBackgroundClip: "text",
+  backgroundClip: "text",
+  color: "transparent",
 };
 
-export const doneDescCss = { lineHeight: 1.55, maxWidth: "520px" };
-
-export const doneSummaryListCss = {
-  listStyle: "none",
-  padding: 0,
-  margin: "4px 0 0",
+export const doneDescCss = {
+  lineHeight: 1.6,
+  maxWidth: "520px",
 };
 
 export const doneSummaryRowCss = {
-  display: "flex",
+  display: "inline-flex",
   alignItems: "center",
-  gap: "8px",
-  padding: "10px 12px",
-  borderRadius: "10px",
-  background: "color-mix(in srgb, var(--studio-bg-main) 85%, transparent)",
+  gap: "6px",
+  padding: "6px 12px",
+  borderRadius: "999px",
+  background: "color-mix(in srgb, var(--studio-bg-main) 70%, transparent)",
   border: "1px solid var(--studio-border)",
+  backdropFilter: "blur(6px)",
+  WebkitBackdropFilter: "blur(6px)",
   color: "var(--studio-text-secondary)",
-  fontSize: "12.5px",
+  fontSize: "12px",
+  fontWeight: 500,
 };
 
 /* ── Picker step shell (nodejs + python) ───────────────────── */

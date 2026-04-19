@@ -132,6 +132,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
             pythonPath={ob.state.pythonPath}
           />
         ),
+        backdrop: () => <StudioBackground />,
       },
     ],
     [ob],
