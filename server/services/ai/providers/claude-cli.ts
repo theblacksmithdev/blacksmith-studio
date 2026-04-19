@@ -7,6 +7,7 @@ import type {
   AiStreamOptions,
   AiStreamHandle,
   AiProviderStatus,
+  AiModelOption,
 } from "../types.js";
 import { AiProvider, type ModelSelector } from "./provider.js";
 
@@ -15,6 +16,12 @@ const MODEL_MAP: Record<AiModelTier, string> = {
   [AiModelTier.Balanced]: "sonnet",
   [AiModelTier.Powerful]: "opus",
 };
+
+const MODEL_OPTIONS: AiModelOption[] = [
+  { value: "sonnet", label: "Sonnet", description: "Fast & capable" },
+  { value: "opus", label: "Opus", description: "Most intelligent" },
+  { value: "haiku", label: "Haiku", description: "Fastest responses" },
+];
 
 export class ClaudeCliProvider extends AiProvider {
   readonly name = "Claude CLI";
@@ -37,6 +44,10 @@ export class ClaudeCliProvider extends AiProvider {
     // AiModelTier values are strings, so this indexing works for both tiers
     // and concrete IDs. Unknown strings pass through to the CLI as-is.
     return (MODEL_MAP as Record<string, string>)[selector] ?? selector;
+  }
+
+  listModels(): AiModelOption[] {
+    return MODEL_OPTIONS;
   }
 
   async checkStatus(): Promise<AiProviderStatus> {

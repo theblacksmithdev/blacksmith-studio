@@ -1,12 +1,6 @@
 import { useCallback } from "react";
 import { useSettingsQuery, useUpdateSettings } from "@/api/hooks/settings";
 
-export const MODELS = [
-  { value: "sonnet", label: "Sonnet", desc: "Fast & capable" },
-  { value: "opus", label: "Opus", desc: "Most intelligent" },
-  { value: "haiku", label: "Haiku", desc: "Fastest responses" },
-] as const;
-
 export const PERMISSION_OPTIONS = [
   { value: "bypassPermissions", label: "Auto-approve" },
   { value: "auto", label: "Smart" },

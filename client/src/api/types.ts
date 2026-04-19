@@ -13,6 +13,15 @@ import type {
   HealthStatus,
 } from "@/types";
 
+/* ── AI ── */
+
+/** One model offered by the active AI provider. */
+export interface AiModelOption {
+  value: string;
+  label: string;
+  description: string;
+}
+
 /* ── Pagination ── */
 
 export interface PaginationInput {

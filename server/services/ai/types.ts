@@ -72,3 +72,14 @@ export interface AiProviderStatus {
   version?: string;
   name: string;
 }
+
+/**
+ * One model offered by a provider. `value` is what the UI writes back
+ * to the `ai.model` setting and is passed to `resolveModel()` when the
+ * stream is built. `label` and `description` are for rendering.
+ */
+export interface AiModelOption {
+  value: string;
+  label: string;
+  description: string;
+}

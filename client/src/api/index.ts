@@ -6,6 +6,7 @@ import { runner } from "./modules/runner";
 import { singleAgent } from "./modules/single-agent";
 import { templates } from "./modules/templates";
 import { health } from "./modules/health";
+import { ai } from "./modules/ai";
 import { windowApi } from "./modules/window";
 import { browse } from "./modules/browse";
 import { mcp } from "./modules/mcp";
@@ -32,6 +33,7 @@ export const api = {
   singleAgent,
   templates,
   health,
+  ai,
   window: windowApi,
   browse,
   mcp,

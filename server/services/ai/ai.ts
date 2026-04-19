@@ -3,6 +3,7 @@ import type {
   AiStreamOptions,
   AiStreamHandle,
   AiProviderStatus,
+  AiModelOption,
 } from "./types.js";
 import type { ProviderRegistry } from "./providers/registry.js";
 import { extractTextFromEvent } from "./parser.js";
@@ -35,6 +36,11 @@ export class Ai {
   /** Check availability of the default provider. */
   checkStatus(): Promise<AiProviderStatus> {
     return this.registry.resolve().checkStatus();
+  }
+
+  /** Models offered by a provider. Defaults to the registry's default provider. */
+  listModels(providerId?: string): AiModelOption[] {
+    return this.registry.resolve(providerId).listModels();
   }
 
   /** One-shot completion. Returns null on failure. */

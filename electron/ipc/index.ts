@@ -26,6 +26,7 @@ import { setupSettingsIPC } from "./settings.js";
 import { setupSingleAgentIPC } from "./single-agent.js";
 import { setupRunnerIPC } from "./runner.js";
 import { setupHealthIPC } from "./health.js";
+import { setupAiIPC } from "./ai.js";
 import { setupMcpIPC } from "./mcp.js";
 import { setupKnowledgeIPC } from "./knowledge.js";
 import { setupSkillsIPC } from "./skills.js";
@@ -88,6 +89,7 @@ export function setupAllIPC(
   );
   setupMcpIPC(mcpManager, projectManager, settingsManager);
   setupHealthIPC(ai, projectManager);
+  setupAiIPC(ai, settingsManager);
   setupKnowledgeIPC(knowledgeManager, projectManager);
   setupSkillsIPC(skillsManager, projectManager);
   setupSetupIPC(settingsManager, projectManager);

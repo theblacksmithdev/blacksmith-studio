@@ -6,6 +6,7 @@ export type {
   AiStreamOptions,
   AiStreamHandle,
   AiProviderStatus,
+  AiModelOption,
 } from "./types";
 export {
   AiProvider,

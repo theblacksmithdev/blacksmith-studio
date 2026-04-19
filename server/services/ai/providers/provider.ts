@@ -4,6 +4,7 @@ import type {
   AiStreamHandle,
   AiProviderStatus,
   AiModelTier,
+  AiModelOption,
 } from "../types.js";
 
 /** Either a generic tier or a concrete provider-specific model ID. */
@@ -32,4 +33,11 @@ export abstract class AiProvider {
    * through unchanged so callers can pin specific versions.
    */
   abstract resolveModel(selector: ModelSelector): string;
+
+  /**
+   * Models this provider offers in the Settings → AI picker. `value`
+   * is what gets written to the `ai.model` setting and fed back into
+   * `resolveModel()` at send-time. Returned list drives the UI.
+   */
+  abstract listModels(): AiModelOption[];
 }

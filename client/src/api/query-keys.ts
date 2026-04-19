@@ -71,6 +71,7 @@ function projectKeys(projectId: string) {
     graphifyCheck: ["graphify", "check"] as const,
     attachmentContent: (absPath: string) =>
       [...p, "attachments", "content", absPath] as const,
+    aiModels: [...p, "ai", "models"] as const,
   };
 }
 

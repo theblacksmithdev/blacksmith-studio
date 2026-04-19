@@ -1,28 +1,35 @@
 import { useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Flex, Box } from "@chakra-ui/react";
-import { ChevronDown, Check, Zap, Sparkles, Brain } from "lucide-react";
+import {
+  ChevronDown,
+  Check,
+  Cpu,
+  Zap,
+  Sparkles,
+  Brain,
+  type LucideIcon,
+} from "lucide-react";
 import { Text, spacing, radii } from "@/components/shared/ui";
 import { useSettings } from "@/hooks/use-settings";
+import { useAiModelsQuery } from "@/api/hooks/ai";
 
-const MODELS = [
-  { id: "sonnet", label: "Sonnet", description: "Fast & capable", icon: Zap },
-  { id: "opus", label: "Opus", description: "Most intelligent", icon: Brain },
-  {
-    id: "haiku",
-    label: "Haiku",
-    description: "Fastest responses",
-    icon: Sparkles,
-  },
-] as const;
+/** Per-model-id icon. Unknown ids fall back to `Cpu`. */
+const ICONS: Record<string, LucideIcon> = {
+  sonnet: Zap,
+  opus: Brain,
+  haiku: Sparkles,
+};
 
 export function ModelSelector() {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
   const { model, set } = useSettings();
+  const { data: models = [] } = useAiModelsQuery();
 
-  const active = MODELS.find((m) => m.id === model) || MODELS[0];
-  const ActiveIcon = active.icon;
+  const active = models.find((m) => m.value === model) ?? models[0];
+  if (!active) return null;
+  const ActiveIcon = ICONS[active.value] ?? Cpu;
 
   return (
     <Box css={{ position: "relative" }}>
@@ -86,17 +93,17 @@ export function ModelSelector() {
                 animation: "fadeIn 0.1s ease",
               }}
             >
-              {MODELS.map((m) => {
-                const Icon = m.icon;
-                const isActive = m.id === model;
+              {models.map((m) => {
+                const Icon = ICONS[m.value] ?? Cpu;
+                const isActive = m.value === model;
                 return (
                   <Flex
                     as="button"
-                    key={m.id}
+                    key={m.value}
                     align="center"
                     gap={spacing.sm}
                     onClick={() => {
-                      set("ai.model", m.id);
+                      set("ai.model", m.value);
                       setOpen(false);
                     }}
                     css={{

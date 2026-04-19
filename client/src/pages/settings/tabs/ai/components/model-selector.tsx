@@ -1,9 +1,14 @@
 import { Box } from "@chakra-ui/react";
 import styled from "@emotion/styled";
-import { Sparkles, Zap, Feather } from "lucide-react";
+import { Sparkles, Zap, Feather, Cpu } from "lucide-react";
 import { SettingsSection } from "@/pages/settings/components/settings-section";
-import { MODELS } from "../hooks/use-ai-settings";
+import { Text } from "@/components/shared/ui";
+import { useAiModelsQuery } from "@/api/hooks/ai";
 
+/**
+ * Per-model icons — keyed by the provider's `value`. Unknown values
+ * get the `Cpu` fallback, so new providers work without UI changes.
+ */
 const ICONS: Record<string, React.ReactNode> = {
   sonnet: <Zap />,
   opus: <Sparkles />,
@@ -61,25 +66,39 @@ interface ModelSelectorProps {
 }
 
 export function ModelSelector({ model, onModelChange }: ModelSelectorProps) {
+  const { data: models = [], isLoading } = useAiModelsQuery();
+
   return (
     <SettingsSection
       title="Model"
-      description="Choose which Claude model to use. Each has different speed and capability trade-offs."
+      description="Models offered by the active AI provider. Each has different speed and capability trade-offs."
     >
       <Box css={{ padding: "14px 16px" }}>
-        <Grid>
-          {MODELS.map((m) => (
-            <Card
-              key={m.value}
-              active={model === m.value}
-              onClick={() => onModelChange(m.value)}
-            >
-              {ICONS[m.value]}
-              <Name active={model === m.value}>{m.label}</Name>
-              <Desc>{m.desc}</Desc>
-            </Card>
-          ))}
-        </Grid>
+        {isLoading || models.length === 0 ? (
+          <Text
+            css={{
+              fontSize: "13px",
+              color: "var(--studio-text-muted)",
+              padding: "6px 2px",
+            }}
+          >
+            Loading models…
+          </Text>
+        ) : (
+          <Grid>
+            {models.map((m) => (
+              <Card
+                key={m.value}
+                active={model === m.value}
+                onClick={() => onModelChange(m.value)}
+              >
+                {ICONS[m.value] ?? <Cpu />}
+                <Name active={model === m.value}>{m.label}</Name>
+                <Desc>{m.description}</Desc>
+              </Card>
+            ))}
+          </Grid>
+        )}
       </Box>
     </SettingsSection>
   );
