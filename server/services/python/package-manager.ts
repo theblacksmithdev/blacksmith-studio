@@ -21,6 +21,32 @@ function toAsarUnpacked(p: string): string {
   return p.includes(marker) ? p.replace(marker, replacement) : p;
 }
 
+/** Resolve `@manzt/uv-<platform>-<arch>/uv` if that package is present. */
+function tryResolvePlatformBin(
+  req: ReturnType<typeof createRequire>,
+  plat: NodeJS.Platform,
+  arch: NodeJS.Architecture,
+  isWin: boolean,
+): string | null {
+  try {
+    const pkgName = `@manzt/uv-${plat}-${arch}`;
+    const pkgPath = path.dirname(req.resolve(`${pkgName}/package.json`));
+    return path.join(pkgPath, isWin ? "uv.exe" : "uv");
+  } catch {
+    return null;
+  }
+}
+
+/** Resolve `@manzt/uv/uv` — the shim the main package's install hook populates. */
+function tryResolveMainBin(req: ReturnType<typeof createRequire>, isWin: boolean): string | null {
+  try {
+    const pkgPath = path.dirname(req.resolve("@manzt/uv/package.json"));
+    return path.join(pkgPath, isWin ? "uv.exe" : "uv");
+  } catch {
+    return null;
+  }
+}
+
 export interface PackageResult {
   success: boolean;
   error?: string;
@@ -59,33 +85,33 @@ export class PackageManager {
   private get uv(): string {
     if (this._uvBin) return this._uvBin;
 
-    // Resolve from the @manzt/uv npm package
-    try {
-      const req = createRequire(import.meta.url);
-      const uvPkg = path.dirname(req.resolve("@manzt/uv/package.json"));
-      const bin = path.join(uvPkg, IS_WIN ? "uv.exe" : "uv");
+    const req = createRequire(import.meta.url);
 
-      // In packaged Electron apps, `require.resolve` returns a path
-      // inside `app.asar`. The file is readable but not *executable*
-      // from there — spawn() fails with ENOTDIR. Electron-builder
-      // mirrors unpacked binaries at `app.asar.unpacked` (see
-      // `asarUnpack` in electron-builder.yml); prefer that copy when
-      // it exists. In dev, the path never contains `app.asar` so the
-      // replacement is a no-op.
-      const unpacked = toAsarUnpacked(bin);
-      if (unpacked !== bin && fs.existsSync(unpacked)) {
+    // Prefer the platform+arch-specific package (e.g.
+    // `@manzt/uv-darwin-arm64`, `@manzt/uv-win32-x64`). In a universal
+    // macOS build both `-darwin-arm64` and `-darwin-x64` are packaged;
+    // resolving by `process.arch` at runtime picks the binary that
+    // matches the CPU actually running the app. Falls back to
+    // `@manzt/uv/uv` (populated by the package's install.cjs) if the
+    // platform package isn't present.
+    const candidates = [
+      tryResolvePlatformBin(req, process.platform, process.arch, IS_WIN),
+      tryResolveMainBin(req, IS_WIN),
+    ].filter((p): p is string => !!p);
+
+    for (const candidate of candidates) {
+      const unpacked = toAsarUnpacked(candidate);
+      if (unpacked !== candidate && fs.existsSync(unpacked)) {
         this._uvBin = unpacked;
         return unpacked;
       }
-      if (fs.existsSync(bin)) {
-        this._uvBin = bin;
-        return bin;
+      if (fs.existsSync(candidate)) {
+        this._uvBin = candidate;
+        return candidate;
       }
-    } catch {
-      /* package not resolved */
     }
 
-    // Fallback: try system uv
+    // Last-ditch: whatever `uv` is on PATH.
     this._uvBin = "uv";
     return "uv";
   }

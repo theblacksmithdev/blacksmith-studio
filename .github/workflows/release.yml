@@ -11,63 +11,12 @@ permissions:
   contents: write
 
 jobs:
-  # ─── 1. Resolve version once, share with every build ───────────
-  version:
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-      tag: ${{ steps.version.outputs.tag }}
+  release:
+    runs-on: macos-latest # arm64; universal merge runs here
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - id: version
-        run: |
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            VERSION="${GITHUB_REF#refs/tags/v}"
-          else
-            # Auto-increment patch from the latest tag on master pushes
-            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-            LATEST_VERSION="${LATEST_TAG#v}"
-            IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_VERSION"
-            PATCH=$((PATCH + 1))
-            VERSION="$MAJOR.$MINOR.$PATCH"
-          fi
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Releasing version: $VERSION"
-
-  # ─── 2. Build per-arch on the matching native runner ───────────
-  #
-  # Why matrix: `npm install` resolves optionalDependencies for the
-  # runner's own platform/arch. `@manzt/uv` ships its executable via
-  # platform-specific optional deps (`@manzt/uv-darwin-x64` /
-  # `@manzt/uv-darwin-arm64`), so building x64 on an arm64 runner
-  # would ship the wrong binary. Same story for native modules
-  # (`better-sqlite3`, `node-pty`) rebuilt against Electron's headers.
-  build:
-    needs: version
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: macos-x64
-            runner: macos-13 # Intel Mac runner
-            arch: x64
-            package_cmd: package:mac
-            artifact_globs: |
-              release/*.dmg
-              release/*.zip
-          - name: macos-arm64
-            runner: macos-14 # Apple Silicon runner
-            arch: arm64
-            package_cmd: package:mac
-            artifact_globs: |
-              release/*.dmg
-              release/*.zip
-    runs-on: ${{ matrix.runner }}
-    steps:
-      - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
@@ -78,63 +27,75 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install dependencies
-        run: npm install
-        # `postinstall` rebuilds native modules against Electron's
-        # headers. Architecture is inferred from the runner so each
-        # matrix job produces binaries that match its own CPU.
+      # ── Version ────────────────────────────────────────────────
+      - id: version
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          else
+            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+            LATEST_VERSION="${LATEST_TAG#v}"
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_VERSION"
+            PATCH=$((PATCH + 1))
+            VERSION="$MAJOR.$MINOR.$PATCH"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Releasing version: $VERSION"
+
+      # ── Install deps WITHOUT the arch-locked native rebuild ────
+      - name: Install dependencies (skip postinstall)
+        run: npm install --ignore-scripts
+
+      # npm only installs the host-arch `@manzt/uv-darwin-*`
+      # optional dep. Force-install the other arch so the universal
+      # app carries both uv binaries.
+      - name: Force-install both uv platform packages
+        run: |
+          npm install --no-save --force \
+            @manzt/uv-darwin-x64 \
+            @manzt/uv-darwin-arm64
+          # Run @manzt/uv's own install hook once so the main package's
+          # `uv` shim is populated with the host-arch binary; runtime
+          # resolves the *correct* arch binary from the platform package
+          # (see server/services/python/package-manager.ts).
+          node node_modules/@manzt/uv/install.cjs || true
+
+      # ── Rebuild native modules as universal fat binaries ───────
+      # `@electron/rebuild --arch universal` builds arm64 + x64 for
+      # better-sqlite3 / node-pty and fuses them via @electron/universal.
+      - name: Rebuild native modules (universal)
+        run: npx -y @electron/rebuild@latest --arch universal --force
 
       - name: Stamp version
-        run: npm version ${{ needs.version.outputs.version }} --no-git-tag-version
+        run: npm version ${{ steps.version.outputs.version }} --no-git-tag-version
 
       - name: Build client + electron
         run: npm run build
 
-      - name: Package (${{ matrix.arch }})
-        run: npm run ${{ matrix.package_cmd }} -- --${{ matrix.arch }}
+      - name: Package universal mac build
+        run: npm run package:mac -- --universal
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.name }}
-          path: ${{ matrix.artifact_globs }}
-          if-no-files-found: error
-
-  # ─── 3. Tag (if auto-release from master) + publish one release ─
-  release:
-    needs: [version, build]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Create tag (auto-release)
+      - name: Create tag (auto-release from master)
         if: startsWith(github.ref, 'refs/heads/')
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag ${{ needs.version.outputs.tag }}
-          git push origin ${{ needs.version.outputs.tag }}
-
-      - name: Collect all matrix artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: release
-          merge-multiple: true
+          git tag ${{ steps.version.outputs.tag }}
+          git push origin ${{ steps.version.outputs.tag }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.version.outputs.tag }}
-          name: Blacksmith Studio ${{ needs.version.outputs.tag }}
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Blacksmith Studio ${{ steps.version.outputs.tag }}
           files: |
             release/*.dmg
             release/*.zip
           generate_release_notes: true
           draft: false
-          prerelease: ${{ contains(needs.version.outputs.version, '-beta') || contains(needs.version.outputs.version, '-alpha') }}
+          prerelease: ${{ contains(steps.version.outputs.version, '-beta') || contains(steps.version.outputs.version, '-alpha') }}
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
