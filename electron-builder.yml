@@ -32,15 +32,24 @@ mac:
         - arm64
   hardenedRuntime: true
   # Universal macOS builds fuse an x64 and an arm64 intermediate app via
-  # @electron/universal. Both intermediate builds include BOTH platform-
-  # specific uv packages (`@manzt/uv-darwin-x64` and `@manzt/uv-darwin-arm64`),
-  # so the Mach-O uv binary inside each package is byte-identical across
-  # the two intermediate apps. Without this rule, @electron/universal
-  # aborts with "same in both x64 and arm64 builds and not covered by the
-  # x64ArchFiles rule". The pattern opts these binaries out of lipo and
-  # keeps them as-is, which is what we want — at runtime we pick the right
-  # one by `process.arch` (see server/services/python/package-manager.ts).
-  x64ArchFiles: "**/@manzt/uv-*/bin/uv*"
+  # @electron/universal. That step aborts when it finds a Mach-O file
+  # that's byte-identical in both intermediate builds and isn't listed
+  # here. Two categories of file trip the check in this app:
+  #
+  #   1. The platform-specific uv binaries. We install BOTH
+  #      `@manzt/uv-darwin-x64` and `@manzt/uv-darwin-arm64` in every
+  #      build so the universal app carries both; at runtime we pick
+  #      the right one by `process.arch`
+  #      (see server/services/python/package-manager.ts).
+  #   2. Native-module `.node` files already lipo'd into universal fat
+  #      binaries (better-sqlite3, node-pty) by
+  #      `@electron/rebuild --arch universal`. They're the same universal
+  #      artifact in both intermediate apps.
+  #
+  # The pattern only suppresses the error when the two copies are
+  # byte-identical — genuinely arch-specific `.node` files differ and
+  # still get lipo'd automatically.
+  x64ArchFiles: "**/{*.node,@manzt/uv-*/bin/uv*}"
 
 win:
   target:
