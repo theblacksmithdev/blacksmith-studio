@@ -12,8 +12,13 @@ files:
 # Binaries and native addons must live on disk, not inside app.asar.
 # `spawn()` can't execute files from inside an asar archive — attempting
 # to do so yields ENOTDIR at runtime (worked in dev, broke in production).
+#
+# Only the platform/arch-specific uv packages are unpacked. The main
+# `@manzt/uv/uv` shim is unused at runtime (we resolve the arch-specific
+# package directly) and including it here would confuse
+# @electron/universal, which sees the host-arch binary as byte-identical
+# across the arm64 + x64 intermediate builds and aborts the merge.
 asarUnpack:
-  - "node_modules/@manzt/uv/**"
   - "node_modules/@manzt/uv-*/**"
 
 mac:

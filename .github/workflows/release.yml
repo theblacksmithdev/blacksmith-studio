@@ -55,11 +55,16 @@ jobs:
           npm install --no-save --force \
             @manzt/uv-darwin-x64 \
             @manzt/uv-darwin-arm64
-          # Run @manzt/uv's own install hook once so the main package's
-          # `uv` shim is populated with the host-arch binary; runtime
-          # resolves the *correct* arch binary from the platform package
-          # (see server/services/python/package-manager.ts).
-          node node_modules/@manzt/uv/install.cjs || true
+
+      # The @manzt/uv package's install.cjs copies ONE arch's binary
+      # into `node_modules/@manzt/uv/uv`. That shim is only a fallback
+      # our runtime never hits (it resolves from the platform packages
+      # — see server/services/python/package-manager.ts), and leaving
+      # it in place breaks @electron/universal — it flags a Mach-O
+      # executable that's byte-identical across the two arch builds.
+      # Nuke it before packaging.
+      - name: Remove host-arch uv shim (prevents universal merge error)
+        run: rm -f node_modules/@manzt/uv/uv
 
       # ── Rebuild native modules as universal fat binaries ───────
       # `@electron/rebuild --arch universal` builds arm64 + x64 for
