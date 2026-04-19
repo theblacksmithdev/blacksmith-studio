@@ -64,6 +64,8 @@ export interface PipelineState {
   readonly artifactPaths: Map<string, string>;
   /** Tracks which roles have already executed in THIS pipeline */
   readonly pipelineSessions: Map<AgentRole, string>;
+  /** Sessions from earlier dispatches in the same conversation */
+  readonly priorRoleSessions: Map<AgentRole, string>;
   /** The mutable task list (may be spliced by re-planning) */
   readonly tasks: DispatchTask[];
 }

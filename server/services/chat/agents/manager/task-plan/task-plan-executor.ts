@@ -60,6 +60,7 @@ export class TaskPlanExecutor {
     tasks: DispatchTask[],
     baseOptions: AgentExecuteOptions,
     artifacts: ArtifactManager,
+    priorRoleSessions: Map<AgentRole, string> = new Map(),
   ): Promise<AgentExecution[]> {
     const state: PipelineState = {
       executions: [],
@@ -70,6 +71,7 @@ export class TaskPlanExecutor {
       busyRoles: new Set(),
       qualityGateBusy: false,
       stoppedForFailure: false,
+      priorRoleSessions,
     };
 
     let wake: (() => void) | null = null;
@@ -294,6 +296,7 @@ export class TaskPlanExecutor {
       state.artifactPaths,
       state.pipelineSessions,
       tasks,
+      state.priorRoleSessions,
     );
   }
 
@@ -446,6 +449,8 @@ interface PipelineState {
   busyRoles: Set<AgentRole>;
   qualityGateBusy: boolean;
   stoppedForFailure: boolean;
+  /** Sessions from earlier dispatches in the same conversation */
+  priorRoleSessions: Map<AgentRole, string>;
 }
 
 /**

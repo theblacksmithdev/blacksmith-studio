@@ -101,18 +101,21 @@ export class TaskRepository {
   }
 
   /**
-   * Find the most recent Claude session used by a given role in a project.
-   * Joins dispatches (for project scoping + recency) with tasks (for role
-   * + status). Returns null if no completed task by that role exists.
+   * Find the most recent Claude session used by a given role *within a
+   * single conversation*. Scoped by `conversationId` so agents resume their
+   * own prior work in this thread without leaking context from other chats.
    */
-  findLatestSessionForRole(projectId: string, role: string): string | null {
+  findLatestSessionForRoleInConversation(
+    conversationId: string,
+    role: string,
+  ): string | null {
     const row = this.db
       .select({ sessionId: agentTasks.sessionId })
       .from(agentTasks)
       .innerJoin(agentDispatches, eq(agentTasks.dispatchId, agentDispatches.id))
       .where(
         and(
-          eq(agentDispatches.projectId, projectId),
+          eq(agentDispatches.conversationId, conversationId),
           eq(agentTasks.role, role),
           eq(agentTasks.status, "done"),
         ),

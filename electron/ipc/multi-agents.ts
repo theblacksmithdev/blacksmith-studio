@@ -323,14 +323,18 @@ export function setupMultiAgentsIPC(
         data.conversationId,
       );
 
-      // Load persisted sessions so agents can resume Claude conversations
+      // Load persisted sessions so every agent that previously worked in
+      // THIS conversation resumes its Claude session on the next turn.
+      // Scoped by conversationId — sessions from other chats must not leak in.
       const savedSessions = new Map<string, string>();
-      for (const agent of agentManager.listAgents()) {
-        const sid = sessionManager.getLatestSessionForRole(
-          project.id,
-          agent.role,
-        );
-        if (sid) savedSessions.set(agent.role, sid);
+      if (data.conversationId) {
+        for (const agent of agentManager.listAgents()) {
+          const sid = sessionManager.getLatestSessionForRoleInConversation(
+            data.conversationId,
+            agent.role,
+          );
+          if (sid) savedSessions.set(agent.role, sid);
+        }
       }
       agentManager.loadSessions(savedSessions);
 

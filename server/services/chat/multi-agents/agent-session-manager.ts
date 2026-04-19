@@ -194,8 +194,14 @@ export class AgentSessionManager {
     return this.dispatches.list(projectId, limit);
   }
 
-  getLatestSessionForRole(projectId: string, role: string): string | null {
-    return this.dispatches.latestSessionForRole(projectId, role);
+  getLatestSessionForRoleInConversation(
+    conversationId: string,
+    role: string,
+  ): string | null {
+    return this.dispatches.latestSessionForRoleInConversation(
+      conversationId,
+      role,
+    );
   }
 
   getRecentDispatchContext(projectId: string, limit = 5): string {

@@ -33,7 +33,12 @@ export class TaskContextBuilder {
     artifactPaths: Map<string, string>,
     pipelineSessions: Map<AgentRole, string>,
     allTasks: DispatchTask[],
+    priorRoleSessions: Map<AgentRole, string>,
   ): Promise<AgentExecution> {
+    // First-run *in this dispatch* — the role may still have a prior session
+    // from an earlier dispatch in the same conversation, but it has not yet
+    // seen this dispatch's artifacts or plan, so it still gets the full
+    // first-run preamble.
     const isFirstRunForRole = !pipelineSessions.has(task.role);
     const contextPrefix = isFirstRunForRole
       ? this.buildFirstRunContext(
@@ -45,10 +50,11 @@ export class TaskContextBuilder {
         )
       : this.buildContinuationContext(task, allTasks);
 
-    // Use pipeline session for continuation within the same dispatch.
-    // Do NOT fall back to cross-dispatch sessions — those are from previous
-    // dispatches with different context. New pipelines start fresh sessions.
-    const existingSession = pipelineSessions.get(task.role);
+    // Prefer an in-dispatch session (continuation), otherwise resume the
+    // role's most recent session from this conversation so agents carry
+    // memory across dispatches.
+    const existingSession =
+      pipelineSessions.get(task.role) ?? priorRoleSessions.get(task.role);
     const isResume = !!existingSession;
 
     // Map provider-agnostic tier to concrete model ID

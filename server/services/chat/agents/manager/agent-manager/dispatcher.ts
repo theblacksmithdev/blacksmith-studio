@@ -112,10 +112,15 @@ export class Dispatcher {
 
     this.emitter.emitDispatchPlan(plan);
 
+    const withSession = this.maybeResumeFromPriorSession(options, role);
     const execution = await this.executor.execute({
-      ...options,
+      ...withSession,
       role,
-      prompt: this.prependConversationPreamble(options, options.prompt, plan),
+      prompt: this.prependConversationPreamble(
+        withSession,
+        withSession.prompt,
+        plan,
+      ),
     });
     const executions = [execution];
 
@@ -139,9 +144,10 @@ export class Dispatcher {
   ): Promise<{ plan: DispatchPlan; executions: AgentExecution[] }> {
     const task = plan.task!;
     const snapshot = takeSnapshot(options.projectRoot);
+    const withSession = this.maybeResumeFromPriorSession(options, task.role);
     const execution = await this.executor.execute({
-      ...options,
-      prompt: this.prependConversationPreamble(options, task.prompt, plan),
+      ...withSession,
+      prompt: this.prependConversationPreamble(withSession, task.prompt, plan),
       role: task.role,
     });
     const executions = [execution];
@@ -174,9 +180,30 @@ export class Dispatcher {
       },
       this.cancellation,
     );
-    const executions = await taskPlan.execute(plan.tasks, options, artifacts);
+    const executions = await taskPlan.execute(
+      plan.tasks,
+      options,
+      artifacts,
+      this.roleSessions,
+    );
 
     return { plan, executions };
+  }
+
+  /**
+   * If a session id for this role was loaded from a prior dispatch in the
+   * same conversation and the caller didn't set one explicitly, splice it
+   * in with `resume: true` so direct / single-task dispatches continue the
+   * agent's session instead of starting fresh.
+   */
+  private maybeResumeFromPriorSession(
+    options: AgentExecuteOptions,
+    role: AgentRole,
+  ): AgentExecuteOptions {
+    if (options.sessionId) return options;
+    const priorSession = this.roleSessions.get(role);
+    if (!priorSession) return options;
+    return { ...options, sessionId: priorSession, resume: true };
   }
 
   /**

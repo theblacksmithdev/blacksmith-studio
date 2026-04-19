@@ -140,7 +140,13 @@ export class DispatchService {
     });
   }
 
-  latestSessionForRole(projectId: string, role: string): string | null {
-    return this.tasks.findLatestSessionForRole(projectId, role);
+  latestSessionForRoleInConversation(
+    conversationId: string,
+    role: string,
+  ): string | null {
+    return this.tasks.findLatestSessionForRoleInConversation(
+      conversationId,
+      role,
+    );
   }
 }
