@@ -84,6 +84,7 @@ export const HEALTH_CHECK = "health:check";
 // Setup
 export const SETUP_CHECK = "setup:check";
 export const SETUP_INSTALL_CLAUDE = "setup:installClaude";
+export const SETUP_VALIDATE_BIN = "setup:validateBin";
 
 // Knowledge
 export const KNOWLEDGE_LIST = "knowledge:list";
@@ -294,6 +295,7 @@ export const INVOKE_CHANNELS = [
   HEALTH_CHECK,
   SETUP_CHECK,
   SETUP_INSTALL_CLAUDE,
+  SETUP_VALIDATE_BIN,
   KNOWLEDGE_LIST,
   KNOWLEDGE_GET,
   KNOWLEDGE_SAVE,

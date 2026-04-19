@@ -5,6 +5,10 @@
 
 interface ElectronAPI {
   selectFolder: () => Promise<string | null>;
+  selectFile: (opts?: {
+    title?: string;
+    buttonLabel?: string;
+  }) => Promise<string | null>;
   isElectron: boolean;
   getVersion: () => Promise<string>;
   invoke: (channel: string, ...args: any[]) => Promise<any>;
@@ -28,6 +32,17 @@ export function isElectron(): boolean {
 export async function selectFolderNative(): Promise<string | null> {
   if (window.electronAPI) {
     return window.electronAPI.selectFolder();
+  }
+  return null;
+}
+
+/** Open native file picker. Returns path or null. Falls back to null in browser. */
+export async function selectFileNative(opts?: {
+  title?: string;
+  buttonLabel?: string;
+}): Promise<string | null> {
+  if (window.electronAPI?.selectFile) {
+    return window.electronAPI.selectFile(opts);
   }
   return null;
 }

@@ -6,6 +6,12 @@ export interface SetupStatus {
   auth: { authenticated: boolean };
 }
 
+export interface BinValidation {
+  valid: boolean;
+  version?: string;
+  error?: string;
+}
+
 export const setup = {
   check: (projectId?: string) =>
     raw.invoke<SetupStatus>("setup:check", { projectId }),
@@ -13,4 +19,6 @@ export const setup = {
     raw.invoke<{ success: boolean; error?: string }>("setup:installClaude", {
       projectId,
     }),
+  validateBin: (path: string) =>
+    raw.invoke<BinValidation>("setup:validateBin", { path }),
 } as const;

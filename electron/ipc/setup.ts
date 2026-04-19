@@ -1,6 +1,10 @@
 import { ipcMain } from "electron";
 import { spawn, execSync } from "node:child_process";
-import { SETUP_CHECK, SETUP_INSTALL_CLAUDE } from "./channels.js";
+import {
+  SETUP_CHECK,
+  SETUP_INSTALL_CLAUDE,
+  SETUP_VALIDATE_BIN,
+} from "./channels.js";
 import type { SettingsManager } from "../../server/services/settings.js";
 import type { ProjectManager } from "../../server/services/projects.js";
 import { nodeEnv, nodeCmd } from "../../server/services/node-env.js";
@@ -119,9 +123,34 @@ function installClaude(
   });
 }
 
+/**
+ * Validate that a user-picked binary is runnable and report its --version
+ * string. Used by the onboarding binary picker so the user sees a valid /
+ * invalid state before the path is saved to settings. All other detection
+ * reuses existing IPC (`runner:detectNode`, `commands:listInstalledVersions`).
+ */
+function validateBin(binPath: string): {
+  valid: boolean;
+  version?: string;
+  error?: string;
+} {
+  try {
+    const out = execSync(`"${binPath}" --version`, {
+      timeout: 5000,
+      encoding: "utf-8",
+    }).trim();
+    return { valid: true, version: out };
+  } catch (err) {
+    return {
+      valid: false,
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
+}
+
 export function setupSetupIPC(
   settingsManager: SettingsManager,
-  projectManager: ProjectManager,
+  _projectManager: ProjectManager,
 ) {
   ipcMain.handle(
     SETUP_CHECK,
@@ -152,5 +181,9 @@ export function setupSetupIPC(
       const nodePath = getNodePath(settingsManager, data?.projectId);
       return installClaude(nodePath);
     },
+  );
+
+  ipcMain.handle(SETUP_VALIDATE_BIN, (_e, data: { path: string }) =>
+    validateBin(data.path),
   );
 }

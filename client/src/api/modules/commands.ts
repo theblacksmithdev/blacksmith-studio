@@ -28,7 +28,7 @@ export const commands = {
     raw.invoke<{ ok: boolean }>("commands:cancel", { runId }),
 
   checkAvailable: (input: {
-    projectId: string;
+    projectId?: string;
     toolchainId: string;
     scope: CommandScope;
   }) =>
@@ -38,7 +38,7 @@ export const commands = {
     ),
 
   resolveEnv: (input: {
-    projectId: string;
+    projectId?: string;
     toolchainId: string;
     scope: CommandScope;
   }) => raw.invoke<ToolchainEnv | null>("commands:resolveEnv", input),

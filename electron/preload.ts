@@ -9,6 +9,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
   selectFolder: (): Promise<string | null> =>
     ipcRenderer.invoke("dialog:selectFolder"),
 
+  /** Open native file picker dialog. */
+  selectFile: (
+    opts?: { title?: string; buttonLabel?: string },
+  ): Promise<string | null> => ipcRenderer.invoke("dialog:selectFile", opts),
+
   /** Check if running inside Electron. */
   isElectron: true,
 

@@ -1,9 +1,7 @@
-import { useState } from "react";
 import { RouterProvider } from "react-router-dom";
 import { router } from "@/router";
-import { SetupWizard } from "@/components/setup/setup-wizard";
-
-const SETUP_COMPLETE_KEY = "blacksmith-studio:setup-complete";
+import { Onboarding } from "@/components/setup/onboarding";
+import { useGlobalSettingsQuery } from "@/api/hooks/settings";
 
 // Restore zoom level on startup
 const savedZoom = localStorage.getItem("studio-zoom-level");
@@ -12,18 +10,31 @@ if (savedZoom) {
   if (!isNaN(level)) window.electronAPI?.setZoomLevel(level);
 }
 
+/**
+ * Gate the main app behind the first-use onboarding flow. The flag
+ * lives in global SQLite settings (`onboarding.completed`) read via
+ * `useGlobalSettingsQuery` so every consumer shares the same cache.
+ */
 export function App() {
-  const [setupDone, setSetupDone] = useState(
-    () => localStorage.getItem(SETUP_COMPLETE_KEY) === "1",
-  );
+  const globalSettings = useGlobalSettingsQuery();
 
-  const handleSetupComplete = () => {
-    localStorage.setItem(SETUP_COMPLETE_KEY, "1");
-    setSetupDone(true);
-  };
+  // While the query hasn't resolved, render nothing — flashing the
+  // onboarding and then hiding it is jarring.
+  if (globalSettings.isLoading) return null;
 
-  if (!setupDone) {
-    return <SetupWizard onComplete={handleSetupComplete} />;
+  // If we can't read settings at all (DB not ready, IPC error), default
+  // to letting users in rather than blocking them behind onboarding.
+  const completed =
+    globalSettings.isError || !!globalSettings.data?.["onboarding.completed"];
+
+  if (!completed) {
+    return (
+      <Onboarding
+        onComplete={() => {
+          globalSettings.refetch();
+        }}
+      />
+    );
   }
 
   return <RouterProvider router={router} />;

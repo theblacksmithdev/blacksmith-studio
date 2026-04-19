@@ -16,6 +16,24 @@ export function setupFolderDialogIPC() {
     return result.filePaths[0];
   });
 
+  ipcMain.handle(
+    "dialog:selectFile",
+    async (_e, opts?: { title?: string; buttonLabel?: string }) => {
+      const win = BrowserWindow.getFocusedWindow();
+      const result = await dialog.showOpenDialog(win!, {
+        properties: ["openFile"],
+        title: opts?.title ?? "Select a file",
+        buttonLabel: opts?.buttonLabel ?? "Select",
+      });
+
+      if (result.canceled || result.filePaths.length === 0) {
+        return null;
+      }
+
+      return result.filePaths[0];
+    },
+  );
+
   ipcMain.handle("app:getVersion", () => {
     return app.getVersion();
   });
