@@ -9,6 +9,13 @@ files:
   - node_modules/**/*
   - "!node_modules/.cache"
 
+# Binaries and native addons must live on disk, not inside app.asar.
+# `spawn()` can't execute files from inside an asar archive — attempting
+# to do so yields ENOTDIR at runtime (worked in dev, broke in production).
+asarUnpack:
+  - "node_modules/@manzt/uv/**"
+  - "node_modules/@manzt/uv-*/**"
+
 mac:
   category: public.app-category.developer-tools
   target:

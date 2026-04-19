@@ -8,6 +8,19 @@ import { platform } from "../platform/index.js";
 const IS_WIN = platform.isWindows;
 const BIN_DIR = platform.venvBinDir;
 
+/**
+ * Rewrite a path that traverses the read-only `app.asar` archive to
+ * the `app.asar.unpacked` sibling that electron-builder materialises
+ * on disk. Used for binaries — the OS can't `spawn()` an executable
+ * that lives inside asar (it errors ENOTDIR). Returns the input path
+ * untouched when it doesn't contain `app.asar` (dev mode).
+ */
+function toAsarUnpacked(p: string): string {
+  const marker = `${path.sep}app.asar${path.sep}`;
+  const replacement = `${path.sep}app.asar.unpacked${path.sep}`;
+  return p.includes(marker) ? p.replace(marker, replacement) : p;
+}
+
 export interface PackageResult {
   success: boolean;
   error?: string;
@@ -51,6 +64,19 @@ export class PackageManager {
       const req = createRequire(import.meta.url);
       const uvPkg = path.dirname(req.resolve("@manzt/uv/package.json"));
       const bin = path.join(uvPkg, IS_WIN ? "uv.exe" : "uv");
+
+      // In packaged Electron apps, `require.resolve` returns a path
+      // inside `app.asar`. The file is readable but not *executable*
+      // from there — spawn() fails with ENOTDIR. Electron-builder
+      // mirrors unpacked binaries at `app.asar.unpacked` (see
+      // `asarUnpack` in electron-builder.yml); prefer that copy when
+      // it exists. In dev, the path never contains `app.asar` so the
+      // replacement is a no-op.
+      const unpacked = toAsarUnpacked(bin);
+      if (unpacked !== bin && fs.existsSync(unpacked)) {
+        this._uvBin = unpacked;
+        return unpacked;
+      }
       if (fs.existsSync(bin)) {
         this._uvBin = bin;
         return bin;
