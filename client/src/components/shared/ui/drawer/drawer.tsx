@@ -19,6 +19,13 @@ interface DrawerProps {
   headerExtra?: ReactNode;
   headerTrailing?: ReactNode;
   noPadding?: boolean;
+  /**
+   * Override the default Chakra modal z-index (~1400). Useful when the
+   * drawer is spawned from a surface that itself sits high (e.g. the
+   * onboarding wizard at z-index 9999). Both the backdrop and the
+   * positioner receive the same value so stacking stays coherent.
+   */
+  zIndex?: number;
 }
 
 export function Drawer({
@@ -32,6 +39,7 @@ export function Drawer({
   headerExtra,
   headerTrailing,
   noPadding,
+  zIndex,
 }: DrawerProps) {
   // Cleanup on unmount — Chakra may not clean up if the component is
   // conditionally unmounted (e.g. {show && <Drawer />}) without transitioning open → false
@@ -58,9 +66,12 @@ export function Drawer({
           css={{
             background: "var(--studio-backdrop)",
             backdropFilter: "blur(12px)",
+            ...(zIndex !== undefined ? { zIndex } : {}),
           }}
         />
-        <ChakraDrawer.Positioner>
+        <ChakraDrawer.Positioner
+          css={zIndex !== undefined ? { zIndex } : undefined}
+        >
           <ChakraDrawer.Content
             css={{
               background: "var(--studio-glass)",

@@ -233,6 +233,44 @@ export const FooterBarFill = styled.div<{ $pct: number }>`
 
 /* ── Theme toggle (complex hover state) ─────────────────────── */
 
+/* ── Top-right close button (optional, shown when onClose is set) ─── */
+
+export const CloseButton = styled.button`
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--studio-bg-surface) 85%, transparent);
+  border: 1px solid var(--studio-border);
+  color: var(--studio-text-secondary);
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &:hover {
+    background: var(--studio-bg-hover);
+    color: var(--studio-text-primary);
+    border-color: var(--studio-border-hover);
+    transform: scale(1.04);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--studio-accent) 25%, transparent);
+  }
+`;
+
 export const ThemeToggle = styled.button`
   display: inline-flex;
   align-items: center;

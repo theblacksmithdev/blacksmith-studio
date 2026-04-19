@@ -17,6 +17,12 @@ interface ConfirmDialogProps {
   onConfirm: () => void;
   onCancel: () => void;
   loading?: boolean;
+  /**
+   * Override the stacking context. Default is 1000 (above regular
+   * drawers). Bump when the dialog is summoned from a higher overlay
+   * (e.g. the onboarding wizard at 9999).
+   */
+  zIndex?: number;
 }
 
 export function ConfirmDialog({
@@ -28,6 +34,7 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
   loading,
+  zIndex = 1000,
 }: ConfirmDialogProps) {
   return createPortal(
     <Flex
@@ -37,9 +44,7 @@ export function ConfirmDialog({
       css={{
         position: "fixed",
         inset: 0,
-        // Sits above `Drawer` (zIndex 501) so the confirm always
-        // lands on top of whatever surface triggered it.
-        zIndex: 1000,
+        zIndex,
         background: "var(--studio-backdrop)",
         backdropFilter: "blur(6px)",
         animation: "fadeIn 0.12s ease",

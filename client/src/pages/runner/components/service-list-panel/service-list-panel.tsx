@@ -1,6 +1,6 @@
 import { Flex } from "@chakra-ui/react";
 import { Plus } from "lucide-react";
-import { RunnerConfigDrawer } from "../config-drawer";
+import { RunnerConfigDrawer } from "@/components/shared/runner-config";
 import { DiagnoseDrawer } from "../logs/components";
 import { useActiveService } from "../../hooks/use-active-service";
 import { useServiceActions } from "../../hooks/use-service-actions";

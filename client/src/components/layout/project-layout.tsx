@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useProjectQuery, useTouchProject } from "@/api/hooks/projects";
+import { useSettingsQuery } from "@/api/hooks/settings";
 import { useActiveProjectId } from "@/api/hooks/_shared";
 import { useRunnerListener } from "@/hooks/use-runner";
 import { useGitListener } from "@/hooks/use-git";
@@ -10,6 +11,10 @@ import { useTerminalPanel } from "@/hooks/use-terminal-panel";
 import { SplitPanel } from "@/components/shared/layout";
 import { RunnerDock } from "@/components/runner/dock";
 import { TerminalPanel } from "@/components/terminal";
+import {
+  ProjectOnboarding,
+  PROJECT_ONBOARDING_COMPLETED_KEY,
+} from "@/components/setup/project-onboarding";
 import { Sidebar } from "./sidebar";
 import { ProjectTitleBar } from "./title-bar";
 
@@ -44,9 +49,15 @@ const Content = styled.div`
 export function ProjectLayout() {
   const projectId = useActiveProjectId();
   const { data: project, isLoading, isError } = useProjectQuery(projectId);
+  const settingsQuery = useSettingsQuery();
   const navigate = useNavigate();
   const [terminalOpen] = useTerminalPanel();
   const touch = useTouchProject();
+
+  // Dismiss the onboarding locally when it completes so the project
+  // view renders immediately — the persistent flag also gets written
+  // by the wizard, so subsequent navigations skip it.
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
 
   useRunnerListener();
   useGitListener();
@@ -77,12 +88,11 @@ export function ProjectLayout() {
   }, [isError]);
 
   const isReady = !!project && !isLoading;
-
-  const mainContent = (
-    <Content>
-      <Outlet />
-    </Content>
-  );
+  const settingsReady = !settingsQuery.isLoading && !!settingsQuery.data;
+  const onboardingCompleted =
+    !!settingsQuery.data?.[PROJECT_ONBOARDING_COMPLETED_KEY];
+  const showOnboarding =
+    isReady && settingsReady && !onboardingCompleted && !onboardingDismissed;
 
   if (!isReady) {
     return (
@@ -97,6 +107,25 @@ export function ProjectLayout() {
       </Root>
     );
   }
+
+  // Early-return the onboarding when it should show — the project
+  // chrome (title bar, sidebar, runner dock) is hidden while the
+  // wizard is up so there's a single, focused surface on screen.
+  if (showOnboarding && project) {
+    return (
+      <ProjectOnboarding
+        project={project}
+        onComplete={() => setOnboardingDismissed(true)}
+        onClose={() => navigate("/", { replace: true })}
+      />
+    );
+  }
+
+  const mainContent = (
+    <Content>
+      <Outlet />
+    </Content>
+  );
 
   return (
     <Root>

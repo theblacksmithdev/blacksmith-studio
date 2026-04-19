@@ -7,11 +7,13 @@ import {
   Sun,
   Moon,
   Sparkles,
+  X,
 } from "lucide-react";
 import { Button, Logo, Text } from "@/components/shared/ui";
 import { useThemeMode } from "@/hooks/use-theme-mode";
 import type { WizardStep } from "./types";
 import {
+  CloseButton,
   Content,
   ContentBackdrop,
   FooterBar,
@@ -44,6 +46,12 @@ export interface WizardProps {
   onBack?: () => void;
   onNext: () => void;
   onSkip?: () => void;
+  /**
+   * When supplied, renders a circular close button in the top-right of
+   * the shell. Global first-run wizards leave this unset (the flow is
+   * required); per-project wizards opt in so users can bail out.
+   */
+  onClose?: () => void;
   progressLabel?: string;
   footerExtra?: ReactNode;
   advancing?: boolean;
@@ -65,6 +73,7 @@ export function Wizard({
   onBack,
   onNext,
   onSkip,
+  onClose,
   progressLabel,
   footerExtra,
   advancing,
@@ -78,6 +87,16 @@ export function Wizard({
 
   return (
     <Shell>
+      {onClose && (
+        <CloseButton
+          type="button"
+          onClick={onClose}
+          aria-label="Close setup"
+          title="Close setup"
+        >
+          <X size={16} />
+        </CloseButton>
+      )}
       <Rail>
         <Flex
           align="center"
