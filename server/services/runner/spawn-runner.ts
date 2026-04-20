@@ -1,6 +1,6 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import path from "node:path";
-import { assertPortAvailable, extractPortFromLine } from "./port-utils.js";
+import { extractPortFromLine } from "./port-utils.js";
 import { nodeEnv } from "../node-env.js";
 import type { RunnerConfig } from "./runner-config.js";
 
@@ -18,9 +18,9 @@ export type StatusCallback = (
 
 /**
  * Generic runner spawner — works with any RunnerConfig.
- * Checks that the configured port is free, substitutes {port} in command,
- * then spawns the process. Detects the actual port from process output
- * so the preview URL always points to the right place.
+ * Substitutes {port} in the command and spawns the process. Detects the
+ * actual port from process output so the preview URL always points to
+ * the right place. Port-availability is the caller's concern.
  */
 export async function spawnRunner(
   config: RunnerConfig,
@@ -29,11 +29,7 @@ export async function spawnRunner(
   onStatus: StatusCallback,
   nodePath?: string,
 ): Promise<SpawnResult> {
-  // Check that the configured port is free — fail fast if busy
   const configuredPort = config.port ?? null;
-  if (configuredPort) {
-    await assertPortAvailable(configuredPort);
-  }
 
   // Substitute {port} in command
   const sub = (str: string) =>

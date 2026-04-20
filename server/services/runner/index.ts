@@ -2,12 +2,15 @@ import { spawn } from "node:child_process";
 import path from "node:path";
 import {
   RunnerProcess,
+  SpawnedRunnerProcess,
+  AdoptedRunnerProcess,
   type RunnerServiceStatus,
   type RunnerStatus,
 } from "./types.js";
-import type { RunnerConfigService } from "./runner-config.js";
+import type { RunnerConfigService, RunnerConfig } from "./runner-config.js";
 import { spawnRunner } from "./spawn-runner.js";
 import { detectRunners } from "./detect-runners.js";
+import { isPortAvailable } from "./port-utils.js";
 import { nodeEnv } from "../node-env.js";
 
 export type { RunnerStatus, RunnerServiceStatus } from "./types.js";
@@ -35,7 +38,6 @@ interface BufferedLog {
 }
 
 const MAX_BUFFERED_LOGS = 500;
-const KILL_ESCALATION_MS = 5_000;
 
 export type ProjectResolver = (projectId: string) => {
   path: string;
@@ -88,12 +90,27 @@ export class RunnerManager {
   }
 
   async start(configId: string): Promise<void> {
-    if (this.processes.has(configId)) return;
+    const existing = this.processes.get(configId);
+    if (existing) {
+      this.emitOutput(
+        existing.projectId,
+        configId,
+        existing.name,
+        `[studio] ${existing.name} is already running — reusing existing session.`,
+      );
+      this.emitStatus(existing.projectId);
+      return;
+    }
 
     const config = this.configService.getConfig(configId);
     if (!config) throw new Error(`Runner config not found.`);
 
     const project = this.resolveProject(config.projectId);
+
+    if (config.port != null && !(await isPortAvailable(config.port))) {
+      this.adoptExternal(config, config.port);
+      return;
+    }
 
     let currentProc: import("node:child_process").ChildProcess | null = null;
 
@@ -104,11 +121,11 @@ export class RunnerManager {
         project.path,
         (id, line) => this.emitOutput(config.projectId, id, config.name, line),
         (id, status, port) => {
-          const existing = this.processes.get(id);
+          const entry = this.processes.get(id);
           // Only update if the entry still belongs to this spawn (not a newer restart)
-          if (existing && (!currentProc || existing.process === currentProc)) {
-            existing.status = status;
-            if (port != null) existing.port = port;
+          if (entry && (!currentProc || entry.ownsSpawn(currentProc))) {
+            entry.status = status;
+            if (port != null) entry.port = port;
             if (status === "stopped") {
               this.processes.delete(id);
             }
@@ -131,7 +148,7 @@ export class RunnerManager {
 
     this.processes.set(
       configId,
-      new RunnerProcess({
+      new SpawnedRunnerProcess({
         process: result.process,
         configId,
         projectId: config.projectId,
@@ -144,27 +161,34 @@ export class RunnerManager {
     );
   }
 
+  private adoptExternal(config: RunnerConfig, port: number): void {
+    const adopted = new AdoptedRunnerProcess({
+      configId: config.id,
+      projectId: config.projectId,
+      name: config.name,
+      port,
+      status: "running",
+      previewUrlTemplate: config.previewUrl,
+      icon: config.icon ?? "terminal",
+    });
+    this.processes.set(config.id, adopted);
+    this.emitOutput(
+      config.projectId,
+      config.id,
+      config.name,
+      `[studio] Port ${port} is already in use — adopting the external process as ${config.name}. Stop will attempt to free this port.`,
+    );
+    this.emitStatus(config.projectId);
+  }
+
   stop(configId: string): void {
     const proc = this.processes.get(configId);
     if (!proc) return;
 
-    const projectId = proc.projectId;
-
     // Delete from map immediately so start() can re-add
     this.processes.delete(configId);
-    proc.process.kill("SIGTERM");
-    this.emitStatus(projectId);
-
-    // Escalate to SIGKILL if process doesn't exit in time
-    const killTimer = setTimeout(() => {
-      try {
-        proc.process.kill("SIGKILL");
-      } catch {
-        // Process already exited
-      }
-    }, KILL_ESCALATION_MS);
-
-    proc.process.once("close", () => clearTimeout(killTimer));
+    proc.terminate();
+    this.emitStatus(proc.projectId);
   }
 
   async startAll(projectId: string): Promise<void> {
