@@ -104,4 +104,25 @@ export class SessionManager {
 
     this.sessionRepo.touch(sessionId);
   }
+
+  /**
+   * Chronologically-ordered `{role, content}` turns for a session.
+   *
+   * Consumed by providers that need conversation history in-band
+   * (Ollama, OpenAI). Excludes the user's *current* in-flight prompt —
+   * that's what the AI is being asked to respond to — and skips rows
+   * with empty content so error/cancelled turns don't confuse the model.
+   */
+  getHistory(sessionId: string): Array<{
+    role: "user" | "assistant";
+    content: string;
+  }> {
+    return this.messageRepo
+      .listBySession(sessionId)
+      .filter((m) => m.content && m.content.trim().length > 0)
+      .map((m) => ({
+        role: m.role as "user" | "assistant",
+        content: m.content,
+      }));
+  }
 }

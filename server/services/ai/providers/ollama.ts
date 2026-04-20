@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { AiModelTier } from "../types.js";
 import type {
   AiCompletionOptions,
@@ -7,6 +8,12 @@ import type {
   AiModelOption,
 } from "../types.js";
 import type { OllamaManager } from "../../ollama/index.js";
+import {
+  LocalToolExecutor,
+  TOOL_DEFINITIONS,
+  type ToolInputs,
+  type ToolName,
+} from "../tools/index.js";
 import { AiProvider, type ModelSelector } from "./provider.js";
 
 /**
@@ -30,11 +37,16 @@ const MODEL_MAP: Record<AiModelTier, string> = {
  *   - `OllamaManager` owns the binary, the daemon process, and the
  *     `/api/tags` + `/api/pull` endpoints.
  *   - This class turns `stream()` / `complete()` / `checkStatus()` /
- *     `listModels()` calls into the right HTTP requests and maps
- *     responses into the chunk shape every other consumer expects.
+ *     `listModels()` calls into the right HTTP requests, runs a small
+ *     multi-round agent loop when the model asks for tools, and maps
+ *     responses into the Anthropic-shape chunks every consumer expects.
  *
- * MVP scope (chat-only): no tool use, no session resume. Options
- * honoured by Claude CLI only (`mcpConfigPath`, `permissionMode`,
+ * Tool use: read-only (`read_file`, `grep`, `glob`). Mutating tools
+ * (write/edit/shell) need a permission-prompt UX we haven't built yet
+ * and are intentionally absent. If the model ignores the tools param
+ * and just answers, the loop exits after one round.
+ *
+ * Options honoured by Claude CLI only (`mcpConfigPath`, `permissionMode`,
  * `allowedTools`, `maxBudget`, `resume`, `nodePath`, `tolerantExit`)
  * are silently ignored — interface-segregation: providers honour what
  * they can.
@@ -109,13 +121,26 @@ export class OllamaProvider extends AiProvider {
   stream(options: AiStreamOptions): AiStreamHandle {
     const controller = new AbortController();
     const model = this.resolveModel(options.model ?? AiModelTier.Balanced);
-    const systemPrompt = composeSystemPrompt(options);
+
+    // Only advertise tools when we have a project root to scope them
+    // to AND the caller hasn't explicitly opted out via `disableTools`.
+    // Without a root, `LocalToolExecutor` has nothing safe to resolve
+    // paths against.
+    const toolsEnabled = !options.disableTools && !!options.cwd;
+    const executor = toolsEnabled ? new LocalToolExecutor(options.cwd!) : null;
+
+    const systemPrompt = composeSystemPrompt(options, toolsEnabled);
     const userPrompt = composeUserPrompt(options);
     const startedAt = Date.now();
 
-    const promise = this.runStream({
+    const promise = this.runAgent({
+      executor,
       model,
-      messages: buildMessages({ prompt: userPrompt, systemPrompt }),
+      initialMessages: buildMessages({
+        prompt: userPrompt,
+        systemPrompt,
+        history: options.history,
+      }),
       signal: controller.signal,
       onChunk: options.onChunk,
       startedAt,
@@ -127,17 +152,83 @@ export class OllamaProvider extends AiProvider {
     };
   }
 
-  private async runStream(opts: {
+  /**
+   * Multi-round agent loop. One round = send messages → read response →
+   * if the model asked for tools, run them and append the results →
+   * repeat. Exits when the model returns a plain message or we hit the
+   * round cap. Non-streaming within a round — Ollama streams tool_calls
+   * only in a final chunk, and a streaming-while-tool-calling UX is
+   * deliberately out of scope.
+   */
+  private async runAgent(opts: {
+    executor: LocalToolExecutor | null;
     model: string;
-    messages: Array<{ role: string; content: string }>;
+    initialMessages: OllamaMessage[];
     signal: AbortSignal;
     onChunk: (chunk: any) => void;
     startedAt: number;
   }): Promise<void> {
-    // Auto-start the daemon on first request. Silent no-op if already
-    // running (ours or a system Ollama.app).
     await this.manager.ensureRunning();
 
+    const messages: OllamaMessage[] = [...opts.initialMessages];
+    const MAX_ROUNDS = 10;
+
+    for (let round = 0; round < MAX_ROUNDS; round++) {
+      const response = await this.chatOnce({
+        model: opts.model,
+        messages,
+        tools: opts.executor ? TOOL_DEFINITIONS : undefined,
+        signal: opts.signal,
+      });
+
+      const text = response.message?.content ?? "";
+      const toolCalls = response.message?.tool_calls ?? [];
+      const isFinal = toolCalls.length === 0 || !opts.executor;
+
+      opts.onChunk({
+        type: "assistant",
+        message: {
+          role: "assistant",
+          content: buildContentBlocks(text, toolCalls),
+        },
+        stop_reason: isFinal ? "end_turn" : null,
+      });
+
+      if (isFinal) break;
+
+      // Record the assistant's turn so the next round sees the same
+      // tool_calls the model just emitted — Ollama matches `role: tool`
+      // results to the preceding assistant message's calls positionally.
+      messages.push({
+        role: "assistant",
+        content: text,
+        tool_calls: toolCalls,
+      });
+
+      for (const tc of toolCalls) {
+        const name = tc.function?.name as ToolName | undefined;
+        const args = normaliseArgs(tc.function?.arguments);
+        const output = name
+          ? await opts.executor!.run(name, args as ToolInputs[ToolName])
+          : `Unknown tool: ${tc.function?.name}`;
+        messages.push({ role: "tool", content: output });
+      }
+    }
+
+    opts.onChunk({
+      type: "result",
+      cost_usd: 0,
+      duration_ms: Date.now() - opts.startedAt,
+    });
+  }
+
+  /** One round-trip to `/api/chat`. Non-streaming; returns the full message. */
+  private async chatOnce(opts: {
+    model: string;
+    messages: OllamaMessage[];
+    tools?: typeof TOOL_DEFINITIONS;
+    signal: AbortSignal;
+  }): Promise<OllamaChatResponse> {
     const endpoint = this.manager.endpoint();
     let res: Response;
     try {
@@ -148,14 +239,15 @@ export class OllamaProvider extends AiProvider {
         body: JSON.stringify({
           model: opts.model,
           messages: opts.messages,
-          stream: true,
+          tools: opts.tools,
+          stream: false,
         }),
       });
     } catch (err) {
       throw new Error(unreachableMessage(endpoint, err));
     }
 
-    if (!res.ok || !res.body) {
+    if (!res.ok) {
       const text = await res.text().catch(() => "");
       const body = text.slice(0, 300) || res.statusText;
       if (res.status === 404 && /not found/i.test(body)) {
@@ -165,73 +257,120 @@ export class OllamaProvider extends AiProvider {
       }
       throw new Error(`Ollama request failed (${res.status}): ${body}`);
     }
-
-    let fullText = "";
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = "";
-
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop() ?? "";
-      for (const line of lines) {
-        if (!line.trim()) continue;
-        const event = parseNdjsonLine(line);
-        if (!event) continue;
-        const delta = event.message?.content ?? "";
-        if (delta) fullText += delta;
-      }
-    }
-    if (buffer.trim()) {
-      const event = parseNdjsonLine(buffer);
-      const delta = event?.message?.content ?? "";
-      if (delta) fullText += delta;
-    }
-
-    // Matches the chunk shape the existing consumers (single-agent.ts
-    // and agents/base/stream.ts) already handle for Claude.
-    opts.onChunk({
-      type: "assistant",
-      message: {
-        role: "assistant",
-        content: [{ type: "text", text: fullText }],
-      },
-      stop_reason: "end_turn",
-    });
-    opts.onChunk({
-      type: "result",
-      cost_usd: 0,
-      duration_ms: Date.now() - opts.startedAt,
-    });
+    return (await res.json()) as OllamaChatResponse;
   }
 }
 
-function parseNdjsonLine(line: string): any | null {
+// ── Ollama wire types ────────────────────────────────────────────────
+
+interface OllamaToolCall {
+  function?: {
+    name?: string;
+    /**
+     * Ollama sometimes sends arguments as a pre-parsed object,
+     * sometimes as a JSON string — normalise at the call site.
+     */
+    arguments?: Record<string, unknown> | string;
+  };
+}
+
+interface OllamaMessage {
+  role: "system" | "user" | "assistant" | "tool";
+  content: string;
+  tool_calls?: OllamaToolCall[];
+}
+
+interface OllamaChatResponse {
+  message?: {
+    role?: string;
+    content?: string;
+    tool_calls?: OllamaToolCall[];
+  };
+}
+
+/**
+ * Translate Ollama's per-round response into the Anthropic-shape
+ * `content` array every downstream consumer (single-agent handler,
+ * multi-agent chunk handler, stream parser) already understands.
+ */
+function buildContentBlocks(
+  text: string,
+  toolCalls: OllamaToolCall[],
+): Array<
+  | { type: "text"; text: string }
+  | { type: "tool_use"; id: string; name: string; input: unknown }
+> {
+  const blocks: Array<
+    | { type: "text"; text: string }
+    | { type: "tool_use"; id: string; name: string; input: unknown }
+  > = [];
+  if (text) blocks.push({ type: "text", text });
+  for (const tc of toolCalls) {
+    if (!tc.function?.name) continue;
+    blocks.push({
+      type: "tool_use",
+      // Ollama doesn't issue tool_call ids; generate one so the UI has
+      // a stable key and the `messages` table can store it.
+      id: crypto.randomUUID(),
+      name: tc.function.name,
+      input: normaliseArgs(tc.function.arguments),
+    });
+  }
+  return blocks;
+}
+
+/**
+ * Ollama variously returns `arguments` as already-parsed objects or as
+ * JSON-encoded strings. Collapse to a single shape so tools get what
+ * they expect regardless of the model's quirks.
+ */
+function normaliseArgs(
+  raw: Record<string, unknown> | string | undefined,
+): Record<string, unknown> {
+  if (!raw) return {};
+  if (typeof raw === "object") return raw;
   try {
-    return JSON.parse(line);
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
   } catch {
-    return null;
+    return {};
   }
 }
 
 function buildMessages(opts: {
   prompt: string;
   systemPrompt?: string;
-}): Array<{ role: string; content: string }> {
-  const messages: Array<{ role: string; content: string }> = [];
+  history?: Array<{ role: "user" | "assistant"; content: string }>;
+}): OllamaMessage[] {
+  const messages: OllamaMessage[] = [];
   if (opts.systemPrompt) {
     messages.push({ role: "system", content: opts.systemPrompt });
+  }
+  if (opts.history) {
+    for (const turn of opts.history) {
+      messages.push({ role: turn.role, content: turn.content });
+    }
   }
   messages.push({ role: "user", content: opts.prompt });
   return messages;
 }
 
-function composeSystemPrompt(options: AiStreamOptions): string | undefined {
+const TOOL_USAGE_GUIDANCE = [
+  "You have access to three read-only tools for exploring the user's project:",
+  "  - `read_file(path)` — read a file's contents",
+  "  - `grep(pattern, path?, case_insensitive?)` — search with a regex",
+  "  - `glob(pattern)` — list files matching a glob like `**/*.ts`",
+  "",
+  "Call a tool when you need to see concrete code or files before answering. You cannot write, edit, or run shell commands — if the user asks for those, explain the limitation and suggest switching to the Claude CLI provider.",
+].join("\n");
+
+function composeSystemPrompt(
+  options: AiStreamOptions,
+  toolsEnabled: boolean,
+): string | undefined {
   const parts: string[] = [];
   if (options.systemPrompt) parts.push(options.systemPrompt);
+  if (toolsEnabled) parts.push(TOOL_USAGE_GUIDANCE);
   if (options.customInstructions) {
     parts.push(`## User's Custom Instructions\n\n${options.customInstructions}`);
   }

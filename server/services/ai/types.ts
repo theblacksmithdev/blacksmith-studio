@@ -37,6 +37,12 @@ export interface AiCompletionOptions {
   providerId?: string;
 }
 
+/** One prior turn in a conversation — `prompt` is the current turn, not history. */
+export interface ChatHistoryMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
 /** Options for streaming interactive sessions */
 export interface AiStreamOptions extends AiCompletionOptions {
   onChunk: (parsed: any) => void;
@@ -50,6 +56,12 @@ export interface AiStreamOptions extends AiCompletionOptions {
   customInstructions?: string;
   /** Project context — prepended to prompt on first message */
   projectContext?: string;
+  /**
+   * Prior turns for providers that need history in-band (Ollama,
+   * OpenAI). Providers with server-side session state (Claude CLI via
+   * `--resume`) ignore this. Excludes the current `prompt`.
+   */
+  history?: ChatHistoryMessage[];
   /**
    * When true, resolve the stream promise with whatever was produced even
    * on non-zero exit or signal termination — as long as some output was

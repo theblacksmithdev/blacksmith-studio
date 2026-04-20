@@ -7,6 +7,7 @@ export type {
   AiStreamHandle,
   AiProviderStatus,
   AiModelOption,
+  ChatHistoryMessage,
 } from "./types";
 export {
   AiProvider,

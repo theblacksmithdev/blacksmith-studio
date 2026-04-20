@@ -69,6 +69,12 @@ export function setupSingleAgentIPC(
         existingSession && existingSession.messages.length > 0
       );
 
+      // Snapshot prior turns BEFORE writing the current one — that way
+      // `history` excludes the in-flight user message. Providers with
+      // server-side session state (Claude CLI) ignore this; Ollama /
+      // OpenAI consume it so the model has memory across turns.
+      const history = isResume ? sessionManager.getHistory(sessionId) : [];
+
       const userMessageId = crypto.randomUUID();
       sessionManager.addMessage(sessionId, {
         id: userMessageId,
@@ -108,6 +114,7 @@ export function setupSingleAgentIPC(
           systemPrompt: STUDIO_SYSTEM_PROMPT,
           resume: isResume,
           sessionId,
+          history,
           projectContext: !isResume
             ? getProjectContext(projectPath)
             : undefined,
@@ -129,7 +136,10 @@ export function setupSingleAgentIPC(
               );
 
               if (textBlocks.length > 0) {
-                lastContent = textBlocks.map((b: any) => b.text).join("");
+                // Accumulate text across assistant chunks so multi-round
+                // responses (Ollama tool use, future streaming deltas)
+                // end up with the full message by `singleAgent:done`.
+                lastContent += textBlocks.map((b: any) => b.text).join("");
                 win?.webContents.send(SINGLE_AGENT_ON_MESSAGE, {
                   sessionId,
                   content: lastContent,
