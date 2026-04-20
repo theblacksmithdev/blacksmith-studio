@@ -44,6 +44,8 @@ interface SettingInputProps {
   prefix?: string;
   suffix?: string;
   onChange: (value: string | number) => void;
+  /** Fires when the input loses focus — matches `SettingTextarea`. */
+  onBlur?: (value: string | number) => void;
 }
 
 export function SettingInput({
@@ -55,6 +57,7 @@ export function SettingInput({
   prefix,
   suffix,
   onChange,
+  onBlur,
 }: SettingInputProps) {
   const inputSize = size ?? (type === "number" ? "sm" : "md");
 
@@ -67,6 +70,14 @@ export function SettingInput({
       inputSize={inputSize}
       onChange={(e) =>
         onChange(type === "number" ? Number(e.target.value) : e.target.value)
+      }
+      onBlur={
+        onBlur
+          ? (e) =>
+              onBlur(
+                type === "number" ? Number(e.target.value) : e.target.value,
+              )
+          : undefined
       }
     />
   );

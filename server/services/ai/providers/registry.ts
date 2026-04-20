@@ -1,5 +1,11 @@
 import type { AiProvider } from "./provider.js";
 
+/** Minimal per-provider descriptor surfaced to the UI picker. */
+export interface ProviderSummary {
+  id: string;
+  name: string;
+}
+
 /**
  * Holds the AI providers the app knows how to talk to and lets consumers
  * look one up by id at call time.
@@ -32,5 +38,13 @@ export class ProviderRegistry {
       );
     }
     return provider;
+  }
+
+  /** Descriptors for every registered provider — drives the settings picker. */
+  summaries(): ProviderSummary[] {
+    return Array.from(this.providers.entries()).map(([id, provider]) => ({
+      id,
+      name: provider.name,
+    }));
   }
 }

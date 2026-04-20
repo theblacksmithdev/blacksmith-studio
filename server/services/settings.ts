@@ -34,6 +34,7 @@ const GLOBAL_DEFAULTS: Record<string, any> = {
   "runner.nodePath": "",
   "python.pythonPath": "",
   "editor.preferred": "",
+  "ai.ollamaEndpoint": "http://localhost:11434",
 };
 
 export class SettingsManager {

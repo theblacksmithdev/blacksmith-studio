@@ -1,7 +1,7 @@
 import { ipcMain } from "electron";
 import type { Ai } from "../../server/services/ai/index.js";
 import type { SettingsManager } from "../../server/services/settings.js";
-import { AI_LIST_MODELS } from "./channels.js";
+import { AI_LIST_MODELS, AI_LIST_PROVIDERS } from "./channels.js";
 
 /**
  * Provider-agnostic AI IPC handlers. Pairs with `server/services/ai/`.
@@ -19,4 +19,6 @@ export function setupAiIPC(ai: Ai, settingsManager: SettingsManager) {
       : null;
     return ai.listModels(providerId ?? undefined);
   });
+
+  ipcMain.handle(AI_LIST_PROVIDERS, async () => ai.listProviders());
 }

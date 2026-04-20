@@ -10,7 +10,10 @@ export function AiSettings() {
 
   return (
     <Flex direction="column" gap="28px">
-      <ProviderSection />
+      <ProviderSection
+        provider={ai.provider}
+        onProviderChange={ai.setProvider}
+      />
       <ModelSelector model={ai.model} onModelChange={ai.setModel} />
       <BehaviorSection
         permissionMode={ai.permissionMode}

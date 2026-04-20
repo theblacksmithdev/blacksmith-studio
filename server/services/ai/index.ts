@@ -11,7 +11,9 @@ export type {
 export {
   AiProvider,
   ClaudeCliProvider,
+  OllamaProvider,
   ProviderRegistry,
 } from "./providers";
 export type { ModelSelector } from "./providers";
+export type { ProviderSummary } from "./providers/registry";
 export { createStreamParser, extractTextFromEvent } from "./parser";

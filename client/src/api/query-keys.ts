@@ -7,6 +7,7 @@ const global = {
     ["projects", "validation", path] as const,
   health: ["health"] as const,
   nodeInstallations: ["runner", "nodeInstallations"] as const,
+  aiProviders: ["ai", "providers"] as const,
 };
 
 /** Keys for project-scoped queries — all include the project ID so switching projects gets a fresh cache */

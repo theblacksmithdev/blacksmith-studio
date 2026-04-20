@@ -41,6 +41,7 @@ import {
   Ai,
   AiProviderType,
   ClaudeCliProvider,
+  OllamaProvider,
   ProviderRegistry,
 } from "../server/services/ai/index.js";
 import { SettingsManager } from "../server/services/settings.js";
@@ -156,12 +157,6 @@ function createMenu() {
 app.whenReady().then(async () => {
   // Instantiate services in main process
   const projectManager = new ProjectManager();
-
-  // AI provider wiring. One registry, one Ai router; adding a new
-  // provider later is `registry.register(id, new XProvider(...))`.
-  const providerRegistry = new ProviderRegistry(AiProviderType.ClaudeCli);
-  providerRegistry.register(AiProviderType.ClaudeCli, new ClaudeCliProvider());
-  const ai = new Ai(providerRegistry);
   const db = getDatabase();
   const sessionManager = new SessionManager(db);
   const agentSessionManager = new AgentSessionManager(db);
@@ -174,6 +169,16 @@ app.whenReady().then(async () => {
     },
   });
   const settingsManager = new SettingsManager();
+
+  // AI provider wiring. One registry, one Ai router; adding a new
+  // provider later is `registry.register(id, new XProvider(...))`.
+  const providerRegistry = new ProviderRegistry(AiProviderType.ClaudeCli);
+  providerRegistry.register(AiProviderType.ClaudeCli, new ClaudeCliProvider());
+  providerRegistry.register(
+    AiProviderType.Ollama,
+    new OllamaProvider(settingsManager),
+  );
+  const ai = new Ai(providerRegistry);
 
   // ── Command subsystem (toolchain-pluggable subprocess execution) ──
   const platformInfo = new PlatformInfo();

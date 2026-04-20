@@ -5,7 +5,10 @@ import type {
   AiProviderStatus,
   AiModelOption,
 } from "./types.js";
-import type { ProviderRegistry } from "./providers/registry.js";
+import type {
+  ProviderRegistry,
+  ProviderSummary,
+} from "./providers/registry.js";
 import { extractTextFromEvent } from "./parser.js";
 
 /** Options for streamText — same as stream, minus the required onChunk. */
@@ -39,8 +42,13 @@ export class Ai {
   }
 
   /** Models offered by a provider. Defaults to the registry's default provider. */
-  listModels(providerId?: string): AiModelOption[] {
+  listModels(providerId?: string): Promise<AiModelOption[]> {
     return this.registry.resolve(providerId).listModels();
+  }
+
+  /** Every provider registered in the app — drives the Settings picker. */
+  listProviders(): ProviderSummary[] {
+    return this.registry.summaries();
   }
 
   /** One-shot completion. Returns null on failure. */

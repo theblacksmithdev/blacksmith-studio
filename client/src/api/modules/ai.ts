@@ -1,5 +1,5 @@
 import { api as raw } from "../client";
-import type { AiModelOption } from "../types";
+import type { AiModelOption, AiProviderSummary } from "../types";
 
 /**
  * Provider-agnostic AI queries. Pairs with `electron/ipc/ai.ts`.
@@ -13,4 +13,6 @@ export const ai = {
   /** List the models the active provider offers. */
   listModels: (projectId?: string) =>
     raw.invoke<AiModelOption[]>("ai:listModels", { projectId }),
+  /** List every registered provider — used by the Settings picker. */
+  listProviders: () => raw.invoke<AiProviderSummary[]>("ai:listProviders"),
 } as const;

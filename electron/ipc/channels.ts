@@ -65,6 +65,7 @@ export const RUNNER_SETUP = "runner:setup";
 
 // AI (provider-agnostic)
 export const AI_LIST_MODELS = "ai:listModels";
+export const AI_LIST_PROVIDERS = "ai:listProviders";
 
 // Claude
 export const SINGLE_AGENT_SEND_PROMPT = "singleAgent:sendPrompt";
@@ -287,6 +288,7 @@ export const INVOKE_CHANNELS = [
   RUNNER_GET_LOGS,
   RUNNER_SETUP,
   AI_LIST_MODELS,
+  AI_LIST_PROVIDERS,
   SINGLE_AGENT_SEND_PROMPT,
   SINGLE_AGENT_CANCEL,
   MCP_LIST,

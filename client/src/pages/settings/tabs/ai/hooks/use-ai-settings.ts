@@ -18,6 +18,7 @@ export function useAiSettings() {
 
   return {
     // State
+    provider: (settings["ai.provider"] ?? "claude-cli") as string,
     model: (settings["ai.model"] ?? "sonnet") as string,
     permissionMode: (settings["ai.permissionMode"] ??
       "bypassPermissions") as string,
@@ -25,6 +26,7 @@ export function useAiSettings() {
     customInstructions: (settings["ai.customInstructions"] ?? "") as string,
 
     // Mutations
+    setProvider: (value: string) => set("ai.provider", value),
     setModel: (value: string) => set("ai.model", value),
     setPermissionMode: (value: string) => set("ai.permissionMode", value),
     setBudget: (value: number | string | null) =>

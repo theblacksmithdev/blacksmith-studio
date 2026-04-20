@@ -38,6 +38,9 @@ export abstract class AiProvider {
    * Models this provider offers in the Settings → AI picker. `value`
    * is what gets written to the `ai.model` setting and fed back into
    * `resolveModel()` at send-time. Returned list drives the UI.
+   *
+   * Async because some providers (Ollama) query their model list over
+   * HTTP; providers with a static list just return a resolved promise.
    */
-  abstract listModels(): AiModelOption[];
+  abstract listModels(): Promise<AiModelOption[]>;
 }

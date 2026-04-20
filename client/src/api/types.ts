@@ -22,6 +22,12 @@ export interface AiModelOption {
   description: string;
 }
 
+/** One AI provider registered in the app. */
+export interface AiProviderSummary {
+  id: string;
+  name: string;
+}
+
 /* ── Pagination ── */
 
 export interface PaginationInput {

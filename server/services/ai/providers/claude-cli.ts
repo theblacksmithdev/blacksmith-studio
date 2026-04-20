@@ -46,7 +46,7 @@ export class ClaudeCliProvider extends AiProvider {
     return (MODEL_MAP as Record<string, string>)[selector] ?? selector;
   }
 
-  listModels(): AiModelOption[] {
+  async listModels(): Promise<AiModelOption[]> {
     return MODEL_OPTIONS;
   }
 
