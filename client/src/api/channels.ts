@@ -10,6 +10,7 @@ import { artifacts } from "./modules/artifacts";
 import { commands } from "./modules/commands";
 import { python } from "./modules/python";
 import { graphify } from "./modules/graphify";
+import { ollama } from "./modules/ollama";
 import { windowApi } from "./modules/window";
 
 /**
@@ -78,6 +79,11 @@ export const channels = {
 
   // Graphify
   "graphify:buildProgress": graphify.onBuildProgress,
+
+  // Ollama
+  "ollama:installProgress": ollama.onInstallProgress,
+  "ollama:daemonStatus": ollama.onDaemonStatus,
+  "ollama:pullProgress": ollama.onPullProgress,
 
   // Window
   "window:fullscreen": windowApi.onFullscreen,

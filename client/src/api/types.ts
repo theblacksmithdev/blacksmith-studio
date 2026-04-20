@@ -28,6 +28,50 @@ export interface AiProviderSummary {
   name: string;
 }
 
+/* ── Ollama ── */
+
+export type OllamaDaemonStatus = "stopped" | "starting" | "running" | "failed";
+
+export interface OllamaState {
+  installed: boolean;
+  binaryPath: string | null;
+  source: "managed" | "system" | "path" | null;
+  daemon: OllamaDaemonStatus;
+  endpoint: string;
+}
+
+export interface OllamaInstalledModel {
+  name: string;
+  family: string;
+  sizeBytes: number;
+  modifiedAt: string;
+  parameterSize?: string;
+  quantization?: string;
+}
+
+export interface OllamaInstallProgress {
+  phase: "downloading" | "extracting" | "finalizing" | "done";
+  fraction?: number;
+  downloaded?: number;
+  total?: number;
+  message: string;
+}
+
+export interface OllamaPullProgress {
+  modelName: string;
+  status: string;
+  fraction?: number;
+  downloaded?: number;
+  total?: number;
+  done: boolean;
+}
+
+export interface OllamaDaemonStatusChange {
+  status: OllamaDaemonStatus;
+  error?: string;
+  lastLog?: string;
+}
+
 /* ── Pagination ── */
 
 export interface PaginationInput {

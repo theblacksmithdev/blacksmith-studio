@@ -1,4 +1,3 @@
-import type { SettingsManager } from "../../settings.js";
 import { AiModelTier } from "../types.js";
 import type {
   AiCompletionOptions,
@@ -7,16 +6,15 @@ import type {
   AiProviderStatus,
   AiModelOption,
 } from "../types.js";
+import type { OllamaManager } from "../../ollama/index.js";
 import { AiProvider, type ModelSelector } from "./provider.js";
-
-const DEFAULT_ENDPOINT = "http://localhost:11434";
 
 /**
  * Tier → model for Ollama. Users can override per-message by passing a
- * concrete model id (anything other than the three tier values).
- * Picks are commonly-available code-oriented models; if the user hasn't
- * pulled them, `resolveModel` still returns the name and Ollama will
- * error clearly ("model not found").
+ * concrete model id (anything other than the three tier values). Picks
+ * are commonly-available code-oriented models; if the user hasn't
+ * pulled them, `resolveModel` still returns the name verbatim and
+ * Ollama responds with a clear "model not found" error.
  */
 const MODEL_MAP: Record<AiModelTier, string> = {
   [AiModelTier.Fast]: "qwen2.5-coder:7b",
@@ -25,33 +23,27 @@ const MODEL_MAP: Record<AiModelTier, string> = {
 };
 
 /**
- * Ollama provider — talks to a local Ollama daemon over HTTP.
+ * Ollama provider — translates our generic AI interface into Ollama's
+ * HTTP API and hands daemon/install/model lifecycle to `OllamaManager`.
  *
- * MVP scope (chat-only):
- *   - Streaming chat via `POST /api/chat` with NDJSON responses.
- *   - Model list pulled live from `GET /api/tags` (installed models).
- *   - System prompt, custom instructions, and project context collapse
- *     into a single `role: system` message.
- *   - No tool calls, no session resume, no download UX. Multi-turn
- *     conversations rely on callers passing prior context in the prompt.
+ * Division of labour:
+ *   - `OllamaManager` owns the binary, the daemon process, and the
+ *     `/api/tags` + `/api/pull` endpoints.
+ *   - This class turns `stream()` / `complete()` / `checkStatus()` /
+ *     `listModels()` calls into the right HTTP requests and maps
+ *     responses into the chunk shape every other consumer expects.
  *
- * Options the provider silently ignores (honoured by Claude CLI only):
- *   `mcpConfigPath`, `permissionMode`, `allowedTools`, `disableTools`,
- *   `maxBudget`, `resume`, `nodePath`, `tolerantExit`.
- *
- * Endpoint comes from `ai.ollamaEndpoint` (resolved project → global →
- * default). Cancellation is wired through an `AbortController`.
+ * MVP scope (chat-only): no tool use, no session resume. Options
+ * honoured by Claude CLI only (`mcpConfigPath`, `permissionMode`,
+ * `allowedTools`, `maxBudget`, `resume`, `nodePath`, `tolerantExit`)
+ * are silently ignored — interface-segregation: providers honour what
+ * they can.
  */
 export class OllamaProvider extends AiProvider {
   readonly name = "Ollama";
 
-  constructor(private readonly settingsManager: SettingsManager) {
+  constructor(private readonly manager: OllamaManager) {
     super();
-  }
-
-  private endpoint(): string {
-    const raw = this.settingsManager.getGlobal("ai.ollamaEndpoint");
-    return (typeof raw === "string" && raw.trim()) || DEFAULT_ENDPOINT;
   }
 
   resolveModel(selector: ModelSelector): string {
@@ -60,16 +52,12 @@ export class OllamaProvider extends AiProvider {
 
   async checkStatus(): Promise<AiProviderStatus> {
     try {
-      const res = await fetch(`${this.endpoint()}/api/version`, {
+      const res = await fetch(`${this.manager.endpoint()}/api/version`, {
         signal: AbortSignal.timeout(3000),
       });
       if (!res.ok) return { available: false, name: this.name };
       const body = (await res.json()) as { version?: string };
-      return {
-        available: true,
-        version: body.version,
-        name: this.name,
-      };
+      return { available: true, version: body.version, name: this.name };
     } catch {
       return { available: false, name: this.name };
     }
@@ -77,18 +65,12 @@ export class OllamaProvider extends AiProvider {
 
   async listModels(): Promise<AiModelOption[]> {
     try {
-      const res = await fetch(`${this.endpoint()}/api/tags`, {
-        signal: AbortSignal.timeout(3000),
-      });
-      if (!res.ok) return [];
-      const body = (await res.json()) as {
-        models?: Array<{ name: string; details?: { parameter_size?: string } }>;
-      };
-      return (body.models ?? []).map((m) => ({
+      const models = await this.manager.listModels();
+      return models.map((m) => ({
         value: m.name,
         label: m.name.split(":")[0] ?? m.name,
-        description: m.details?.parameter_size
-          ? `${m.details.parameter_size} parameters`
+        description: m.parameterSize
+          ? `${m.parameterSize} parameters`
           : "Local model",
       }));
     } catch {
@@ -97,10 +79,11 @@ export class OllamaProvider extends AiProvider {
   }
 
   async complete(options: AiCompletionOptions): Promise<string | null> {
+    await this.manager.ensureRunning();
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), options.timeout ?? 30_000);
     try {
-      const res = await fetch(`${this.endpoint()}/api/chat`, {
+      const res = await fetch(`${this.manager.endpoint()}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         signal: controller.signal,
@@ -151,7 +134,11 @@ export class OllamaProvider extends AiProvider {
     onChunk: (chunk: any) => void;
     startedAt: number;
   }): Promise<void> {
-    const endpoint = this.endpoint();
+    // Auto-start the daemon on first request. Silent no-op if already
+    // running (ours or a system Ollama.app).
+    await this.manager.ensureRunning();
+
+    const endpoint = this.manager.endpoint();
     let res: Response;
     try {
       res = await fetch(`${endpoint}/api/chat`, {
@@ -171,11 +158,9 @@ export class OllamaProvider extends AiProvider {
     if (!res.ok || !res.body) {
       const text = await res.text().catch(() => "");
       const body = text.slice(0, 300) || res.statusText;
-      // Ollama returns 404 with `model "xxx" not found` when the user
-      // picks a tier (fast/balanced/powerful) they haven't pulled.
       if (res.status === 404 && /not found/i.test(body)) {
         throw new Error(
-          `Ollama model "${opts.model}" is not installed. Run \`ollama pull ${opts.model}\` or pick an installed model in Settings → AI.`,
+          `Ollama model "${opts.model}" is not installed. Install it from Settings → AI → Models, or pick an installed model.`,
         );
       }
       throw new Error(`Ollama request failed (${res.status}): ${body}`);
@@ -206,9 +191,8 @@ export class OllamaProvider extends AiProvider {
       if (delta) fullText += delta;
     }
 
-    // Emit a single assistant snapshot + a result event. Matches the
-    // shape the existing chunk handlers (single-agent.ts + agents/
-    // base/stream.ts) already consume for Claude.
+    // Matches the chunk shape the existing consumers (single-agent.ts
+    // and agents/base/stream.ts) already handle for Claude.
     opts.onChunk({
       type: "assistant",
       message: {
@@ -231,28 +215,6 @@ function parseNdjsonLine(line: string): any | null {
   } catch {
     return null;
   }
-}
-
-/**
- * Build a user-facing error message for an unreachable Ollama daemon.
- * Node's `fetch` throws a terse `TypeError: fetch failed` with the
- * real cause on `.cause` — unwrap it so the user sees something
- * actionable instead of "fetch failed".
- */
-function unreachableMessage(endpoint: string, err: unknown): string {
-  const cause = (err as { cause?: { code?: string; message?: string } })?.cause;
-  const code = cause?.code;
-  if (code === "ECONNREFUSED") {
-    return `Can't reach Ollama at ${endpoint}. Start the daemon (\`ollama serve\`) or check the endpoint in Settings → AI.`;
-  }
-  if (code === "ENOTFOUND") {
-    return `Ollama endpoint ${endpoint} didn't resolve. Check the URL in Settings → AI.`;
-  }
-  if (code === "UND_ERR_CONNECT_TIMEOUT") {
-    return `Connection to Ollama at ${endpoint} timed out.`;
-  }
-  const detail = cause?.message || (err instanceof Error ? err.message : String(err));
-  return `Can't reach Ollama at ${endpoint}: ${detail}`;
 }
 
 function buildMessages(opts: {
@@ -281,4 +243,25 @@ function composeUserPrompt(options: AiStreamOptions): string {
     return `Here is the current project context for reference:\n\n${options.projectContext}\n\n---\n\nUser request: ${options.prompt}`;
   }
   return options.prompt;
+}
+
+/**
+ * Turn Node `fetch`'s terse `TypeError: fetch failed` into something
+ * users can act on — which daemon isn't up, which URL is wrong.
+ */
+function unreachableMessage(endpoint: string, err: unknown): string {
+  const cause = (err as { cause?: { code?: string; message?: string } })?.cause;
+  const code = cause?.code;
+  if (code === "ECONNREFUSED") {
+    return `Can't reach Ollama at ${endpoint}. The daemon isn't responding — open Settings → AI to start it.`;
+  }
+  if (code === "ENOTFOUND") {
+    return `Ollama endpoint ${endpoint} didn't resolve. Check the URL in Settings → AI.`;
+  }
+  if (code === "UND_ERR_CONNECT_TIMEOUT") {
+    return `Connection to Ollama at ${endpoint} timed out.`;
+  }
+  const detail =
+    cause?.message || (err instanceof Error ? err.message : String(err));
+  return `Can't reach Ollama at ${endpoint}: ${detail}`;
 }

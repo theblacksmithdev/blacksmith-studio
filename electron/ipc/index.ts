@@ -15,6 +15,7 @@ import type { GitManager } from "../../server/services/git/index.js";
 import type { TerminalManager } from "../../server/services/terminal.js";
 import type { GraphifyManager } from "../../server/services/graphify/index.js";
 import type { PythonManager } from "../../server/services/python/index.js";
+import type { OllamaManager } from "../../server/services/ollama/index.js";
 import { AttachmentService } from "../../server/services/attachments/index.js";
 
 import { setupProjectsIPC } from "./projects.js";
@@ -27,6 +28,7 @@ import { setupSingleAgentIPC } from "./single-agent.js";
 import { setupRunnerIPC } from "./runner.js";
 import { setupHealthIPC } from "./health.js";
 import { setupAiIPC } from "./ai.js";
+import { setupOllamaIPC } from "./ollama.js";
 import { setupMcpIPC } from "./mcp.js";
 import { setupKnowledgeIPC } from "./knowledge.js";
 import { setupSkillsIPC } from "./skills.js";
@@ -63,6 +65,7 @@ export function setupAllIPC(
   terminalManager: TerminalManager,
   graphifyManager: GraphifyManager,
   pythonManager: PythonManager,
+  ollamaManager: OllamaManager,
 ) {
   setupFolderDialogIPC();
   setupWindowIPC(getWindow);
@@ -90,6 +93,7 @@ export function setupAllIPC(
   setupMcpIPC(mcpManager, projectManager, settingsManager);
   setupHealthIPC(ai, projectManager);
   setupAiIPC(ai, settingsManager);
+  setupOllamaIPC(getWindow, ollamaManager);
   setupKnowledgeIPC(knowledgeManager, projectManager);
   setupSkillsIPC(skillsManager, projectManager);
   setupSetupIPC(settingsManager, projectManager);

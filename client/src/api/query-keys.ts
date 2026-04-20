@@ -8,6 +8,8 @@ const global = {
   health: ["health"] as const,
   nodeInstallations: ["runner", "nodeInstallations"] as const,
   aiProviders: ["ai", "providers"] as const,
+  ollamaState: ["ollama", "state"] as const,
+  ollamaModels: ["ollama", "models"] as const,
 };
 
 /** Keys for project-scoped queries — all include the project ID so switching projects gets a fresh cache */

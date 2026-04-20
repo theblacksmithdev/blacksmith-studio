@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Flex, Box } from "@chakra-ui/react";
 import styled from "@emotion/styled";
-import { Terminal, HardDrive, Cpu, Download } from "lucide-react";
+import { Terminal, Cpu } from "lucide-react";
 import { SettingsSection } from "@/pages/settings/components/settings-section";
 import { SettingInput } from "@/pages/settings/components/setting-input";
 import { Text, Badge } from "@/components/shared/ui";
@@ -10,6 +10,11 @@ import {
   useGlobalSettingsQuery,
   useUpdateGlobalSettings,
 } from "@/api/hooks/settings";
+import { useOllamaStateQuery } from "@/api/hooks/ollama";
+import {
+  OllamaStatusCard,
+  OllamaModelsSection,
+} from "./ollama";
 
 /** Per-provider-id icon with a generic fallback for unknown providers. */
 const PROVIDER_ICONS: Record<string, React.ReactNode> = {
@@ -130,78 +135,25 @@ export function ProviderSection({
         </Flex>
       </SettingsSection>
 
-      {provider === "ollama" && <OllamaEndpointSection />}
+      {provider === "ollama" && <OllamaPanels />}
+    </>
+  );
+}
 
-      <SettingsSection
-        title="Local Models"
-        description="Download and run open-source LLMs on your machine. Code with AI for free, forever — no API keys, no cloud, fully private."
-      >
-        <Flex
-          direction="column"
-          align="center"
-          gap="12px"
-          css={{ padding: "28px 20px", textAlign: "center" }}
-        >
-          <Flex
-            align="center"
-            justify="center"
-            css={{
-              width: "48px",
-              height: "48px",
-              borderRadius: "12px",
-              background: "var(--studio-bg-surface)",
-              border: "1px solid var(--studio-border)",
-              color: "var(--studio-text-muted)",
-            }}
-          >
-            <HardDrive size={22} />
-          </Flex>
-          <Flex direction="column" gap="4px" align="center">
-            <Flex align="center" gap="8px">
-              <Text
-                css={{
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  color: "var(--studio-text-primary)",
-                }}
-              >
-                Model downloads
-              </Text>
-              <Badge variant="default" size="sm">
-                Coming Soon
-              </Badge>
-            </Flex>
-            <Text
-              css={{
-                fontSize: "13px",
-                color: "var(--studio-text-tertiary)",
-                lineHeight: 1.5,
-                maxWidth: "380px",
-              }}
-            >
-              In-app downloads for Llama, Codestral, Qwen, and others. For now,
-              pull models directly via <code>ollama pull &lt;name&gt;</code>.
-            </Text>
-          </Flex>
-          <Flex
-            align="center"
-            gap="6px"
-            css={{
-              marginTop: "4px",
-              padding: "7px 16px",
-              borderRadius: "8px",
-              background: "var(--studio-bg-surface)",
-              border: "1px solid var(--studio-border)",
-              color: "var(--studio-text-muted)",
-              fontSize: "12px",
-              fontWeight: 500,
-            }}
-          >
-            <Download size={12} />
-            In-app downloads will appear here
-          </Flex>
-        </Flex>
-      </SettingsSection>
+/**
+ * Pulled out of the provider list so we only mount Ollama-specific
+ * sections (and the supporting queries) when the user actually has
+ * Ollama selected. Installed-model list and catalog are gated on the
+ * daemon actually being installed — no point showing them otherwise.
+ */
+function OllamaPanels() {
+  const { data: state } = useOllamaStateQuery();
+  const installed = !!state?.installed;
+  return (
+    <>
+      <OllamaStatusCard />
+      <OllamaEndpointSection />
+      {installed && <OllamaModelsSection />}
     </>
   );
 }

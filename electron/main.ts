@@ -44,6 +44,7 @@ import {
   OllamaProvider,
   ProviderRegistry,
 } from "../server/services/ai/index.js";
+import { OllamaManager } from "../server/services/ollama/index.js";
 import { SettingsManager } from "../server/services/settings.js";
 import { RunnerManager } from "../server/services/runner/index.js";
 import { McpManager } from "../server/services/mcp.js";
@@ -169,6 +170,12 @@ app.whenReady().then(async () => {
     },
   });
   const settingsManager = new SettingsManager();
+  const platformInfo = new PlatformInfo();
+
+  // Ollama subsystem — binary + daemon + model lifecycle all behind
+  // one facade. Built before the provider so the provider can depend
+  // on the manager.
+  const ollamaManager = new OllamaManager(platformInfo, settingsManager);
 
   // AI provider wiring. One registry, one Ai router; adding a new
   // provider later is `registry.register(id, new XProvider(...))`.
@@ -176,12 +183,11 @@ app.whenReady().then(async () => {
   providerRegistry.register(AiProviderType.ClaudeCli, new ClaudeCliProvider());
   providerRegistry.register(
     AiProviderType.Ollama,
-    new OllamaProvider(settingsManager),
+    new OllamaProvider(ollamaManager),
   );
   const ai = new Ai(providerRegistry);
 
   // ── Command subsystem (toolchain-pluggable subprocess execution) ──
-  const platformInfo = new PlatformInfo();
   const binaryDetector = new BinaryDetector(platformInfo);
   const uvResolver = new UvBinaryResolver(platformInfo);
   const toolchainRegistry = new ToolchainRegistry();
@@ -291,6 +297,7 @@ app.whenReady().then(async () => {
     terminalManager,
     graphifyManager,
     pythonManager,
+    ollamaManager,
   );
 
   app.on("activate", () => {
@@ -304,6 +311,7 @@ app.whenReady().then(async () => {
     runnerManager.stopEverything();
     gitManager.stopAllWatching();
     terminalManager.killAll();
+    ollamaManager.shutdown();
     closeDatabase();
     console.log("[studio] Runner processes stopped, database closed");
   });

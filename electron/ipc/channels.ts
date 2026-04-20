@@ -67,6 +67,19 @@ export const RUNNER_SETUP = "runner:setup";
 export const AI_LIST_MODELS = "ai:listModels";
 export const AI_LIST_PROVIDERS = "ai:listProviders";
 
+// Ollama (install / daemon / model management)
+export const OLLAMA_STATE = "ollama:state";
+export const OLLAMA_INSTALL = "ollama:install";
+export const OLLAMA_START_DAEMON = "ollama:startDaemon";
+export const OLLAMA_STOP_DAEMON = "ollama:stopDaemon";
+export const OLLAMA_LIST_MODELS = "ollama:listModels";
+export const OLLAMA_PULL_MODEL = "ollama:pullModel";
+export const OLLAMA_CANCEL_PULL = "ollama:cancelPull";
+export const OLLAMA_DELETE_MODEL = "ollama:deleteModel";
+export const OLLAMA_ON_INSTALL_PROGRESS = "ollama:onInstallProgress";
+export const OLLAMA_ON_DAEMON_STATUS = "ollama:onDaemonStatus";
+export const OLLAMA_ON_PULL_PROGRESS = "ollama:onPullProgress";
+
 // Claude
 export const SINGLE_AGENT_SEND_PROMPT = "singleAgent:sendPrompt";
 export const SINGLE_AGENT_CANCEL = "singleAgent:cancel";
@@ -289,6 +302,14 @@ export const INVOKE_CHANNELS = [
   RUNNER_SETUP,
   AI_LIST_MODELS,
   AI_LIST_PROVIDERS,
+  OLLAMA_STATE,
+  OLLAMA_INSTALL,
+  OLLAMA_START_DAEMON,
+  OLLAMA_STOP_DAEMON,
+  OLLAMA_LIST_MODELS,
+  OLLAMA_PULL_MODEL,
+  OLLAMA_CANCEL_PULL,
+  OLLAMA_DELETE_MODEL,
   SINGLE_AGENT_SEND_PROMPT,
   SINGLE_AGENT_CANCEL,
   MCP_LIST,
@@ -396,6 +417,9 @@ export const INVOKE_CHANNELS = [
 ] as const;
 
 export const SUBSCRIBE_CHANNELS = [
+  OLLAMA_ON_INSTALL_PROGRESS,
+  OLLAMA_ON_DAEMON_STATUS,
+  OLLAMA_ON_PULL_PROGRESS,
   PROJECTS_ON_CREATE_OUTPUT,
   PROJECTS_ON_CREATE_DONE,
   PROJECTS_ON_CREATE_ERROR,
