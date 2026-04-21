@@ -1,6 +1,6 @@
-import { useState, useRef, useLayoutEffect } from "react";
-import { createPortal } from "react-dom";
+import { Fragment } from "react";
 import styled from "@emotion/styled";
+import { Menu as ChakraMenu, Portal } from "@chakra-ui/react";
 import { ChevronDown } from "lucide-react";
 import type { ModelEntry } from "@/api/modules/ai";
 import { formatWindow, groupByFamily } from "./helpers";
@@ -16,10 +16,10 @@ interface ModelDropdownProps {
 }
 
 /**
- * Dropdown variant — used in the chat composer and the agents team
- * panel. Portal-positioned glass panel so it escapes overflow
- * containers. Rows are slim with a left-edge accent on the selected
- * item and a right-aligned mono context-window chip.
+ * Dropdown variant — Chakra `Menu.RadioItemGroup` for real radio
+ * semantics + keyboard navigation, styled to match the settings grid.
+ * Single-line rows, radio dot on the left, right-aligned context window
+ * in mono. No gradients, no heavy shadows.
  */
 export function ModelDropdown({
   models,
@@ -28,94 +28,55 @@ export function ModelDropdown({
   placement = "up",
   compact = false,
 }: ModelDropdownProps) {
-  const [open, setOpen] = useState(false);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const [panelRect, setPanelRect] = useState<{
-    left: number;
-    top?: number;
-    bottom?: number;
-    width: number;
-  } | null>(null);
-
+  const groups = groupByFamily(models);
   const active = models.find((m) => m.id === value) ?? null;
 
-  useLayoutEffect(() => {
-    if (!open || !triggerRef.current) return;
-    const r = triggerRef.current.getBoundingClientRect();
-    const width = 260;
-    const left = Math.min(r.left, window.innerWidth - width - 12);
-    if (placement === "up") {
-      setPanelRect({ left, bottom: window.innerHeight - r.top + 8, width });
-    } else {
-      setPanelRect({ left, top: r.bottom + 8, width });
-    }
-  }, [open, placement]);
-
-  const groups = groupByFamily(models);
-
   return (
-    <>
-      <Trigger
-        ref={triggerRef}
-        data-compact={compact || undefined}
-        data-open={open || undefined}
-        onClick={() => setOpen((v) => !v)}
-      >
-        <TriggerLabel>{active?.label ?? "Select model"}</TriggerLabel>
-        {active && !compact && (
-          <TriggerMeta>{formatWindow(active.contextWindow)}</TriggerMeta>
-        )}
-        <TriggerChevron data-open={open || undefined}>
-          <ChevronDown size={11} strokeWidth={2} />
-        </TriggerChevron>
-      </Trigger>
+    <ChakraMenu.Root
+      positioning={{
+        placement: placement === "up" ? "top-start" : "bottom-start",
+        gutter: 6,
+      }}
+      lazyMount
+      unmountOnExit
+    >
+      <ChakraMenu.Trigger asChild>
+        <Trigger data-compact={compact || undefined} type="button">
+          <TriggerLabel>{active?.label ?? "Select model"}</TriggerLabel>
+          <TriggerChevron>
+            <ChevronDown size={11} strokeWidth={2} />
+          </TriggerChevron>
+        </Trigger>
+      </ChakraMenu.Trigger>
 
-      {open && panelRect &&
-        createPortal(
-          <>
-            <Scrim onClick={() => setOpen(false)} />
-            <Panel
-              style={{
-                left: panelRect.left,
-                top: panelRect.top,
-                bottom: panelRect.bottom,
-                width: panelRect.width,
-              }}
+      <Portal>
+        <ChakraMenu.Positioner>
+          <Content>
+            <ChakraMenu.RadioItemGroup
+              value={value ?? ""}
+              onValueChange={(d) => d.value && onChange(d.value)}
             >
               {groups.map((group, gi) => (
-                <Group key={group.family} data-first={gi === 0 || undefined}>
-                  <GroupLabel>{group.family}</GroupLabel>
-                  <Rows>
-                    {group.entries.map((m) => {
-                      const selected = m.id === value;
-                      return (
-                        <Row
-                          key={m.id}
-                          data-active={selected || undefined}
-                          onClick={() => {
-                            onChange(m.id);
-                            setOpen(false);
-                          }}
-                        >
-                          <RowMark data-active={selected || undefined} />
-                          <RowMain>
-                            <RowLabel>{m.label}</RowLabel>
-                            {m.version && (
-                              <RowVersion>v{m.version}</RowVersion>
-                            )}
-                          </RowMain>
-                          <RowWindow>{formatWindow(m.contextWindow)}</RowWindow>
-                        </Row>
-                      );
-                    })}
-                  </Rows>
-                </Group>
+                <Fragment key={group.family}>
+                  <GroupLabel data-first={gi === 0 || undefined}>
+                    {group.family}
+                  </GroupLabel>
+                  {group.entries.map((m) => (
+                    <Row key={m.id} value={m.id}>
+                      <RadioIndicator>
+                        <RadioDot />
+                      </RadioIndicator>
+                      <RowLabel>{m.label}</RowLabel>
+                      <RowWindow>{formatWindow(m.contextWindow)}</RowWindow>
+                    </Row>
+                  ))}
+                </Fragment>
               ))}
-            </Panel>
-          </>,
-          document.body,
-        )}
-    </>
+            </ChakraMenu.RadioItemGroup>
+          </Content>
+        </ChakraMenu.Positioner>
+      </Portal>
+    </ChakraMenu.Root>
   );
 }
 
@@ -123,9 +84,9 @@ const Trigger = styled.button`
   all: unset;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 5px 10px;
-  border-radius: 8px;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 7px;
   border: 1px solid transparent;
   font-size: 12px;
   font-weight: 500;
@@ -143,135 +104,130 @@ const Trigger = styled.button`
     color: var(--studio-text-primary);
   }
 
-  &[data-open] {
+  &[data-state="open"] {
     background: var(--studio-bg-hover);
     border-color: var(--studio-border-hover);
     color: var(--studio-text-primary);
   }
 
   &[data-compact] {
-    padding: 3px 8px;
+    padding: 2px 8px;
     font-size: 11px;
-    gap: 6px;
+    gap: 4px;
   }
 `;
 
-const TriggerLabel = styled.span``;
-
-const TriggerMeta = styled.span`
-  font-size: 10px;
-  color: var(--studio-text-muted);
-  font-variant-numeric: tabular-nums;
-  font-family: "SF Mono", "Fira Code", Menlo, monospace;
-  padding: 1px 5px;
-  border-radius: 4px;
-  background: var(--studio-bg-surface);
+const TriggerLabel = styled.span`
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
 `;
 
 const TriggerChevron = styled.span`
   display: inline-flex;
   color: var(--studio-text-muted);
+  flex-shrink: 0;
   transition: transform 0.18s ease;
 
-  &[data-open] {
+  [data-state="open"] & {
     transform: rotate(180deg);
   }
 `;
 
-const Scrim = styled.div`
-  position: fixed;
-  inset: 0;
-  z-index: 99;
-`;
-
-const Panel = styled.div`
-  position: fixed;
-  z-index: 100;
-  padding: 4px;
-  background: color-mix(in srgb, var(--studio-bg-surface) 92%, transparent);
-  backdrop-filter: blur(18px) saturate(1.6);
-  -webkit-backdrop-filter: blur(18px) saturate(1.6);
+const Content = styled(ChakraMenu.Content)`
+  min-width: 220px;
+  padding: 3px;
+  background: var(--studio-bg-sidebar);
   border: 1px solid var(--studio-border-hover);
-  border-radius: 12px;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.03) inset,
-    0 14px 40px rgba(0, 0, 0, 0.28),
-    0 2px 8px rgba(0, 0, 0, 0.16);
-  display: flex;
-  flex-direction: column;
-  max-height: 400px;
+  border-radius: 9px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
+  z-index: 1000;
+  outline: none;
+  max-height: 380px;
   overflow-y: auto;
-  animation: fadeIn 0.12s ease;
-`;
+  animation: modelDropdownIn 0.1s ease;
 
-const Group = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding: 6px 4px 4px;
-  border-top: 1px solid var(--studio-border);
-
-  &[data-first] {
-    border-top: none;
+  @keyframes modelDropdownIn {
+    from {
+      opacity: 0;
+      transform: translateY(2px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 `;
 
-const GroupLabel = styled.div`
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+const GroupLabel = styled(ChakraMenu.ItemGroupLabel)`
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--studio-text-muted);
-  padding: 2px 10px 6px;
+  padding: 8px 9px 3px;
+
+  &[data-first] {
+    padding-top: 4px;
+  }
 `;
 
-const Rows = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-`;
-
-const Row = styled.button`
+const Row = styled(ChakraMenu.RadioItem)`
   all: unset;
-  position: relative;
   display: grid;
-  grid-template-columns: 3px 1fr auto;
+  grid-template-columns: 12px 1fr auto;
   align-items: center;
-  gap: 10px;
-  padding: 7px 10px 7px 8px;
-  border-radius: 7px;
+  gap: 9px;
+  padding: 5px 9px;
+  border-radius: 5px;
   cursor: pointer;
   color: var(--studio-text-secondary);
   transition:
     background 0.1s ease,
     color 0.1s ease;
+  min-width: 0;
 
+  &[data-highlighted],
   &:hover {
     background: var(--studio-bg-hover);
     color: var(--studio-text-primary);
   }
 
-  &[data-active] {
+  &[data-state="checked"] {
     color: var(--studio-text-primary);
   }
 `;
 
-const RowMark = styled.span`
-  width: 3px;
-  height: 18px;
-  border-radius: 2px;
-  background: transparent;
-  transition: background 0.12s ease;
+const RadioIndicator = styled.span`
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid var(--studio-border-hover);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.12s ease;
 
-  &[data-active] {
-    background: var(--studio-text-primary);
+  [data-state="checked"] > & {
+    border-color: var(--studio-text-primary);
   }
 `;
 
-const RowMain = styled.div`
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  min-width: 0;
+const RadioDot = styled.span`
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: transparent;
+  transform: scale(0.6);
+  transition:
+    background 0.12s ease,
+    transform 0.12s ease;
+
+  [data-state="checked"] & {
+    background: var(--studio-text-primary);
+    transform: scale(1);
+  }
 `;
 
 const RowLabel = styled.span`
@@ -282,13 +238,7 @@ const RowLabel = styled.span`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-`;
-
-const RowVersion = styled.span`
-  font-size: 10px;
-  color: var(--studio-text-muted);
-  font-family: "SF Mono", "Fira Code", Menlo, monospace;
-  font-variant-numeric: tabular-nums;
+  min-width: 0;
 `;
 
 const RowWindow = styled.span`
@@ -296,8 +246,5 @@ const RowWindow = styled.span`
   color: var(--studio-text-muted);
   font-variant-numeric: tabular-nums;
   font-family: "SF Mono", "Fira Code", Menlo, monospace;
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: var(--studio-bg-surface);
-  border: 1px solid var(--studio-border);
+  flex-shrink: 0;
 `;
