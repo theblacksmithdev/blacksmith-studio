@@ -3,7 +3,7 @@ import type { AgentExecuteOptions } from "../../base/index.js";
 import type { DispatchPlan } from "./types.js";
 import { PM_DISPATCH_PROMPT } from "./prompts.js";
 import { PMEventEmitter, type EmitFn } from "./pm-emitter.js";
-import { runPM } from "./pm-runner.js";
+import { runPM, type PMLifecycleHook } from "./pm-runner.js";
 import { parsePlan } from "./parse-plan.js";
 
 /**
@@ -20,6 +20,7 @@ export async function dispatchWithPM(
   prompt: string,
   baseOptions: Omit<AgentExecuteOptions, "prompt">,
   emit?: EmitFn,
+  onLifecycle?: PMLifecycleHook,
 ): Promise<DispatchPlan> {
   const pm = new PMEventEmitter(emit);
   let firstChunkEmitted = false;
@@ -44,6 +45,7 @@ export async function dispatchWithPM(
     label: "dispatch",
     sessionId,
     resume,
+    onLifecycle,
     onAssistantText: ({ text, isFinal }) => {
       if (!firstChunkEmitted) {
         firstChunkEmitted = true;

@@ -7,6 +7,7 @@ import {
 import type { AgentRole, AgentExecution, AgentEvent } from "../../types.js";
 import type { ArtifactManager } from "../../artifacts.js";
 import { refineTaskPrompt, type DispatchTask } from "../pm-dispatcher/index.js";
+import type { PMLifecycleHook } from "../pm-dispatcher/pm-runner.js";
 import { needsQualityGate } from "../quality-gate.js";
 import type {
   IAgentExecutor,
@@ -50,10 +51,11 @@ export class TaskPlanExecutor {
     private readonly emitter: IEventEmitter,
     private readonly qualityGate: IQualityGate,
     private readonly cancellation: ICancellationToken,
+    private readonly pmLifecycle?: PMLifecycleHook,
   ) {
     this.factory = new ExecutionFactory(emitter);
     this.contextBuilder = new TaskContextBuilder(executor);
-    this.replanner = new TaskReplanner(emitter, cancellation);
+    this.replanner = new TaskReplanner(emitter, cancellation, pmLifecycle);
   }
 
   async execute(
@@ -433,6 +435,7 @@ export class TaskPlanExecutor {
       summaries,
       baseOptions,
       (event: AgentEvent) => this.emitter.emitAgentEvent(event),
+      this.pmLifecycle,
     );
 
     return { ...task, prompt: refinedPrompt };

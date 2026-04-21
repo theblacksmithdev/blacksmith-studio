@@ -1,6 +1,15 @@
+import crypto from "node:crypto";
 import type { AgentExecuteOptions } from "../../base/index.js";
 import { AiModelTier } from "../../../../ai/types.js";
 import { getProjectContext } from "../../../../studio-context/index.js";
+
+/**
+ * Called at the start of a PM subprocess with its session id. Return
+ * value is invoked when the call completes (successfully or otherwise),
+ * giving owners like the Dispatcher a window to track active PM work
+ * and cancel it via `ai.cancel(sessionId)` on user request.
+ */
+export type PMLifecycleHook = (sessionId: string) => () => void;
 
 export interface PMRunOptions {
   /** User-facing prompt sent to the AI provider. */
@@ -30,6 +39,13 @@ export interface PMRunOptions {
   onAssistantText?: (chunk: { text: string; isFinal: boolean }) => void;
   /** Invoked once when the final `result` frame arrives, with the full collected text. */
   onResult?: (totalText: string) => void;
+  /**
+   * Registers the PM sessionId with an external tracker (typically the
+   * Dispatcher) so a user-initiated cancel can SIGTERM the subprocess
+   * before it finishes naturally. Returning function is called on
+   * completion so the tracker can clean up.
+   */
+  onLifecycle?: PMLifecycleHook;
 }
 
 export interface PMRunResult {
@@ -54,6 +70,13 @@ export async function runPM(opts: PMRunOptions): Promise<PMRunResult> {
 
   let collected = "";
 
+  // Always use a sessionId so the Ai router tracks this subprocess and
+  // can cancel it via `ai.cancel(sessionId)` when the user stops the
+  // dispatch. One-shot refine/replan calls don't carry a conversational
+  // session but still need to be killable.
+  const sessionId = opts.sessionId ?? crypto.randomUUID();
+  const release = opts.onLifecycle?.(sessionId);
+
   // Inject the cached project context (Graphify report + tree + key files +
   // knowledge base) so Claude doesn't burn a Read/Glob/Grep tool-use phase
   // discovering the project on every PM call. The helper caches per project
@@ -61,28 +84,32 @@ export async function runPM(opts: PMRunOptions): Promise<PMRunResult> {
   // share the same context.
   const projectContext = safeGetProjectContext(opts.baseOptions.projectRoot);
 
-  const { text } = await ai.streamText({
-    prompt: opts.prompt,
-    systemPrompt: opts.systemPrompt,
-    projectContext,
-    model: opts.model ?? AiModelTier.Balanced,
-    cwd: opts.baseOptions.projectRoot,
-    nodePath: opts.baseOptions.nodePath,
-    permissionMode: "bypassPermissions",
-    allowedTools: ["Read", "Glob", "Grep"],
-    tolerantExit: true,
-    sessionId: opts.sessionId,
-    resume: opts.resume,
-    onText: (delta, isFinal) => {
-      collected += delta;
-      opts.onAssistantText?.({ text: delta, isFinal });
-    },
-    onChunk: (event) => {
-      if (event.type === "result") opts.onResult?.(collected);
-    },
-  });
+  try {
+    const { text } = await ai.streamText({
+      prompt: opts.prompt,
+      systemPrompt: opts.systemPrompt,
+      projectContext,
+      model: opts.model ?? AiModelTier.Balanced,
+      cwd: opts.baseOptions.projectRoot,
+      nodePath: opts.baseOptions.nodePath,
+      permissionMode: "bypassPermissions",
+      allowedTools: ["Read", "Glob", "Grep"],
+      tolerantExit: true,
+      sessionId,
+      resume: opts.resume,
+      onText: (delta, isFinal) => {
+        collected += delta;
+        opts.onAssistantText?.({ text: delta, isFinal });
+      },
+      onChunk: (event) => {
+        if (event.type === "result") opts.onResult?.(collected);
+      },
+    });
 
-  return { text };
+    return { text };
+  } finally {
+    release?.();
+  }
 }
 
 /**

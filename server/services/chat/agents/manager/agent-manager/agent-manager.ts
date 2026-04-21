@@ -136,12 +136,21 @@ export class AgentManager {
   cancelAll(): void {
     this.cancellation.cancel();
 
+    // Kill any in-flight PM subprocesses FIRST — before clearing agents —
+    // so the PM dispatch/refine/replan loop stops immediately instead of
+    // completing its current Claude call. Worker agents already handle
+    // their own subprocess via BaseAgent.cancel() below; the PM path
+    // doesn't go through the registry, so the Dispatcher owns its own
+    // tracking and SIGTERM flow.
+    this.dispatcher.cancelActivePM();
+
     for (const agent of this.registry.values()) {
       if (agent.isRunning) agent.cancel();
     }
 
     this.workflowRunner.cancelAll();
     this.emitter.emitPM("Execution cancelled by user");
+    this.emitter.emitPMStatus("error", "Cancelled by user");
   }
 
   /* ── Pipelines & Workflows ── */

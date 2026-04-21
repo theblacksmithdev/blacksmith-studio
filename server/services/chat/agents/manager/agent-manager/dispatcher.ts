@@ -10,9 +10,11 @@ import {
   type DispatchPlan,
   type ReviewLevel,
 } from "../pm-dispatcher/index.js";
+import type { PMLifecycleHook } from "../pm-dispatcher/pm-runner.js";
 import { needsQualityGate, runQualityGate } from "../quality-gate.js";
 import { TaskPlanExecutor } from "../task-plan/index.js";
 import type { ICancellationToken } from "../task-plan/types.js";
+import type { Ai } from "../../../../ai/ai.js";
 import type { AgentEventEmitter } from "./agent-event-emitter.js";
 import type { AgentExecutor } from "./agent-executor.js";
 
@@ -25,6 +27,11 @@ import type { AgentExecutor } from "./agent-executor.js";
  * ICancellationToken rather than owning execution, event, or cancel logic.
  */
 export class Dispatcher {
+  /** PM subprocess session ids currently in flight for this dispatch. */
+  private readonly activePMSessions = new Set<string>();
+  /** The Ai router for the dispatch in progress — captured so cancelActivePM can reach it. */
+  private activeAi: Ai | null = null;
+
   constructor(
     private readonly registry: Map<AgentRole, BaseAgent>,
     private readonly roleSessions: Map<AgentRole, string>,
@@ -32,6 +39,32 @@ export class Dispatcher {
     private readonly emitter: AgentEventEmitter,
     private readonly cancellation: ICancellationToken,
   ) {}
+
+  /**
+   * Lifecycle hook handed to every `runPM` call so the Dispatcher can
+   * track every PM subprocess (dispatch, refine, replan, replan-gate).
+   * Called with the sessionId on start; the returned function fires on
+   * completion to clear the entry.
+   */
+  private readonly pmLifecycle: PMLifecycleHook = (sessionId) => {
+    this.activePMSessions.add(sessionId);
+    return () => {
+      this.activePMSessions.delete(sessionId);
+    };
+  };
+
+  /**
+   * SIGTERM every in-flight PM subprocess. Called by AgentManager.cancelAll
+   * so user-initiated stop actually interrupts the PM loop instead of
+   * waiting for it to finish naturally.
+   */
+  cancelActivePM(): void {
+    if (!this.activeAi || this.activePMSessions.size === 0) return;
+    for (const sid of this.activePMSessions) {
+      this.activeAi.cancel(sid);
+    }
+    this.activePMSessions.clear();
+  }
 
   route(prompt: string): RouteResult {
     return routePrompt(prompt, this.registry);
@@ -46,18 +79,32 @@ export class Dispatcher {
   async dispatch(
     options: AgentExecuteOptions,
   ): Promise<{ plan: DispatchPlan; executions: AgentExecution[] }> {
+    this.activeAi = options.ai ?? null;
     try {
       const result = await this.runDispatch(options);
       const anyFailed = result.executions.some((e) => e.status === "error");
-      this.emitter.emitPMStatus(
-        anyFailed ? "error" : "done",
-        anyFailed ? "Dispatch completed with errors" : "Dispatch complete",
-      );
+      if (this.cancellation.isCancelled()) {
+        this.emitter.emitPMStatus("error", "Dispatch cancelled by user");
+      } else {
+        this.emitter.emitPMStatus(
+          anyFailed ? "error" : "done",
+          anyFailed ? "Dispatch completed with errors" : "Dispatch complete",
+        );
+      }
       return result;
     } catch (err) {
-      // Ensure the PM spinner clears even when the dispatch blows up.
+      // Ensure the PM spinner clears even when the dispatch blows up,
+      // and surface a clean "Cancelled by user" to the client when the
+      // throw was caused by our own SIGTERM during cancelAll.
+      if (this.cancellation.isCancelled()) {
+        this.emitter.emitPMStatus("error", "Dispatch cancelled by user");
+        throw new Error("Cancelled by user");
+      }
       this.emitter.emitPMStatus("error", "Dispatch failed");
       throw err;
+    } finally {
+      this.activeAi = null;
+      this.activePMSessions.clear();
     }
   }
 
@@ -82,9 +129,19 @@ export class Dispatcher {
     // ── PM path ──
     this.emitter.emitPM("Analyzing request and assigning tasks...");
 
-    const plan = await dispatchWithPM(options.prompt, options, (event) =>
-      this.emitter.emitAgentEvent(event),
+    const plan = await dispatchWithPM(
+      options.prompt,
+      options,
+      (event) => this.emitter.emitAgentEvent(event),
+      this.pmLifecycle,
     );
+
+    // If the user cancelled while the PM was planning, don't proceed
+    // with task execution — short-circuit here so cancelled dispatches
+    // return an empty-execution state immediately.
+    if (this.cancellation.isCancelled()) {
+      return { plan, executions: [] };
+    }
 
     if (plan.mode === "clarification") {
       this.emitter.emitPM(plan.summary);
@@ -179,6 +236,7 @@ export class Dispatcher {
         run: (ctx, opts, changes) => this.runQualityGate(ctx, opts, changes),
       },
       this.cancellation,
+      this.pmLifecycle,
     );
     const executions = await taskPlan.execute(
       plan.tasks,

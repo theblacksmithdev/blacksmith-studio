@@ -7,7 +7,7 @@ import type { DispatchTask } from "./types.js";
 import { VALID_ROLES, VALID_MODELS, VALID_REVIEW_LEVELS } from "./constants.js";
 import { PM_REPLAN_PROMPT, PM_REPLAN_GATE_PROMPT } from "./prompts.js";
 import { PMEventEmitter, type EmitFn } from "./pm-emitter.js";
-import { runPM } from "./pm-runner.js";
+import { runPM, type PMLifecycleHook } from "./pm-runner.js";
 import { AiModelTier } from "../../../../ai/types.js";
 import { extractJsonStructure } from "../../utils/json-extract.js";
 
@@ -29,6 +29,7 @@ export async function replanDownstream(
   remainingTasks: DispatchTask[],
   baseOptions: Omit<AgentExecuteOptions, "prompt">,
   emit?: EmitFn,
+  onLifecycle?: PMLifecycleHook,
 ): Promise<DispatchTask[]> {
   if (remainingTasks.length === 0) return [];
 
@@ -55,6 +56,7 @@ export async function replanDownstream(
     artifactContent,
     remainingTasks,
     baseOptions,
+    onLifecycle,
   );
   if (!gateDecision.needed) {
     pm.activity(
@@ -94,6 +96,7 @@ export async function replanDownstream(
       baseOptions,
       label: "replan",
       model: AiModelTier.Fast,
+      onLifecycle,
     });
 
     if (!text.trim()) {
@@ -199,6 +202,7 @@ async function runReplanGate(
   artifactContent: string,
   remainingTasks: DispatchTask[],
   baseOptions: Omit<AgentExecuteOptions, "prompt">,
+  onLifecycle?: PMLifecycleHook,
 ): Promise<{ needed: boolean; reason: string }> {
   const preview =
     artifactContent.length > GATE_ARTIFACT_PREVIEW
@@ -231,6 +235,7 @@ async function runReplanGate(
       baseOptions,
       label: "replan-gate",
       model: AiModelTier.Fast,
+      onLifecycle,
     });
 
     const candidate = extractJsonStructure(text, "{");

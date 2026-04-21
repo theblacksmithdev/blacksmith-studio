@@ -21,6 +21,15 @@ export function useCanvasNodes(agents: AgentInfo[], conversationId?: string) {
     ? `agents.nodePositions.${conversationId}`
     : "agents.nodePositions";
 
+  const agentsKey = useMemo(
+    () =>
+      agents
+        .map((a) => a.role)
+        .sort()
+        .join(","),
+    [agents],
+  );
+
   const initialNodes = useMemo(() => {
     const defaultNodes = buildNodes(agents);
     const saved = settings.get(positionsKey) as
@@ -35,7 +44,11 @@ export function useCanvasNodes(agents: AgentInfo[], conversationId?: string) {
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
 
-  // Reload when conversation changes
+  // Rebuild whenever the conversation switches OR the roles change —
+  // the latter is what fixes the "canvas empty until you navigate
+  // away and back" bug. useNodesState only reads its initial value
+  // once, so without this effect the first render (agents=[]) is
+  // what sticks even after the query resolves.
   useEffect(() => {
     const defaultNodes = buildNodes(agents);
     const saved = settings.get(positionsKey) as
@@ -47,7 +60,7 @@ export function useCanvasNodes(agents: AgentInfo[], conversationId?: string) {
         return pos ? { ...node, position: pos } : node;
       }),
     );
-  }, [positionsKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [positionsKey, agentsKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sync activity data into node data
   useEffect(() => {

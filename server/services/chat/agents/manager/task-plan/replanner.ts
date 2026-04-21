@@ -1,6 +1,7 @@
 import type { AgentExecuteOptions } from "../../base/index.js";
 import type { AgentRole, AgentEvent } from "../../types.js";
 import { replanDownstream, type DispatchTask } from "../pm-dispatcher/index.js";
+import type { PMLifecycleHook } from "../pm-dispatcher/pm-runner.js";
 import type { IEventEmitter, ICancellationToken } from "./types.js";
 
 /** Roles whose completion triggers downstream re-planning */
@@ -24,6 +25,7 @@ export class TaskReplanner {
   constructor(
     private readonly emitter: IEventEmitter,
     private readonly cancellation: ICancellationToken,
+    private readonly pmLifecycle?: PMLifecycleHook,
     private readonly replanTriggers: Set<string> = DEFAULT_REPLAN_TRIGGERS,
   ) {}
 
@@ -55,6 +57,7 @@ export class TaskReplanner {
         remainingTasks,
         baseOptions,
         (event: AgentEvent) => this.emitter.emitAgentEvent(event),
+        this.pmLifecycle,
       );
 
       if (newTasks === remainingTasks || newTasks.length === 0) return false;

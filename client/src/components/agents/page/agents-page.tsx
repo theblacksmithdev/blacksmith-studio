@@ -37,9 +37,20 @@ import type { AttachmentRecord } from "@/components/shared/conversation";
 interface AgentsPageProps {
   conversationId?: string;
   onSend: (message: string, attachments?: AttachmentRecord[]) => void;
+  /**
+   * True while the PM dispatch mutation is in flight — before any
+   * agent has flipped to running. Lets the Stop button appear from
+   * the moment send is pressed, not only once a worker picks up a
+   * task deep in the pipeline.
+   */
+  isDispatching?: boolean;
 }
 
-export function AgentsPage({ conversationId, onSend }: AgentsPageProps) {
+export function AgentsPage({
+  conversationId,
+  onSend,
+  isDispatching = false,
+}: AgentsPageProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [timelineOpen, setTimelineOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(true);
@@ -146,12 +157,24 @@ export function AgentsPage({ conversationId, onSend }: AgentsPageProps) {
   const innerViewAgent = innerViewRole
     ? agents.find((a) => a.role === innerViewRole)
     : null;
-  const isProcessing = agents.some((a) => a.isRunning) || buildActive;
   const hasTasks = dispatchTasks.length > 0;
   const completedCount = dispatchTasks.filter(
     (t) => t.status === "done",
   ).length;
   const hasRunning = dispatchTasks.some((t) => t.status === "running");
+  // "Actively doing something" — true while the PM mutation is in flight,
+  // while a build is running, while any agent is running, or while any
+  // dispatched task is still pending/running. The Stop button is gated
+  // on this so users can cancel at any phase — PM planning, between
+  // tasks, or mid-execution.
+  const hasPendingOrRunningTask = dispatchTasks.some(
+    (t) => t.status === "pending" || t.status === "running",
+  );
+  const isProcessing =
+    isDispatching ||
+    buildActive ||
+    agents.some((a) => a.isRunning) ||
+    hasPendingOrRunningTask;
 
   // Inner view replaces the whole page
   if (innerViewAgent) {

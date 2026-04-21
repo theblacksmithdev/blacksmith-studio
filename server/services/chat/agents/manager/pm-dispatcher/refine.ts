@@ -2,7 +2,7 @@ import type { AgentExecuteOptions } from "../../base/index.js";
 import type { DispatchTask } from "./types.js";
 import { PM_REFINE_PROMPT } from "./prompts.js";
 import { PMEventEmitter, type EmitFn } from "./pm-emitter.js";
-import { runPM } from "./pm-runner.js";
+import { runPM, type PMLifecycleHook } from "./pm-runner.js";
 import { AiModelTier } from "../../../../ai/types.js";
 
 /**
@@ -19,6 +19,7 @@ export async function refineTaskPrompt(
   artifactSummaries: { role: string; artifactPath: string; title: string }[],
   baseOptions: Omit<AgentExecuteOptions, "prompt">,
   emit?: EmitFn,
+  onLifecycle?: PMLifecycleHook,
 ): Promise<string> {
   if (artifactSummaries.length === 0) return task.prompt;
 
@@ -56,6 +57,7 @@ export async function refineTaskPrompt(
       baseOptions,
       label: "refine",
       model: AiModelTier.Fast,
+      onLifecycle,
     });
 
     const refined = text.trim();

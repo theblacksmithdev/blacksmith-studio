@@ -76,5 +76,5 @@ export function useConversation(conversationId: string) {
     [conversationId, addLiveMessage, clearLiveMessages, dispatch, qc, keys],
   );
 
-  return { handleSend };
+  return { handleSend, isDispatching: dispatch.isPending };
 }
