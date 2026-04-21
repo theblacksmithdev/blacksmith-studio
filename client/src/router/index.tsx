@@ -11,6 +11,7 @@ import DashboardPage from "@/pages/dashboard";
 import ProjectsPage from "@/pages/projects";
 import SettingsPage, {
   AiSettings,
+  ModelSettings,
   McpSettings,
   SkillsSettings,
   AppearanceSettings,
@@ -146,6 +147,11 @@ export const router = createHashRouter([
         handle: { title: "Settings" } satisfies RouteHandle,
         children: [
           { index: true, element: <Navigate to="ai" replace /> },
+          {
+            path: "model",
+            element: <ModelSettings />,
+            handle: { title: "Model" } satisfies RouteHandle,
+          },
           {
             path: "ai",
             element: <AiSettings />,

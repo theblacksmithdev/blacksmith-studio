@@ -4,6 +4,7 @@ import {
   Palette,
   Sparkles,
   Code2,
+  Cpu,
   FolderCog,
   Blocks,
   Wand2,
@@ -44,6 +45,7 @@ export const settingsGroups: SettingsNavGroup[] = [
   {
     label: "AI",
     items: [
+      { id: "model", icon: Cpu, label: "Model" },
       { id: "ai", icon: Sparkles, label: "Prompting" },
       { id: "mcp", icon: Blocks, label: "MCP Servers" },
       { id: "skills", icon: Wand2, label: "Skills" },

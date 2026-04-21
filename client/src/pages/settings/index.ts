@@ -3,6 +3,7 @@ export { default } from "./settings-page";
 
 // Tabs
 export { AiSettings } from "./tabs/ai";
+export { ModelSettings } from "./tabs/model";
 export { McpSettings } from "./tabs/mcp";
 export { SkillsSettings } from "./tabs/skills";
 export { AppearanceSettings } from "./tabs/appearance";
