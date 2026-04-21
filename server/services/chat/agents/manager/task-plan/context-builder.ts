@@ -2,22 +2,20 @@ import type { AgentExecuteOptions } from "../../base/index.js";
 import type { AgentRole, AgentExecution } from "../../types.js";
 import type { DispatchTask } from "../pm-dispatcher/index.js";
 import type { IAgentExecutor } from "./types.js";
-
-/** Provider-agnostic tier → concrete model ID */
-const MODEL_MAP: Record<string, string> = {
-  premium: "claude-opus-4-6",
-  balanced: "claude-sonnet-4-6",
-  fast: "claude-haiku-4-5-20251001",
-};
+import {
+  tierResolver,
+  type TaskTier,
+} from "../../../../ai/tier-resolver.js";
 
 /**
  * Builds the execution context for a dispatched task and runs it.
  *
- * Single Responsibility: prompt context assembly and model mapping.
+ * Single Responsibility: prompt context assembly. Tier → model id
+ * resolution is delegated to TierResolver which reads the model
+ * registry — one source of truth for every surface in the app.
  *
  * - First run for a role: injects artifact references + task roadmap.
  * - Continuation for a role: lightweight "next task" preamble.
- * - Maps PM-assigned model tiers to concrete model IDs.
  */
 export class TaskContextBuilder {
   constructor(private readonly executor: IAgentExecutor) {}
@@ -57,11 +55,12 @@ export class TaskContextBuilder {
       pipelineSessions.get(task.role) ?? priorRoleSessions.get(task.role);
     const isResume = !!existingSession;
 
-    // Map provider-agnostic tier to concrete model ID
-    // TODO: make this configurable when multi-provider support lands
+    // Resolve model: PM-assigned tier wins, then per-role override
+    // from project settings, finally the project default (already on
+    // baseOptions.agentConfig).
     const taskModel = task.model
-      ? (MODEL_MAP[task.model] ?? undefined)
-      : undefined;
+      ? (tierResolver.resolve(task.model as TaskTier) ?? undefined)
+      : (baseOptions.roleModelOverrides?.[task.role] ?? undefined);
 
     const execution = await this.executor.execute({
       ...baseOptions,

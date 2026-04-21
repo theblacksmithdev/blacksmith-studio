@@ -1,8 +1,11 @@
 import { useCallback } from "react";
 import { useSettingsQuery, useUpdateSettings } from "@/api/hooks/settings";
+import { useModels } from "@/api/hooks/ai";
+import { normalizeModelId } from "@/components/shared/model-picker";
 
 export function useSettings() {
   const { data: settings = {} } = useSettingsQuery();
+  const { data: models } = useModels();
   const updateMutation = useUpdateSettings();
 
   const set = useCallback(
@@ -26,7 +29,11 @@ export function useSettings() {
       false) as boolean,
 
     // AI
-    model: (settings["ai.model"] ?? "sonnet") as string,
+    model: (normalizeModelId(
+      (settings["ai.model"] ?? "sonnet") as string,
+      models,
+    ) ||
+      ((settings["ai.model"] ?? "sonnet") as string)) as string,
     maxBudget: settings["ai.maxBudget"] as number | null,
     customInstructions: (settings["ai.customInstructions"] ?? "") as string,
     permissionMode: (settings["ai.permissionMode"] ??

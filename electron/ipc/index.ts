@@ -42,6 +42,7 @@ import { setupGraphifyIPC } from "./graphify.js";
 import { setupPythonIPC } from "./python.js";
 import { setupWindowIPC } from "./window.js";
 import { setupUsageIPC } from "./usage.js";
+import { setupAiIPC } from "./ai.js";
 import { createUsageService } from "../../server/services/usage/index.js";
 import type { Ai } from "../../server/services/ai/ai.js";
 
@@ -67,6 +68,7 @@ export function setupAllIPC(
 ) {
   const usageService = createUsageService();
   const usageIPC = setupUsageIPC(getWindow, usageService);
+  setupAiIPC();
 
   setupFolderDialogIPC();
   setupWindowIPC(getWindow);

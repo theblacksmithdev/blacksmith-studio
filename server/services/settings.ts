@@ -6,7 +6,7 @@ const DEFAULTS: Record<string, any> = {
   "appearance.theme": "system",
   "appearance.fontSize": 14,
   "appearance.sidebarCollapsed": false,
-  "ai.model": "sonnet",
+  "ai.model": "claude-sonnet-4-6",
   "ai.maxBudget": null,
   "ai.customInstructions": "",
   "ai.permissionMode": "bypassPermissions",

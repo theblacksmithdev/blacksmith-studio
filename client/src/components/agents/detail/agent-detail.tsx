@@ -3,6 +3,8 @@ import { Layers, X, Clock, Maximize2, Zap, Wrench } from "lucide-react";
 import { useAgentStore } from "@/stores/agent-store";
 import { ROLE_ICONS } from "../shared/role-icons";
 import { Text } from "@/components/shared/ui";
+import { ModelPicker } from "@/components/shared/model-picker";
+import { useAgentRoleModel } from "@/api/hooks/ai";
 import type { AgentInfo } from "@/api/types";
 import {
   Panel,
@@ -65,6 +67,9 @@ export function AgentDetail({
   onOpenInnerView,
 }: AgentDetailProps) {
   const activity = useAgentStore((s) => s.activities.get(agent.role));
+  const { model: roleModel, setModel: setRoleModel } = useAgentRoleModel(
+    agent.role,
+  );
   const Icon = ROLE_ICONS[agent.role] ?? Layers;
   const status = activity?.status ?? "idle";
   const isActive = status === "executing" || status === "thinking";
@@ -112,6 +117,40 @@ export function AgentDetail({
         {/* About */}
         <Section>
           <AboutText>{agent.description}</AboutText>
+        </Section>
+
+        {/* Model override */}
+        <Section>
+          <SectionLabel>Model</SectionLabel>
+          <Flex align="center" gap="8px">
+            <ModelPicker
+              variant="dropdown"
+              placement="down"
+              value={roleModel ?? ""}
+              onChange={(id) => setRoleModel(id)}
+            />
+            {roleModel && (
+              <Text
+                as="button"
+                onClick={() => setRoleModel(null)}
+                css={{
+                  fontSize: "11px",
+                  color: "var(--studio-text-muted)",
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: "2px 6px",
+                  borderRadius: "4px",
+                  "&:hover": {
+                    color: "var(--studio-text-primary)",
+                    background: "var(--studio-bg-hover)",
+                  },
+                }}
+              >
+                Reset to default
+              </Text>
+            )}
+          </Flex>
         </Section>
 
         {/* Quick stats */}

@@ -210,6 +210,9 @@ export const USAGE_GET_SESSION_METER = "usage:getSessionMeter";
 export const USAGE_GET_HISTORY = "usage:getHistory";
 export const USAGE_GET_SCOPE_DETAIL = "usage:getScopeDetail";
 
+// AI meta (models, providers)
+export const AI_LIST_MODELS = "ai:listModels";
+
 // ─── Push/Stream Channels ───
 
 // Project creation
@@ -396,6 +399,7 @@ export const INVOKE_CHANNELS = [
   USAGE_GET_SESSION_METER,
   USAGE_GET_HISTORY,
   USAGE_GET_SCOPE_DETAIL,
+  AI_LIST_MODELS,
 ] as const;
 
 export const SUBSCRIBE_CHANNELS = [

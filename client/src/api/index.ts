@@ -23,6 +23,7 @@ import { python } from "./modules/python";
 import { graphify } from "./modules/graphify";
 import { attachments } from "./modules/attachments";
 import { usage } from "./modules/usage";
+import { ai } from "./modules/ai";
 
 export const api = {
   projects,
@@ -50,4 +51,5 @@ export const api = {
   graphify,
   attachments,
   usage,
+  ai,
 } as const;

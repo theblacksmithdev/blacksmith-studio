@@ -10,92 +10,122 @@
  *
  * Extending: add a new entry. The resolver's family-prefix fallback
  * means unknown-but-similar models (e.g. a future `claude-opus-5-0`)
- * still render a sensible label without a code change — updates to this
- * file are "nice to have" rather than "required for the app to work".
+ * still render a sensible label without a code change.
+ *
+ * Numbers verified against the Anthropic model overview
+ * (platform.claude.com/docs/en/about-claude/models/overview) —
+ * update when Anthropic ships a new family or deprecates an old one.
  */
 
 import type { AiProviderId } from "./provider-id.js";
 
 /** Canonical metadata for one model. */
 export interface ModelEntry {
-  /** Canonical id without date or variant suffix, lower-case. */
+  /** Canonical id, lower-case (matches Anthropic's API alias form). */
   id: string;
-  /** Alternate strings that resolve to this entry (CLI aliases, tier names). */
+  /** Alternate strings that resolve to this entry (short aliases, dated ids, etc.). */
   aliases: string[];
   provider: AiProviderId;
   family: string;
   version: string;
   contextWindow: number;
   maxOutputTokens?: number;
-  /** Present on extended-context variants — "1m" for Claude's 1M option. */
+  /** Present on extended-context variants. Unused for Claude 4.x (native 1M). */
   variant?: "1m";
   /** Rendered on chips and meters. */
   label: string;
+  /** True for deprecated / legacy entries — surfaced by the picker as muted. */
+  legacy?: boolean;
 }
 
 const k = 1_000;
 const m = 1_000_000;
 
-/** Authoritative table. Ordered family-first for readability. */
+/**
+ * Authoritative table. Ordered family-first for readability.
+ *
+ * Opus 4.7, Opus 4.6, and Sonnet 4.6 natively support 1M tokens — no
+ * separate "[1m]" variant. Older 4.x models are 200k; Sonnet 4.5's 1M
+ * beta was retired April 30, 2026.
+ */
 export const MODEL_REGISTRY: readonly ModelEntry[] = [
-  // ── Anthropic · Claude 4.x ──
+  // ── Opus ──
   {
     id: "claude-opus-4-7",
     aliases: ["opus", "claude-opus-4-7-latest"],
     provider: "anthropic",
     family: "Opus",
     version: "4.7",
-    contextWindow: 200 * k,
-    maxOutputTokens: 64 * k,
+    contextWindow: 1 * m,
+    maxOutputTokens: 128 * k,
     label: "Opus 4.7",
   },
   {
-    id: "claude-opus-4-7-1m",
-    aliases: ["claude-opus-4-7[1m]", "opus-1m"],
+    id: "claude-opus-4-6",
+    aliases: ["claude-opus-4-6-latest"],
     provider: "anthropic",
     family: "Opus",
-    version: "4.7",
+    version: "4.6",
     contextWindow: 1 * m,
-    maxOutputTokens: 64 * k,
-    variant: "1m",
-    label: "Opus 4.7 · 1M",
+    maxOutputTokens: 128 * k,
+    label: "Opus 4.6",
+    legacy: true,
   },
   {
     id: "claude-opus-4-5",
-    aliases: ["claude-opus-4-5-latest"],
+    aliases: ["claude-opus-4-5-20251101"],
     provider: "anthropic",
     family: "Opus",
     version: "4.5",
     contextWindow: 200 * k,
+    maxOutputTokens: 64 * k,
     label: "Opus 4.5",
+    legacy: true,
   },
+  {
+    id: "claude-opus-4-1",
+    aliases: ["claude-opus-4-1-20250805"],
+    provider: "anthropic",
+    family: "Opus",
+    version: "4.1",
+    contextWindow: 200 * k,
+    maxOutputTokens: 32 * k,
+    label: "Opus 4.1",
+    legacy: true,
+  },
+
+  // ── Sonnet ──
   {
     id: "claude-sonnet-4-6",
     aliases: ["sonnet", "claude-sonnet-4-6-latest"],
     provider: "anthropic",
     family: "Sonnet",
     version: "4.6",
-    contextWindow: 200 * k,
+    contextWindow: 1 * m,
     maxOutputTokens: 64 * k,
     label: "Sonnet 4.6",
   },
   {
-    id: "claude-sonnet-4-6-1m",
-    aliases: ["claude-sonnet-4-6[1m]", "sonnet-1m"],
+    id: "claude-sonnet-4-5",
+    aliases: ["claude-sonnet-4-5-20250929"],
     provider: "anthropic",
     family: "Sonnet",
-    version: "4.6",
-    contextWindow: 1 * m,
-    variant: "1m",
-    label: "Sonnet 4.6 · 1M",
+    version: "4.5",
+    contextWindow: 200 * k,
+    maxOutputTokens: 64 * k,
+    label: "Sonnet 4.5",
+    legacy: true,
   },
+
+  // ── Haiku ──
   {
     id: "claude-haiku-4-5",
-    aliases: ["haiku", "claude-haiku-4-5-latest"],
+    aliases: ["haiku", "claude-haiku-4-5-20251001"],
     provider: "anthropic",
     family: "Haiku",
     version: "4.5",
     contextWindow: 200 * k,
+    maxOutputTokens: 64 * k,
     label: "Haiku 4.5",
   },
 
@@ -151,13 +181,15 @@ export const FAMILY_DEFAULTS: readonly FamilyDefault[] = [
   {
     provider: "anthropic",
     family: "Opus",
-    contextWindow: 200 * k,
+    // Newer Opus releases ship with 1M natively; assume that for unknowns.
+    contextWindow: 1 * m,
     pattern: /^claude-opus(?:-(\d+)-(\d+))?/,
   },
   {
     provider: "anthropic",
     family: "Sonnet",
-    contextWindow: 200 * k,
+    // Newer Sonnet releases (4.6+) ship with 1M natively.
+    contextWindow: 1 * m,
     pattern: /^claude-sonnet(?:-(\d+)-(\d+))?/,
   },
   {

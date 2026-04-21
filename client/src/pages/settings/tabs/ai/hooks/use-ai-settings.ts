@@ -1,11 +1,7 @@
 import { useCallback } from "react";
 import { useSettingsQuery, useUpdateSettings } from "@/api/hooks/settings";
-
-export const MODELS = [
-  { value: "sonnet", label: "Sonnet", desc: "Fast & capable" },
-  { value: "opus", label: "Opus", desc: "Most intelligent" },
-  { value: "haiku", label: "Haiku", desc: "Fastest responses" },
-] as const;
+import { useModels } from "@/api/hooks/ai";
+import { normalizeModelId } from "@/components/shared/model-picker";
 
 export const PERMISSION_OPTIONS = [
   { value: "bypassPermissions", label: "Auto-approve" },
@@ -13,8 +9,15 @@ export const PERMISSION_OPTIONS = [
   { value: "default", label: "Ask each time" },
 ] as const;
 
+/**
+ * Default model id when no setting has been written yet. Canonical
+ * form — the ModelPicker, ModelCatalog, and Claude CLI all accept this.
+ */
+export const DEFAULT_MODEL_ID = "claude-sonnet-4-6";
+
 export function useAiSettings() {
   const { data: settings = {} } = useSettingsQuery();
+  const { data: models } = useModels();
   const updateMutation = useUpdateSettings();
 
   const set = useCallback(
@@ -22,9 +25,11 @@ export function useAiSettings() {
     [updateMutation],
   );
 
+  const storedModel = (settings["ai.model"] ?? DEFAULT_MODEL_ID) as string;
+
   return {
     // State
-    model: (settings["ai.model"] ?? "sonnet") as string,
+    model: normalizeModelId(storedModel, models) || storedModel,
     permissionMode: (settings["ai.permissionMode"] ??
       "bypassPermissions") as string,
     maxBudget: settings["ai.maxBudget"] as number | null,

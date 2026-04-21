@@ -97,6 +97,23 @@ function asMessageRole(role: string): ConversationMessage["role"] {
     : "system";
 }
 
+const ROLE_MODEL_PREFIX = "agents.model.";
+
+function resolveRoleModelOverrides(
+  settingsManager: SettingsManager,
+  projectId: string,
+): Partial<Record<AgentRole, string>> {
+  const all = settingsManager.getAll(projectId);
+  const overrides: Partial<Record<AgentRole, string>> = {};
+  for (const [key, value] of Object.entries(all)) {
+    if (!key.startsWith(ROLE_MODEL_PREFIX)) continue;
+    if (typeof value !== "string" || !value) continue;
+    const role = key.slice(ROLE_MODEL_PREFIX.length) as AgentRole;
+    overrides[role] = value;
+  }
+  return overrides;
+}
+
 function resolveBaseOptions(
   projectManager: ProjectManager,
   settingsManager: SettingsManager,
@@ -120,6 +137,7 @@ function resolveBaseOptions(
     mcpConfigPath: settings.mcpConfigPath,
     projectInstructions: settings.customInstructions,
     permissionMode: settings.permissionMode,
+    roleModelOverrides: resolveRoleModelOverrides(settingsManager, projectId),
   };
 }
 

@@ -24,6 +24,13 @@ export interface AgentExecuteOptions {
   projectInstructions?: string;
   /** Per-agent config overrides from settings */
   agentConfig?: AgentConfig;
+  /**
+   * Per-role model override, resolved from project settings in the IPC
+   * layer. Applied when the PM dispatcher did not assign a concrete
+   * tier for a task — lets users pin a specific agent to a specific
+   * model without touching the project-wide default.
+   */
+  roleModelOverrides?: Partial<Record<AgentRole, string>>;
   /** Project-level permission mode override (overrides role definition default) */
   permissionMode?: string;
   /**
