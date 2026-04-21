@@ -19,7 +19,7 @@ export function useNewConversation() {
 
   const handleSend = useCallback(
     (message: string, attachments?: AttachmentRecord[]) => {
-      createConversation.mutate(message.slice(0, 60), {
+      createConversation.mutate(message, {
         onSuccess: (conv) => {
           navigate(agentsConversationPath(projectId!, conv.id as string), {
             replace: true,

@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Network } from "lucide-react";
 import {
   useAgentConversationsQuery,
+  useCreateAgentConversation,
   useDeleteAgentConversation,
 } from "@/api/hooks/agents";
 import { useActiveProjectId } from "@/api/hooks/_shared";
+import { useAgentStore } from "@/stores/agent-store";
 import { useChatStore } from "@/stores/chat-store";
-import { agentsNewPath, agentsConversationPath } from "@/router/paths";
+import { agentsConversationPath } from "@/router/paths";
 import type { AttachmentRecord } from "@/components/shared/conversation";
 import type { RecentEntry } from "../components/recent-section";
 import type { HomePageViewProps } from "../components/home-page-view";
@@ -17,15 +19,27 @@ export function useAgentTeamChat() {
   const projectId = useActiveProjectId();
   const { isStreaming } = useChatStore();
   const { data: allConversations = [] } = useAgentConversationsQuery();
+  const createConversation = useCreateAgentConversation();
   const deleteConvMutation = useDeleteAgentConversation();
+  const addLiveMessage = useAgentStore((s) => s.addLiveMessage);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const conversations = allConversations.slice(0, 4);
 
   const handleSend = (text: string, attachments?: AttachmentRecord[]) => {
     if (!projectId) return;
-    navigate(agentsNewPath(projectId), {
-      state: { initialPrompt: text, initialAttachments: attachments },
+    createConversation.mutate(text, {
+      onSuccess: (conv) => {
+        navigate(agentsConversationPath(projectId, conv.id as string), {
+          state: { initialPrompt: text, initialAttachments: attachments },
+        });
+      },
+      onError: (err: any) => {
+        addLiveMessage({
+          role: "system",
+          content: `Failed to start conversation: ${err.message}`,
+        });
+      },
     });
   };
 
