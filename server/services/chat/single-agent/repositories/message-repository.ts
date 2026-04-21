@@ -1,4 +1,4 @@
-import { eq, desc, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull } from "drizzle-orm";
 import { messages } from "../../../../db/schema.js";
 import type { Database } from "../../../../db/index.js";
 import type { MessageRow } from "../mappers.js";
@@ -66,5 +66,27 @@ export class MessageRepository {
       .from(messages)
       .where(inArray(messages.sessionId, sessionIds))
       .all();
+  }
+
+  /**
+   * Most recent model string recorded on an assistant turn in a session.
+   * Used to backfill `model` on new turns whose `result` event arrives
+   * without one — so the context meter doesn't flicker to "Unknown".
+   */
+  findLastModel(sessionId: string): string | null {
+    const row = this.db
+      .select({ model: messages.model })
+      .from(messages)
+      .where(
+        and(
+          eq(messages.sessionId, sessionId),
+          eq(messages.role, "assistant"),
+          isNotNull(messages.model),
+        ),
+      )
+      .orderBy(desc(messages.timestamp))
+      .limit(1)
+      .get();
+    return row?.model ?? null;
   }
 }

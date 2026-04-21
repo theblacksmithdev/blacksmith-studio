@@ -75,6 +75,16 @@ export class SessionManager {
    * and wrapping it in a service adds indirection without clarity.
    */
   addMessage(sessionId: string, message: StoredMessage): void {
+    // Inherit the session's last-known model for assistant turns that
+    // arrive without one (rare — errored turns, provider hiccups). Keeps
+    // the context meter anchored to a real model instead of regressing
+    // to "Unknown".
+    const model =
+      message.model ??
+      (message.role === "assistant"
+        ? this.messageRepo.findLastModel(sessionId)
+        : null);
+
     this.messageRepo.insert({
       id: message.id,
       sessionId,
@@ -90,7 +100,7 @@ export class SessionManager {
       tokensOutput: message.tokens?.output ?? null,
       tokensCacheRead: message.tokens?.cacheRead ?? null,
       tokensCacheCreation: message.tokens?.cacheCreation ?? null,
-      model: message.model ?? null,
+      model,
       error: message.error ?? null,
       timestamp: message.timestamp,
     });
