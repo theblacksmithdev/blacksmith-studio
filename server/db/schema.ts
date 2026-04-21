@@ -26,6 +26,10 @@ export const sessions = sqliteTable("sessions", {
 
 /**
  * Messages — individual messages within a session.
+ *
+ * Token columns are populated from the Claude CLI `result` event's
+ * `usage` block on assistant turns. They remain null for user turns
+ * and for errored assistant turns that never reached a `result`.
  */
 export const messages = sqliteTable("messages", {
   id: text("id").primaryKey(),
@@ -38,6 +42,11 @@ export const messages = sqliteTable("messages", {
   attachments: text("attachments"),
   costUsd: text("cost_usd"),
   durationMs: integer("duration_ms"),
+  tokensInput: integer("tokens_input"),
+  tokensOutput: integer("tokens_output"),
+  tokensCacheRead: integer("tokens_cache_read"),
+  tokensCacheCreation: integer("tokens_cache_creation"),
+  model: text("model"),
   error: text("error"),
   timestamp: text("timestamp").notNull(),
 });
@@ -146,6 +155,11 @@ export const agentTasks = sqliteTable("agent_tasks", {
   error: text("error"),
   costUsd: text("cost_usd"),
   durationMs: integer("duration_ms"),
+  tokensInput: integer("tokens_input"),
+  tokensOutput: integer("tokens_output"),
+  tokensCacheRead: integer("tokens_cache_read"),
+  tokensCacheCreation: integer("tokens_cache_creation"),
+  model: text("model"),
   startedAt: text("started_at"),
   finishedAt: text("finished_at"),
 });

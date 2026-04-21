@@ -6,12 +6,17 @@ import type { ProjectManager } from "../../server/services/projects.js";
 import type { SettingsManager } from "../../server/services/settings.js";
 import type { McpManager } from "../../server/services/mcp.js";
 import type { ConversationEventService } from "../../server/services/events/index.js";
+import type { UsageIPC } from "./usage.js";
 import {
   STUDIO_SYSTEM_PROMPT,
   getProjectContext,
   resolveAiInvocationSettings,
 } from "../../server/services/studio-context/index.js";
 import { appendAttachmentInstruction } from "../../server/services/attachments/index.js";
+import {
+  extractUsageFromEvent,
+  extractModelFromEvent,
+} from "../../server/services/ai/parser.js";
 import {
   SINGLE_AGENT_SEND_PROMPT,
   SINGLE_AGENT_CANCEL,
@@ -29,6 +34,7 @@ export function setupSingleAgentIPC(
   settingsManager: SettingsManager,
   mcpManager: McpManager,
   eventService: ConversationEventService,
+  usageIPC: UsageIPC,
 ) {
   ipcMain.handle(
     SINGLE_AGENT_SEND_PROMPT,
@@ -163,6 +169,9 @@ export function setupSingleAgentIPC(
             } else if (chunk.type === "result") {
               const costUsd = chunk.cost_usd ?? 0;
               const durationMs = chunk.duration_ms ?? 0;
+              const usage = extractUsageFromEvent(chunk);
+              const model = extractModelFromEvent(chunk) ?? undefined;
+              const tokens = usage?.toJson();
               if (lastContent) {
                 const assistantMessageId = crypto.randomUUID();
                 sessionManager.addMessage(sessionId, {
@@ -172,6 +181,8 @@ export function setupSingleAgentIPC(
                   toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
                   costUsd: String(costUsd),
                   durationMs,
+                  tokens,
+                  model,
                   timestamp: new Date().toISOString(),
                 });
                 eventService.append({
@@ -185,6 +196,8 @@ export function setupSingleAgentIPC(
                     toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
                     costUsd,
                     durationMs,
+                    tokens,
+                    model,
                   },
                 });
               }
@@ -192,7 +205,12 @@ export function setupSingleAgentIPC(
                 sessionId,
                 costUsd,
                 durationMs,
+                tokens,
+                model,
               });
+              if (tokens) {
+                usageIPC.notifyUpdate("chat-session", sessionId);
+              }
             }
           },
         });

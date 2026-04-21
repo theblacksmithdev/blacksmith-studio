@@ -31,6 +31,13 @@ export interface AgentTaskRecord {
   error: string | null;
   costUsd: number;
   durationMs: number;
+  tokens: {
+    input: number;
+    output: number;
+    cacheRead: number;
+    cacheCreation: number;
+  } | null;
+  model: string | null;
   startedAt: string | null;
   finishedAt: string | null;
 }
@@ -96,4 +103,9 @@ export interface TaskStatusUpdate {
   error?: string;
   costUsd?: number;
   durationMs?: number;
+  tokensInput?: number;
+  tokensOutput?: number;
+  tokensCacheRead?: number;
+  tokensCacheCreation?: number;
+  model?: string;
 }

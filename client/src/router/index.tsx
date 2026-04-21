@@ -36,6 +36,7 @@ import ArtifactDetailRoute from "@/pages/artifacts/detail-route";
 import CommandsLayout from "@/pages/commands";
 import CommandsEmptyRoute from "@/pages/commands/empty-route";
 import CommandRunDetailRoute from "@/pages/commands/detail-route";
+import UsagePage from "@/pages/usage";
 
 export interface RouteHandle {
   title?: string;
@@ -131,6 +132,11 @@ export const router = createHashRouter([
             handle: { title: "Command run" } satisfies RouteHandle,
           },
         ],
+      },
+      {
+        path: "usage",
+        element: <UsagePage />,
+        handle: { title: "Usage" } satisfies RouteHandle,
       },
 
       // Settings with nested routes

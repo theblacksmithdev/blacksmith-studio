@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { SplitPanel } from "@/components/shared/layout";
 import { RunnerDock } from "@/components/runner/dock";
+import { ContextDock } from "@/components/chat/context-dock";
 import { TerminalPanel } from "@/components/terminal";
 import { useTerminalPanel } from "@/hooks/use-terminal-panel";
 import { Sidebar } from "../sidebar";
@@ -46,6 +47,7 @@ export function ProjectLayoutReady() {
         </Main>
       </Body>
       <RunnerDock />
+      <ContextDock />
     </Root>
   );
 }

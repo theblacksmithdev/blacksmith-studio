@@ -123,6 +123,13 @@ export class DispatchService {
     if (data?.error) patch.error = data.error;
     if (data?.costUsd != null) patch.costUsd = String(data.costUsd);
     if (data?.durationMs != null) patch.durationMs = data.durationMs;
+    if (data?.tokensInput != null) patch.tokensInput = data.tokensInput;
+    if (data?.tokensOutput != null) patch.tokensOutput = data.tokensOutput;
+    if (data?.tokensCacheRead != null)
+      patch.tokensCacheRead = data.tokensCacheRead;
+    if (data?.tokensCacheCreation != null)
+      patch.tokensCacheCreation = data.tokensCacheCreation;
+    if (data?.model != null) patch.model = data.model;
     this.tasks.update(taskId, patch);
   }
 

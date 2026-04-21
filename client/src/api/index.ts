@@ -22,6 +22,7 @@ import { commands } from "./modules/commands";
 import { python } from "./modules/python";
 import { graphify } from "./modules/graphify";
 import { attachments } from "./modules/attachments";
+import { usage } from "./modules/usage";
 
 export const api = {
   projects,
@@ -48,4 +49,5 @@ export const api = {
   python,
   graphify,
   attachments,
+  usage,
 } as const;

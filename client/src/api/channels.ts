@@ -11,6 +11,7 @@ import { commands } from "./modules/commands";
 import { python } from "./modules/python";
 import { graphify } from "./modules/graphify";
 import { windowApi } from "./modules/window";
+import { usage } from "./modules/usage";
 
 /**
  * A subscribe function: takes a callback, returns an unsubscribe function.
@@ -81,6 +82,9 @@ export const channels = {
 
   // Window
   "window:fullscreen": windowApi.onFullscreen,
+
+  // Usage (token accounting) — live meter updates
+  "usage:update": usage.onUpdate,
 } as const;
 
 /** Channel key — one of the registered subscription channels */

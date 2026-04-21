@@ -50,8 +50,27 @@ export function mapMessage(
     attachments: parseAttachments(row.attachments ?? null),
     costUsd: row.costUsd ?? undefined,
     durationMs: row.durationMs ?? undefined,
+    tokens: mapTokens(row),
+    model: row.model ?? undefined,
     error: row.error ?? undefined,
     timestamp: row.timestamp,
+  };
+}
+
+function mapTokens(row: MessageRow) {
+  if (
+    row.tokensInput == null &&
+    row.tokensOutput == null &&
+    row.tokensCacheRead == null &&
+    row.tokensCacheCreation == null
+  ) {
+    return undefined;
+  }
+  return {
+    input: row.tokensInput ?? 0,
+    output: row.tokensOutput ?? 0,
+    cacheRead: row.tokensCacheRead ?? 0,
+    cacheCreation: row.tokensCacheCreation ?? 0,
   };
 }
 

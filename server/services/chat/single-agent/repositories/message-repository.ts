@@ -21,6 +21,11 @@ export class MessageRepository {
     attachments?: string | null;
     costUsd?: string | null;
     durationMs?: number | null;
+    tokensInput?: number | null;
+    tokensOutput?: number | null;
+    tokensCacheRead?: number | null;
+    tokensCacheCreation?: number | null;
+    model?: string | null;
     error?: string | null;
     timestamp: string;
   }): void {

@@ -1,3 +1,5 @@
+import { TokenUsage } from "./token-usage.js";
+
 /**
  * NDJSON stream parser — shared across providers that output line-delimited JSON.
  */
@@ -44,4 +46,16 @@ export function extractTextFromEvent(event: any): string | null {
   if (event.type === "result" && typeof event.result === "string")
     return event.result;
   return null;
+}
+
+/** Extract token usage from a Claude CLI stream-json `result` event. */
+export function extractUsageFromEvent(event: any): TokenUsage | null {
+  return TokenUsage.fromResultEvent(event);
+}
+
+/** Extract the model id from a Claude CLI stream-json `result` event, if present. */
+export function extractModelFromEvent(event: any): string | null {
+  if (!event || event.type !== "result") return null;
+  const m = event.model ?? event.message?.model;
+  return typeof m === "string" ? m : null;
 }

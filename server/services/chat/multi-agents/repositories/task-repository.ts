@@ -24,6 +24,11 @@ export interface TaskUpdate {
   error?: string;
   costUsd?: string;
   durationMs?: number;
+  tokensInput?: number;
+  tokensOutput?: number;
+  tokensCacheRead?: number;
+  tokensCacheCreation?: number;
+  model?: string;
   startedAt?: string;
   finishedAt?: string;
 }

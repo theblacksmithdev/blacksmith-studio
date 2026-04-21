@@ -205,6 +205,11 @@ export const AGENT_TASK_NOTES_LIST = "agentTasks:listNotes";
 export const AGENT_TASK_NOTES_ADD = "agentTasks:addNote";
 export const AGENT_TASK_DEPENDENCIES_LIST = "agentTasks:listDependencies";
 
+// Usage (token accounting)
+export const USAGE_GET_SESSION_METER = "usage:getSessionMeter";
+export const USAGE_GET_HISTORY = "usage:getHistory";
+export const USAGE_GET_SCOPE_DETAIL = "usage:getScopeDetail";
+
 // ─── Push/Stream Channels ───
 
 // Project creation
@@ -233,6 +238,7 @@ export const CONVERSATION_EVENTS_ON_APPEND = "conversationEvents:onAppend";
 export const ARTIFACTS_ON_CHANGED = "artifacts:onChanged";
 export const COMMANDS_ON_OUTPUT = "commands:onOutput";
 export const COMMANDS_ON_STATUS = "commands:onStatus";
+export const USAGE_ON_UPDATE = "usage:onUpdate";
 
 // Channel allowlists for preload security
 export const INVOKE_CHANNELS = [
@@ -387,6 +393,9 @@ export const INVOKE_CHANNELS = [
   COMMANDS_DELETE_ENV,
   COMMANDS_LIST_RUNS,
   COMMANDS_GET_RUN,
+  USAGE_GET_SESSION_METER,
+  USAGE_GET_HISTORY,
+  USAGE_GET_SCOPE_DETAIL,
 ] as const;
 
 export const SUBSCRIBE_CHANNELS = [
@@ -414,4 +423,5 @@ export const SUBSCRIBE_CHANNELS = [
   ARTIFACTS_ON_CHANGED,
   COMMANDS_ON_OUTPUT,
   COMMANDS_ON_STATUS,
+  USAGE_ON_UPDATE,
 ] as const;

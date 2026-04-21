@@ -257,6 +257,16 @@ export function getDatabase() {
     "ALTER TABLE messages ADD COLUMN error TEXT",
     "ALTER TABLE agent_tasks ADD COLUMN started_at TEXT",
     "ALTER TABLE agent_tasks ADD COLUMN finished_at TEXT",
+    "ALTER TABLE messages ADD COLUMN tokens_input INTEGER",
+    "ALTER TABLE messages ADD COLUMN tokens_output INTEGER",
+    "ALTER TABLE messages ADD COLUMN tokens_cache_read INTEGER",
+    "ALTER TABLE messages ADD COLUMN tokens_cache_creation INTEGER",
+    "ALTER TABLE messages ADD COLUMN model TEXT",
+    "ALTER TABLE agent_tasks ADD COLUMN tokens_input INTEGER",
+    "ALTER TABLE agent_tasks ADD COLUMN tokens_output INTEGER",
+    "ALTER TABLE agent_tasks ADD COLUMN tokens_cache_read INTEGER",
+    "ALTER TABLE agent_tasks ADD COLUMN tokens_cache_creation INTEGER",
+    "ALTER TABLE agent_tasks ADD COLUMN model TEXT",
   ];
 
   for (const sql of migrations) {

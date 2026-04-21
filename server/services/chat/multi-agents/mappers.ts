@@ -51,8 +51,27 @@ export function mapTask(row: TaskRow): AgentTaskRecord {
     error: row.error ?? null,
     costUsd: parseFloat(row.costUsd ?? "0") || 0,
     durationMs: row.durationMs ?? 0,
+    tokens: mapTaskTokens(row),
+    model: row.model ?? null,
     startedAt: row.startedAt ?? null,
     finishedAt: row.finishedAt ?? null,
+  };
+}
+
+function mapTaskTokens(row: TaskRow) {
+  if (
+    row.tokensInput == null &&
+    row.tokensOutput == null &&
+    row.tokensCacheRead == null &&
+    row.tokensCacheCreation == null
+  ) {
+    return null;
+  }
+  return {
+    input: row.tokensInput ?? 0,
+    output: row.tokensOutput ?? 0,
+    cacheRead: row.tokensCacheRead ?? 0,
+    cacheCreation: row.tokensCacheCreation ?? 0,
   };
 }
 

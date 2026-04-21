@@ -63,8 +63,17 @@ export interface StoredMessage {
   attachments?: StoredMessageAttachment[];
   costUsd?: string;
   durationMs?: number;
+  tokens?: StoredTokenUsage;
+  model?: string;
   error?: string;
   timestamp: string;
+}
+
+export interface StoredTokenUsage {
+  input: number;
+  output: number;
+  cacheRead: number;
+  cacheCreation: number;
 }
 
 export interface ToolCall {

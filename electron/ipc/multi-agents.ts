@@ -18,6 +18,7 @@ import type { AgentRole } from "../../server/services/chat/agents/types.js";
 import type { ConversationEventService } from "../../server/services/events/index.js";
 import type { ArtifactService } from "../../server/services/artifacts/index.js";
 import type { AgentExecuteOptions } from "../../server/services/chat/agents/base/index.js";
+import type { UsageIPC } from "./usage.js";
 import {
   MULTI_AGENTS_LIST,
   MULTI_AGENTS_ROUTE,
@@ -131,6 +132,7 @@ export function setupMultiAgentsIPC(
   sessionManager: AgentSessionManager,
   eventService: ConversationEventService,
   artifactService: ArtifactService,
+  usageIPC: UsageIPC,
 ) {
   const agentManager = new AgentManager();
   const projectBuilder = new ProjectBuilder(agentManager);
@@ -450,7 +452,15 @@ export function setupMultiAgentsIPC(
               error: exec.error ?? undefined,
               costUsd: exec.costUsd,
               durationMs: exec.durationMs,
+              tokensInput: exec.tokens?.input,
+              tokensOutput: exec.tokens?.output,
+              tokensCacheRead: exec.tokens?.cacheRead,
+              tokensCacheCreation: exec.tokens?.cacheCreation,
+              model: exec.model,
             });
+            if (exec.tokens) {
+              usageIPC.notifyUpdate("agent-task", matchingTask.id);
+            }
 
             if (data.conversationId) {
               eventService.append({
@@ -468,6 +478,8 @@ export function setupMultiAgentsIPC(
                   error: exec.error,
                   costUsd: exec.costUsd,
                   durationMs: exec.durationMs,
+                  tokens: exec.tokens,
+                  model: exec.model,
                 },
               });
             }

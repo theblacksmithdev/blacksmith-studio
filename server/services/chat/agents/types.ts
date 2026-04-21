@@ -146,6 +146,13 @@ export interface AgentExecution {
   completedAt: string | null;
   costUsd: number;
   durationMs: number;
+  tokens?: {
+    input: number;
+    output: number;
+    cacheRead: number;
+    cacheCreation: number;
+  };
+  model?: string;
   error: string | null;
   /** The agent's full text response. Available after execution completes. */
   responseText: string;

@@ -1,4 +1,8 @@
 import type { AiStreamHandle } from "../../../ai/index.js";
+import {
+  extractUsageFromEvent,
+  extractModelFromEvent,
+} from "../../../ai/parser.js";
 import { describeToolUse, describeMessageStart } from "../utils/activity.js";
 import type { AgentStatus, AgentExecution, AgentEventData } from "../types.js";
 import type { ToolCallRecord, HandoffDescriptor } from "./types.js";
@@ -189,5 +193,9 @@ function handleChunk(
   } else if (chunk.type === "result") {
     execution.costUsd = chunk.cost_usd ?? 0;
     execution.durationMs = chunk.duration_ms ?? 0;
+    const usage = extractUsageFromEvent(chunk);
+    if (usage) execution.tokens = usage.toJson();
+    const model = extractModelFromEvent(chunk);
+    if (model) execution.model = model;
   }
 }

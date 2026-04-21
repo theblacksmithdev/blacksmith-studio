@@ -41,6 +41,8 @@ import { setupCommandsIPC } from "./commands.js";
 import { setupGraphifyIPC } from "./graphify.js";
 import { setupPythonIPC } from "./python.js";
 import { setupWindowIPC } from "./window.js";
+import { setupUsageIPC } from "./usage.js";
+import { createUsageService } from "../../server/services/usage/index.js";
 import type { Ai } from "../../server/services/ai/ai.js";
 
 export function setupAllIPC(
@@ -63,6 +65,9 @@ export function setupAllIPC(
   graphifyManager: GraphifyManager,
   pythonManager: PythonManager,
 ) {
+  const usageService = createUsageService();
+  const usageIPC = setupUsageIPC(getWindow, usageService);
+
   setupFolderDialogIPC();
   setupWindowIPC(getWindow);
   setupProjectsIPC(getWindow, projectManager, settingsManager);
@@ -78,6 +83,7 @@ export function setupAllIPC(
     settingsManager,
     mcpManager,
     eventService,
+    usageIPC,
   );
   setupRunnerIPC(
     getWindow,
@@ -110,6 +116,7 @@ export function setupAllIPC(
     agentSessionManager,
     eventService,
     artifactService,
+    usageIPC,
   );
   setupConversationEventsIPC(getWindow, eventService);
   setupAgentTasksIPC(agentSessionManager);

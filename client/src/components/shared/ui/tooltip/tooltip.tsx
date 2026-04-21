@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { spacing, radii, shadows } from "../tokens";
 
 interface TooltipProps {
-  content: string;
+  content: ReactNode;
   children: ReactNode;
   /** Placement relative to trigger */
   placement?: "top" | "bottom" | "left" | "right";

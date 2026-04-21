@@ -86,6 +86,11 @@ export class SessionManager {
           : null,
       costUsd: message.costUsd ?? null,
       durationMs: message.durationMs ?? null,
+      tokensInput: message.tokens?.input ?? null,
+      tokensOutput: message.tokens?.output ?? null,
+      tokensCacheRead: message.tokens?.cacheRead ?? null,
+      tokensCacheCreation: message.tokens?.cacheCreation ?? null,
+      model: message.model ?? null,
       error: message.error ?? null,
       timestamp: message.timestamp,
     });

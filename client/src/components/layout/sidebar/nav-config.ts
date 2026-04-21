@@ -7,6 +7,7 @@ import {
   Network,
   FileCode,
   Terminal,
+  Gauge,
 } from "lucide-react";
 import {
   codePath,
@@ -16,6 +17,7 @@ import {
   agentsNewPath,
   artifactsPath,
   commandsPath,
+  usagePath,
 } from "@/router/paths";
 
 export interface NavEntry {
@@ -90,5 +92,12 @@ export const activityNav: NavEntry[] = [
     label: "Commands",
     path: commandsPath,
     match: "/commands",
+  },
+  {
+    id: "usage",
+    icon: Gauge,
+    label: "Usage",
+    path: usagePath,
+    match: "/usage",
   },
 ];

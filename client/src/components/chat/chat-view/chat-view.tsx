@@ -16,6 +16,8 @@ import { TimelineDrawer } from "@/components/shared/event-timeline";
 import { useActiveProjectId } from "@/api/hooks/_shared";
 import { useChatSession } from "./hooks/use-chat-session";
 import { useChatPanels } from "./hooks/use-chat-panels";
+import { ContextMeter } from "../context-meter";
+import { ChatSessionActions } from "../chat-session-actions";
 
 const Root = styled(Flex)`
   height: 100%;
@@ -63,6 +65,9 @@ export function ChatView() {
           </IconButton>
         </Tooltip>
         <Box css={{ flex: 1 }} />
+        <ContextMeter scope="chat-session" scopeId={sessionId} />
+        <Box css={{ width: spacing.xs }} />
+        <ChatSessionActions sessionId={sessionId} isStreaming={isStreaming} />
         <Tooltip content="Conversation timeline">
           <IconButton
             variant={timelineOpen ? "default" : "ghost"}
