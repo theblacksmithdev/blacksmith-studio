@@ -1,3 +1,3 @@
-export { UsageSummary } from "./usage-summary";
-export { ScopeList } from "./scope-list";
+export { ModelsSidebar } from "./models-sidebar";
+export { ModelDetail } from "./model-detail";
 export { ScopeRow } from "./scope-row";
