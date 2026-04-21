@@ -1,4 +1,4 @@
-import { MODEL_REGISTRY } from "./model-registry.js";
+import { MODEL_REGISTRY } from "./models/index.js";
 
 /**
  * PM-assigned capability tier. Kept as a separate concept from concrete

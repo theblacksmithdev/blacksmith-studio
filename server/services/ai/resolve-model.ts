@@ -4,7 +4,7 @@ import {
   FAMILY_DEFAULTS,
   MODEL_REGISTRY,
   type ModelEntry,
-} from "./model-registry.js";
+} from "./models/index.js";
 
 /**
  * Result of resolving a raw model string — always a concrete shape

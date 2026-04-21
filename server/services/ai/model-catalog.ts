@@ -15,7 +15,7 @@ export interface ModelInfo {
  *
  * SRP: answers "given this raw model string, what should I show and
  * what's the window?" — nothing more. Static data and parsing logic
- * live in `model-registry.ts` / `resolve-model.ts` so this class stays
+ * live in `models/` (per-provider files) and `resolve-model.ts` so this class stays
  * a stable public API for every caller (meter, history aggregates,
  * usage service).
  */

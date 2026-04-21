@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { MODEL_REGISTRY } from "../../server/services/ai/model-registry.js";
+import { MODEL_REGISTRY } from "../../server/services/ai/models/index.js";
 import { AI_LIST_MODELS } from "./channels.js";
 
 /**

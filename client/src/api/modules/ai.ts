@@ -12,8 +12,6 @@ export interface ModelEntry {
   maxOutputTokens?: number;
   variant?: "1m";
   label: string;
-  /** True for superseded releases. Pickers surface these muted. */
-  legacy?: boolean;
 }
 
 export const ai = {

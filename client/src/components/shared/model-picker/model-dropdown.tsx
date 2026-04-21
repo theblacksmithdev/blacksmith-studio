@@ -92,7 +92,6 @@ export function ModelDropdown({
                         <Row
                           key={m.id}
                           data-active={selected || undefined}
-                          data-legacy={m.legacy || undefined}
                           onClick={() => {
                             onChange(m.id);
                             setOpen(false);
@@ -253,10 +252,6 @@ const Row = styled.button`
 
   &[data-active] {
     color: var(--studio-text-primary);
-  }
-
-  &[data-legacy]:not([data-active]) {
-    opacity: 0.72;
   }
 `;
 
