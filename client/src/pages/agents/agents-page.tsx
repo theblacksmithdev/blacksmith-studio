@@ -1,26 +1,17 @@
-import { useEffect, useCallback, useState, useRef } from "react";
-import { useLocation } from "react-router-dom";
 import { ReactFlowProvider } from "@xyflow/react";
 import { Activity, Gauge, ListTodo, MessageSquare, Square } from "lucide-react";
-import {
-  useAgentsListQuery,
-  useAgentRespond,
-  useAgentCancelAll,
-  useAgentChatQuery,
-} from "@/api/hooks/agents";
-import { useAgentStore } from "@/stores/agent-store";
 import { Tooltip } from "@/components/shared/tooltip";
 import { ConfirmDialog } from "@/components/shared/ui";
 import { SplitPanel } from "@/components/shared/layout";
+import { TimelineDrawer } from "@/components/shared/event-timeline";
+import type { AttachmentRecord } from "@/components/shared/conversation";
 import { AgentCanvas } from "./components/canvas";
 import { AgentChat } from "./components/chat";
 import { AgentDetail } from "./components/detail";
 import { AgentInnerView } from "./components/inner-view";
 import { TaskDrawer } from "./components/drawer";
-import { TimelineDrawer } from "@/components/shared/event-timeline";
 import { AgentStatsDrawer } from "./components/stats";
 import { AgentMainPanel } from "./components/agent-main-panel";
-import { useAgentEvents } from "./hooks/use-agent-events";
 import {
   Layout,
   CanvasPanel,
@@ -32,9 +23,7 @@ import {
   Badge,
   UnreadDot,
 } from "./components/styles";
-import type { AgentRole } from "@/api/types";
-
-import type { AttachmentRecord } from "@/components/shared/conversation";
+import { useAgentsPage } from "./hooks/use-agents-page";
 
 interface AgentsPageProps {
   conversationId?: string;
@@ -53,140 +42,44 @@ export function AgentsPage({
   onSend,
   isDispatching = false,
 }: AgentsPageProps) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [timelineOpen, setTimelineOpen] = useState(false);
-  const [statsOpen, setStatsOpen] = useState(false);
-  const [chatOpen, setChatOpen] = useState(true);
-  const [hasUnread, setHasUnread] = useState(false);
-  const [innerViewRole, setInnerViewRole] = useState<AgentRole | null>(null);
-  const chatOpenRef = useRef(chatOpen);
-  chatOpenRef.current = chatOpen;
-
-  const { data: agents = [] } = useAgentsListQuery();
-  const respondMutation = useAgentRespond();
-  const cancelAllMutation = useAgentCancelAll();
-
-  const setAgents = useAgentStore((s) => s.setAgents);
-  const removeInputRequest = useAgentStore((s) => s.removeInputRequest);
-  const selectedAgent = useAgentStore((s) => s.selectedAgent);
-  const selectAgent = useAgentStore((s) => s.selectAgent);
-  const buildActive = useAgentStore((s) => s.buildActive);
-  const dispatchTasks = useAgentStore((s) => s.dispatchTasks);
-  const liveMessages = useAgentStore((s) => s.liveMessages);
-
-  useEffect(() => {
-    if (agents.length > 0) setAgents(agents);
-  }, [agents, setAgents]);
-
-  useAgentEvents();
-
-  // Persisted messages for the active conversation — used for unread tracking
-  const { data: persistedMsgs = [] } = useAgentChatQuery(conversationId);
-  const totalMsgCount = persistedMsgs.length + liveMessages.length;
-
-  // Auto-send initial prompt from route state
-  const location = useLocation();
-  const initialPromptSent = useRef(false);
-  useEffect(() => {
-    const state = location.state as {
-      initialPrompt?: string;
-      initialAttachments?: AttachmentRecord[];
-    } | null;
-    if (state?.initialPrompt && !initialPromptSent.current) {
-      initialPromptSent.current = true;
-      onSend(state.initialPrompt, state.initialAttachments);
-    }
-  }, [location.state, onSend]);
-
-  // Track unread messages when chat is closed
-  const prevCountRef = useRef(totalMsgCount);
-  useEffect(() => {
-    if (totalMsgCount > prevCountRef.current && !chatOpenRef.current) {
-      setHasUnread(true);
-    }
-    prevCountRef.current = totalMsgCount;
-  }, [totalMsgCount]);
-
-  const toggleChat = useCallback(() => {
-    setChatOpen((v) => {
-      if (!v) setHasUnread(false);
-      return !v;
-    });
-  }, []);
-
-  const handleRespond = useCallback(
-    async (requestId: string, value: string) => {
-      removeInputRequest(requestId);
-      await respondMutation.mutateAsync({ requestId, value });
-    },
-    [removeInputRequest, respondMutation],
-  );
-
-  const [showStopConfirm, setShowStopConfirm] = useState(false);
-
-  const handleStop = useCallback(() => {
-    setShowStopConfirm(true);
-  }, []);
-
-  const confirmStop = useCallback(async () => {
-    setShowStopConfirm(false);
-    await cancelAllMutation.mutateAsync();
-  }, [cancelAllMutation]);
-
-  const handleNodeClick = useCallback(
-    (role: AgentRole) => {
-      selectAgent(selectedAgent === role ? null : role);
-    },
-    [selectedAgent, selectAgent],
-  );
-
-  const handleNodeDoubleClick = useCallback(
-    (role: AgentRole) => {
-      selectAgent(null);
-      setInnerViewRole(role);
-    },
-    [selectAgent],
-  );
-
-  const openInnerView = useCallback(
-    (role: AgentRole) => {
-      selectAgent(null);
-      setInnerViewRole(role);
-    },
-    [selectAgent],
-  );
-
-  const selectedAgentInfo = agents.find((a) => a.role === selectedAgent);
-  const innerViewAgent = innerViewRole
-    ? agents.find((a) => a.role === innerViewRole)
-    : null;
-  const hasTasks = dispatchTasks.length > 0;
-  const completedCount = dispatchTasks.filter(
-    (t) => t.status === "done",
-  ).length;
-  const hasRunning = dispatchTasks.some((t) => t.status === "running");
-  // "Actively doing something" — true while the PM mutation is in flight,
-  // while a build is running, while any agent is running, or while any
-  // dispatched task is still pending/running. The Stop button is gated
-  // on this so users can cancel at any phase — PM planning, between
-  // tasks, or mid-execution.
-  const hasPendingOrRunningTask = dispatchTasks.some(
-    (t) => t.status === "pending" || t.status === "running",
-  );
-  const isProcessing =
-    isDispatching ||
-    buildActive ||
-    agents.some((a) => a.isRunning) ||
-    hasPendingOrRunningTask;
+  const {
+    agents,
+    selectedAgentInfo,
+    innerViewAgent,
+    chatOpen,
+    drawerOpen,
+    timelineOpen,
+    statsOpen,
+    hasUnread,
+    showStopConfirm,
+    toggleChat,
+    openDrawer,
+    closeDrawer,
+    openTimeline,
+    closeTimeline,
+    toggleStats,
+    closeStats,
+    closeInnerView,
+    closeStopConfirm,
+    isProcessing,
+    hasTasks,
+    hasRunning,
+    completedCount,
+    totalTaskCount,
+    onRespond,
+    onStop,
+    confirmStop,
+    onNodeClick,
+    onNodeDoubleClick,
+    openInnerView,
+    clearSelectedAgent,
+  } = useAgentsPage({ conversationId, onSend, isDispatching });
 
   // Inner view replaces the whole page
   if (innerViewAgent) {
     return (
       <Layout>
-        <AgentInnerView
-          agent={innerViewAgent}
-          onBack={() => setInnerViewRole(null)}
-        />
+        <AgentInnerView agent={innerViewAgent} onBack={closeInnerView} />
       </Layout>
     );
   }
@@ -194,7 +87,7 @@ export function AgentsPage({
   const chatPanel = (
     <AgentChat
       onSend={onSend}
-      onRespond={handleRespond}
+      onRespond={onRespond}
       isProcessing={isProcessing}
       conversationId={conversationId}
     />
@@ -205,8 +98,8 @@ export function AgentsPage({
       <ReactFlowProvider>
         <AgentCanvas
           agents={agents}
-          onNodeClick={handleNodeClick}
-          onNodeDoubleClick={handleNodeDoubleClick}
+          onNodeClick={onNodeClick}
+          onNodeDoubleClick={onNodeDoubleClick}
           conversationId={conversationId}
         />
       </ReactFlowProvider>
@@ -228,30 +121,27 @@ export function AgentsPage({
           <TasksBtn
             $active={hasRunning}
             $hasTasks={hasTasks}
-            onClick={() => setDrawerOpen(true)}
+            onClick={openDrawer}
           >
             <ListTodo size={14} />
             Tasks
             {hasTasks && (
               <Badge>
-                {completedCount}/{dispatchTasks.length}
+                {completedCount}/{totalTaskCount}
               </Badge>
             )}
           </TasksBtn>
         </Tooltip>
 
         <Tooltip content="View conversation timeline">
-          <ChatBtn onClick={() => setTimelineOpen(true)}>
+          <ChatBtn onClick={openTimeline}>
             <Activity size={14} />
             Timeline
           </ChatBtn>
         </Tooltip>
 
         <Tooltip content="Conversation stats & cost">
-          <ChatBtn
-            $active={statsOpen}
-            onClick={() => setStatsOpen((v) => !v)}
-          >
+          <ChatBtn $active={statsOpen} onClick={toggleStats}>
             <Gauge size={14} />
             Stats
           </ChatBtn>
@@ -261,7 +151,7 @@ export function AgentsPage({
           <>
             <GroupDivider />
             <Tooltip content="Stop all agents">
-              <StopBtn onClick={handleStop}>
+              <StopBtn onClick={onStop}>
                 <Square size={12} />
                 Stop
               </StopBtn>
@@ -274,7 +164,7 @@ export function AgentsPage({
       {selectedAgentInfo && (
         <AgentDetail
           agent={selectedAgentInfo}
-          onClose={() => selectAgent(null)}
+          onClose={clearSelectedAgent}
           onOpenInnerView={() => openInnerView(selectedAgentInfo.role)}
         />
       )}
@@ -298,13 +188,13 @@ export function AgentsPage({
         {mainPanel}
       </SplitPanel>
 
-      {drawerOpen && <TaskDrawer onClose={() => setDrawerOpen(false)} />}
+      {drawerOpen && <TaskDrawer onClose={closeDrawer} />}
 
       {timelineOpen && (
         <TimelineDrawer
           scope="agent_chat"
           conversationId={conversationId}
-          onClose={() => setTimelineOpen(false)}
+          onClose={closeTimeline}
           hideMessages
         />
       )}
@@ -312,7 +202,7 @@ export function AgentsPage({
       {statsOpen && conversationId && (
         <AgentStatsDrawer
           conversationId={conversationId}
-          onClose={() => setStatsOpen(false)}
+          onClose={closeStats}
         />
       )}
 
@@ -324,7 +214,7 @@ export function AgentsPage({
           cancelLabel="Cancel"
           variant="danger"
           onConfirm={confirmStop}
-          onCancel={() => setShowStopConfirm(false)}
+          onCancel={closeStopConfirm}
         />
       )}
     </Layout>
