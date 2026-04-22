@@ -5,6 +5,21 @@ export function formatTokens(n: number): string {
   return `${n}`;
 }
 
+/**
+ * Format a USD amount at precision appropriate for its magnitude.
+ * - Sub-cent ($0.0001..$0.009): 4 decimals ($0.0032)
+ * - Under $1: 3 decimals ($0.145)
+ * - Under $10: 2 decimals ($1.42)
+ * - $10+: integer dollars with comma grouping ($1,248)
+ */
+export function formatCost(n: number): string {
+  if (n === 0) return "$0";
+  if (n < 0.01) return `$${n.toFixed(4)}`;
+  if (n < 1) return `$${n.toFixed(3)}`;
+  if (n < 10) return `$${n.toFixed(2)}`;
+  return `$${Math.round(n).toLocaleString("en-US")}`;
+}
+
 export function formatRelative(iso: string): string {
   const then = new Date(iso).getTime();
   if (!Number.isFinite(then) || then === 0) return "—";

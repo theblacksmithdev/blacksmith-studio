@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import type { ModelRollup, UsageHistory } from "@/api/modules/usage";
-import { formatTokens } from "./format";
+import { formatTokens, formatCost } from "./format";
 
 interface ModelsSidebarProps {
   history: UsageHistory;
@@ -39,11 +39,15 @@ export function ModelsSidebar({
           <RowMain>
             <RowLabel>All models</RowLabel>
             <RowMeta>
-              {history.byModel.length} model
-              {history.byModel.length === 1 ? "" : "s"}
+              <RowMetaValue>{formatTokens(history.total)}</RowMetaValue>
+              <MetaDot />
+              <span>
+                {history.byModel.length} model
+                {history.byModel.length === 1 ? "" : "s"}
+              </span>
             </RowMeta>
           </RowMain>
-          <RowValue>{formatTokens(history.total)}</RowValue>
+          <RowValue>{formatCost(history.costUsd)}</RowValue>
         </AllRow>
 
         {history.byModel.length === 0 ? (
@@ -85,14 +89,14 @@ function ModelRow({ model, maxUsage, selected, onSelect }: ModelRowProps) {
       <RowMain>
         <RowLabel>{model.label}</RowLabel>
         <RowMeta>
-          <ProviderText>{model.provider}</ProviderText>
+          <RowMetaValue>{formatTokens(model.total)}</RowMetaValue>
           <MetaDot />
           <ShareBar>
             <ShareFill style={{ width: `${Math.round(pct * 100)}%` }} />
           </ShareBar>
         </RowMeta>
       </RowMain>
-      <RowValue>{formatTokens(model.total)}</RowValue>
+      <RowValue>{formatCost(model.costUsd)}</RowValue>
     </Row>
   );
 }
@@ -211,8 +215,9 @@ const RowMeta = styled.div`
   min-width: 0;
 `;
 
-const ProviderText = styled.span`
-  text-transform: capitalize;
+const RowMetaValue = styled.span`
+  font-family: "SF Mono", "Fira Code", Menlo, monospace;
+  font-variant-numeric: tabular-nums;
 `;
 
 const MetaDot = styled.span`

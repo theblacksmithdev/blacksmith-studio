@@ -5,6 +5,7 @@ import {
   MODEL_REGISTRY,
   type ModelEntry,
 } from "./models/index.js";
+import type { Pricing } from "./models/types.js";
 
 /**
  * Result of resolving a raw model string — always a concrete shape
@@ -21,6 +22,8 @@ export interface ResolvedModel {
   contextWindow: number;
   variant: "1m" | null;
   label: string;
+  /** Per-MTok pricing when the registry has an explicit entry. */
+  pricing?: Pricing;
   /** True when we found an exact entry in the registry. */
   known: boolean;
 }
@@ -132,6 +135,7 @@ function toResolved(normalized: string, entry: ModelEntry): ResolvedModel {
     contextWindow: entry.contextWindow,
     variant: entry.variant ?? null,
     label: entry.label,
+    pricing: entry.pricing,
     known: true,
   };
 }

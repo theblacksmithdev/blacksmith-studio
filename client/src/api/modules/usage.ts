@@ -33,6 +33,7 @@ export interface ScopeAggregate {
   lastActivity: string;
   model: string | null;
   modelLabel: string;
+  costUsd: number;
 }
 
 export interface UsageTurn {
@@ -42,6 +43,7 @@ export interface UsageTurn {
   total: number;
   model: string | null;
   timestamp: string;
+  costUsd: number;
 }
 
 export interface ModelRollup {
@@ -50,12 +52,14 @@ export interface ModelRollup {
   provider: UsageProvider;
   total: number;
   breakdown: TokenBreakdown;
+  costUsd: number;
 }
 
 export interface UsageHistory {
   projectId: string;
   total: number;
   breakdown: TokenBreakdown;
+  costUsd: number;
   byModel: ModelRollup[];
   chatSessions: ScopeAggregate[];
   agentDispatches: ScopeAggregate[];
@@ -67,6 +71,7 @@ export interface ScopeDetail {
   title: string;
   total: number;
   breakdown: TokenBreakdown;
+  costUsd: number;
   turns: UsageTurn[];
 }
 

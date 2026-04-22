@@ -10,6 +10,7 @@ import type {
   UsageTurn,
 } from "../types.js";
 import { ModelCatalog } from "../../ai/model-catalog.js";
+import { costOfBreakdown } from "../cost.js";
 
 /**
  * Usage source backed by the `messages` table (single-agent chat).
@@ -144,6 +145,7 @@ export class ChatSessionUsageSource implements UsageSource, HistorySource {
           lastActivity: v.lastActivity,
           model: v.latestModel,
           modelLabel: info.label,
+          costUsd: costOfBreakdown(v.breakdown, info.pricing),
         };
       })
       .sort((a, b) => b.lastActivity.localeCompare(a.lastActivity));
@@ -182,6 +184,7 @@ export class ChatSessionUsageSource implements UsageSource, HistorySource {
         total: totalOf(breakdown),
         model: r.model,
         timestamp: r.timestamp,
+        costUsd: costOfBreakdown(breakdown, this.catalog.pricingFor(r.model)),
       };
     });
   }

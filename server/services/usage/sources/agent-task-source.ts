@@ -10,6 +10,7 @@ import type {
   UsageTurn,
 } from "../types.js";
 import { ModelCatalog } from "../../ai/model-catalog.js";
+import { costOfBreakdown } from "../cost.js";
 
 /**
  * Usage data rooted in the `agent_tasks` table.
@@ -152,6 +153,7 @@ export class AgentTaskUsageSource implements UsageSource, HistorySource {
           lastActivity: v.lastActivity,
           model: v.latestModel,
           modelLabel: info.label,
+          costUsd: costOfBreakdown(v.breakdown, info.pricing),
         };
       })
       .sort((a, b) => b.lastActivity.localeCompare(a.lastActivity));
@@ -194,6 +196,7 @@ export class AgentTaskUsageSource implements UsageSource, HistorySource {
         total: totalOf(breakdown),
         model: r.model,
         timestamp: r.finishedAt ?? new Date(0).toISOString(),
+        costUsd: costOfBreakdown(breakdown, this.catalog.pricingFor(r.model)),
       };
     });
   }

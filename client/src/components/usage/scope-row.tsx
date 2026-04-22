@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import { ChevronRight } from "lucide-react";
 import type { ScopeAggregate } from "@/api/modules/usage";
 import { useUsageScopeDetail } from "@/api/hooks/usage";
-import { formatTokens, formatRelative } from "./format";
+import { formatTokens, formatRelative, formatCost } from "./format";
 
 interface ScopeRowProps {
   aggregate: ScopeAggregate;
@@ -35,7 +35,10 @@ export function ScopeRow({ aggregate }: ScopeRowProps) {
           </TurnCount>
           <LastActivity>{formatRelative(aggregate.lastActivity)}</LastActivity>
         </Meta>
-        <Total>{formatTokens(aggregate.total)}</Total>
+        <Totals>
+          <Total>{formatCost(aggregate.costUsd)}</Total>
+          <SubTotal>{formatTokens(aggregate.total)}</SubTotal>
+        </Totals>
       </Header>
       {open && (
         <Detail>
@@ -52,7 +55,10 @@ export function ScopeRow({ aggregate }: ScopeRowProps) {
                     <span>cr {formatTokens(t.breakdown.cacheRead)}</span>
                     <span>cc {formatTokens(t.breakdown.cacheCreation)}</span>
                   </TurnMeta>
-                  <TurnTotal>{formatTokens(t.total)}</TurnTotal>
+                  <TurnTotal>
+                    <TurnCost>{formatCost(t.costUsd)}</TurnCost>
+                    <TurnTokens>{formatTokens(t.total)}</TurnTokens>
+                  </TurnTotal>
                 </Turn>
               ))}
             </Turns>
@@ -133,13 +139,27 @@ const LastActivity = styled.span`
   font-variant-numeric: tabular-nums;
 `;
 
+const Totals = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  min-width: 72px;
+`;
+
 const Total = styled.span`
   font-size: 14px;
   font-weight: 600;
   color: var(--studio-text-primary);
   font-variant-numeric: tabular-nums;
-  min-width: 72px;
-  text-align: right;
+  font-family: "SF Mono", "Fira Code", Menlo, monospace;
+`;
+
+const SubTotal = styled.span`
+  font-size: 10px;
+  color: var(--studio-text-muted);
+  font-variant-numeric: tabular-nums;
+  font-family: "SF Mono", "Fira Code", Menlo, monospace;
 `;
 
 const Detail = styled.div`
@@ -180,11 +200,26 @@ const TurnMeta = styled.div`
 `;
 
 const TurnTotal = styled.span`
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  min-width: 72px;
+`;
+
+const TurnCost = styled.span`
+  font-size: 12px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+  font-family: "SF Mono", "Fira Code", Menlo, monospace;
   color: var(--studio-text-primary);
-  min-width: 56px;
-  text-align: right;
+`;
+
+const TurnTokens = styled.span`
+  font-size: 10px;
+  color: var(--studio-text-muted);
+  font-variant-numeric: tabular-nums;
+  font-family: "SF Mono", "Fira Code", Menlo, monospace;
 `;
 
 const Muted = styled.div`

@@ -6,7 +6,7 @@ import type {
   UsageHistory,
 } from "@/api/modules/usage";
 import { ScopeRow } from "./scope-row";
-import { formatTokens } from "./format";
+import { formatTokens, formatCost } from "./format";
 
 interface ModelDetailProps {
   history: UsageHistory;
@@ -37,7 +37,12 @@ export function ModelDetail({ history, selectedModel }: ModelDetailProps) {
   if (filtered.total === 0) {
     return (
       <Root>
-        <DetailHeader label={headerLabel} sub={headerSub} total={0} />
+        <DetailHeader
+          label={headerLabel}
+          sub={headerSub}
+          total={0}
+          cost={0}
+        />
         <EmptyState>
           <EmptyTitle>No recorded usage</EmptyTitle>
           <EmptyBody>
@@ -52,7 +57,12 @@ export function ModelDetail({ history, selectedModel }: ModelDetailProps) {
 
   return (
     <Root>
-      <DetailHeader label={headerLabel} sub={headerSub} total={filtered.total} />
+      <DetailHeader
+        label={headerLabel}
+        sub={headerSub}
+        total={filtered.total}
+        cost={filtered.costUsd}
+      />
       <Scroll>
         <Content>
           <Section>
@@ -67,6 +77,8 @@ export function ModelDetail({ history, selectedModel }: ModelDetailProps) {
                 {history.byModel.map((m) => (
                   <Chip key={m.label}>
                     <ChipLabel>{m.label}</ChipLabel>
+                    <ChipCost>{formatCost(m.costUsd)}</ChipCost>
+                    <ChipDot />
                     <ChipValue>{formatTokens(m.total)}</ChipValue>
                   </Chip>
                 ))}
@@ -117,18 +129,26 @@ interface HeaderProps {
   label: string;
   sub: string;
   total: number;
+  cost: number;
 }
 
-function DetailHeader({ label, sub, total }: HeaderProps) {
+function DetailHeader({ label, sub, total, cost }: HeaderProps) {
   return (
     <Header>
       <HeaderInner>
         <HeaderTop>
           <HeaderTitle>{label}</HeaderTitle>
-          <HeaderTotal>
-            <TotalNumber>{formatTokens(total)}</TotalNumber>
-            <TotalSuffix>tokens</TotalSuffix>
-          </HeaderTotal>
+          <HeaderTotals>
+            <HeaderFigure>
+              <TotalNumber>{formatCost(cost)}</TotalNumber>
+              <TotalSuffix>cost</TotalSuffix>
+            </HeaderFigure>
+            <HeaderDivider />
+            <HeaderFigure>
+              <TotalNumber>{formatTokens(total)}</TotalNumber>
+              <TotalSuffix>tokens</TotalSuffix>
+            </HeaderFigure>
+          </HeaderTotals>
         </HeaderTop>
         <HeaderSub>{sub}</HeaderSub>
       </HeaderInner>
@@ -175,6 +195,7 @@ function filterByModel(
 ): {
   total: number;
   breakdown: TokenBreakdown;
+  costUsd: number;
   chatSessions: ScopeAggregate[];
   agentDispatches: ScopeAggregate[];
 } {
@@ -182,6 +203,7 @@ function filterByModel(
     return {
       total: history.total,
       breakdown: history.breakdown,
+      costUsd: history.costUsd,
       chatSessions: history.chatSessions,
       agentDispatches: history.agentDispatches,
     };
@@ -192,15 +214,15 @@ function filterByModel(
   const agentDispatches = history.agentDispatches.filter(
     (a) => a.model === selectedModel,
   );
-  const breakdown = sumBreakdown(
-    [...chatSessions, ...agentDispatches].map((a) => a.breakdown),
-  );
+  const all = [...chatSessions, ...agentDispatches];
+  const breakdown = sumBreakdown(all.map((a) => a.breakdown));
+  const costUsd = all.reduce((sum, a) => sum + a.costUsd, 0);
   const total =
     breakdown.input +
     breakdown.output +
     breakdown.cacheRead +
     breakdown.cacheCreation;
-  return { total, breakdown, chatSessions, agentDispatches };
+  return { total, breakdown, costUsd, chatSessions, agentDispatches };
 }
 
 function sumBreakdown(bs: TokenBreakdown[]): TokenBreakdown {
@@ -254,14 +276,26 @@ const HeaderTitle = styled.h2`
   color: var(--studio-text-primary);
 `;
 
-const HeaderTotal = styled.div`
+const HeaderTotals = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const HeaderFigure = styled.div`
   display: flex;
   align-items: baseline;
   gap: 6px;
 `;
 
+const HeaderDivider = styled.span`
+  width: 1px;
+  height: 18px;
+  background: var(--studio-border);
+`;
+
 const TotalNumber = styled.span`
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--studio-text-primary);
@@ -415,6 +449,21 @@ const Chip = styled.div`
 const ChipLabel = styled.span`
   font-weight: 600;
   color: var(--studio-text-primary);
+`;
+
+const ChipCost = styled.span`
+  color: var(--studio-text-primary);
+  font-variant-numeric: tabular-nums;
+  font-family: "SF Mono", "Fira Code", Menlo, monospace;
+  font-weight: 600;
+`;
+
+const ChipDot = styled.span`
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: var(--studio-text-muted);
+  opacity: 0.5;
 `;
 
 const ChipValue = styled.span`

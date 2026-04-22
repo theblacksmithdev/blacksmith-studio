@@ -1,13 +1,29 @@
-import { K, M, type FamilyDefault, type ModelEntry } from "./types.js";
+import { K, M, type FamilyDefault, type ModelEntry, type Pricing } from "./types.js";
 
 /**
  * Anthropic Claude models. Numbers verified against the Anthropic
  * model overview (platform.claude.com/docs/en/about-claude/models/overview).
  *
+ * Pricing follows Anthropic's standard prompt-caching rule:
+ *   cacheRead     = input × 0.10
+ *   cacheCreation = input × 1.25
+ * Only the base input / output rates are listed explicitly; the helper
+ * below fills in the cache rates to keep entries compact and consistent.
+ *
  * Add a new model by appending an entry. The resolver picks exact
  * id → alias → family fallback in order, so new versions get a nice
  * label even before they land here.
  */
+
+function pricing(input: number, output: number): Pricing {
+  return {
+    input,
+    output,
+    cacheRead: +(input * 0.1).toFixed(2),
+    cacheCreation: +(input * 1.25).toFixed(2),
+  };
+}
+
 export const ANTHROPIC_MODELS: readonly ModelEntry[] = [
   // ── Opus ──
   {
@@ -19,6 +35,7 @@ export const ANTHROPIC_MODELS: readonly ModelEntry[] = [
     contextWindow: 1 * M,
     maxOutputTokens: 128 * K,
     label: "Opus 4.7",
+    pricing: pricing(5, 25),
   },
   {
     id: "claude-opus-4-6",
@@ -29,6 +46,7 @@ export const ANTHROPIC_MODELS: readonly ModelEntry[] = [
     contextWindow: 1 * M,
     maxOutputTokens: 128 * K,
     label: "Opus 4.6",
+    pricing: pricing(5, 25),
   },
   {
     id: "claude-opus-4-5",
@@ -39,6 +57,7 @@ export const ANTHROPIC_MODELS: readonly ModelEntry[] = [
     contextWindow: 200 * K,
     maxOutputTokens: 64 * K,
     label: "Opus 4.5",
+    pricing: pricing(5, 25),
   },
   {
     id: "claude-opus-4-1",
@@ -49,6 +68,7 @@ export const ANTHROPIC_MODELS: readonly ModelEntry[] = [
     contextWindow: 200 * K,
     maxOutputTokens: 32 * K,
     label: "Opus 4.1",
+    pricing: pricing(15, 75),
   },
 
   // ── Sonnet ──
@@ -61,6 +81,7 @@ export const ANTHROPIC_MODELS: readonly ModelEntry[] = [
     contextWindow: 1 * M,
     maxOutputTokens: 64 * K,
     label: "Sonnet 4.6",
+    pricing: pricing(3, 15),
   },
   {
     id: "claude-sonnet-4-5",
@@ -71,6 +92,7 @@ export const ANTHROPIC_MODELS: readonly ModelEntry[] = [
     contextWindow: 200 * K,
     maxOutputTokens: 64 * K,
     label: "Sonnet 4.5",
+    pricing: pricing(3, 15),
   },
 
   // ── Haiku ──
@@ -83,6 +105,7 @@ export const ANTHROPIC_MODELS: readonly ModelEntry[] = [
     contextWindow: 200 * K,
     maxOutputTokens: 64 * K,
     label: "Haiku 4.5",
+    pricing: pricing(1, 5),
   },
 ];
 

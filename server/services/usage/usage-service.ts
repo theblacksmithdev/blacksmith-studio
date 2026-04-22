@@ -11,6 +11,7 @@ import type {
   UsageHistory,
   UsageScope,
 } from "./types.js";
+import { costOfBreakdown } from "./cost.js";
 
 /**
  * Facade over the usage read-side.
@@ -84,11 +85,16 @@ export class UsageService {
     const allAggregates = [...sessions, ...dispatches];
     const overall = sumBreakdown(allAggregates.map((a) => a.breakdown));
     const byModel = this.rollupByModel(allAggregates);
+    // Sum the per-aggregate costs rather than recomputing from `overall`
+    // — the latter would need a "which model" decision that's wrong when
+    // multiple models contributed. Aggregate costs are already correct.
+    const costUsd = allAggregates.reduce((sum, a) => sum + a.costUsd, 0);
 
     return {
       projectId,
       total: totalOf(overall),
       breakdown: overall,
+      costUsd,
       byModel,
       chatSessions: sessions,
       agentDispatches: dispatches,
@@ -100,6 +106,7 @@ export class UsageService {
     const source = this.requireHistorySource(scope);
     const turns = source.listTurns(scopeId);
     const breakdown = sumBreakdown(turns.map((t) => t.breakdown));
+    const costUsd = turns.reduce((sum, t) => sum + t.costUsd, 0);
     const title = turns[0]?.title ?? scopeId;
     return {
       scope,
@@ -107,6 +114,7 @@ export class UsageService {
       title,
       total: totalOf(breakdown),
       breakdown,
+      costUsd,
       turns,
     };
   }
@@ -142,6 +150,7 @@ export class UsageService {
           provider: info.provider,
           total: totalOf(v.breakdown),
           breakdown: v.breakdown,
+          costUsd: costOfBreakdown(v.breakdown, info.pricing),
         };
       })
       .sort((a, b) => b.total - a.total);

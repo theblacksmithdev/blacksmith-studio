@@ -1,6 +1,21 @@
 import type { AiProviderId } from "../provider-id.js";
 
 /**
+ * Per-million-token USD pricing.
+ *
+ * `cacheRead` defaults to 10% of input and `cacheCreation` to 125% of
+ * input — Anthropic's standard prompt-caching rule — when a model
+ * omits explicit values. Providers that price caching differently can
+ * override.
+ */
+export interface Pricing {
+  input: number;
+  output: number;
+  cacheRead?: number;
+  cacheCreation?: number;
+}
+
+/**
  * Canonical metadata for one model. Static data — no runtime state.
  *
  * Adding a model: append an entry to the appropriate provider file
@@ -23,6 +38,8 @@ export interface ModelEntry {
   variant?: "1m";
   /** Rendered on chips and meters. */
   label: string;
+  /** Per-MTok USD pricing. Optional so unknown-family entries don't lie. */
+  pricing?: Pricing;
 }
 
 /**

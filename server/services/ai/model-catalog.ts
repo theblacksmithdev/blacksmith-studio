@@ -1,13 +1,16 @@
 import type { AiProviderId } from "./provider-id.js";
+import type { Pricing } from "./models/types.js";
 import { resolveModel } from "./resolve-model.js";
 
 export type { AiProviderId } from "./provider-id.js";
+export type { Pricing } from "./models/types.js";
 
 export interface ModelInfo {
   id: string;
   provider: AiProviderId;
   contextWindow: number;
   label: string;
+  pricing?: Pricing;
 }
 
 /**
@@ -27,11 +30,16 @@ export class ModelCatalog {
       provider: r.provider,
       contextWindow: r.contextWindow,
       label: r.label,
+      pricing: r.pricing,
     };
   }
 
   contextWindow(modelId: string | null | undefined): number {
     return resolveModel(modelId).contextWindow;
+  }
+
+  pricingFor(modelId: string | null | undefined): Pricing | undefined {
+    return resolveModel(modelId).pricing;
   }
 }
 

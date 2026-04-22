@@ -66,6 +66,8 @@ export interface ScopeAggregate {
   /** Most recently-used model within this scope. */
   model: string | null;
   modelLabel: string;
+  /** USD cost of `breakdown` at the latest model's pricing. */
+  costUsd: number;
 }
 
 /** Per-turn detail returned when drilling into a scope aggregate. */
@@ -76,6 +78,7 @@ export interface UsageTurn {
   total: number;
   model: string | null;
   timestamp: string;
+  costUsd: number;
 }
 
 /** Per-model rollup for the history header. */
@@ -85,6 +88,7 @@ export interface ModelRollup {
   provider: AiProviderId;
   total: number;
   breakdown: TokenBreakdown;
+  costUsd: number;
 }
 
 /** Top-level response for the history page. */
@@ -92,6 +96,7 @@ export interface UsageHistory {
   projectId: string;
   total: number;
   breakdown: TokenBreakdown;
+  costUsd: number;
   byModel: ModelRollup[];
   chatSessions: ScopeAggregate[];
   agentDispatches: ScopeAggregate[];
@@ -104,5 +109,6 @@ export interface ScopeDetail {
   title: string;
   total: number;
   breakdown: TokenBreakdown;
+  costUsd: number;
   turns: UsageTurn[];
 }
