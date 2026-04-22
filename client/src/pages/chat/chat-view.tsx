@@ -6,16 +6,15 @@ import {
   ConversationView,
   AttachmentPreviewModal,
 } from "@/components/shared/conversation";
-import { StreamingIndicator } from "../streaming-indicator";
-import { HistoryPanel } from "../history-panel";
+import { HistoryPanel } from "@/components/chat/history-panel";
 import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 import { PreviewPanel } from "@/components/shared/preview-panel";
 import { SplitPanel } from "@/components/shared/layout";
 import { IconButton, Tooltip, spacing } from "@/components/shared/ui";
 import { useActiveProjectId } from "@/api/hooks/_shared";
-import { useChatSession } from "./hooks/use-chat-session";
-import { useChatPanels } from "./hooks/use-chat-panels";
-import { ContextStatsDrawer } from "../context-stats";
+import { StreamingIndicator } from "@/components/chat/streaming-indicator";
+import { useChatSession, useChatPanels } from "./hooks";
+import { ContextStatsDrawer } from "./components";
 
 const Root = styled(Flex)`
   height: 100%;
@@ -108,7 +107,7 @@ export function ChatView() {
       left={chatContent}
       defaultWidth={600}
       minWidth={360}
-      maxWidth={900}
+      maxWidth={1400}
       storageKey="chat.previewSplit"
       reverse
       open={previewOpen}

@@ -4,7 +4,7 @@ import {
   type BubbleAttachment,
   type AttachmentRecord,
 } from "@/components/shared/conversation";
-import { ToolCallCard } from "../tool-call-card";
+import { ToolCallCard } from "@/components/chat/tool-call-card";
 import { ClaudeIcon } from "./claude-icon";
 import { spacing } from "@/components/shared/ui";
 import type { Message, MessageAttachment } from "@/types";

@@ -3,18 +3,29 @@ import {
   useState,
   useCallback,
   useEffect,
+  useMemo,
   type ReactNode,
 } from "react";
 import { Flex, Box } from "@chakra-ui/react";
 
 export type SplitDirection = "horizontal" | "vertical";
 
+/**
+ * A size bound on the split panel's fixed side.
+ *
+ * - `number` — pixels, the simple + original form.
+ * - `string` — a percentage of the split container's width/height,
+ *   e.g. `"75%"`. Resolved against the container's measured dimension
+ *   on mount and on resize. Anything else is treated as `NaN`.
+ */
+export type SplitSize = number | string;
+
 interface SplitPanelProps {
   left: ReactNode;
   children: ReactNode;
   defaultWidth?: number;
-  minWidth?: number;
-  maxWidth?: number;
+  minWidth?: SplitSize;
+  maxWidth?: SplitSize;
   storageKey?: string;
   direction?: SplitDirection;
   reverse?: boolean;
@@ -24,18 +35,39 @@ interface SplitPanelProps {
 const OPEN_CLOSE_EASING = "cubic-bezier(0.16, 1, 0.3, 1)";
 const OPEN_CLOSE_DURATION = 220;
 
+/** Fallback used when the container hasn't measured yet. */
+const HARD_FLOOR = 0;
+const HARD_CEILING = 100_000;
+
+function parsePercent(value: string): number | null {
+  const match = value.trim().match(/^(-?\d+(?:\.\d+)?)\s*%$/);
+  if (!match) return null;
+  const pct = parseFloat(match[1]);
+  if (!Number.isFinite(pct)) return null;
+  return pct / 100;
+}
+
+function resolveSize(
+  bound: SplitSize | undefined,
+  containerSize: number,
+  fallback: number,
+): number {
+  if (bound === undefined) return fallback;
+  if (typeof bound === "number") return bound;
+  const pct = parsePercent(bound);
+  if (pct == null || containerSize <= 0) return fallback;
+  return Math.round(containerSize * pct);
+}
+
 function loadInitialSize(
   storageKey: string | undefined,
   defaultWidth: number,
-  minWidth: number,
-  maxWidth: number,
 ): number {
   if (!storageKey) return defaultWidth;
   const saved = localStorage.getItem(storageKey);
   if (!saved) return defaultWidth;
   const n = parseInt(saved, 10);
-  if (isNaN(n) || n < minWidth || n > maxWidth) return defaultWidth;
-  return n;
+  return Number.isFinite(n) ? n : defaultWidth;
 }
 
 export function SplitPanel({
@@ -53,15 +85,52 @@ export function SplitPanel({
   const sizeDimension: "width" | "height" = isVertical ? "height" : "width";
 
   const [committedSize, setCommittedSize] = useState(() =>
-    loadInitialSize(storageKey, defaultWidth, minWidth, maxWidth),
+    loadInitialSize(storageKey, defaultWidth),
   );
   const [dragging, setDragging] = useState(false);
+  const [containerSize, setContainerSize] = useState(0);
 
+  const containerRef = useRef<HTMLDivElement>(null);
   const fixedPanelRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
   const startRef = useRef({ pos: 0, size: 0 });
   const liveSizeRef = useRef(committedSize);
   const rafRef = useRef<number | null>(null);
+
+  // Resolved pixel bounds — recomputed whenever the container resizes or
+  // the caller supplies new percentage strings.
+  const { resolvedMin, resolvedMax } = useMemo(() => {
+    const min = resolveSize(minWidth, containerSize, HARD_FLOOR);
+    const max = resolveSize(maxWidth, containerSize, HARD_CEILING);
+    return {
+      resolvedMin: Math.max(0, min),
+      resolvedMax: Math.max(min, max),
+    };
+  }, [minWidth, maxWidth, containerSize]);
+
+  // Track container size so percentage bounds stay accurate on resize.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const update = () => {
+      const rect = el.getBoundingClientRect();
+      setContainerSize(isVertical ? rect.height : rect.width);
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [isVertical]);
+
+  // Clamp the committed size whenever bounds shift — the user shouldn't
+  // end up with a persisted size that falls outside the current min/max
+  // after a percentage-based bound resolves or the window resizes.
+  useEffect(() => {
+    setCommittedSize((s) => {
+      const clamped = Math.max(resolvedMin, Math.min(resolvedMax, s));
+      return clamped === s ? s : clamped;
+    });
+  }, [resolvedMin, resolvedMax]);
 
   useEffect(() => {
     if (!dragging) liveSizeRef.current = committedSize;
@@ -105,12 +174,12 @@ export function SplitPanel({
       const raw = (isVertical ? e.clientY : e.clientX) - startRef.current.pos;
       const delta = reverse ? -raw : raw;
       const next = Math.max(
-        minWidth,
-        Math.min(maxWidth, startRef.current.size + delta),
+        resolvedMin,
+        Math.min(resolvedMax, startRef.current.size + delta),
       );
       scheduleDragSizeUpdate(next);
     },
-    [isVertical, reverse, minWidth, maxWidth, scheduleDragSizeUpdate],
+    [isVertical, reverse, resolvedMin, resolvedMax, scheduleDragSizeUpdate],
   );
 
   const handlePointerUp = useCallback(
@@ -254,6 +323,7 @@ export function SplitPanel({
 
   return (
     <Flex
+      ref={containerRef}
       direction={isVertical ? "column" : "row"}
       css={{
         height: "100%",

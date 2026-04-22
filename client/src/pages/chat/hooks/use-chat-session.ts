@@ -5,7 +5,7 @@ import { useAiChat } from "@/hooks/use-ai-chat";
 import { useChatStore } from "@/stores/chat-store";
 import { useSessionStore } from "@/stores/session-store";
 import { useActiveProjectId } from "@/api/hooks/_shared";
-import { toConversationMessages } from "../message-helpers";
+import { toConversationMessages } from "../components/message-helpers";
 import type { AttachmentRecord } from "@/components/shared/conversation";
 
 /**
