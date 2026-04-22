@@ -2,7 +2,8 @@ import { Flex, Box } from "@chakra-ui/react";
 import { Layers, X, Clock, Maximize2, Zap, Wrench } from "lucide-react";
 import { useAgentStore } from "@/stores/agent-store";
 import { ROLE_ICONS } from "../shared/role-icons";
-import { Text } from "@/components/shared/ui";
+import { Text, Badge } from "@/components/shared/ui";
+import type { BadgeVariant } from "@/components/shared/ui/badge/badge";
 import { ModelPicker } from "@/components/shared/model-picker";
 import { useAgentRoleModel } from "@/api/hooks/ai";
 import type { AgentInfo } from "@/api/types";
@@ -12,8 +13,6 @@ import {
   HeaderTop,
   IconBox,
   CloseBtn,
-  StatusBadge,
-  StatusDot,
   OpenFullBtn,
   Body,
   Section,
@@ -61,6 +60,24 @@ function statusLabel(status: string): string {
   }
 }
 
+function statusBadgeVariant(status: string): BadgeVariant {
+  switch (status) {
+    case "thinking":
+    case "executing":
+      return "live";
+    case "done":
+      return "default";
+    case "error":
+      return "error";
+    default:
+      return "muted";
+  }
+}
+
+function isLiveStatus(status: string): boolean {
+  return status === "thinking" || status === "executing";
+}
+
 export function AgentDetail({
   agent,
   onClose,
@@ -97,10 +114,16 @@ export function AgentDetail({
             >
               {agent.title}
             </Text>
-            <StatusBadge $status={status}>
-              <StatusDot $status={status} />
-              {statusLabel(status)}
-            </StatusBadge>
+            <Box css={{ marginTop: "10px" }}>
+              <Badge
+                variant={statusBadgeVariant(status)}
+                size="md"
+                dot
+                pulse={isLiveStatus(status)}
+              >
+                {statusLabel(status)}
+              </Badge>
+            </Box>
           </Box>
           {onOpenInnerView && (
             <CloseBtn onClick={onOpenInnerView} title="Open full view">

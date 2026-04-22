@@ -110,6 +110,11 @@ const Trigger = styled.button`
     color: var(--studio-text-primary);
   }
 
+  &:focus-visible {
+    border-color: var(--studio-brand-border);
+    box-shadow: var(--studio-ring-focus);
+  }
+
   &[data-compact] {
     padding: 2px 8px;
     font-size: 11px;
@@ -210,7 +215,7 @@ const RadioIndicator = styled.span`
   transition: border-color 0.12s ease;
 
   [data-state="checked"] > & {
-    border-color: var(--studio-text-primary);
+    border-color: var(--studio-brand);
   }
 `;
 
@@ -225,7 +230,7 @@ const RadioDot = styled.span`
     transform 0.12s ease;
 
   [data-state="checked"] & {
-    background: var(--studio-text-primary);
+    background: var(--studio-brand);
     transform: scale(1);
   }
 `;

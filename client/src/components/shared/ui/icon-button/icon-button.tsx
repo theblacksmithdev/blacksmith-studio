@@ -3,7 +3,7 @@ import {
   type IconButtonProps as ChakraIconButtonProps,
 } from "@chakra-ui/react";
 import type { SystemStyleObject } from "@chakra-ui/react";
-import { sizes, radii } from "../tokens";
+import { sizes, radii, shadows } from "../tokens";
 import { Tooltip } from "../tooltip";
 
 export type IconButtonVariant = "default" | "ghost" | "danger";
@@ -95,6 +95,12 @@ export function IconButton({
     transition: "all 0.12s ease",
     flexShrink: 0,
     fontFamily: "inherit",
+    outline: "none",
+    // Keyboard-only brand ring. Mouse clicks stay quiet — :focus-visible
+    // only matches when the focus arrived via keyboard / programmatic.
+    "&:focus-visible": {
+      boxShadow: shadows.focus,
+    },
     ...sizeStyles[size],
     ...variantStyles[variant],
     ...((cssProp as SystemStyleObject) ?? {}),

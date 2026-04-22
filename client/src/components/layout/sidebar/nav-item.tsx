@@ -31,6 +31,14 @@ export const NavButton = styled.button<{ active: boolean; expanded: boolean }>`
     color: ${({ active }) =>
       active ? "var(--studio-text-primary)" : "var(--studio-text-secondary)"};
   }
+
+  /* Keyboard focus only — quiet on mouse clicks. */
+  &:focus {
+    outline: none;
+  }
+  &:focus-visible {
+    box-shadow: var(--studio-ring-focus);
+  }
 `;
 
 export const NavLabel = styled.span<{ visible: boolean }>`

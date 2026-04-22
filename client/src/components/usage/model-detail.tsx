@@ -381,8 +381,8 @@ const BucketBar = styled.span`
 const BucketFill = styled.span`
   display: block;
   height: 100%;
-  background: var(--studio-text-primary);
-  opacity: 0.55;
+  background: var(--studio-brand);
+  opacity: 0.75;
   transition: width 0.2s ease;
 `;
 

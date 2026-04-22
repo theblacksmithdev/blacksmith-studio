@@ -136,7 +136,7 @@ const Preview = styled.div`
     left: 0;
     width: 2px;
     border-radius: 0 2px 2px 0;
-    background: var(--studio-text-primary);
+    background: var(--studio-brand);
   }
 `;
 
@@ -151,7 +151,7 @@ const PreviewBadge = styled.span`
   color: var(--studio-text-muted);
 
   svg {
-    color: var(--studio-text-primary);
+    color: var(--studio-brand);
   }
 `;
 
@@ -294,7 +294,7 @@ const RadioIndicator = styled.span`
   transition: border-color 0.12s ease;
 
   &[data-active] {
-    border-color: var(--studio-text-primary);
+    border-color: var(--studio-brand);
   }
 `;
 
@@ -307,7 +307,7 @@ const RadioDot = styled.span`
   transform: scale(0.6);
 
   &[data-active] {
-    background: var(--studio-text-primary);
+    background: var(--studio-brand);
     transform: scale(1);
   }
 `;

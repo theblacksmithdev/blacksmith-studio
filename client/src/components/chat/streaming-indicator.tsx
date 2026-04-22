@@ -64,7 +64,7 @@ export function StreamingIndicator({
                 display: "inline-block",
                 width: "2px",
                 height: "16px",
-                background: "var(--studio-accent)",
+                background: "var(--studio-brand)",
                 marginLeft: "2px",
                 verticalAlign: "text-bottom",
                 animation: "cursorBlink 1s step-end infinite",

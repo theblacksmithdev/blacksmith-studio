@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { Flex, Box } from "@chakra-ui/react";
 import styled from "@emotion/styled";
+import { keyframes } from "@emotion/react";
 import { Loader2, ArrowRight, Zap } from "lucide-react";
 import { Text, spacing, radii } from "@/components/shared/ui";
 import { SettingToggle } from "@/pages/settings/components/setting-toggle";
@@ -13,6 +14,11 @@ import { getGraphStatus, type GraphStatusLabel } from "@/lib/graphify";
 import { formatTimeAgo } from "@/lib/format";
 import { settingsGraphifyPath } from "@/router/paths";
 
+const buildingPulse = keyframes`
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.35; }
+`;
+
 const Dot = styled.span<{ $status: GraphStatusLabel }>`
   width: 6px;
   height: 6px;
@@ -21,11 +27,11 @@ const Dot = styled.span<{ $status: GraphStatusLabel }>`
   ${(p) => {
     switch (p.$status) {
       case "ok":
-        return `background: var(--studio-green); box-shadow: 0 0 4px var(--studio-green-border);`;
+        return `background: var(--studio-brand);`;
       case "stale":
-        return `background: var(--studio-warning, #eab308);`;
+        return `background: var(--studio-warning);`;
       case "building":
-        return `background: #3b82f6;`;
+        return `background: var(--studio-brand); animation: ${buildingPulse} 1.4s ease-in-out infinite;`;
       default:
         return `background: var(--studio-text-muted); opacity: 0.5;`;
     }
@@ -128,10 +134,10 @@ export function GraphifyChip() {
   })();
 
   const statusColor = (() => {
-    if (isBuilding) return "#3b82f6";
+    if (isBuilding) return "var(--studio-brand)";
     if (!enabled) return "var(--studio-text-muted)";
-    if (graphStatus?.stale) return "var(--studio-warning, #eab308)";
-    return "var(--studio-green)";
+    if (graphStatus?.stale) return "var(--studio-warning)";
+    return "var(--studio-brand)";
   })();
 
   return (

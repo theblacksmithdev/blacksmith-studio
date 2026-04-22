@@ -181,7 +181,7 @@ const RowMark = styled.span`
   transition: background 0.12s ease;
 
   &[data-active] {
-    background: var(--studio-text-primary);
+    background: var(--studio-brand);
   }
 `;
 

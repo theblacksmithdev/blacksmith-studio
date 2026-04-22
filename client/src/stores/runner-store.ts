@@ -94,7 +94,7 @@ export function useServices(status?: RunnerStatus) {
 /* ── Helpers ── */
 
 export function statusColor(status: RunnerStatus): string {
-  if (status === RunnerStatus.Running) return "var(--studio-accent)";
+  if (status === RunnerStatus.Running) return "var(--studio-brand)";
   if (status === RunnerStatus.Starting) return "var(--studio-text-tertiary)";
   return "var(--studio-text-muted)";
 }

@@ -107,11 +107,11 @@ const Pill = styled.div`
   transition: border-color 0.15s ease, color 0.15s ease;
 
   &[data-severity="warn"] {
-    border-color: var(--studio-border-strong, var(--studio-border));
+    border-color: var(--studio-warning);
     color: var(--studio-text-primary);
   }
   &[data-severity="alert"] {
-    border-color: var(--studio-accent);
+    border-color: var(--studio-error);
     color: var(--studio-text-primary);
   }
 `;
@@ -148,11 +148,14 @@ const Bar = styled.span`
 const BarFill = styled.span`
   display: block;
   height: 100%;
-  background: var(--studio-text-primary);
+  background: var(--studio-brand);
   transition: width 0.25s ease, background 0.15s ease;
 
+  &[data-severity="warn"] {
+    background: var(--studio-warning);
+  }
   &[data-severity="alert"] {
-    background: var(--studio-accent);
+    background: var(--studio-error);
   }
 `;
 

@@ -91,52 +91,6 @@ export const CloseBtn = styled.button`
   }
 `;
 
-export const StatusBadge = styled.div<{ $status: string }>`
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 500;
-  margin-top: 10px;
-
-  ${({ $status }) => {
-    switch ($status) {
-      case "executing":
-      case "thinking":
-        return `background: var(--studio-green-subtle); color: var(--studio-green); border: 1px solid var(--studio-green-border);`;
-      case "done":
-        return `background: var(--studio-bg-surface); color: var(--studio-text-primary); border: 1px solid var(--studio-border);`;
-      case "error":
-        return `background: var(--studio-error-subtle); color: var(--studio-error); border: 1px solid var(--studio-error);`;
-      default:
-        return `background: var(--studio-bg-surface); color: var(--studio-text-muted); border: 1px solid var(--studio-border);`;
-    }
-  }}
-`;
-
-export const StatusDot = styled.span<{ $status: string }>`
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  background: ${({ $status }) =>
-    $status === "executing" || $status === "thinking"
-      ? "var(--studio-green)"
-      : $status === "done"
-        ? "var(--studio-accent)"
-        : $status === "error"
-          ? "var(--studio-error)"
-          : "var(--studio-text-muted)"};
-
-  ${({ $status }) =>
-    ($status === "executing" || $status === "thinking") &&
-    `
-    box-shadow: 0 0 6px var(--studio-green);
-  `}
-`;
-
 export const Body = styled.div`
   flex: 1;
   overflow-y: auto;

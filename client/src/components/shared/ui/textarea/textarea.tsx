@@ -43,7 +43,7 @@ export function Textarea({
     transition: "all 0.12s ease",
     "&::placeholder": { color: "var(--studio-text-muted)" },
     "&:focus": {
-      borderColor: "var(--studio-border-hover)",
+      borderColor: "var(--studio-brand-border)",
       boxShadow: shadows.focus,
       outline: "none",
     },

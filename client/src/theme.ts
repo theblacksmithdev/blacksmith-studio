@@ -15,17 +15,17 @@ const config = defineConfig({
     ":root": {
       /* ── Light mode ── */
 
-      /* Backgrounds — pure white base, cool-tinted surfaces */
+      /* Backgrounds — cool-slate tinted so the brand green reads warm */
       "--studio-bg-main": "#ffffff",
-      "--studio-bg-sidebar": "#f5f5f5",
-      "--studio-bg-surface": "#eeeeee",
-      "--studio-bg-hover": "#e0e0e0",
-      "--studio-bg-hover-strong": "#d6d6d6",
-      "--studio-bg-inset": "#f8f8f8",
+      "--studio-bg-sidebar": "#f4f5f7",
+      "--studio-bg-surface": "#edeef1",
+      "--studio-bg-hover": "#e2e4e9",
+      "--studio-bg-hover-strong": "#d4d7de",
+      "--studio-bg-inset": "#f8f9fb",
 
-      /* Borders — calm and subtle */
-      "--studio-border": "rgba(0,0,0,0.08)",
-      "--studio-border-hover": "rgba(0,0,0,0.16)",
+      /* Borders — slightly cool so selection accents stand out */
+      "--studio-border": "rgba(17,24,39,0.08)",
+      "--studio-border-hover": "rgba(17,24,39,0.16)",
 
       /* Text — high contrast, sharp hierarchy */
       "--studio-text-primary": "#1a1a1a",
@@ -33,11 +33,17 @@ const config = defineConfig({
       "--studio-text-tertiary": "#616161",
       "--studio-text-muted": "#9e9e9e",
 
-      /* Accent */
+      /* Accent — inverted neutral; use sparingly for destructive/primary */
       "--studio-accent": "#1a1a1a",
       "--studio-accent-fg": "#ffffff",
 
-      /* Brand */
+      /* Brand — the single chromatic accent across the app.
+         Solid: "something is live / running".
+         Subtle / border: selection, focus, live-surface tint. */
+      "--studio-brand": "#10a37f",
+      "--studio-brand-subtle": "rgba(16,163,127,0.1)",
+      "--studio-brand-border": "rgba(16,163,127,0.35)",
+      /* Legacy aliases — existing callers keep working. */
       "--studio-green": "#10a37f",
       "--studio-green-subtle": "rgba(16,163,127,0.1)",
       "--studio-green-border": "rgba(16,163,127,0.25)",
@@ -72,24 +78,24 @@ const config = defineConfig({
       "--studio-glass": "rgba(255,255,255,0.72)",
       "--studio-glass-border": "rgba(255,255,255,0.4)",
 
-      /* Focus */
-      "--studio-ring-focus": "0 0 0 3px rgba(0,0,0,0.08)",
+      /* Focus — brand-tinted ring, soft and functional */
+      "--studio-ring-focus": "0 0 0 3px rgba(16,163,127,0.22)",
     },
 
     ".dark": {
-      /* ── Dark mode — deep blacks, glassy elevated surfaces ── */
+      /* ── Dark mode — warm slate blacks, flat elevated surfaces ── */
 
-      /* Backgrounds */
-      "--studio-bg-main": "#121212",
-      "--studio-bg-sidebar": "#0a0a0a",
-      "--studio-bg-surface": "#1e1e1e",
-      "--studio-bg-hover": "#2c2c2c",
-      "--studio-bg-hover-strong": "#383838",
-      "--studio-bg-inset": "#0d0d0d",
+      /* Backgrounds — shifted ~2° cool-slate so the brand green reads warm */
+      "--studio-bg-main": "#0f1013",
+      "--studio-bg-sidebar": "#0a0b0e",
+      "--studio-bg-surface": "#181a1f",
+      "--studio-bg-hover": "#21242a",
+      "--studio-bg-hover-strong": "#2c3038",
+      "--studio-bg-inset": "#0b0c0f",
 
-      /* Borders — calm and subtle */
-      "--studio-border": "rgba(255,255,255,0.08)",
-      "--studio-border-hover": "rgba(255,255,255,0.16)",
+      /* Borders — slightly cool so selection accents stand out */
+      "--studio-border": "rgba(230,232,240,0.08)",
+      "--studio-border-hover": "rgba(230,232,240,0.18)",
 
       /* Text — bright and sharp */
       "--studio-text-primary": "#f5f5f5",
@@ -97,11 +103,17 @@ const config = defineConfig({
       "--studio-text-tertiary": "#8a8a8a",
       "--studio-text-muted": "#666666",
 
-      /* Accent */
+      /* Accent — inverted neutral, sparingly used */
       "--studio-accent": "#f5f5f5",
-      "--studio-accent-fg": "#121212",
+      "--studio-accent-fg": "#0f1013",
 
-      /* Brand */
+      /* Brand — the single chromatic accent across the app.
+         Solid: "something is live / running".
+         Subtle / border: selection, focus, live-surface tint. */
+      "--studio-brand": "#2dd4a8",
+      "--studio-brand-subtle": "rgba(45,212,168,0.12)",
+      "--studio-brand-border": "rgba(45,212,168,0.38)",
+      /* Legacy aliases — existing callers keep working. */
       "--studio-green": "#2dd4a8",
       "--studio-green-subtle": "rgba(45,212,168,0.12)",
       "--studio-green-border": "rgba(45,212,168,0.3)",
@@ -136,8 +148,8 @@ const config = defineConfig({
       "--studio-glass": "rgba(30,30,30,0.78)",
       "--studio-glass-border": "rgba(255,255,255,0.08)",
 
-      /* Focus */
-      "--studio-ring-focus": "0 0 0 3px rgba(255,255,255,0.06)",
+      /* Focus — brand-tinted ring, soft and functional */
+      "--studio-ring-focus": "0 0 0 3px rgba(45,212,168,0.22)",
     },
 
     body: {
