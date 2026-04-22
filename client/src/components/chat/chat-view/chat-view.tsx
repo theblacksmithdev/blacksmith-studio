@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import styled from "@emotion/styled";
 import { Flex, Box } from "@chakra-ui/react";
-import { Activity, PanelRight, History } from "lucide-react";
+import { Gauge, PanelRight, History } from "lucide-react";
 import {
   ConversationView,
   AttachmentPreviewModal,
@@ -12,12 +12,10 @@ import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 import { PreviewPanel } from "@/components/shared/preview-panel";
 import { SplitPanel } from "@/components/shared/layout";
 import { IconButton, Tooltip, spacing } from "@/components/shared/ui";
-import { TimelineDrawer } from "@/components/shared/event-timeline";
 import { useActiveProjectId } from "@/api/hooks/_shared";
 import { useChatSession } from "./hooks/use-chat-session";
 import { useChatPanels } from "./hooks/use-chat-panels";
-import { ContextMeter } from "../context-meter";
-import { ChatSessionActions } from "../chat-session-actions";
+import { ContextStatsDrawer } from "../context-stats";
 
 const Root = styled(Flex)`
   height: 100%;
@@ -26,7 +24,7 @@ const Root = styled(Flex)`
 
 export function ChatView() {
   const projectId = useActiveProjectId();
-  const [timelineOpen, setTimelineOpen] = useState(false);
+  const [statsOpen, setStatsOpen] = useState(false);
   const {
     sessionId,
     conversationMessages,
@@ -65,17 +63,14 @@ export function ChatView() {
           </IconButton>
         </Tooltip>
         <Box css={{ flex: 1 }} />
-        <ContextMeter scope="chat-session" scopeId={sessionId} />
-        <Box css={{ width: spacing.xs }} />
-        <ChatSessionActions sessionId={sessionId} isStreaming={isStreaming} />
-        <Tooltip content="Conversation timeline">
+        <Tooltip content="Context stats & actions">
           <IconButton
-            variant={timelineOpen ? "default" : "ghost"}
+            variant={statsOpen ? "default" : "ghost"}
             size="sm"
-            onClick={() => setTimelineOpen((v) => !v)}
-            aria-label="Toggle timeline"
+            onClick={() => setStatsOpen((v) => !v)}
+            aria-label="Context stats"
           >
-            <Activity />
+            <Gauge />
           </IconButton>
         </Tooltip>
         <Tooltip content={previewOpen ? "Close preview" : "Open preview"}>
@@ -141,12 +136,11 @@ export function ChatView() {
           onClose={closeAttachment}
         />
       )}
-      {timelineOpen && (
-        <TimelineDrawer
-          scope="single_chat"
-          conversationId={sessionId ?? undefined}
-          onClose={() => setTimelineOpen(false)}
-          hideMessages
+      {statsOpen && (
+        <ContextStatsDrawer
+          sessionId={sessionId}
+          isStreaming={isStreaming}
+          onClose={() => setStatsOpen(false)}
         />
       )}
     </Root>

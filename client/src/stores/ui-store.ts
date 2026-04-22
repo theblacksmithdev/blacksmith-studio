@@ -10,9 +10,6 @@ interface UiState {
   workMode: WorkMode;
   setWorkMode: (mode: WorkMode) => void;
 
-  runnerPanelOpen: boolean;
-  setRunnerPanelOpen: (open: boolean) => void;
-
   previewOpen: boolean;
   setPreviewOpen: (open: boolean) => void;
 
@@ -35,9 +32,6 @@ export const useUiStore = create<UiState>((set) => ({
 
   workMode: "chat",
   setWorkMode: (workMode) => set({ workMode }),
-
-  runnerPanelOpen: false,
-  setRunnerPanelOpen: (runnerPanelOpen) => set({ runnerPanelOpen }),
 
   previewOpen: false,
   setPreviewOpen: (previewOpen) => set({ previewOpen }),

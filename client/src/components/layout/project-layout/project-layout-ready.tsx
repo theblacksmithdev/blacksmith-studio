@@ -1,6 +1,5 @@
 import { Outlet } from "react-router-dom";
 import { SplitPanel } from "@/components/shared/layout";
-import { RunnerDock } from "@/components/runner/dock";
 import { TerminalPanel } from "@/components/terminal";
 import { useTerminalPanel } from "@/hooks/use-terminal-panel";
 import { Sidebar } from "../sidebar";
@@ -9,9 +8,8 @@ import { Body, Content, Main, Root } from "./styles";
 
 /**
  * The normal project chrome — title bar, sidebar, main content with an
- * optional terminal split, and the runner dock at the bottom. Split
- * out so the orchestrator can decide between this and the onboarding
- * via a single expression.
+ * optional terminal split. Split out so the orchestrator can decide
+ * between this and the onboarding via a single expression.
  */
 export function ProjectLayoutReady() {
   const [terminalOpen] = useTerminalPanel();
@@ -45,7 +43,6 @@ export function ProjectLayoutReady() {
           )}
         </Main>
       </Body>
-      <RunnerDock />
     </Root>
   );
 }
