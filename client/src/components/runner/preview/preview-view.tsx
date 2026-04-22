@@ -12,6 +12,7 @@ import {
 } from "@/components/runner/runner-primitives";
 import { PreviewStopped, PreviewEmpty } from "./preview-states";
 import { IframeView } from "./iframe-view";
+import { TabContextMenu } from "./tab-context-menu";
 
 const Wrap = styled.div`
   display: flex;
@@ -105,6 +106,10 @@ export function PreviewView({ onClose }: PreviewViewProps) {
   const previewServices = runningServices.filter((svc) => svc.previewUrl);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   const [reloadKeys, setReloadKeys] = useState<Record<string, number>>({});
+  const [ctxMenu, setCtxMenu] = useState<
+    | { tabId: string; x: number; y: number }
+    | null
+  >(null);
 
   const currentTab =
     previewServices.find((s) => s.id === activeTabId) ??
@@ -114,15 +119,19 @@ export function PreviewView({ onClose }: PreviewViewProps) {
     (s) => s.id === (activeTabId ?? previewServices[0]?.id),
   );
 
-  const reload = () => {
-    if (!currentTab) return;
-    setReloadKeys((k) => ({
-      ...k,
-      [currentTab.id]: (k[currentTab.id] ?? 0) + 1,
-    }));
+  const reload = (tabId: string) => {
+    setReloadKeys((k) => ({ ...k, [tabId]: (k[tabId] ?? 0) + 1 }));
+  };
+
+  const reloadCurrent = () => {
+    if (currentTab) reload(currentTab.id);
   };
 
   const hasServices = services.length > 0;
+
+  const ctxMenuService = ctxMenu
+    ? (previewServices.find((s) => s.id === ctxMenu.tabId) ?? null)
+    : null;
 
   return (
     <Wrap>
@@ -135,6 +144,11 @@ export function PreviewView({ onClose }: PreviewViewProps) {
                 key={svc.id}
                 active={(currentTab?.id ?? null) === svc.id}
                 onClick={() => setActiveTabId(svc.id)}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  setActiveTabId(svc.id);
+                  setCtxMenu({ tabId: svc.id, x: e.clientX, y: e.clientY });
+                }}
               >
                 <Icon size={11} />
                 {svc.name}
@@ -155,7 +169,7 @@ export function PreviewView({ onClose }: PreviewViewProps) {
           <IframeView
             url={currentTab.previewUrl}
             reloadKey={reloadKeys[currentTab.id] ?? 0}
-            onReload={reload}
+            onReload={reloadCurrent}
           />
         ) : currentService ? (
           <PreviewStopped
@@ -168,6 +182,16 @@ export function PreviewView({ onClose }: PreviewViewProps) {
           <PreviewEmpty />
         )}
       </Body>
+
+      {ctxMenu && (
+        <TabContextMenu
+          x={ctxMenu.x}
+          y={ctxMenu.y}
+          url={ctxMenuService?.previewUrl ?? null}
+          onReload={() => reload(ctxMenu.tabId)}
+          onClose={() => setCtxMenu(null)}
+        />
+      )}
     </Wrap>
   );
 }

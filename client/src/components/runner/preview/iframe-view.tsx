@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import styled from "@emotion/styled";
-import { Globe, ExternalLink, RotateCw } from "lucide-react";
-import { MONO_FONT } from "@/components/runner/runner-primitives";
 import {
   PreviewLoading,
   PreviewLoadingBar,
@@ -16,58 +14,6 @@ interface ErrorInfo {
   message: string;
   statusCode?: number;
 }
-
-/* ── Styled components ── */
-
-const UrlBar = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 14px;
-  border-bottom: 1px solid var(--studio-border);
-  flex-shrink: 0;
-  background: var(--studio-bg-sidebar);
-`;
-
-const UrlText = styled.span`
-  font-size: 12px;
-  color: var(--studio-text-tertiary);
-  font-family: ${MONO_FONT};
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
-
-const UrlAction = styled.button`
-  color: var(--studio-text-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border: none;
-  background: transparent;
-  padding: 2px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.12s ease;
-
-  &:hover {
-    color: var(--studio-text-secondary);
-    background: var(--studio-bg-hover);
-  }
-`;
-
-const ExtLink = styled.a`
-  color: var(--studio-text-muted);
-  display: flex;
-  flex-shrink: 0;
-  transition: color 0.12s ease;
-
-  &:hover {
-    color: var(--studio-text-secondary);
-  }
-`;
 
 const Frame = styled.div`
   flex: 1;
@@ -139,7 +85,6 @@ function parseError(statusCode?: number): ErrorInfo {
 async function probeUrl(
   url: string,
 ): Promise<{ status: EmbedStatus; error?: ErrorInfo }> {
-  // Try normal fetch first
   try {
     const res = await fetch(url);
 
@@ -157,13 +102,10 @@ async function probeUrl(
     // CORS blocked — try opaque
   }
 
-  // Opaque fallback — can the server be reached at all?
   try {
     await fetch(url, { mode: "no-cors" });
-    // Server is reachable but CORS blocked inspection — let iframe try
     return { status: "ok" };
   } catch {
-    // Server completely unreachable
     return { status: "error", error: parseError() };
   }
 }
@@ -200,23 +142,15 @@ export function IframeView({ url, reloadKey, onReload }: IframeViewProps) {
     };
   }, [url, reloadKey]);
 
-  // After iframe reports loaded, check if it's actually blank
-  // (X-Frame-Options blocked it silently, or server returned empty)
   const handleIframeLoad = useCallback(() => {
     setIframeLoaded(true);
-
-    // Clear any pending blank check
     if (blankCheckTimer.current) clearTimeout(blankCheckTimer.current);
-
-    // Give it a moment then check if the iframe rendered anything
     blankCheckTimer.current = setTimeout(() => {
-      // We can't access cross-origin contentDocument, but we can check
-      // if the iframe's contentWindow has any frames (length > 0 means content loaded)
-      // This is a heuristic — not perfect, but catches the common blank-iframe case
+      // Heuristic placeholder — cross-origin contentDocument is opaque,
+      // kept intentionally empty so the timer fires without side effects.
     }, 500);
   }, []);
 
-  // If iframe hasn't loaded after 8s, something is wrong
   useEffect(() => {
     if (status !== "ok") return;
 
@@ -234,7 +168,6 @@ export function IframeView({ url, reloadKey, onReload }: IframeViewProps) {
     return () => clearTimeout(timeout);
   }, [status, iframeLoaded, reloadKey]);
 
-  // Cleanup
   useEffect(() => {
     return () => {
       if (blankCheckTimer.current) clearTimeout(blankCheckTimer.current);
@@ -249,54 +182,25 @@ export function IframeView({ url, reloadKey, onReload }: IframeViewProps) {
     setStatus("error");
   }, []);
 
-  // URL bar for error/blocked states
-  const errorUrlBar = (
-    <UrlBar>
-      <Globe
-        size={12}
-        style={{ color: "var(--studio-text-muted)", flexShrink: 0 }}
-      />
-      <UrlText>{url}</UrlText>
-      <UrlAction onClick={onReload} title="Retry">
-        <RotateCw size={11} />
-      </UrlAction>
-    </UrlBar>
-  );
-
   if (status === "blocked") {
-    return (
-      <>
-        {errorUrlBar}
-        <PreviewBlocked url={url} onRetry={onReload} />
-      </>
-    );
+    return <PreviewBlocked url={url} onRetry={onReload} />;
   }
 
   if (status === "error") {
     return (
-      <>
-        {errorUrlBar}
-        <PreviewError
-          url={url}
-          title={errorInfo?.title}
-          message={errorInfo?.message}
-          statusCode={errorInfo?.statusCode}
-          onRetry={onReload}
-        />
-      </>
+      <PreviewError
+        url={url}
+        title={errorInfo?.title}
+        message={errorInfo?.message}
+        statusCode={errorInfo?.statusCode}
+        onRetry={onReload}
+      />
     );
   }
 
   if (status === "loading") {
     return (
       <>
-        <UrlBar>
-          <Globe
-            size={12}
-            style={{ color: "var(--studio-text-muted)", flexShrink: 0 }}
-          />
-          <UrlText>{url}</UrlText>
-        </UrlBar>
         <PreviewLoadingBar />
         <PreviewLoading url={url} />
       </>
@@ -305,19 +209,6 @@ export function IframeView({ url, reloadKey, onReload }: IframeViewProps) {
 
   return (
     <>
-      <UrlBar>
-        <Globe
-          size={12}
-          style={{ color: "var(--studio-text-muted)", flexShrink: 0 }}
-        />
-        <UrlText>{url}</UrlText>
-        <UrlAction onClick={onReload} title="Reload">
-          <RotateCw size={11} />
-        </UrlAction>
-        <ExtLink href={url} target="_blank" rel="noopener noreferrer">
-          <ExternalLink size={12} />
-        </ExtLink>
-      </UrlBar>
       {!iframeLoaded && <PreviewLoadingBar />}
       <Frame>
         <iframe
