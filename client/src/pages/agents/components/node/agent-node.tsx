@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { Layers } from "lucide-react";
-import { ROLE_ICONS } from "../shared/role-icons";
+import { ROLE_ICONS } from "@/components/shared/agent-role-icons";
 import type { AgentNodeData } from "./types";
 import {
   NodeWrapper,

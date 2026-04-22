@@ -14,7 +14,7 @@ import { PanelEmptyState } from "@/components/shared/panel-empty-state";
 import { Tooltip } from "@/components/shared/tooltip";
 import { ConfirmDialog } from "@/components/shared/ui";
 import { extractHtmlArtifact } from "./detect-html";
-import { ROLE_ICONS } from "@/components/agents/shared/role-icons";
+import { ROLE_ICONS } from "@/components/shared/agent-role-icons";
 import type { AgentRole } from "@/api/types";
 import {
   useArtifactContentQuery,

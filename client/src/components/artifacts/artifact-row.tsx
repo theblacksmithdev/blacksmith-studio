@@ -1,7 +1,7 @@
 import { FileCode } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import type { Artifact, AgentRole } from "@/api/types";
-import { ROLE_ICONS } from "@/components/agents/shared/role-icons";
+import { ROLE_ICONS } from "@/components/shared/agent-role-icons";
 import {
   MetaDot,
   RoleLabel,

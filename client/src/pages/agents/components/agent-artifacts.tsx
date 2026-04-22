@@ -4,7 +4,7 @@ import { GitCommit, FileText, FilePlus, Pencil, Folder } from "lucide-react";
 import { useAgentArtifactsQuery } from "@/api/hooks/agents";
 import { Text, Badge, Skeleton } from "@/components/shared/ui";
 import { PanelEmptyState } from "@/components/shared/panel-empty-state";
-import { ROLE_ICONS } from "../shared/role-icons";
+import { ROLE_ICONS } from "@/components/shared/agent-role-icons";
 import type { AgentRole } from "@/api/types";
 
 const List = styled.div`

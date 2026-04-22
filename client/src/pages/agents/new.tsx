@@ -1,5 +1,5 @@
-import { AgentsPage } from "@/components/agents";
-import { useNewConversation } from "@/components/agents/page/use-new-conversation";
+import { AgentsPage } from "./agents-page";
+import { useNewConversation } from "./hooks/use-new-conversation";
 
 export default function AgentsNewPage() {
   const { handleSend } = useNewConversation();

@@ -1,7 +1,7 @@
 import { Flex, Box } from "@chakra-ui/react";
 import { Layers, X, Clock, Maximize2, Zap, Wrench } from "lucide-react";
 import { useAgentStore } from "@/stores/agent-store";
-import { ROLE_ICONS } from "../shared/role-icons";
+import { ROLE_ICONS } from "@/components/shared/agent-role-icons";
 import { Text, Badge } from "@/components/shared/ui";
 import type { BadgeVariant } from "@/components/shared/ui/badge/badge";
 import { ModelPicker } from "@/components/shared/model-picker";

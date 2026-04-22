@@ -5,7 +5,7 @@ import { keyframes } from "@emotion/react";
 import { Network, Bot, Cpu, Sparkles, AlertCircle } from "lucide-react";
 import { useAgentStore } from "@/stores/agent-store";
 import { useAgentChatQuery } from "@/api/hooks/agents";
-import { ROLE_ICONS } from "../shared/role-icons";
+import { ROLE_ICONS } from "@/components/shared/agent-role-icons";
 import {
   ConversationView,
   AttachmentPreviewModal,

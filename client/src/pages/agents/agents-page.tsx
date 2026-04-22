@@ -12,15 +12,15 @@ import { useAgentStore } from "@/stores/agent-store";
 import { Tooltip } from "@/components/shared/tooltip";
 import { ConfirmDialog } from "@/components/shared/ui";
 import { SplitPanel } from "@/components/shared/layout";
-import { AgentCanvas } from "../canvas";
-import { AgentChat } from "../chat";
-import { AgentDetail } from "../detail";
-import { AgentInnerView } from "../inner-view";
-import { TaskDrawer } from "../drawer";
+import { AgentCanvas } from "./components/canvas";
+import { AgentChat } from "./components/chat";
+import { AgentDetail } from "./components/detail";
+import { AgentInnerView } from "./components/inner-view";
+import { TaskDrawer } from "./components/drawer";
 import { TimelineDrawer } from "@/components/shared/event-timeline";
-import { AgentStatsDrawer } from "../stats";
-import { AgentMainPanel } from "./agent-main-panel";
-import { useAgentEvents } from "./use-agent-events";
+import { AgentStatsDrawer } from "./components/stats";
+import { AgentMainPanel } from "./components/agent-main-panel";
+import { useAgentEvents } from "./hooks/use-agent-events";
 import {
   Layout,
   CanvasPanel,
@@ -31,7 +31,7 @@ import {
   StopBtn,
   Badge,
   UnreadDot,
-} from "./styles";
+} from "./components/styles";
 import type { AgentRole } from "@/api/types";
 
 import type { AttachmentRecord } from "@/components/shared/conversation";

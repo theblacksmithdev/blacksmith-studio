@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
-import { AgentsPage } from "@/components/agents";
-import { useConversation } from "@/components/agents/page/use-conversation";
+import { AgentsPage } from "./agents-page";
+import { useConversation } from "./hooks/use-conversation";
 
 export default function AgentsConversationPage() {
   const { conversationId } = useParams<{ conversationId: string }>();

@@ -19,7 +19,7 @@ import { Flex } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
 import { useAgentStore, type AgentLogEntry } from "@/stores/agent-store";
 import { api } from "@/api";
-import { ROLE_ICONS } from "../shared/role-icons";
+import { ROLE_ICONS } from "@/components/shared/agent-role-icons";
 import { MarkdownRenderer } from "@/components/shared/markdown-renderer";
 import {
   ConversationView,

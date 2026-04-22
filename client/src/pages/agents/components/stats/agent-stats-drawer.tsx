@@ -4,7 +4,7 @@ import { Layers } from "lucide-react";
 import { Drawer } from "@/components/shared/ui";
 import { useConversationStats } from "@/api/hooks/usage";
 import type { AgentRollup } from "@/api/modules/usage";
-import { ROLE_ICONS } from "../shared/role-icons";
+import { ROLE_ICONS } from "@/components/shared/agent-role-icons";
 import type { AgentRole } from "@/api/types";
 
 interface AgentStatsDrawerProps {
