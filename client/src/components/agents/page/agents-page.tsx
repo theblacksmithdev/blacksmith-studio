@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { ReactFlowProvider } from "@xyflow/react";
-import { Activity, ListTodo, MessageSquare, Square } from "lucide-react";
+import { Activity, Gauge, ListTodo, MessageSquare, Square } from "lucide-react";
 import {
   useAgentsListQuery,
   useAgentRespond,
@@ -18,12 +18,14 @@ import { AgentDetail } from "../detail";
 import { AgentInnerView } from "../inner-view";
 import { TaskDrawer } from "../drawer";
 import { TimelineDrawer } from "@/components/shared/event-timeline";
+import { AgentStatsDrawer } from "../stats";
 import { AgentMainPanel } from "./agent-main-panel";
 import { useAgentEvents } from "./use-agent-events";
 import {
   Layout,
   CanvasPanel,
   ButtonGroup,
+  GroupDivider,
   TasksBtn,
   ChatBtn,
   StopBtn,
@@ -53,6 +55,7 @@ export function AgentsPage({
 }: AgentsPageProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [timelineOpen, setTimelineOpen] = useState(false);
+  const [statsOpen, setStatsOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(true);
   const [hasUnread, setHasUnread] = useState(false);
   const [innerViewRole, setInnerViewRole] = useState<AgentRole | null>(null);
@@ -208,7 +211,8 @@ export function AgentsPage({
         />
       </ReactFlowProvider>
 
-      {/* Floating buttons */}
+      {/* Floating buttons — grouped by intent:
+          [Chat toggle]  │  [Tasks · Timeline · Stats]  │  [Stop] */}
       <ButtonGroup>
         <Tooltip content={chatOpen ? "Hide chat" : "Show chat"}>
           <ChatBtn $active={chatOpen} onClick={toggleChat}>
@@ -217,6 +221,8 @@ export function AgentsPage({
             {hasUnread && !chatOpen && <UnreadDot />}
           </ChatBtn>
         </Tooltip>
+
+        <GroupDivider />
 
         <Tooltip content="View task plan">
           <TasksBtn
@@ -241,13 +247,26 @@ export function AgentsPage({
           </ChatBtn>
         </Tooltip>
 
+        <Tooltip content="Conversation stats & cost">
+          <ChatBtn
+            $active={statsOpen}
+            onClick={() => setStatsOpen((v) => !v)}
+          >
+            <Gauge size={14} />
+            Stats
+          </ChatBtn>
+        </Tooltip>
+
         {isProcessing && (
-          <Tooltip content="Stop all agents">
-            <StopBtn onClick={handleStop}>
-              <Square size={12} />
-              Stop
-            </StopBtn>
-          </Tooltip>
+          <>
+            <GroupDivider />
+            <Tooltip content="Stop all agents">
+              <StopBtn onClick={handleStop}>
+                <Square size={12} />
+                Stop
+              </StopBtn>
+            </Tooltip>
+          </>
         )}
       </ButtonGroup>
 
@@ -287,6 +306,13 @@ export function AgentsPage({
           conversationId={conversationId}
           onClose={() => setTimelineOpen(false)}
           hideMessages
+        />
+      )}
+
+      {statsOpen && conversationId && (
+        <AgentStatsDrawer
+          conversationId={conversationId}
+          onClose={() => setStatsOpen(false)}
         />
       )}
 

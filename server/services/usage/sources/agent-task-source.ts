@@ -82,6 +82,55 @@ export class AgentTaskUsageSource implements UsageSource, HistorySource {
     return rows.map((r) => this.toRecord(r));
   }
 
+  /**
+   * Per-task rows for one multi-agent conversation, with the role
+   * attached. Used to compute conversation-scoped stats + per-agent
+   * rollups for the agent stats drawer.
+   */
+  listByConversation(
+    conversationId: string,
+  ): Array<{
+    role: string;
+    breakdown: TokenBreakdown;
+    model: string | null;
+    dispatchId: string;
+    finishedAt: string | null;
+  }> {
+    const rows = this.db
+      .select({
+        role: agentTasks.role,
+        tokensInput: agentTasks.tokensInput,
+        tokensOutput: agentTasks.tokensOutput,
+        tokensCacheRead: agentTasks.tokensCacheRead,
+        tokensCacheCreation: agentTasks.tokensCacheCreation,
+        model: agentTasks.model,
+        dispatchId: agentTasks.dispatchId,
+        finishedAt: agentTasks.finishedAt,
+      })
+      .from(agentTasks)
+      .innerJoin(agentDispatches, eq(agentTasks.dispatchId, agentDispatches.id))
+      .where(
+        and(
+          eq(agentDispatches.conversationId, conversationId),
+          isNotNull(agentTasks.tokensInput),
+        ),
+      )
+      .all();
+
+    return rows.map((r) => ({
+      role: r.role,
+      breakdown: {
+        input: r.tokensInput ?? 0,
+        output: r.tokensOutput ?? 0,
+        cacheRead: r.tokensCacheRead ?? 0,
+        cacheCreation: r.tokensCacheCreation ?? 0,
+      },
+      model: r.model,
+      dispatchId: r.dispatchId,
+      finishedAt: r.finishedAt,
+    }));
+  }
+
   listAggregates(projectId: string): ScopeAggregate[] {
     const rows = this.db
       .select({

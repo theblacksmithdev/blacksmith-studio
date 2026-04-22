@@ -209,6 +209,7 @@ export const AGENT_TASK_DEPENDENCIES_LIST = "agentTasks:listDependencies";
 export const USAGE_GET_SESSION_METER = "usage:getSessionMeter";
 export const USAGE_GET_HISTORY = "usage:getHistory";
 export const USAGE_GET_SCOPE_DETAIL = "usage:getScopeDetail";
+export const USAGE_GET_CONVERSATION_STATS = "usage:getConversationStats";
 
 // AI meta (models, providers)
 export const AI_LIST_MODELS = "ai:listModels";
@@ -399,6 +400,7 @@ export const INVOKE_CHANNELS = [
   USAGE_GET_SESSION_METER,
   USAGE_GET_HISTORY,
   USAGE_GET_SCOPE_DETAIL,
+  USAGE_GET_CONVERSATION_STATS,
   AI_LIST_MODELS,
 ] as const;
 

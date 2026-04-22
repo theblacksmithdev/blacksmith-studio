@@ -2,6 +2,8 @@ import { ModelCatalog } from "../ai/model-catalog.js";
 import type { UsageSource } from "./source.js";
 import type { HistorySource } from "./history-source.js";
 import type {
+  AgentRollup,
+  ConversationStats,
   HistoryScope,
   ModelRollup,
   ScopeAggregate,
@@ -11,6 +13,7 @@ import type {
   UsageHistory,
   UsageScope,
 } from "./types.js";
+import type { AgentTaskUsageSource } from "./sources/agent-task-source.js";
 import { costOfBreakdown } from "./cost.js";
 
 /**
@@ -35,6 +38,12 @@ export class UsageService {
     meterSources: UsageSource[],
     historySources: HistorySource[],
     private readonly catalog: ModelCatalog = new ModelCatalog(),
+    /**
+     * Typed dependency for multi-agent-specific queries (conversation
+     * rollups). Optional so standalone callers that only need chat
+     * stats can omit it; throws on use if missing.
+     */
+    private readonly agentSource?: AgentTaskUsageSource,
   ) {
     for (const s of meterSources) this.meterSourcesByScope.set(s.scope, s);
     for (const s of historySources)
@@ -98,6 +107,79 @@ export class UsageService {
       byModel,
       chatSessions: sessions,
       agentDispatches: dispatches,
+    };
+  }
+
+  /**
+   * Collective usage stats for one multi-agent conversation: overall
+   * total + per-agent rollup. The by-agent list is sorted by cost so
+   * the biggest spenders surface first.
+   */
+  getConversationStats(conversationId: string): ConversationStats {
+    if (!this.agentSource) {
+      throw new Error(
+        "UsageService was constructed without an agent source; conversation stats unavailable.",
+      );
+    }
+    const rows = this.agentSource.listByConversation(conversationId);
+
+    const dispatchIds = new Set<string>();
+    const byRole = new Map<
+      string,
+      {
+        breakdown: TokenBreakdown;
+        costUsd: number;
+        taskCount: number;
+        latestModel: string | null;
+      }
+    >();
+
+    for (const r of rows) {
+      dispatchIds.add(r.dispatchId);
+      const prev = byRole.get(r.role);
+      const pricing = this.catalog.pricingFor(r.model);
+      const cost = costOfBreakdown(r.breakdown, pricing);
+      if (!prev) {
+        byRole.set(r.role, {
+          breakdown: { ...r.breakdown },
+          costUsd: cost,
+          taskCount: 1,
+          latestModel: r.model,
+        });
+      } else {
+        prev.breakdown = sumBreakdown([prev.breakdown, r.breakdown]);
+        prev.costUsd += cost;
+        prev.taskCount += 1;
+        if (r.model) prev.latestModel = r.model;
+      }
+    }
+
+    const byAgent: AgentRollup[] = Array.from(byRole.entries())
+      .map(([role, v]) => {
+        const info = this.catalog.lookup(v.latestModel);
+        return {
+          role,
+          total: totalOf(v.breakdown),
+          breakdown: v.breakdown,
+          costUsd: v.costUsd,
+          taskCount: v.taskCount,
+          model: v.latestModel,
+          modelLabel: info.label,
+        };
+      })
+      .sort((a, b) => b.costUsd - a.costUsd);
+
+    const breakdown = sumBreakdown(byAgent.map((a) => a.breakdown));
+    const costUsd = byAgent.reduce((sum, a) => sum + a.costUsd, 0);
+
+    return {
+      conversationId,
+      dispatchCount: dispatchIds.size,
+      taskCount: rows.length,
+      total: totalOf(breakdown),
+      breakdown,
+      costUsd,
+      byAgent,
     };
   }
 

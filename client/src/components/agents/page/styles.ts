@@ -73,7 +73,17 @@ export const ButtonGroup = styled.div`
   left: 16px;
   z-index: 10;
   display: flex;
+  align-items: center;
   gap: 6px;
+`;
+
+/** Thin vertical divider between grouped floating buttons. */
+export const GroupDivider = styled.span`
+  display: inline-block;
+  width: 1px;
+  height: 20px;
+  margin: 0 2px;
+  background: var(--studio-border);
 `;
 
 export const ChatBtn = styled(FloatingBase)``;

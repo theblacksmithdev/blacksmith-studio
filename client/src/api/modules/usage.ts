@@ -75,6 +75,26 @@ export interface ScopeDetail {
   turns: UsageTurn[];
 }
 
+export interface AgentRollup {
+  role: string;
+  total: number;
+  breakdown: TokenBreakdown;
+  costUsd: number;
+  taskCount: number;
+  model: string | null;
+  modelLabel: string;
+}
+
+export interface ConversationStats {
+  conversationId: string;
+  dispatchCount: number;
+  taskCount: number;
+  total: number;
+  breakdown: TokenBreakdown;
+  costUsd: number;
+  byAgent: AgentRollup[];
+}
+
 export const usage = {
   getSessionMeter: (scope: UsageScope, scopeId: string) =>
     raw.invoke<SessionMeter>("usage:getSessionMeter", { scope, scopeId }),
@@ -84,6 +104,11 @@ export const usage = {
 
   getScopeDetail: (scope: HistoryScope, scopeId: string) =>
     raw.invoke<ScopeDetail>("usage:getScopeDetail", { scope, scopeId }),
+
+  getConversationStats: (conversationId: string) =>
+    raw.invoke<ConversationStats>("usage:getConversationStats", {
+      conversationId,
+    }),
 
   onUpdate: (cb: (data: SessionMeter) => void) =>
     raw.subscribe("usage:onUpdate", cb),

@@ -112,3 +112,29 @@ export interface ScopeDetail {
   costUsd: number;
   turns: UsageTurn[];
 }
+
+/**
+ * Per-agent rollup inside a multi-agent conversation. "Agent" here is
+ * the role (frontend-engineer, pm, etc.) — many tasks across many
+ * dispatches aggregate into one row.
+ */
+export interface AgentRollup {
+  role: string;
+  total: number;
+  breakdown: TokenBreakdown;
+  costUsd: number;
+  taskCount: number;
+  model: string | null;
+  modelLabel: string;
+}
+
+/** Collective stats for one multi-agent conversation. */
+export interface ConversationStats {
+  conversationId: string;
+  dispatchCount: number;
+  taskCount: number;
+  total: number;
+  breakdown: TokenBreakdown;
+  costUsd: number;
+  byAgent: AgentRollup[];
+}

@@ -6,6 +6,8 @@ import { UsageService } from "./usage-service.js";
 
 export { UsageService } from "./usage-service.js";
 export type {
+  AgentRollup,
+  ConversationStats,
   HistoryScope,
   ModelRollup,
   ScopeAggregate,
@@ -25,5 +27,5 @@ export function createUsageService(db: Database = getDatabase()): UsageService {
   const catalog = new ModelCatalog();
   const chat = new ChatSessionUsageSource(db, catalog);
   const agent = new AgentTaskUsageSource(db, catalog);
-  return new UsageService([chat, agent], [chat, agent], catalog);
+  return new UsageService([chat, agent], [chat, agent], catalog, agent);
 }

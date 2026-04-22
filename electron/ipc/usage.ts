@@ -8,6 +8,7 @@ import {
   USAGE_GET_SESSION_METER,
   USAGE_GET_HISTORY,
   USAGE_GET_SCOPE_DETAIL,
+  USAGE_GET_CONVERSATION_STATS,
   USAGE_ON_UPDATE,
 } from "./channels.js";
 
@@ -37,6 +38,13 @@ export function setupUsageIPC(
     USAGE_GET_SCOPE_DETAIL,
     (_e, data: { scope: HistoryScope; scopeId: string }) => {
       return usageService.getScopeDetail(data.scope, data.scopeId);
+    },
+  );
+
+  ipcMain.handle(
+    USAGE_GET_CONVERSATION_STATS,
+    (_e, data: { conversationId: string }) => {
+      return usageService.getConversationStats(data.conversationId);
     },
   );
 
