@@ -22,8 +22,6 @@ export const Path = {
   AgentsConversation: "/:projectId/agents/:conversationId",
   Artifacts: "/:projectId/artifacts",
   ArtifactDetail: "/:projectId/artifacts/:artifactId",
-  Commands: "/:projectId/commands",
-  CommandRun: "/:projectId/commands/:runId",
   Usage: "/:projectId/usage",
 } as const;
 
@@ -114,14 +112,6 @@ export function artifactsPath(projectId: string) {
 
 export function artifactDetailPath(projectId: string, artifactId: string) {
   return `/${projectId}/artifacts/${artifactId}`;
-}
-
-export function commandsPath(projectId: string) {
-  return `/${projectId}/commands`;
-}
-
-export function commandRunPath(projectId: string, runId: string) {
-  return `/${projectId}/commands/${runId}`;
 }
 
 export function usagePath(projectId: string) {

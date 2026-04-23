@@ -3,10 +3,8 @@ import {
   Play,
   GitBranch,
   MessageSquare,
-  Users,
   Network,
   FileCode,
-  Terminal,
   Gauge,
 } from "lucide-react";
 import {
@@ -16,7 +14,6 @@ import {
   newChatPath,
   agentsNewPath,
   artifactsPath,
-  commandsPath,
   usagePath,
 } from "@/router/paths";
 
@@ -75,8 +72,9 @@ export const workNav: NavEntry[] = [
 
 /**
  * Activity — read-only audit trails. Surfaces what Claude and agents
- * have been doing (artifacts produced, commands executed) without
- * driving new work.
+ * have been doing (artifacts produced, cost accrued) without driving
+ * new work. Agent subprocess runs live inside each agent conversation
+ * now rather than as a global surface.
  */
 export const activityNav: NavEntry[] = [
   {
@@ -85,13 +83,6 @@ export const activityNav: NavEntry[] = [
     label: "Artifacts",
     path: artifactsPath,
     match: "/artifacts",
-  },
-  {
-    id: "commands",
-    icon: Terminal,
-    label: "Commands",
-    path: commandsPath,
-    match: "/commands",
   },
   {
     id: "usage",

@@ -78,6 +78,14 @@ export type { InfiniteScrollListProps } from "./infinite-scroll-list";
 export { Menu } from "./menu";
 export type { MenuProps, MenuOption } from "./menu";
 
+export {
+  PopupMenu,
+  PopupMenuItem,
+  PopupMenuSeparator,
+  PopupMenuLabel,
+} from "./popup-menu";
+export type { PopupMenuProps, PopupMenuPlacement } from "./popup-menu";
+
 // ── Composite ──
 export { EmptyState } from "./empty-state";
 

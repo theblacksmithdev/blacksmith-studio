@@ -47,6 +47,7 @@ export function useAgentsPage({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [timelineOpen, setTimelineOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
+  const [commandsOpen, setCommandsOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(true);
   const [hasUnread, setHasUnread] = useState(false);
   const [innerViewRole, setInnerViewRole] = useState<AgentRole | null>(null);
@@ -134,6 +135,8 @@ export function useAgentsPage({
   const closeTimeline = useCallback(() => setTimelineOpen(false), []);
   const toggleStats = useCallback(() => setStatsOpen((v) => !v), []);
   const closeStats = useCallback(() => setStatsOpen(false), []);
+  const toggleCommands = useCallback(() => setCommandsOpen((v) => !v), []);
+  const closeCommands = useCallback(() => setCommandsOpen(false), []);
   const closeInnerView = useCallback(() => setInnerViewRole(null), []);
   const clearSelectedAgent = useCallback(
     () => selectAgent(null),
@@ -196,6 +199,7 @@ export function useAgentsPage({
     drawerOpen,
     timelineOpen,
     statsOpen,
+    commandsOpen,
     hasUnread,
     showStopConfirm,
     toggleChat,
@@ -205,6 +209,8 @@ export function useAgentsPage({
     closeTimeline,
     toggleStats,
     closeStats,
+    toggleCommands,
+    closeCommands,
     closeInnerView,
     closeStopConfirm,
 

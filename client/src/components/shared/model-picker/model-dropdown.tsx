@@ -1,7 +1,8 @@
 import { Fragment } from "react";
 import styled from "@emotion/styled";
-import { Menu as ChakraMenu, Portal } from "@chakra-ui/react";
+import { Menu as ChakraMenu } from "@chakra-ui/react";
 import { ChevronDown } from "lucide-react";
+import { PopupMenu } from "@/components/shared/ui";
 import type { ModelEntry } from "@/api/modules/ai";
 import { formatWindow, groupByFamily } from "./helpers";
 
@@ -15,12 +16,6 @@ interface ModelDropdownProps {
   compact?: boolean;
 }
 
-/**
- * Dropdown variant — Chakra `Menu.RadioItemGroup` for real radio
- * semantics + keyboard navigation, styled to match the settings grid.
- * Single-line rows, radio dot on the left, right-aligned context window
- * in mono. No gradients, no heavy shadows.
- */
 export function ModelDropdown({
   models,
   value,
@@ -32,51 +27,43 @@ export function ModelDropdown({
   const active = models.find((m) => m.id === value) ?? null;
 
   return (
-    <ChakraMenu.Root
-      positioning={{
-        placement: placement === "up" ? "top-start" : "bottom-start",
-        gutter: 6,
-      }}
-      lazyMount
-      unmountOnExit
-    >
-      <ChakraMenu.Trigger asChild>
+    <PopupMenu
+      placement={placement === "up" ? "top-start" : "bottom-start"}
+      gutter={6}
+      minWidth={220}
+      maxHeight={380}
+      padding={3}
+      trigger={
         <Trigger data-compact={compact || undefined} type="button">
           <TriggerLabel>{active?.label ?? "Select model"}</TriggerLabel>
           <TriggerChevron>
             <ChevronDown size={11} strokeWidth={2} />
           </TriggerChevron>
         </Trigger>
-      </ChakraMenu.Trigger>
-
-      <Portal>
-        <ChakraMenu.Positioner>
-          <Content>
-            <ChakraMenu.RadioItemGroup
-              value={value ?? ""}
-              onValueChange={(d) => d.value && onChange(d.value)}
-            >
-              {groups.map((group, gi) => (
-                <Fragment key={group.family}>
-                  <GroupLabel data-first={gi === 0 || undefined}>
-                    {group.family}
-                  </GroupLabel>
-                  {group.entries.map((m) => (
-                    <Row key={m.id} value={m.id}>
-                      <RadioIndicator>
-                        <RadioDot />
-                      </RadioIndicator>
-                      <RowLabel>{m.label}</RowLabel>
-                      <RowWindow>{formatWindow(m.contextWindow)}</RowWindow>
-                    </Row>
-                  ))}
-                </Fragment>
-              ))}
-            </ChakraMenu.RadioItemGroup>
-          </Content>
-        </ChakraMenu.Positioner>
-      </Portal>
-    </ChakraMenu.Root>
+      }
+    >
+      <ChakraMenu.RadioItemGroup
+        value={value ?? ""}
+        onValueChange={(d) => d.value && onChange(d.value)}
+      >
+        {groups.map((group, gi) => (
+          <Fragment key={group.family}>
+            <GroupLabel data-first={gi === 0 || undefined}>
+              {group.family}
+            </GroupLabel>
+            {group.entries.map((m) => (
+              <Row key={m.id} value={m.id}>
+                <RadioIndicator>
+                  <RadioDot />
+                </RadioIndicator>
+                <RowLabel>{m.label}</RowLabel>
+                <RowWindow>{formatWindow(m.contextWindow)}</RowWindow>
+              </Row>
+            ))}
+          </Fragment>
+        ))}
+      </ChakraMenu.RadioItemGroup>
+    </PopupMenu>
   );
 }
 
@@ -137,31 +124,6 @@ const TriggerChevron = styled.span`
 
   [data-state="open"] & {
     transform: rotate(180deg);
-  }
-`;
-
-const Content = styled(ChakraMenu.Content)`
-  min-width: 220px;
-  padding: 3px;
-  background: var(--studio-bg-sidebar);
-  border: 1px solid var(--studio-border-hover);
-  border-radius: 9px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
-  z-index: 1000;
-  outline: none;
-  max-height: 380px;
-  overflow-y: auto;
-  animation: modelDropdownIn 0.1s ease;
-
-  @keyframes modelDropdownIn {
-    from {
-      opacity: 0;
-      transform: translateY(2px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
   }
 `;
 

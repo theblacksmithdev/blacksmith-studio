@@ -1,5 +1,12 @@
 import { ReactFlowProvider } from "@xyflow/react";
-import { Activity, Gauge, ListTodo, MessageSquare, Square } from "lucide-react";
+import {
+  Activity,
+  Gauge,
+  ListTodo,
+  MessageSquare,
+  Square,
+  Terminal,
+} from "lucide-react";
 import { Tooltip } from "@/components/shared/tooltip";
 import { ConfirmDialog } from "@/components/shared/ui";
 import { SplitPanel } from "@/components/shared/layout";
@@ -7,6 +14,7 @@ import { TimelineDrawer } from "@/components/shared/event-timeline";
 import type { AttachmentRecord } from "@/components/shared/conversation";
 import { AgentCanvas } from "./components/canvas";
 import { AgentChat } from "./components/chat";
+import { AgentCommandsDrawer } from "./components/commands";
 import { AgentDetail } from "./components/detail";
 import { AgentInnerView } from "./components/inner-view";
 import { TaskDrawer } from "./components/drawer";
@@ -50,6 +58,7 @@ export function AgentsPage({
     drawerOpen,
     timelineOpen,
     statsOpen,
+    commandsOpen,
     hasUnread,
     showStopConfirm,
     toggleChat,
@@ -59,6 +68,8 @@ export function AgentsPage({
     closeTimeline,
     toggleStats,
     closeStats,
+    toggleCommands,
+    closeCommands,
     closeInnerView,
     closeStopConfirm,
     isProcessing,
@@ -147,6 +158,13 @@ export function AgentsPage({
           </ChatBtn>
         </Tooltip>
 
+        <Tooltip content="Subprocesses agents ran in this conversation">
+          <ChatBtn $active={commandsOpen} onClick={toggleCommands}>
+            <Terminal size={14} />
+            Commands
+          </ChatBtn>
+        </Tooltip>
+
         {isProcessing && (
           <>
             <GroupDivider />
@@ -203,6 +221,13 @@ export function AgentsPage({
         <AgentStatsDrawer
           conversationId={conversationId}
           onClose={closeStats}
+        />
+      )}
+
+      {commandsOpen && conversationId && (
+        <AgentCommandsDrawer
+          conversationId={conversationId}
+          onClose={closeCommands}
         />
       )}
 
