@@ -58,6 +58,7 @@ export function ConversationView({
         trailing={streamingTrailing}
         renderMessage={renderMessage}
         renderContent={renderContent}
+        conversationId={conversationId}
       />
 
       <Box

@@ -15,6 +15,8 @@ interface MessageListProps {
   renderMessage?: (msg: ConversationMessage) => ReactNode | null;
   /** Custom content renderer inside the default bubble (e.g. MarkdownRenderer) */
   renderContent?: (content: string) => ReactNode;
+  /** Resets auto-scroll initialization when it changes (e.g. switching conversations). */
+  conversationId?: string;
 }
 
 export function MessageList({
@@ -24,8 +26,9 @@ export function MessageList({
   trailing,
   renderMessage,
   renderContent,
+  conversationId,
 }: MessageListProps) {
-  const bottomRef = useAutoScroll([messages, trailing]);
+  const bottomRef = useAutoScroll([messages, trailing], conversationId);
 
   if (messages.length === 0 && !trailing) {
     return (
