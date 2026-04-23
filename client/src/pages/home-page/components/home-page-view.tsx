@@ -45,6 +45,7 @@ export function HomePageView({
         onSend={onSend}
         isStreaming={isStreaming}
         projectId={projectId ?? undefined}
+        draftKey="new-conversation"
       />
       <QuickActions mode={mode} onSend={(text) => onSend(text)} />
 

@@ -23,6 +23,7 @@ export interface ChatComposerProps {
   leading?: ReactNode | null;
   projectId?: string;
   conversationId?: string;
+  draftKey?: string | null;
   enableAttachments?: boolean;
 }
 
@@ -37,6 +38,7 @@ export function ChatComposer({
   leading,
   projectId,
   conversationId,
+  draftKey,
   enableAttachments = true,
 }: ChatComposerProps) {
   const { minHeight, sendShortcut } = VARIANT_DEFAULTS[variant];
@@ -49,11 +51,18 @@ export function ChatComposer({
     "",
   );
 
+  const effectiveKey =
+    draftKey === null
+      ? null
+      : (draftKey ?? (conversationId ? `conv:${conversationId}` : null));
+  const storageKey = effectiveKey ? `composer-draft:${effectiveKey}` : null;
+
   const { value, setValue, send, handleKeyDown, canSend, attachments } =
     useComposerState({
       initialValue,
       projectId,
       conversationId,
+      storageKey,
       isStreaming,
       disabled,
       sendShortcut,

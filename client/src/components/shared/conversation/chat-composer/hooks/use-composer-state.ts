@@ -1,14 +1,22 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import {
   useComposerAttachments,
   type AttachmentRecord,
 } from "../../attachments";
+import { usePersistedState } from "@/hooks/use-persisted-state";
 import type { SendShortcut } from "../variants";
 
 export interface UseComposerStateArgs {
   initialValue?: string;
   projectId: string | undefined;
   conversationId?: string;
+  /**
+   * localStorage key under which the current draft persists. `null`
+   * disables persistence entirely. The caller is responsible for
+   * namespacing (e.g. prefixing with `composer-draft:`) since this
+   * hook treats the value opaquely.
+   */
+  storageKey: string | null;
   isStreaming?: boolean;
   disabled?: boolean;
   sendShortcut: SendShortcut;
@@ -19,19 +27,22 @@ export interface UseComposerStateArgs {
 /**
  * Owns the transient state of the composer: text value, attachment queue,
  * validation, send, and keyboard handling. The UI layer stays purely
- * presentational.
+ * presentational. Drafts persist across navigation / reload via
+ * `usePersistedState` using the caller-provided `storageKey`.
  */
 export function useComposerState({
   initialValue,
   projectId,
   conversationId,
+  storageKey,
   isStreaming,
   disabled,
   sendShortcut,
   onSend,
   onAfterSend,
 }: UseComposerStateArgs) {
-  const [value, setValue] = useState(initialValue ?? "");
+  const [value, setValue] = usePersistedState(storageKey, initialValue ?? "");
+
   const attachments = useComposerAttachments({ projectId, conversationId });
 
   const hasReadyAttachments = attachments.items.some(
@@ -53,7 +64,7 @@ export function useComposerState({
     setValue("");
     attachments.clear();
     onAfterSend?.();
-  }, [value, attachments, isStreaming, disabled, onSend, onAfterSend]);
+  }, [value, attachments, isStreaming, disabled, onSend, onAfterSend, setValue]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
