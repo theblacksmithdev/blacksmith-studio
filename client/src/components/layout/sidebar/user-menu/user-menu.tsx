@@ -1,7 +1,6 @@
-import { Menu as ChakraMenu, Portal } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { ArrowUpRight, LogOut, Moon, Settings, Sun, User } from "lucide-react";
-import { Logo } from "@/components/shared/ui";
+import { Logo, PopupMenu } from "@/components/shared/ui";
 import { useActiveProjectId } from "@/api/hooks/_shared";
 import { useThemeMode } from "@/hooks/use-theme-mode";
 import { Path, settingsPath } from "@/router/paths";
@@ -22,7 +21,6 @@ import {
   HeaderTitle,
   Item,
   ItemLabel,
-  PopoverContent,
   Sections,
 } from "./styles";
 
@@ -63,78 +61,77 @@ export function UserMenu({ expanded }: UserMenuProps) {
   const themeLabel = `Switch to ${mode === "dark" ? "light" : "dark"} mode`;
 
   return (
-    <ChakraMenu.Root positioning={{ placement: "top-start" }} lazyMount>
-      <SidebarTooltip label="Menu" visible={!expanded}>
-        <ChakraMenu.Trigger asChild>
+    <SidebarTooltip label="Menu" visible={!expanded}>
+      <PopupMenu
+        placement="top-start"
+        minWidth={280}
+        padding={0}
+        radius={14}
+        background="var(--studio-bg-surface)"
+        trigger={
           <AvatarBtn expanded={expanded}>
             <Avatar>
               <User size={12} />
             </Avatar>
             <AvatarLabel visible={expanded}>Menu</AvatarLabel>
           </AvatarBtn>
-        </ChakraMenu.Trigger>
-      </SidebarTooltip>
+        }
+      >
+        <Header>
+          <HeaderLogoSlot>
+            <Logo size={18} variant="brand" />
+          </HeaderLogoSlot>
+          <HeaderText>
+            <HeaderTitle>Blacksmith Studio</HeaderTitle>
+            <HeaderCaption>Project menu</HeaderCaption>
+          </HeaderText>
+        </Header>
 
-      <Portal>
-        <ChakraMenu.Positioner>
-          <PopoverContent>
-            <Header>
-              <HeaderLogoSlot>
-                <Logo size={18} variant="brand" />
-              </HeaderLogoSlot>
-              <HeaderText>
-                <HeaderTitle>Blacksmith Studio</HeaderTitle>
-                <HeaderCaption>Project menu</HeaderCaption>
-              </HeaderText>
-            </Header>
+        <Sections>
+          <Item
+            value="settings"
+            onClick={() =>
+              navigate(`${settingsPath(projectId)}/${SETTINGS_LANDING_TAB}`)
+            }
+          >
+            <Settings />
+            <ItemLabel>Settings</ItemLabel>
+          </Item>
+          <Item value="theme-toggle" onClick={toggle}>
+            <ThemeIcon />
+            <ItemLabel>{themeLabel}</ItemLabel>
+          </Item>
+          <Item
+            value="exit-project"
+            data-danger
+            onClick={() => navigate(Path.Home)}
+          >
+            <LogOut />
+            <ItemLabel>Exit project</ItemLabel>
+          </Item>
+        </Sections>
 
-            <Sections>
-              <Item
-                value="settings"
-                onClick={() =>
-                  navigate(`${settingsPath(projectId)}/${SETTINGS_LANDING_TAB}`)
-                }
+        <BrandRow>
+          {BRAND_LINKS.map((link) => {
+            const Icon = link.icon;
+            return (
+              <BrandChip
+                key={link.id}
+                href={link.url}
+                target="_blank"
+                rel="noreferrer"
+                title={link.hint}
               >
-                <Settings />
-                <ItemLabel>Settings</ItemLabel>
-              </Item>
-              <Item value="theme-toggle" onClick={toggle}>
-                <ThemeIcon />
-                <ItemLabel>{themeLabel}</ItemLabel>
-              </Item>
-              <Item
-                value="exit-project"
-                data-danger
-                onClick={() => navigate(Path.Home)}
-              >
-                <LogOut />
-                <ItemLabel>Exit project</ItemLabel>
-              </Item>
-            </Sections>
-
-            <BrandRow>
-              {BRAND_LINKS.map((link) => {
-                const Icon = link.icon;
-                return (
-                  <BrandChip
-                    key={link.id}
-                    href={link.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    title={link.hint}
-                  >
-                    <Icon />
-                    <BrandChipLabel>{link.label}</BrandChipLabel>
-                    <BrandChipArrow className="brand-chip-arrow">
-                      <ArrowUpRight size={11} />
-                    </BrandChipArrow>
-                  </BrandChip>
-                );
-              })}
-            </BrandRow>
-          </PopoverContent>
-        </ChakraMenu.Positioner>
-      </Portal>
-    </ChakraMenu.Root>
+                <Icon />
+                <BrandChipLabel>{link.label}</BrandChipLabel>
+                <BrandChipArrow className="brand-chip-arrow">
+                  <ArrowUpRight size={11} />
+                </BrandChipArrow>
+              </BrandChip>
+            );
+          })}
+        </BrandRow>
+      </PopupMenu>
+    </SidebarTooltip>
   );
 }

@@ -16,18 +16,11 @@ export type PopupMenuPlacement =
   | "left-start"
   | "left-end";
 
-export interface PopupMenuProps {
-  /**
-   * The element that opens the menu on click. Must be a ref-forwarding
-   * element (a plain `styled.button`, a Chakra primitive, etc.) — it
-   * renders as the `ChakraMenu.Trigger asChild` child, so Chakra needs
-   * the ref to position the menu.
-   */
-  trigger: ReactNode;
+interface BaseProps {
   /**
    * Menu content — compose with `PopupMenuItem`, `PopupMenuSeparator`,
    * and `PopupMenuLabel` exported from this module, or pass arbitrary
-   * Chakra Menu primitives for fully custom layouts (e.g.
+   * Chakra Menu primitives for custom layouts (e.g.
    * `ChakraMenu.RadioItemGroup`).
    */
   children: ReactNode;
@@ -36,52 +29,104 @@ export interface PopupMenuProps {
   background?: string;
   /** Minimum content width (default 240). */
   minWidth?: number | string;
-  /** Distance in pixels between trigger and content (default 4). */
+  /** Distance in pixels between trigger/anchor and content (default 4). */
   gutter?: number;
   /** Optional max height — enables vertical scrolling when exceeded. */
   maxHeight?: number | string;
   /** Inner padding in pixels (default 6). */
   padding?: number;
+  /** Border radius in pixels (default 10). */
+  radius?: number;
 }
 
-export function PopupMenu({
-  trigger,
-  children,
-  placement = "bottom-start",
-  background,
-  minWidth = 240,
-  gutter = 4,
-  maxHeight,
-  padding = 6,
-}: PopupMenuProps) {
+interface TriggerProps extends BaseProps {
+  /**
+   * The element that opens the menu on click. Must be a ref-forwarding
+   * element (a plain `styled.button`, a Chakra primitive, etc.) — it
+   * renders as the `ChakraMenu.Trigger asChild` child, so Chakra needs
+   * the ref to position the menu.
+   */
+  trigger: ReactNode;
+  anchor?: never;
+  onClose?: never;
+}
+
+interface AnchorProps extends BaseProps {
+  /**
+   * Virtual-anchor mode — position the menu at a screen coordinate
+   * (e.g. right-click / cursor menus). When set, the menu is open
+   * while mounted and calls `onClose` when dismissed.
+   */
+  anchor: { x: number; y: number };
+  onClose: () => void;
+  trigger?: never;
+}
+
+export type PopupMenuProps = TriggerProps | AnchorProps;
+
+export function PopupMenu(props: PopupMenuProps) {
+  const {
+    children,
+    placement = "bottom-start",
+    background,
+    minWidth = 240,
+    gutter = 4,
+    maxHeight,
+    padding = 6,
+    radius = 10,
+  } = props;
+
+  const isAnchor = "anchor" in props && props.anchor !== undefined;
+
+  const contentStyle = {
+    minWidth: typeof minWidth === "number" ? `${minWidth}px` : minWidth,
+    padding: `${padding}px`,
+    borderRadius: `${radius}px`,
+    ...(background ? { background } : {}),
+    ...(maxHeight !== undefined
+      ? {
+          maxHeight:
+            typeof maxHeight === "number" ? `${maxHeight}px` : maxHeight,
+          overflowY: "auto" as const,
+        }
+      : {}),
+  };
+
+  const positioning = isAnchor
+    ? {
+        placement,
+        gutter,
+        getAnchorRect: () => ({
+          x: props.anchor.x,
+          y: props.anchor.y,
+          width: 0,
+          height: 0,
+        }),
+      }
+    : { placement, gutter };
+
+  const rootProps = isAnchor
+    ? {
+        open: true,
+        onOpenChange: (e: { open: boolean }) => {
+          if (!e.open) props.onClose();
+        },
+      }
+    : {};
+
   return (
     <ChakraMenu.Root
-      positioning={{ placement, gutter }}
+      positioning={positioning}
       lazyMount
       unmountOnExit
+      {...rootProps}
     >
-      <ChakraMenu.Trigger asChild>{trigger}</ChakraMenu.Trigger>
+      {!isAnchor && (
+        <ChakraMenu.Trigger asChild>{props.trigger}</ChakraMenu.Trigger>
+      )}
       <Portal>
         <ChakraMenu.Positioner>
-          <Content
-            style={{
-              minWidth:
-                typeof minWidth === "number" ? `${minWidth}px` : minWidth,
-              padding: `${padding}px`,
-              ...(background ? { background } : {}),
-              ...(maxHeight !== undefined
-                ? {
-                    maxHeight:
-                      typeof maxHeight === "number"
-                        ? `${maxHeight}px`
-                        : maxHeight,
-                    overflowY: "auto",
-                  }
-                : {}),
-            }}
-          >
-            {children}
-          </Content>
+          <Content style={contentStyle}>{children}</Content>
         </ChakraMenu.Positioner>
       </Portal>
     </ChakraMenu.Root>
@@ -91,10 +136,12 @@ export function PopupMenu({
 const Content = styled(ChakraMenu.Content)`
   background: var(--studio-bg-sidebar);
   border: 1px solid var(--studio-border-hover);
-  border-radius: 10px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
   z-index: 1000;
   outline: none;
+  /* Clip rounded corners. Inline \`overflowY: auto\` from maxHeight
+     overrides the y-axis while x stays hidden. */
+  overflow: hidden;
   animation: popupMenuIn 140ms cubic-bezier(0.16, 1, 0.3, 1);
 
   @keyframes popupMenuIn {

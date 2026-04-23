@@ -50,34 +50,6 @@ export const AvatarLabel = styled.span<{ visible: boolean }>`
   transition: opacity 0.15s ease;
 `;
 
-/* ── Popover surface ────────────────────────────────────────── */
-
-export const PopoverContent = styled(ChakraMenu.Content)`
-  width: 280px;
-  padding: 0;
-  background: var(--studio-bg-surface);
-  border: 1px solid var(--studio-border-hover);
-  border-radius: 14px;
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.06),
-    0 12px 36px rgba(0, 0, 0, 0.22);
-  overflow: hidden;
-  z-index: 1000;
-  outline: none;
-  animation: userMenuFadeIn 0.14s cubic-bezier(0.16, 1, 0.3, 1);
-
-  @keyframes userMenuFadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(4px) scale(0.98);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-  }
-`;
-
 /* ── Header ─────────────────────────────────────────────────── */
 
 export const Header = styled.div`
