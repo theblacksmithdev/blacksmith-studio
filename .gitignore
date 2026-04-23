@@ -4,3 +4,5 @@ release/
 .blacksmith-studio/
 *.db
 .DS_Store
+/.blacksmith-studio/
+/.blacksmith/

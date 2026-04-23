@@ -2,6 +2,7 @@ import styled from "@emotion/styled";
 import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { useActiveProjectId } from "@/api/hooks/_shared";
+import { useClearLiveMessages } from "@/hooks/use-clear-live-messages";
 import { projectHome } from "@/router/paths";
 
 /**
@@ -55,11 +56,17 @@ interface NewChatButtonProps {
 export function NewChatButton({ expanded = false }: NewChatButtonProps) {
   const navigate = useNavigate();
   const pid = useActiveProjectId();
+  const clearLiveMessages = useClearLiveMessages("agents", "unmount");
 
   if (!pid) return null;
 
+  const handleClick = () => {
+    clearLiveMessages();
+    navigate(projectHome(pid));
+  };
+
   return (
-    <Btn expanded={expanded} onClick={() => navigate(projectHome(pid))}>
+    <Btn expanded={expanded} onClick={handleClick}>
       <Plus size={expanded ? 16 : 18} style={{ flexShrink: 0 }} />
       <Label visible={expanded}>New chat</Label>
     </Btn>

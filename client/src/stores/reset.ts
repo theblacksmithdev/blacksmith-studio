@@ -3,6 +3,7 @@ import { useFileStore } from "./file-store";
 import { useRunnerStore } from "./runner-store";
 import { useGitStore } from "./git-store";
 import { useSessionStore } from "./session-store";
+import { useAgentStore } from "./agent-store";
 
 /**
  * Reset all project-scoped stores.
@@ -14,6 +15,7 @@ import { useSessionStore } from "./session-store";
 export function resetProjectStores() {
   useChatStore.getState().clearPendingMessages();
   useSessionStore.getState().setActiveSession(null);
+  useAgentStore.getState().clearAll();
 
   useFileStore.setState({
     tree: null,

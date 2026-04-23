@@ -76,3 +76,17 @@ npx tsc --noEmit     # Type check
 - `client/src/stores/runner-store.ts` — Runner state + selectors
 - `server/services/mcp.ts` — MCP server manager (.mcp.json read/write)
 - `server/services/claude/args.ts` — Claude CLI argument builder
+
+<!-- blacksmith:graphify:start -->
+## Knowledge Graph (Graphify)
+
+This project has a pre-built knowledge graph at `.blacksmith/graphify/`.
+
+Rules:
+- Before exploring the codebase with Glob/Grep/Read, read `.blacksmith/graphify/GRAPH_REPORT.md`
+  for the structural overview — god nodes, communities, and file relationships.
+- Use the graph to navigate directly to relevant files instead of scanning broadly.
+- Only Read files you need to modify or understand in detail — the graph already maps the structure.
+
+Stats: 2893 nodes · 4279 edges · Built 2026-04-23
+<!-- blacksmith:graphify:end -->

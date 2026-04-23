@@ -112,6 +112,7 @@ interface AgentState {
   clearDispatch: () => void;
   toggleTaskTray: () => void;
   setTaskTrayOpen: (open: boolean) => void;
+  clearAll: () => void;
 }
 
 export const useAgentStore = create<AgentState>((set) => ({
@@ -380,4 +381,19 @@ export const useAgentStore = create<AgentState>((set) => ({
   toggleTaskTray: () => set((state) => ({ taskTrayOpen: !state.taskTrayOpen })),
 
   setTaskTrayOpen: (open) => set({ taskTrayOpen: open }),
+
+  clearAll: () =>
+    set({
+      agents: [],
+      activities: new Map(),
+      liveMessages: [],
+      selectedAgent: null,
+      buildActive: false,
+      buildEvents: [],
+      pendingInputs: [],
+      dispatchPlan: null,
+      dispatchTasks: [],
+      subtasks: new Map(),
+      taskTrayOpen: false,
+    }),
 }));

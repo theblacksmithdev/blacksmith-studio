@@ -1,0 +1,62 @@
+{
+  "mcpServers": {
+    "chakra-ui-docs": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-docs-server",
+        "--url",
+        "https://www.chakra-ui.com/docs",
+        "--name",
+        "chakra-ui-docs"
+      ]
+    },
+    "react-docs": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-docs-server",
+        "--url",
+        "https://react.dev",
+        "--name",
+        "react-docs"
+      ]
+    },
+    "django-docs": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-docs-server",
+        "--url",
+        "https://docs.djangoproject.com/en/5.1/",
+        "--name",
+        "django-docs"
+      ]
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "."
+      ]
+    },
+    "figma": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "figma-developer-mcp",
+        "--stdio"
+      ],
+      "env": {
+        "FIGMA_API_KEY": ""
+      }
+    },
+    "blacksmith_context": {
+      "command": "/Users/oluwatobisholanke/.nvm/versions/node/v20.11.1/bin/node",
+      "args": [
+        "/Users/oluwatobisholanke/Projects/blacksmith-studio/dist/server/context-mcp/run.js"
+      ]
+    }
+  }
+}

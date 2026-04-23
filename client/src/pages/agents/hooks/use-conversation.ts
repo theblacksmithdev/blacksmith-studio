@@ -7,22 +7,23 @@ import type { AttachmentRecord } from "@/components/shared/conversation";
 
 /**
  * Handles sending messages within an existing conversation.
- * Clears live messages when the user switches between conversations.
+ * Clears all agent state when the user switches between conversations.
  */
 export function useConversation(conversationId: string) {
   const qc = useQueryClient();
   const keys = useProjectKeys();
   const addLiveMessage = useAgentStore((s) => s.addLiveMessage);
+  const clearAll = useAgentStore((s) => s.clearAll);
   const clearLiveMessages = useAgentStore((s) => s.clearLiveMessages);
   const dispatch = useAgentDispatch();
 
-  // Clear stale live messages when switching between conversations
+  // Clear all agent state when switching between conversations
   const prevConvIdRef = useRef(conversationId);
   useEffect(() => {
     const prev = prevConvIdRef.current;
     prevConvIdRef.current = conversationId;
     if (prev !== conversationId) {
-      clearLiveMessages();
+      clearAll();
     }
   }, [conversationId]); // eslint-disable-line react-hooks/exhaustive-deps
 
